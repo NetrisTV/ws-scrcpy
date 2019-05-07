@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WS scrcpy</title>
+    <style>
+        body {
+            position: absolute;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+        #controls {
+            float: left;
+            position: relative;
+            width: 50%;
+            height: 100%;
+        }
+        #start {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+        }
+        #videoTagId {
+            float: right;
+            height: 100%;
+            max-width: 50%;
+            background-color: black;
+        }
+    </style>
+    <script src="../dist/bundle.js" type="application/javascript"></script>
+    <script type="application/javascript">
+
+    </script>
+</head>
+<body>
+    <div id="controls">
+        <button id="start">Start</button>
+    </div>
+    <video controls="controls" id="videoTagId"></video>
+</body>
+</html>
