@@ -4,15 +4,19 @@
   "description": "ws client for scrcpy",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/browserify src/index.js -o dist/bundle.js",
+    "compile": "./node_modules/.bin/tsc -p .",
+    "build": "npm run compile && ./node_modules/.bin/browserify build/generated/index.js -o dist/bundle.js && cp src/index.html dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Sergey Volkov <s.volkov@netris.ru>",
   "license": "MIT",
   "dependencies": {
+    "buffer": "^5.2.1",
     "h264-converter": "^0.1.0"
   },
   "devDependencies": {
-    "browserify": "^16.2.3"
+    "browserify": "^16.2.3",
+    "tslib": "^1.9.3",
+    "typescript": "^3.4.5"
   }
 }
