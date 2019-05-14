@@ -16,7 +16,7 @@
             width: 50%;
             height: 100%;
         }
-        #start {
+        #controlsWrap {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -35,8 +35,10 @@
 </head>
 <body>
     <div id="controls">
-        <button id="start">Start</button>
+        <div id="controlsWrap">
+            <button id="start">Start</button>
+        </div>
     </div>
-    <video controls="controls" id="videoTagId"></video>
+    <video id="videoTagId"></video>
 </body>
 </html>
