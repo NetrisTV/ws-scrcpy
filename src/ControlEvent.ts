@@ -43,9 +43,11 @@ export class ControlEvent {
 }
 
 export class CommandControlEvent extends ControlEvent{
-  public static COMMAND_BACK_OR_SCREEN_ON = 0;
-  public static COMMAND_EXPAND_NOTIFICATION_PANEL = 1;
-  public static COMMAND_COLLAPSE_NOTIFICATION_PANEL = 2;
+  public static CommandCodes: Record<string, number> = {
+    COMMAND_BACK_OR_SCREEN_ON: 0,
+    COMMAND_EXPAND_NOTIFICATION_PANEL: 1,
+    COMMAND_COLLAPSE_NOTIFICATION_PANEL: 2,
+  };
 
   constructor(readonly action: number) {
     super(ControlEvent.TYPE_COMMAND);

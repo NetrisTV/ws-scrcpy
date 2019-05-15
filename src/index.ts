@@ -48,7 +48,9 @@ class Main {
         let touchY = (e.clientY - target.offsetTop);
         const eps = 1e5;
         const ratio = width / height;
-        if (Math.round(eps * ratio) > Math.round(eps * clientWidth / clientHeight)) {
+        const shouldBe = Math.round(eps * ratio);
+        const haveNow = Math.round(eps * clientWidth / clientHeight);
+        if (shouldBe > haveNow) {
             const realHeight = Math.ceil(clientWidth / ratio);
             const top = (clientHeight - realHeight) / 2;
             if (touchY < top || touchY > top + realHeight) {
@@ -56,6 +58,14 @@ class Main {
             }
             touchY -= top;
             clientHeight = realHeight;
+        } else if (shouldBe < haveNow) {
+            const realWidth = Math.ceil(clientHeight * ratio);
+            const left = (clientWidth - realWidth) / 2;
+            if (touchX < left || touchX > left + realWidth) {
+                return null;
+            }
+            touchX -= left;
+            clientWidth = realWidth;
         }
         const x = touchX * width / clientWidth;
         const y = touchY * height / clientHeight;
@@ -149,13 +159,13 @@ class Main {
         };
         const cmdWrap = document.createElement('div');
         cmdWrap.id = Main.commandsWrapperId;
-        for (let command in CommandControlEvent) if (CommandControlEvent.hasOwnProperty(command)) {
+        const codes = CommandControlEvent.CommandCodes;
+        for (let command in codes) if (codes.hasOwnProperty(command)) {
             const btn = document.createElement('button');
             btn.innerText = command;
             btn.onclick = function() {
                 if (Main.haveConnection()) {
-                    // FIXME: remove <any>
-                    const action: number = (<any>CommandControlEvent)[command];
+                    const action: number = codes[command];
                     Main.websocket.send(new CommandControlEvent(action).toBuffer())
                 }
             };
