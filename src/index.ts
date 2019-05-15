@@ -1,87 +1,35 @@
-import MotionEvent from "./MotionEvent";
-import VideoConverter from "h264-converter";
-import {MotionControlEvent, TextControlEvent, CommandControlEvent} from "./ControlEvent";
-import Position from "./Position";
-import Size from "./Size";
-import Point from "./Point";
-import {StreamInfo} from "./StreamInfo";
+import {TextControlEvent, CommandControlEvent} from "./ControlEvent";
+import {DeviceScreen, DeviceScreenErrorListener} from "./DeviceScreen";
 
-export const MESSAGE_TYPE_TEXT = "text";
-export const MESSAGE_TYPE_STREAM_INFO = "stream_info";
 const wsUrl = 'ws://172.17.1.68:8886/';
-const DEFAULT_FPF = 1;
 
-class Main {
-    private static websocket: WebSocket;
-    private static converter: VideoConverter;
+class Main implements DeviceScreenErrorListener {
     private static inputWrapperId = 'inputWrap';
     private static controlsWrapperId = 'controlsWrap';
     private static commandsWrapperId = 'commandsWrap';
+    private screen?: DeviceScreen;
+    private static instance?: Main;
 
-    private static BUTTONS_MAP: Record<number, number> = {
-        0: 17, // ?? BUTTON_PRIMARY
-        1: MotionEvent.BUTTON_TERTIARY,
-        2: 26  // ?? BUTTON_SECONDARY
-    };
-
-    private static EVENT_ACTION_MAP: Record<string, number> = {
-        'mousedown': MotionEvent.ACTION_DOWN,
-        'mousemove': MotionEvent.ACTION_MOVE,
-        'mouseup': MotionEvent.ACTION_UP,
-    };
-
-    public static haveConnection(): boolean {
-        const websocket = Main.websocket;
-        return websocket && websocket.readyState === websocket.OPEN;
+    constructor() {
+        Main.instance = this;
     }
 
-    public static buildMotionEvent(e: MouseEvent, streamInfo: StreamInfo): MotionControlEvent | null {
-        const action = Main.EVENT_ACTION_MAP[e.type];
-        if (typeof action === 'undefined' || !streamInfo) {
-            return null;
-        }
-        const width = streamInfo.width;
-        const height = streamInfo.height;
-        const target: HTMLElement = <HTMLElement> e.target;
-        let {clientWidth, clientHeight} = target;
-        let touchX = (e.clientX - target.offsetLeft);
-        let touchY = (e.clientY - target.offsetTop);
-        const eps = 1e5;
-        const ratio = width / height;
-        const shouldBe = Math.round(eps * ratio);
-        const haveNow = Math.round(eps * clientWidth / clientHeight);
-        if (shouldBe > haveNow) {
-            const realHeight = Math.ceil(clientWidth / ratio);
-            const top = (clientHeight - realHeight) / 2;
-            if (touchY < top || touchY > top + realHeight) {
-                return null;
-            }
-            touchY -= top;
-            clientHeight = realHeight;
-        } else if (shouldBe < haveNow) {
-            const realWidth = Math.ceil(clientHeight * ratio);
-            const left = (clientWidth - realWidth) / 2;
-            if (touchX < left || touchX > left + realWidth) {
-                return null;
-            }
-            touchX -= left;
-            clientWidth = realWidth;
-        }
-        const x = touchX * width / clientWidth;
-        const y = touchY * height / clientHeight;
-        const position = new Position(new Point(x, y), new Size(width, height));
-        return new MotionControlEvent(action, Main.BUTTONS_MAP[e.button], position);
+    public static getInstance(): Main {
+        return Main.instance || new Main();
     }
 
-    public static stop(this:HTMLButtonElement): void {
-        if (Main.haveConnection()) {
-            Main.websocket.close();
-        }
-        if (Main.converter) {
-            Main.converter.pause();
+    public OnError(ev: string | Event) {
+        console.error(ev);
+    }
+
+    public stop(this:HTMLButtonElement): void {
+        const main = Main.getInstance();
+        const screen = main.screen;
+        if (screen) {
+            screen.stop();
         }
         this.innerText = 'Start';
-        this.onclick = Main.start.bind(this);
+        this.onclick = main.start.bind(this);
         const textWrap = document.getElementById(Main.inputWrapperId);
         if (textWrap) {
             (<HTMLElement>textWrap.parentElement).removeChild(textWrap);
@@ -93,53 +41,15 @@ class Main {
         }
     }
 
-    public static start(this:HTMLButtonElement): void {
+    public start(this:HTMLButtonElement): void {
+        const main = Main.getInstance();
         const element: HTMLVideoElement = <HTMLVideoElement>document.getElementById('videoTagId');
-        let converter: VideoConverter;
-        let streamInfo: StreamInfo;
-
-        Main.websocket = new WebSocket(wsUrl);
-        Main.websocket.binaryType = 'arraybuffer';
-
-        Main.websocket.addEventListener('error', function(this: HTMLButtonElement, e: Event) {
-            console.error(e);
-            if (Main.websocket.readyState === Main.websocket.CLOSED) {
-                Main.stop.apply(this);
-            }
-        }.bind(this));
-        Main.websocket.addEventListener('message', function(e: MessageEvent) {
-            if (e.data instanceof ArrayBuffer && typeof converter !== 'undefined') {
-                converter.appendRawData(new Uint8Array(e.data));
-            } else {
-                let data;
-                try {
-                    data = JSON.parse(e.data);
-                } catch (e) {
-                    console.log(e.data);
-                    return;
-                }
-                switch (data.type) {
-                    case MESSAGE_TYPE_STREAM_INFO:
-                        const newInfo = new StreamInfo(data);
-                        if (converter && streamInfo && !streamInfo.equals(newInfo)) {
-                            converter.appendRawData(new Uint8Array([]));
-                            converter.pause();
-                        }
-                        streamInfo = newInfo;
-                        converter = new VideoConverter(element, streamInfo.frameRate, DEFAULT_FPF);
-                        converter.play();
-                        break;
-                    case MESSAGE_TYPE_TEXT:
-                        console.log(data.message);
-                        break;
-                    default:
-                        console.log(e.data);
-                }
-            }
-        }, false);
+        const screen = new DeviceScreen(element, wsUrl);
+        screen.setErrorListener(main);
+        main.screen = screen;
 
         this.innerText = 'Stop';
-        this.onclick = Main.stop.bind(this);
+        this.onclick = main.stop.bind(this);
 
         const textWrap = document.createElement('div');
         textWrap.id = Main.inputWrapperId;
@@ -149,11 +59,11 @@ class Main {
         textWrap.appendChild(input);
         textWrap.appendChild(sendButton);
         (<HTMLElement>document.getElementById(Main.controlsWrapperId)).appendChild(textWrap);
-        sendButton.onclick = function() {
-            if (Main.haveConnection()) {
-                if (input.value) {
-                    const event = new TextControlEvent(input.value);
-                    Main.websocket.send(event.toBuffer());
+        sendButton.onclick = () => {
+            if (input.value) {
+                const screen = Main.getInstance().screen;
+                if (screen) {
+                    screen.sendEvent(new TextControlEvent(input.value));
                 }
             }
         };
@@ -163,53 +73,20 @@ class Main {
         for (let command in codes) if (codes.hasOwnProperty(command)) {
             const btn = document.createElement('button');
             btn.innerText = command;
-            btn.onclick = function() {
-                if (Main.haveConnection()) {
+            btn.onclick = () => {
+                const screen = Main.getInstance().screen;
+                if (screen) {
                     const action: number = codes[command];
-                    Main.websocket.send(new CommandControlEvent(action).toBuffer())
+                    screen.sendEvent(new CommandControlEvent(action));
                 }
             };
             cmdWrap.appendChild(btn);
         }
         (<HTMLElement>document.getElementById(Main.controlsWrapperId)).appendChild(cmdWrap);
-
-        document.body.oncontextmenu = function(e) {
-            e.preventDefault();
-            return false;
-        };
-
-        let down = 0;
-
-        function onMouseEvent(e: MouseEvent) {
-            if (e.target === element && Main.haveConnection()) {
-                const event = Main.buildMotionEvent(e, streamInfo);
-                if (event) {
-                    Main.websocket.send(event.toBuffer());
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            return true;
-        }
-
-        document.body.onmousedown = function(e) {
-            down++;
-            onMouseEvent(e);
-        };
-        document.body.onmouseup = function(e) {
-            down--;
-            onMouseEvent(e);
-        };
-        document.body.onmousemove = function(e) {
-            if (down > 0) {
-                onMouseEvent(e);
-            }
-        };
     }
 }
 
 window.onload = function() {
     const btn: HTMLButtonElement = <HTMLButtonElement>document.getElementById('start');
-    btn.onclick = Main.start.bind(btn);
+    btn.onclick = Main.getInstance().start.bind(btn);
 };
