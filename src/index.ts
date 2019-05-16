@@ -1,14 +1,24 @@
-import {TextControlEvent, CommandControlEvent} from "./ControlEvent";
+import {CommandControlEvent, TextControlEvent} from "./ControlEvent";
 import {DeviceScreen, DeviceScreenErrorListener} from "./DeviceScreen";
+import NativeDecoder from "./decoder/NativeDecoder";
+import {BroadwayDecoder, CANVAS_TYPE} from "./decoder/BroadwayDecoder";
+import Decoder from "./decoder/Decoder";
 
 const wsUrl = 'ws://172.17.1.68:8886/';
+
+interface StartArguments {
+    decoder: Decoder,
+    startText: string,
+    onclick: () => void
+}
 
 class Main implements DeviceScreenErrorListener {
     private static inputWrapperId = 'inputWrap';
     private static controlsWrapperId = 'controlsWrap';
     private static commandsWrapperId = 'commandsWrap';
-    private screen?: DeviceScreen;
     private static instance?: Main;
+    public decoder?: Decoder;
+    private screen?: DeviceScreen;
 
     constructor() {
         Main.instance = this;
@@ -22,35 +32,46 @@ class Main implements DeviceScreenErrorListener {
         console.error(ev);
     }
 
-    public stop(this:HTMLButtonElement): void {
-        const main = Main.getInstance();
-        const screen = main.screen;
-        if (screen) {
-            screen.stop();
-        }
-        this.innerText = 'Start';
-        this.onclick = main.start.bind(this);
-        const textWrap = document.getElementById(Main.inputWrapperId);
-        if (textWrap) {
-            (<HTMLElement>textWrap.parentElement).removeChild(textWrap);
+    public startNative(this: HTMLButtonElement) {
+        const tag: HTMLVideoElement = <HTMLVideoElement>document.getElementById('videoTagId');
+        if (tag) {
+            tag.style.display = 'block';
+            const decoder = new NativeDecoder(tag);
+            const main = Main.getInstance();
+            const onclick = main.startNative;
+            const startText = this.innerText;
+            main.decoder = decoder;
+            main.start.call(this, {decoder, startText, onclick});
         }
 
-        const cmdWrap = document.getElementById(Main.commandsWrapperId);
-        if (cmdWrap) {
-            (<HTMLElement>cmdWrap.parentElement).removeChild(cmdWrap);
+    }
+
+    public startBroadway(this: HTMLButtonElement) {
+        const tag: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvasTagId');
+        if (tag) {
+            tag.style.display = 'block';
+            const decoder = new BroadwayDecoder(tag, CANVAS_TYPE.WEBGL);
+            const main = Main.getInstance();
+            const onclick = main.startBroadway;
+            const startText = this.innerText;
+            main.decoder = decoder;
+            main.start.call(this, {decoder, startText, onclick});
         }
     }
 
-    public start(this:HTMLButtonElement): void {
+    public start(this: HTMLButtonElement, params: StartArguments): void {
+        const {decoder, startText, onclick} = params;
         const main = Main.getInstance();
-        const element: HTMLVideoElement = <HTMLVideoElement>document.getElementById('videoTagId');
-        const screen = new DeviceScreen(element, wsUrl);
+        const screen = new DeviceScreen(decoder, wsUrl);
         screen.setErrorListener(main);
         main.screen = screen;
 
         this.innerText = 'Stop';
-        this.onclick = main.stop.bind(this);
 
+        const controlsWrapper = document.getElementById(Main.controlsWrapperId);
+        if (!controlsWrapper) {
+            return
+        }
         const textWrap = document.createElement('div');
         textWrap.id = Main.inputWrapperId;
         const input = document.createElement('input');
@@ -58,7 +79,8 @@ class Main implements DeviceScreenErrorListener {
         sendButton.innerText = 'Send';
         textWrap.appendChild(input);
         textWrap.appendChild(sendButton);
-        (<HTMLElement>document.getElementById(Main.controlsWrapperId)).appendChild(textWrap);
+
+        controlsWrapper.appendChild(textWrap);
         sendButton.onclick = () => {
             if (input.value) {
                 const screen = Main.getInstance().screen;
@@ -82,11 +104,33 @@ class Main implements DeviceScreenErrorListener {
             };
             cmdWrap.appendChild(btn);
         }
-        (<HTMLElement>document.getElementById(Main.controlsWrapperId)).appendChild(cmdWrap);
+        controlsWrapper.appendChild(cmdWrap);
+
+
+        this.onclick = () => {
+            screen.stop();
+            this.innerText = startText;
+            this.onclick = onclick;
+            const tag = decoder.getElement();
+            if (tag) {
+                tag.style.display = 'none';
+            }
+            let parent;
+            parent = textWrap.parentElement;
+            if (parent) {
+                parent.removeChild(textWrap);
+            }
+            parent = cmdWrap.parentElement;
+            if (parent) {
+                parent.removeChild(cmdWrap);
+            }
+        };
     }
 }
 
-window.onload = function() {
-    const btn: HTMLButtonElement = <HTMLButtonElement>document.getElementById('start');
-    btn.onclick = Main.getInstance().start.bind(btn);
+window.onload = function () {
+    const btnNative: HTMLButtonElement = <HTMLButtonElement>document.getElementById('startNative');
+    btnNative.onclick = Main.getInstance().startNative.bind(btnNative);
+    const btnBroadway: HTMLButtonElement = <HTMLButtonElement>document.getElementById('startBroadway');
+    btnBroadway.onclick = Main.getInstance().startBroadway.bind(btnBroadway);
 };

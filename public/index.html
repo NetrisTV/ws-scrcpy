@@ -24,9 +24,9 @@
             top: 50%;
         }
 
-        #videoTagId {
+        .video {
             float: right;
-            height: 100%;
+            max-height: 100%;
             max-width: 50%;
             background-color: black;
         }
@@ -39,9 +39,11 @@
 <body>
 <div id="controls">
     <div id="controlsWrap">
-        <button id="start">Start</button>
+        <button id="startNative">Start Native</button>
+        <button id="startBroadway">Start Broadway</button>
     </div>
 </div>
-<video id="videoTagId"></video>
+<video id="videoTagId" class="video" style="display: none"></video>
+<canvas id="canvasTagId" class="video" style="display: none"></canvas>
 </body>
 </html>

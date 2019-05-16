@@ -1,46 +1,37 @@
 import {StreamInfo} from "./StreamInfo";
-import VideoConverter from "h264-converter";
 import {ControlEvent, MotionControlEvent} from "./ControlEvent";
 import MotionEvent from "./MotionEvent";
 import Position from "./Position";
 import Size from "./Size";
 import Point from "./Point";
+import Decoder from "./decoder/Decoder";
 
 const MESSAGE_TYPE_TEXT = "text";
 const MESSAGE_TYPE_STREAM_INFO = "stream_info";
-const DEFAULT_FPF = 1;
 
 export interface DeviceScreenErrorListener {
     OnError: (this: DeviceScreenErrorListener, ev: Event | string) => any;
 }
 
 export class DeviceScreen {
-    private errorListener?: DeviceScreenErrorListener;
-    private streamInfo?: StreamInfo;
-    readonly ws: WebSocket;
-    private converter?: VideoConverter;
     private static BUTTONS_MAP: Record<number, number> = {
         0: 17, // ?? BUTTON_PRIMARY
         1: MotionEvent.BUTTON_TERTIARY,
         2: 26  // ?? BUTTON_SECONDARY
     };
-
     private static EVENT_ACTION_MAP: Record<string, number> = {
         'mousedown': MotionEvent.ACTION_DOWN,
         'mousemove': MotionEvent.ACTION_MOVE,
         'mouseup': MotionEvent.ACTION_UP,
     };
+    readonly ws: WebSocket;
+    private errorListener?: DeviceScreenErrorListener;
 
-    constructor(readonly tag:HTMLVideoElement, readonly url:string) {
-        this.tag = tag;
+    constructor(private decoder: Decoder, readonly url: string) {
         this.url = url;
         this.ws = new WebSocket(url);
         this.ws.binaryType = 'arraybuffer';
         this.init();
-    }
-
-    private haveConnection(): boolean {
-        return this.ws && this.ws.readyState === this.ws.OPEN;
     }
 
     private static buildMotionEvent(e: MouseEvent, streamInfo: StreamInfo): MotionControlEvent | null {
@@ -50,7 +41,7 @@ export class DeviceScreen {
         }
         const width = streamInfo.width;
         const height = streamInfo.height;
-        const target: HTMLElement = <HTMLElement> e.target;
+        const target: HTMLElement = <HTMLElement>e.target;
         let {clientWidth, clientHeight} = target;
         let touchX = (e.clientX - target.offsetLeft);
         let touchY = (e.clientY - target.offsetTop);
@@ -81,98 +72,13 @@ export class DeviceScreen {
         return new MotionControlEvent(action, this.BUTTONS_MAP[e.button], position);
     }
 
-    private init() {
-        const ws = this.ws;
-
-        const onError = (e: Event | string) => {
-            if (this.errorListener) {
-                this.errorListener.OnError.call(this.errorListener, e);
-            }
-            if (ws.readyState === ws.CLOSED) {
-                console.error("WS closed");
-            }
-        };
-
-        ws.onerror = onError;
-
-        ws.onmessage = (e: MessageEvent) => {
-            const converter = this.converter;
-            const streamInfo = this.streamInfo;
-            if (e.data instanceof ArrayBuffer && converter) {
-                converter.appendRawData(new Uint8Array(e.data));
-            } else {
-                let data;
-                try {
-                    data = JSON.parse(e.data);
-                } catch (e) {
-                    console.log(e.data);
-                    return;
-                }
-                switch (data.type) {
-                    case MESSAGE_TYPE_STREAM_INFO:
-                        const newInfo = new StreamInfo(data);
-                        if (converter && streamInfo && !streamInfo.equals(newInfo)) {
-                            converter.appendRawData(new Uint8Array([]));
-                            converter.pause();
-                        }
-                        this.streamInfo = newInfo;
-                        this.converter = new VideoConverter(this.tag, newInfo.frameRate, DEFAULT_FPF);
-                        this.converter.play();
-                        break;
-                    case MESSAGE_TYPE_TEXT:
-                        console.log(data.message);
-                        break;
-                    default:
-                        console.log(e.data);
-                }
-            }
-        };
-
-        this.tag.onerror = onError;
-        this.tag.oncontextmenu = function(e) {
-            e.preventDefault();
-            return false;
-        };
-
-        let down = 0;
-
-        const onMouseEvent = (e: MouseEvent) => {
-            if (e.target === this.tag && this.haveConnection()) {
-                if (!this.streamInfo) {
-                    return;
-                }
-                const event = DeviceScreen.buildMotionEvent(e, this.streamInfo);
-                if (event) {
-                    this.ws.send(event.toBuffer());
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            return true;
-        };
-
-        document.body.onmousedown = function(e) {
-            down++;
-            onMouseEvent(e);
-        };
-        document.body.onmouseup = function(e) {
-            down--;
-            onMouseEvent(e);
-        };
-        document.body.onmousemove = function(e) {
-            if (down > 0) {
-                onMouseEvent(e);
-            }
-        };
-    }
-
-    public getStreamInfo(): StreamInfo | undefined {
-        return this.streamInfo;
-    }
-
-    public setStreamInfo(info: StreamInfo): void {
-        this.streamInfo = info;
+    public stop(): void {
+        if (this.haveConnection()) {
+            this.ws.close()
+        }
+        if (this.decoder) {
+            this.decoder.pause();
+        }
     }
 
     public sendEvent(event: ControlEvent): void {
@@ -185,12 +91,85 @@ export class DeviceScreen {
         this.errorListener = listener;
     }
 
-    public stop(): void {
-        if (this.haveConnection()) {
-            this.ws.close()
-        }
-        if (this.converter) {
-            this.converter.pause();
-        }
+    private haveConnection(): boolean {
+        return this.ws && this.ws.readyState === this.ws.OPEN;
+    }
+
+    private init() {
+        let tag: HTMLElement = this.decoder.getElement();
+        const ws = this.ws;
+
+        ws.onerror = (e: Event | string) => {
+            if (this.errorListener) {
+                this.errorListener.OnError.call(this.errorListener, e);
+            }
+            if (ws.readyState === ws.CLOSED) {
+                console.error("WS closed");
+            }
+        };
+
+        ws.onmessage = (e: MessageEvent) => {
+            const streamInfo = this.decoder.getStreamInfo();
+            if (e.data instanceof ArrayBuffer) {
+                this.decoder.pushFrame(new Uint8Array(e.data));
+            } else {
+                let data;
+                try {
+                    data = JSON.parse(e.data);
+                } catch (e) {
+                    console.log(e.data);
+                    return;
+                }
+                switch (data.type) {
+                    case MESSAGE_TYPE_STREAM_INFO:
+                        const newInfo = new StreamInfo(data);
+                        if (!streamInfo || !streamInfo.equals(newInfo)) {
+                            this.decoder.setStreamInfo(newInfo);
+                            tag = this.decoder.getElement();
+                            this.decoder.play();
+                        }
+                        break;
+                    case MESSAGE_TYPE_TEXT:
+                        console.log(data.message);
+                        break;
+                    default:
+                        console.log(e.data);
+                }
+            }
+        };
+
+
+        let down = 0;
+
+        const onMouseEvent = (e: MouseEvent) => {
+            if (e.target === tag && this.haveConnection()) {
+                const streamInfo = this.decoder.getStreamInfo();
+                if (!streamInfo) {
+                    return;
+                }
+                const event = DeviceScreen.buildMotionEvent(e, streamInfo);
+                if (event) {
+                    this.ws.send(event.toBuffer());
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            return true;
+        };
+
+        document.body.onmousedown = function (e) {
+            down++;
+            onMouseEvent(e);
+        };
+        document.body.onmouseup = function (e) {
+            down--;
+            onMouseEvent(e);
+        };
+        document.body.onmousemove = function (e) {
+            if (down > 0) {
+                onMouseEvent(e);
+            }
+        };
     }
 }
