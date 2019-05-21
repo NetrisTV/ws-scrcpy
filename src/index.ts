@@ -1,24 +1,31 @@
 import {CommandControlEvent, TextControlEvent} from "./ControlEvent";
-import {DeviceScreen, DeviceScreenErrorListener} from "./DeviceScreen";
+import {DeviceConnection, ErrorListener} from "./DeviceConnection";
 import NativeDecoder from "./decoder/NativeDecoder";
 import {BroadwayDecoder, CANVAS_TYPE} from "./decoder/BroadwayDecoder";
 import Decoder from "./decoder/Decoder";
+import {StreamInfo} from "./StreamInfo";
 
 const wsUrl = 'ws://172.17.1.68:8886/';
 
 interface StartArguments {
+    decoderName: string,
     decoder: Decoder,
     startText: string,
     onclick: () => void
 }
 
-class Main implements DeviceScreenErrorListener {
+class ErrorHandler {
+    constructor(readonly OnError: (ev: string | Event) => void) {
+    }
+}
+
+class Main implements ErrorListener {
     private static inputWrapperId = 'inputWrap';
     private static controlsWrapperId = 'controlsWrap';
     private static commandsWrapperId = 'commandsWrap';
     private static instance?: Main;
     public decoder?: Decoder;
-    private screen?: DeviceScreen;
+    private screen?: DeviceConnection;
 
     constructor() {
         Main.instance = this;
@@ -40,8 +47,9 @@ class Main implements DeviceScreenErrorListener {
             const main = Main.getInstance();
             const onclick = main.startNative;
             const startText = this.innerText;
+            const decoderName = 'Native';
             main.decoder = decoder;
-            main.start.call(this, {decoder, startText, onclick});
+            main.start.call(this, {decoder, decoderName, startText, onclick});
         }
 
     }
@@ -54,19 +62,19 @@ class Main implements DeviceScreenErrorListener {
             const main = Main.getInstance();
             const onclick = main.startBroadway;
             const startText = this.innerText;
+            const decoderName = 'Broadway';
             main.decoder = decoder;
-            main.start.call(this, {decoder, startText, onclick});
+            main.start.call(this, {decoder, decoderName, startText, onclick});
         }
     }
 
     public start(this: HTMLButtonElement, params: StartArguments): void {
-        const {decoder, startText, onclick} = params;
+        const {decoder, decoderName, startText, onclick} = params;
         const main = Main.getInstance();
-        const screen = new DeviceScreen(decoder, wsUrl);
-        screen.setErrorListener(main);
+        const screen = new DeviceConnection(decoder, wsUrl);
         main.screen = screen;
 
-        this.innerText = 'Stop';
+        this.innerText = `Stop ${decoderName}`;
 
         const controlsWrapper = document.getElementById(Main.controlsWrapperId);
         if (!controlsWrapper) {
@@ -93,21 +101,69 @@ class Main implements DeviceScreenErrorListener {
         cmdWrap.id = Main.commandsWrapperId;
         const codes = CommandControlEvent.CommandCodes;
         for (let command in codes) if (codes.hasOwnProperty(command)) {
+            const action: number = codes[command];
             const btn = document.createElement('button');
+            let streamInfo: StreamInfo;
+            let bitrateInput: HTMLInputElement;
+            let frameRateInput: HTMLInputElement;
+            if (action === CommandControlEvent.CommandCodes.COMMAND_CHANGE_STREAM_PARAMETERS) {
+                let bitrate = 2000000;
+                let frameRate = 24;
+                if (decoder instanceof NativeDecoder) {
+                    bitrate = 8000000;
+                    frameRate = 60;
+                }
+                const bitrateWrap = document.createElement('div');
+                const bitrateLabel = document.createElement('label');
+                bitrateLabel.innerText = 'Bitrate:';
+                bitrateInput = document.createElement('input');
+                bitrateInput.placeholder = `bitrate (${bitrate})`;
+                bitrateInput.value = bitrate.toString();
+
+                const framerateWrap = document.createElement('div');
+                const framerateLabel = document.createElement('label');
+                framerateLabel.innerText = 'Framerate:';
+                frameRateInput = document.createElement('input');
+                frameRateInput.placeholder = `framerate (${frameRate})`;
+                frameRateInput.value = frameRate.toString();
+
+                bitrateWrap.appendChild(bitrateLabel);
+                bitrateWrap.appendChild(bitrateInput);
+                cmdWrap.appendChild(bitrateWrap);
+                framerateWrap.appendChild(framerateLabel);
+                framerateWrap.appendChild(frameRateInput);
+                cmdWrap.appendChild(framerateWrap);
+            }
             btn.innerText = command;
             btn.onclick = () => {
                 const screen = Main.getInstance().screen;
                 if (screen) {
-                    const action: number = codes[command];
-                    screen.sendEvent(new CommandControlEvent(action));
+                    let buffer;
+                    if (action === CommandControlEvent.CommandCodes.COMMAND_CHANGE_STREAM_PARAMETERS) {
+                        const bitrate = parseInt(bitrateInput.value, 10);
+                        const frameRate = parseInt(frameRateInput.value, 10);
+                        if (isNaN(bitrate) || isNaN(frameRate)) {
+                            return;
+                        }
+                        streamInfo = new StreamInfo({
+                            width: (document.body.clientWidth / 8 | 0) * 8,
+                            height: (document.body.clientHeight / 8 | 0) * 8,
+                            bitrate,
+                            frameRate
+                        });
+                        buffer = streamInfo.toBuffer();
+                    }
+                    screen.sendEvent(new CommandControlEvent(action, buffer));
                 }
             };
             cmdWrap.appendChild(btn);
         }
         controlsWrapper.appendChild(cmdWrap);
 
-
-        this.onclick = () => {
+        const stop = (ev?: string | Event) => {
+            if (ev && ev instanceof Event && ev.type === 'error') {
+                console.error(ev);
+            }
             screen.stop();
             this.innerText = startText;
             this.onclick = onclick;
@@ -125,6 +181,10 @@ class Main implements DeviceScreenErrorListener {
                 parent.removeChild(cmdWrap);
             }
         };
+
+        this.onclick = stop;
+
+        screen.setErrorListener(new ErrorHandler(stop));
     }
 }
 

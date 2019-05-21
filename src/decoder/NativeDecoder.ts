@@ -2,6 +2,7 @@ import Decoder from "./Decoder";
 import VideoConverter from "h264-converter";
 
 export default class NativeDecoder extends Decoder {
+    protected TAG = "NativeDecoder";
     static readonly DEFAULT_FRAME_PER_FRAGMENT = 6;
     private converter?: VideoConverter;
 
@@ -21,7 +22,7 @@ export default class NativeDecoder extends Decoder {
             return;
         }
         if (!this.converter) {
-            const fps = this.streamInfo.frameRate;
+            const fps = 60 /*this.streamInfo.frameRate*/;
             const fpf = this.fpf;
             console.log(`Create new VideoConverter(fps=${fps}, fpf=${fpf})`);
             this.converter = new VideoConverter(this.tag, fps, fpf);

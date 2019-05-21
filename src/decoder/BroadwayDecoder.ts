@@ -15,6 +15,7 @@ export const CANVAS_TYPE: Record<string, string> = {
 };
 
 export class BroadwayDecoder extends Decoder {
+    protected TAG = "BroadwayDecoder";
     private avc?: any;
     private canvas?: any;
     private framesList: Array<Uint8Array> = [];

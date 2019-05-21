@@ -5,15 +5,19 @@ import Position from "./Position";
 import Size from "./Size";
 import Point from "./Point";
 import Decoder from "./decoder/Decoder";
+import Util from "./Util";
 
 const MESSAGE_TYPE_TEXT = "text";
 const MESSAGE_TYPE_STREAM_INFO = "stream_info";
+const DEVICE_NAME_FIELD_LENGTH = 64;
+const MAGIC = "scrcpy";
+const DEVICE_INFO_LENGTH = DEVICE_NAME_FIELD_LENGTH + 9 + MAGIC.length;
 
-export interface DeviceScreenErrorListener {
-    OnError: (this: DeviceScreenErrorListener, ev: Event | string) => any;
+export interface ErrorListener {
+    OnError: (this: ErrorListener, ev: Event | string) => any;
 }
 
-export class DeviceScreen {
+export class DeviceConnection {
     private static BUTTONS_MAP: Record<number, number> = {
         0: 17, // ?? BUTTON_PRIMARY
         1: MotionEvent.BUTTON_TERTIARY,
@@ -25,7 +29,8 @@ export class DeviceScreen {
         'mouseup': MotionEvent.ACTION_UP,
     };
     readonly ws: WebSocket;
-    private errorListener?: DeviceScreenErrorListener;
+    private errorListener?: ErrorListener;
+    private name: string = '';
 
     constructor(private decoder: Decoder, readonly url: string) {
         this.url = url;
@@ -87,8 +92,12 @@ export class DeviceScreen {
         }
     }
 
-    public setErrorListener(listener: DeviceScreenErrorListener): void {
+    public setErrorListener(listener: ErrorListener): void {
         this.errorListener = listener;
+    }
+
+    public getDeviceName(): string {
+        return this.name;
     }
 
     private haveConnection(): boolean {
@@ -111,7 +120,24 @@ export class DeviceScreen {
         ws.onmessage = (e: MessageEvent) => {
             const streamInfo = this.decoder.getStreamInfo();
             if (e.data instanceof ArrayBuffer) {
-                this.decoder.pushFrame(new Uint8Array(e.data));
+                const data = new Uint8Array(e.data);
+                if (data.length === DEVICE_INFO_LENGTH) {
+                    const magicBytes = new Uint8Array(e.data, DEVICE_NAME_FIELD_LENGTH + 9, MAGIC.length);
+                    const text = Util.utf8ByteArrayToString(magicBytes);
+                    if (text === MAGIC) {
+                        let nameBytes = new Uint8Array(e.data, 0, DEVICE_NAME_FIELD_LENGTH);
+                        nameBytes = Util.filterTrailingZeroes(nameBytes);
+                        this.name = Util.utf8ByteArrayToString(nameBytes);
+                        const data = new Uint8Array(e.data, DEVICE_NAME_FIELD_LENGTH, 9);
+                        const buffer = new Buffer(data);
+                        const newInfo = StreamInfo.fromBuffer(buffer);
+                        this.decoder.setStreamInfo(newInfo);
+                        tag = this.decoder.getElement();
+                        this.decoder.play();
+                    }
+                } else {
+                    this.decoder.pushFrame(new Uint8Array(e.data));
+                }
             } else {
                 let data;
                 try {
@@ -147,7 +173,7 @@ export class DeviceScreen {
                 if (!streamInfo) {
                     return;
                 }
-                const event = DeviceScreen.buildMotionEvent(e, streamInfo);
+                const event = DeviceConnection.buildMotionEvent(e, streamInfo);
                 if (event) {
                     this.ws.send(event.toBuffer());
                 }

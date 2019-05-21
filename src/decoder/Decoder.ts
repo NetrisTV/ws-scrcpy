@@ -1,6 +1,7 @@
 import {StreamInfo} from "../StreamInfo";
 
 export default abstract class Decoder {
+    protected TAG = "Decoder";
     protected streamInfo?: StreamInfo;
 
     protected constructor(protected tag: HTMLElement) {
@@ -21,6 +22,7 @@ export default abstract class Decoder {
     }
 
     setStreamInfo(streamInfo: StreamInfo) {
+        console.log(`${this.TAG}.setStreamInfo(${streamInfo})`);
         this.pause();
         this.streamInfo = streamInfo;
     }
