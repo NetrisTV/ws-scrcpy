@@ -3,6 +3,7 @@ import NativeDecoder from './decoder/NativeDecoder';
 import { BroadwayDecoder, CANVAS_TYPE } from './decoder/BroadwayDecoder';
 import Decoder from './decoder/Decoder';
 import VideoSettings from './VideoSettings';
+import H264bsdDecoder from './decoder/H264bsdDecoder';
 import ErrorHandler from './ErrorHandler';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
@@ -83,6 +84,31 @@ class Main implements IErrorListener {
         const decoderName = 'Broadway';
         const connection = DeviceConnection.getInstance(url);
         const stream = BroadwayDecoder.preferredVideoSettings;
+        connection.addDecoder(decoder);
+        main.start.call(this, {
+            connection,
+            decoder,
+            decoderName,
+            onclick,
+            startText,
+            stream
+        });
+    }
+
+    public startH264bsd(this: HTMLButtonElement): void {
+        const tag: HTMLCanvasElement = document.getElementById('canvasTagId') as HTMLCanvasElement;
+        const url = Main.getAddress();
+        if (!tag || !url) {
+            return;
+        }
+        tag.style.display = 'block';
+        const decoder = new H264bsdDecoder(tag);
+        const main = Main.getInstance();
+        const onclick = main.startH264bsd;
+        const startText = this.innerText;
+        const decoderName = 'H264bsdDecoder';
+        const connection = DeviceConnection.getInstance(url);
+        const stream = H264bsdDecoder.preferredVideoSettings;
         connection.addDecoder(decoder);
         main.start.call(this, {
             connection,
@@ -225,5 +251,9 @@ window.onload = function(): void {
     const btnBroadway = document.getElementById('startBroadway');
     if (btnBroadway && btnBroadway instanceof HTMLButtonElement) {
         btnBroadway.onclick = Main.getInstance().startBroadway.bind(btnBroadway);
+    }
+    const h264bsd = document.getElementById('startH264bsd');
+    if (h264bsd && h264bsd instanceof HTMLButtonElement) {
+        h264bsd.onclick = Main.getInstance().startH264bsd.bind(h264bsd);
     }
 };
