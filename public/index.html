@@ -39,8 +39,13 @@
 <body>
 <div id="controls">
     <div id="controlsWrap">
-        <button id="startNative">Start Native</button>
-        <button id="startBroadway">Start Broadway</button>
+        <div>
+            <label for="deviceAddress">Device:</label><input id="deviceAddress" value="ws://172.17.1.68:8886/">
+        </div>
+        <div>
+            <button id="startNative">Start Native</button>
+            <button id="startBroadway">Start Broadway</button>
+        </div>
     </div>
 </div>
 <video id="videoTagId" class="video" style="display: none"></video>

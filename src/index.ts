@@ -7,9 +7,8 @@ import ErrorHandler from './ErrorHandler';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
 
-const wsUrl = 'ws://172.17.1.68:8886/';
-
 interface IStartArguments {
+    connection: DeviceConnection;
     decoderName: string;
     decoder: Decoder;
     startText: string;
@@ -20,8 +19,8 @@ class Main implements IErrorListener {
     private static inputWrapperId: string = 'inputWrap';
     private static controlsWrapperId: string = 'controlsWrap';
     private static commandsWrapperId: string = 'commandsWrap';
+    private static addressInputId: string = 'deviceAddress';
     private static instance?: Main;
-    public decoder?: Decoder;
 
     constructor() {
         Main.instance = this;
@@ -35,38 +34,50 @@ class Main implements IErrorListener {
         console.error(ev);
     }
 
+    private static getAddress(): string | null {
+        const addressInput = document.getElementById(Main.addressInputId);
+        if (addressInput && addressInput instanceof HTMLInputElement) {
+            return addressInput.value || null;
+        }
+        return null;
+    }
+
     public startNative(this: HTMLButtonElement): void {
         const tag: HTMLVideoElement = document.getElementById('videoTagId') as HTMLVideoElement;
-        if (tag) {
-            tag.style.display = 'block';
-            const decoder = new NativeDecoder(tag);
-            const main = Main.getInstance();
-            const onclick = main.startNative;
-            const startText = this.innerText;
-            const decoderName = 'Native';
-            main.decoder = decoder;
-            main.start.call(this, {decoder, decoderName, startText, onclick});
+        const url = Main.getAddress();
+        if (!tag || !url) {
+            return;
         }
-
+        tag.style.display = 'block';
+        const decoder = new NativeDecoder(tag);
+        const main = Main.getInstance();
+        const onclick = main.startNative;
+        const startText = this.innerText;
+        const decoderName = 'Native';
+        const connection = DeviceConnection.getInstance(url);
+        connection.addDecoder(decoder);
+        main.start.call(this, {connection, decoder, decoderName, startText, onclick});
     }
 
     public startBroadway(this: HTMLButtonElement): void {
         const tag: HTMLCanvasElement = document.getElementById('canvasTagId') as HTMLCanvasElement;
-        if (tag) {
-            tag.style.display = 'block';
-            const decoder = new BroadwayDecoder(tag, CANVAS_TYPE.WEBGL);
-            const main = Main.getInstance();
-            const onclick = main.startBroadway;
-            const startText = this.innerText;
-            const decoderName = 'Broadway';
-            main.decoder = decoder;
-            main.start.call(this, {decoder, decoderName, startText, onclick});
+        const url = Main.getAddress();
+        if (!tag || !url) {
+            return;
         }
+        tag.style.display = 'block';
+        const decoder = new BroadwayDecoder(tag, CANVAS_TYPE.WEBGL);
+        const main = Main.getInstance();
+        const onclick = main.startBroadway;
+        const startText = this.innerText;
+        const decoderName = 'Broadway';
+        const connection = DeviceConnection.getInstance(url);
+        connection.addDecoder(decoder);
+        main.start.call(this, {connection, decoder, decoderName, startText, onclick});
     }
 
     public start(this: HTMLButtonElement, params: IStartArguments): void {
-        const {decoder, decoderName, startText, onclick} = params;
-        const screen = new DeviceConnection(decoder, wsUrl);
+        const {connection, decoder, decoderName, startText, onclick} = params;
 
         this.innerText = `Stop ${decoderName}`;
 
@@ -85,7 +96,7 @@ class Main implements IErrorListener {
         controlsWrapper.appendChild(textWrap);
         sendButton.onclick = () => {
             if (input.value) {
-                screen.sendEvent(new TextControlEvent(input.value));
+                connection.sendEvent(new TextControlEvent(input.value));
             }
         };
         const cmdWrap = document.createElement('div');
@@ -143,7 +154,7 @@ class Main implements IErrorListener {
                         });
                         buffer = streamInfo.toBuffer();
                     }
-                    screen.sendEvent(new CommandControlEvent(action, buffer));
+                    connection.sendEvent(new CommandControlEvent(action, buffer));
                 };
                 cmdWrap.appendChild(btn);
             }
@@ -154,7 +165,7 @@ class Main implements IErrorListener {
             if (ev && ev instanceof Event && ev.type === 'error') {
                 console.error(ev);
             }
-            screen.stop();
+            connection.removeDecoder(decoder);
             this.innerText = startText;
             this.onclick = onclick;
             const tag = decoder.getElement();
@@ -174,7 +185,7 @@ class Main implements IErrorListener {
 
         this.onclick = stop;
 
-        screen.setErrorListener(new ErrorHandler(stop));
+        connection.setErrorListener(new ErrorHandler(stop));
     }
 }
 

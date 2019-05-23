@@ -9,7 +9,6 @@ import Util from './Util';
 import MotionControlEvent from './controlEvent/MotionControlEvent';
 
 const MESSAGE_TYPE_TEXT = 'text';
-const MESSAGE_TYPE_STREAM_INFO = 'stream_info';
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC = 'scrcpy';
 const DEVICE_INFO_LENGTH = DEVICE_NAME_FIELD_LENGTH + 9 + MAGIC.length;
@@ -29,15 +28,24 @@ export class DeviceConnection {
         mousemove: MotionEvent.ACTION_MOVE,
         mouseup: MotionEvent.ACTION_UP
     };
+    private static instances: Record<string, DeviceConnection> = {};
     public readonly ws: WebSocket;
+    private decoders: Set<Decoder> = new Set<Decoder>();
     private errorListener?: IErrorListener;
     private name: string = '';
 
-    constructor(private decoder: Decoder, readonly url: string) {
+    constructor(readonly url: string) {
         this.url = url;
         this.ws = new WebSocket(url);
         this.ws.binaryType = 'arraybuffer';
         this.init();
+    }
+
+    public static getInstance(url: string): DeviceConnection {
+        if (!this.instances[url]) {
+            this.instances[url] = new DeviceConnection(url);
+        }
+        return this.instances[url];
     }
 
     private static buildMotionEvent(e: MouseEvent, streamInfo: StreamInfo): MotionControlEvent | null {
@@ -78,13 +86,23 @@ export class DeviceConnection {
         return new MotionControlEvent(action, this.BUTTONS_MAP[e.button], position);
     }
 
+    public addDecoder(decoder: Decoder): void {
+        this.decoders.add(decoder);
+    }
+
+    public removeDecoder(decoder: Decoder): void {
+        this.decoders.delete(decoder);
+        if (!this.decoders.size) {
+            this.stop();
+        }
+    }
+
     public stop(): void {
         if (this.haveConnection()) {
             this.ws.close();
         }
-        if (this.decoder) {
-            this.decoder.pause();
-        }
+        this.decoders.forEach(decoder => decoder.pause());
+        delete DeviceConnection.instances[this.url];
     }
 
     public sendEvent(event: ControlEvent): void {
@@ -106,7 +124,6 @@ export class DeviceConnection {
     }
 
     private init(): void {
-        let tag: HTMLElement = this.decoder.getElement();
         const ws = this.ws;
 
         ws.onerror = (e: Event | string) => {
@@ -119,7 +136,6 @@ export class DeviceConnection {
         };
 
         ws.onmessage = (e: MessageEvent) => {
-            const streamInfo = this.decoder.getStreamInfo();
             if (e.data instanceof ArrayBuffer) {
                 const data = new Uint8Array(e.data);
                 if (data.length === DEVICE_INFO_LENGTH) {
@@ -131,12 +147,15 @@ export class DeviceConnection {
                         this.name = Util.utf8ByteArrayToString(nameBytes);
                         const buffer = new Buffer(new Uint8Array(e.data, DEVICE_NAME_FIELD_LENGTH, 9));
                         const newInfo = StreamInfo.fromBuffer(buffer);
-                        this.decoder.setStreamInfo(newInfo);
-                        tag = this.decoder.getElement();
-                        this.decoder.play();
+                        this.decoders.forEach(decoder => {
+                            if (!newInfo.equals(decoder.getStreamInfo())) {
+                                decoder.setStreamInfo(newInfo);
+                                decoder.play();
+                            }
+                        });
                     }
                 } else {
-                    this.decoder.pushFrame(new Uint8Array(e.data));
+                    this.decoders.forEach(decoder => decoder.pushFrame(new Uint8Array(e.data)));
                 }
             } else {
                 let data;
@@ -146,20 +165,10 @@ export class DeviceConnection {
                     console.log(e.data);
                     return;
                 }
-                switch (data.type) {
-                    case MESSAGE_TYPE_STREAM_INFO:
-                        const newInfo = new StreamInfo(data);
-                        if (!streamInfo || !streamInfo.equals(newInfo)) {
-                            this.decoder.setStreamInfo(newInfo);
-                            tag = this.decoder.getElement();
-                            this.decoder.play();
-                        }
-                        break;
-                    case MESSAGE_TYPE_TEXT:
-                        console.log(data.message);
-                        break;
-                    default:
-                        console.log(e.data);
+                if (data.type === MESSAGE_TYPE_TEXT) {
+                    console.log(data.message);
+                } else {
+                    console.log(e.data);
                 }
             }
         };
@@ -167,20 +176,23 @@ export class DeviceConnection {
         let down = 0;
 
         const onMouseEvent = (e: MouseEvent) => {
-            if (e.target === tag && this.haveConnection()) {
-                const streamInfo = this.decoder.getStreamInfo();
-                if (!streamInfo) {
-                    return;
-                }
-                const event = DeviceConnection.buildMotionEvent(e, streamInfo);
-                if (event) {
-                    this.ws.send(event.toBuffer());
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
+            if (this.haveConnection()) {
+                this.decoders.forEach(decoder => {
+                    const tag = decoder.getElement();
+                    if (e.target === tag) {
+                        const streamInfo = decoder.getStreamInfo();
+                        if (!streamInfo) {
+                            return;
+                        }
+                        const event = DeviceConnection.buildMotionEvent(e, streamInfo);
+                        if (event) {
+                            this.ws.send(event.toBuffer());
+                        }
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                });
             }
-            return true;
         };
 
         document.body.onmousedown = function(e: MouseEvent): void {

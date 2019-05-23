@@ -29,8 +29,8 @@ export class StreamInfo {
         });
     }
 
-    public equals(streamInfo: StreamInfo): boolean {
-        if (streamInfo === null) {
+    public equals(streamInfo?: StreamInfo | null): boolean {
+        if (!streamInfo) {
             return false;
         }
         return this.width === streamInfo.width &&
