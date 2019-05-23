@@ -1,30 +1,29 @@
-import {StreamInfo} from "../StreamInfo";
+import { StreamInfo } from '../StreamInfo';
 
 export default abstract class Decoder {
-    protected TAG = "Decoder";
+    protected TAG: string = 'Decoder';
     protected streamInfo?: StreamInfo;
 
     protected constructor(protected tag: HTMLElement) {
     }
 
-    abstract play(): void;
+    public abstract play(): void;
 
-    abstract pause(): void;
+    public abstract pause(): void;
 
-    abstract pushFrame(frame: Uint8Array): void;
+    public abstract pushFrame(frame: Uint8Array): void;
 
     public getElement(): HTMLElement {
         return this.tag;
     }
 
-    getStreamInfo() {
+    public getStreamInfo(): StreamInfo | undefined {
         return this.streamInfo;
     }
 
-    setStreamInfo(streamInfo: StreamInfo) {
+    public setStreamInfo(streamInfo: StreamInfo): void {
         console.log(`${this.TAG}.setStreamInfo(${streamInfo})`);
         this.pause();
         this.streamInfo = streamInfo;
     }
 }
-

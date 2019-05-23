@@ -1,17 +1,20 @@
-import Size from "../Size";
+import Size from '../Size';
+import Canvas from './Canvas';
 
-export default class YUVCanvas {
-    readonly canvasCtx: CanvasRenderingContext2D;
-    readonly canvasBuffer: ImageData;
+export default class YUVCanvas extends Canvas {
+    private canvasCtx: CanvasRenderingContext2D;
+    private canvasBuffer: ImageData;
 
     constructor(readonly canvas: HTMLCanvasElement, readonly size: Size) {
-        this.canvasCtx = <CanvasRenderingContext2D>this.canvas.getContext("2d");
+        super(canvas, size);
+        this.canvasCtx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.canvasBuffer = this.canvasCtx.createImageData(size.w, size.h);
     }
 
-    decode(buffer: Uint8Array, width: number, height: number) {
-        if (!buffer)
+    public decode(buffer: Uint8Array, width: number, height: number): void {
+        if (!buffer) {
             return;
+        }
 
         const lumaSize = width * height;
         const chromaSize = lumaSize >> 2;
@@ -40,6 +43,6 @@ export default class YUVCanvas {
         this.canvasCtx.putImageData(this.canvasBuffer, 0, 0);
 
         // const date = new Date();
-        //console.log("WSAvcPlayer: Decode time: " + (date.getTime() - this.rcvtime) + " ms");
+        // console.log('WSAvcPlayer: Decode time: ' + (date.getTime() - this.rcvtime) + ' ms');
     }
 }

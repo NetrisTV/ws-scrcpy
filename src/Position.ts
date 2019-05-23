@@ -1,5 +1,5 @@
-import Point from "./Point";
-import Size from "./Size";
+import Point from './Point';
+import Size from './Size';
 
 export default class Position {
     public constructor(readonly point: Point, readonly screenSize: Size) {
@@ -11,7 +11,7 @@ export default class Position {
         if (this === o) {
             return true;
         }
-        if (o == null) {
+        if (o === null) {
             return false;
         }
 

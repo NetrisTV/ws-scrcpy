@@ -1,12 +1,12 @@
-import WebGLCanvas from "./WebGLCanvas";
-import Size from "../Size";
-import Program from "./Program";
-import Shader from "./Shader";
-import Script from "./Script";
-import Texture from "./Texture";
+import WebGLCanvas from './WebGLCanvas';
+import Size from '../Size';
+import Program from './Program';
+import Shader from './Shader';
+import Script from './Script';
+import Texture from './Texture';
 
 export default class YUVWebGLCanvas extends WebGLCanvas {
-    protected static vertexShaderScript = Script.createFromSource("x-shader/x-vertex", `
+    protected static vertexShaderScript: Script = Script.createFromSource('x-shader/x-vertex', `
       attribute vec3 aVertexPosition;
       attribute vec2 aTextureCoord;
       uniform mat4 uMVMatrix;
@@ -18,7 +18,7 @@ export default class YUVWebGLCanvas extends WebGLCanvas {
       }
     `);
 
-    protected static fragmentShaderScript = Script.createFromSource("x-shader/x-fragment", `
+    protected static fragmentShaderScript: Script = Script.createFromSource('x-shader/x-fragment', `
       precision highp float;
       varying highp vec2 vTextureCoord;
       uniform sampler2D YTexture;
@@ -31,11 +31,15 @@ export default class YUVWebGLCanvas extends WebGLCanvas {
        1.1643828125, 2.017234375, 0, -1.081390625,
        0, 0, 0, 1
       );
-    
+
       void main(void) {
-       gl_FragColor = vec4( texture2D(YTexture,  vTextureCoord).x, texture2D(UTexture, vTextureCoord).x, texture2D(VTexture, vTextureCoord).x, 1) * YUV2RGB;
-      }
-    `);
+       gl_FragColor = vec4(
+         texture2D(YTexture,  vTextureCoord).x,
+         texture2D(UTexture, vTextureCoord).x,
+         texture2D(VTexture, vTextureCoord).x,
+         1
+       ) * YUV2RGB;
+      }`);
 
     private YTexture?: Texture;
     private UTexture?: Texture;
@@ -45,7 +49,7 @@ export default class YUVWebGLCanvas extends WebGLCanvas {
         super(canvas, size, false);
     }
 
-    onInitShaders() {
+    protected onInitShaders(): void {
         if (!this.gl) {
             return;
         }
@@ -54,35 +58,35 @@ export default class YUVWebGLCanvas extends WebGLCanvas {
         this.program.attach(new Shader(this.gl, YUVWebGLCanvas.fragmentShaderScript));
         this.program.link();
         this.program.use();
-        this.vertexPositionAttribute = this.program.getAttributeLocation("aVertexPosition");
-        this.gl.enableVertexAttribArray(<number>this.vertexPositionAttribute);
-        this.textureCoordAttribute = this.program.getAttributeLocation("aTextureCoord");
-        this.gl.enableVertexAttribArray(<number>this.textureCoordAttribute);
+        this.vertexPositionAttribute = this.program.getAttributeLocation('aVertexPosition');
+        this.gl.enableVertexAttribArray(this.vertexPositionAttribute as number);
+        this.textureCoordAttribute = this.program.getAttributeLocation('aTextureCoord');
+        this.gl.enableVertexAttribArray(this.textureCoordAttribute as number);
     }
 
-    onInitTextures() {
+    protected onInitTextures(): void {
         if (!this.gl) {
             return;
         }
-        console.log("creatingTextures: size: " + this.size);
+        console.log('creatingTextures: size: ' + this.size);
         this.YTexture = new Texture(this.gl, this.size);
         this.UTexture = new Texture(this.gl, this.size.getHalfSize());
         this.VTexture = new Texture(this.gl, this.size.getHalfSize());
     }
 
-    onInitSceneTextures() {
+    protected onInitSceneTextures(): void {
         if (!this.program) {
             return;
         }
         if (!this.YTexture || !this.UTexture || !this.VTexture) {
             return;
         }
-        this.YTexture.bind(0, this.program, "YTexture");
-        this.UTexture.bind(1, this.program, "UTexture");
-        this.VTexture.bind(2, this.program, "VTexture");
+        this.YTexture.bind(0, this.program, 'YTexture');
+        this.UTexture.bind(1, this.program, 'UTexture');
+        this.VTexture.bind(2, this.program, 'VTexture');
     }
 
-    fillYUVTextures(y: Uint8Array, u: Uint8Array, v: Uint8Array) {
+    protected fillYUVTextures(y: Uint8Array, u: Uint8Array, v: Uint8Array): void {
         if (!this.YTexture || !this.UTexture || !this.VTexture) {
             return;
         }
@@ -91,7 +95,7 @@ export default class YUVWebGLCanvas extends WebGLCanvas {
         this.VTexture.fill(v);
     }
 
-    decode(buffer: Uint8Array, width: number, height: number) {
+    public decode(buffer: Uint8Array, width: number, height: number): void {
 
         if (!buffer) {
             return;
@@ -102,14 +106,16 @@ export default class YUVWebGLCanvas extends WebGLCanvas {
 
         const lumaSize = width * height;
         const chromaSize = lumaSize >> 2;
+        this.fillYUVTextures(
+            buffer.subarray(0, lumaSize),
+            buffer.subarray(lumaSize, lumaSize + chromaSize),
+            buffer.subarray(lumaSize + chromaSize, lumaSize + 2 * chromaSize)
+        );
 
-        this.YTexture.fill((<any>buffer).subarray(0, lumaSize));
-        this.UTexture.fill((<any>buffer).subarray(lumaSize, lumaSize + chromaSize));
-        this.VTexture.fill((<any>buffer).subarray(lumaSize + chromaSize, lumaSize + 2 * chromaSize));
         this.drawScene();
     }
 
-    toString() {
-        return "YUVCanvas Size: " + this.size;
+    public toString(): string {
+        return 'YUVCanvas Size: ' + this.size;
     }
 }

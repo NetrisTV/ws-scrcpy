@@ -21,6 +21,8 @@
     "browserify": "^16.2.3",
     "http-server": "^0.11.1",
     "tslib": "^1.9.3",
+    "tslint": "^5.16.0",
+    "tslint-react": "^4.0.0",
     "typescript": "^3.4.5"
   }
 }

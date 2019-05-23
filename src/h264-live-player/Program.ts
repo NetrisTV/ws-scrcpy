@@ -1,53 +1,47 @@
-import Shader from "./Shader";
-import error from "./utils/error";
-import assert from "./utils/assert";
+import Shader from './Shader';
+import assert from './utils/assert';
 
 export default class Program {
-    readonly program: WebGLProgram | null;
+    public readonly program: WebGLProgram | null;
 
     constructor(readonly gl: WebGLRenderingContext) {
         this.program = this.gl.createProgram();
     }
 
-    attach(shader: Shader) {
+    public attach(shader: Shader): void {
         if (!this.program) {
-            error(`Program type is ${typeof this.program}`);
-            return;
+            throw Error(`Program type is ${typeof this.program}`);
         }
         if (!shader.shader) {
-            error(`Shader type is ${typeof shader.shader}`);
-            return;
+            throw Error(`Shader type is ${typeof shader.shader}`);
         }
         this.gl.attachShader(this.program, shader.shader);
     }
 
-    link() {
+    public link(): void {
         if (!this.program) {
-            error(`Program type is ${typeof this.program}`);
-            return;
+            throw Error(`Program type is ${typeof this.program}`);
         }
         this.gl.linkProgram(this.program);
         // If creating the shader program failed, alert.
         assert(this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS),
-            "Unable to initialize the shader program.");
+            'Unable to initialize the shader program.');
     }
 
-    use() {
+    public use(): void {
         this.gl.useProgram(this.program);
     }
 
-    getAttributeLocation(name: string) {
+    public getAttributeLocation(name: string): number {
         if (!this.program) {
-            error(`Program type is ${typeof this.program}`);
-            return;
+            throw Error(`Program type is ${typeof this.program}`);
         }
         return this.gl.getAttribLocation(this.program, name);
     }
 
-    setMatrixUniform(name: string, array: Float32List) {
+    public setMatrixUniform(name: string, array: Float32List): void {
         if (!this.program) {
-            error(`Program type is ${typeof this.program}`);
-            return;
+            throw Error(`Program type is ${typeof this.program}`);
         }
         const uniform = this.gl.getUniformLocation(this.program, name);
         this.gl.uniformMatrix4fv(uniform, false, array);

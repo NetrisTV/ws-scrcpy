@@ -1,17 +1,17 @@
-interface StreamInfoInterface {
-    "width": number
-    "height": number
-    "frameRate": number
-    "bitrate": number
+interface IStreamInfoInterface {
+    width: number;
+    height: number;
+    frameRate: number;
+    bitrate: number;
 }
 
 export class StreamInfo {
-    readonly width: number = 0;
-    readonly height: number = 0;
-    readonly frameRate: number = 0;
-    readonly bitrate: number = 0;
+    public readonly width: number = 0;
+    public readonly height: number = 0;
+    public readonly frameRate: number = 0;
+    public readonly bitrate: number = 0;
 
-    constructor(data?: StreamInfoInterface) {
+    constructor(data?: IStreamInfoInterface) {
         if (data) {
             this.width = data.width;
             this.height = data.height;
@@ -20,7 +20,7 @@ export class StreamInfo {
         }
     }
 
-    static fromBuffer(buffer: Buffer): StreamInfo {
+    public static fromBuffer(buffer: Buffer): StreamInfo {
         return  new StreamInfo({
             width: buffer.readUInt16BE(0),
             height: buffer.readUInt16BE(2),
@@ -48,7 +48,7 @@ export class StreamInfo {
         return buffer;
     }
 
-    toString(): string {
+    public toString(): string {
         return `StreamInfo{width=${
             this.width}, height=${
             this.height}}, frameRate=${

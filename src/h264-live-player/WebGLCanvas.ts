@@ -1,15 +1,16 @@
-import Size from "../Size";
-import Texture from "./Texture";
-import error from "./utils/error";
+import Size from '../Size';
+import Texture from './Texture';
+import error from './utils/error';
 // @ts-ignore
-import {Matrix, Vector} from 'sylvester.js';
-import Program from "./Program";
-import Shader from "./Shader";
-import {makePerspective} from './utils/glUtils'
-import Script from "./Script";
+import { Matrix, Vector } from 'sylvester.js';
+import Program from './Program';
+import Shader from './Shader';
+import { makePerspective } from './utils/glUtils';
+import Script from './Script';
+import Canvas from './Canvas';
 
-export default class WebGLCanvas {
-    protected static vertexShaderScript = Script.createFromSource("x-shader/x-vertex", `
+export default abstract class WebGLCanvas extends Canvas {
+    protected static vertexShaderScript: Script = Script.createFromSource('x-shader/x-vertex', `
       attribute vec3 aVertexPosition;
       attribute vec2 aTextureCoord;
       uniform mat4 uMVMatrix;
@@ -20,7 +21,7 @@ export default class WebGLCanvas {
         vTextureCoord = aTextureCoord;
       }
     `);
-    protected static fragmentShaderScript = Script.createFromSource("x-shader/x-fragment", `
+    protected static fragmentShaderScript: Script = Script.createFromSource('x-shader/x-fragment', `
       precision highp float;
       varying highp vec2 vTextureCoord;
       uniform sampler2D texture;
@@ -30,7 +31,7 @@ export default class WebGLCanvas {
     `);
     public quadVPBuffer?: WebGLBuffer | null;
     public quadVTCBuffer?: WebGLBuffer | null;
-    public mvMatrix: any;
+    public mvMatrix: Matrix;
     public glNames?: Record<string, string>;
     public textureCoordAttribute?: number;
     public vertexPositionAttribute?: number;
@@ -42,6 +43,7 @@ export default class WebGLCanvas {
     protected program?: Program;
 
     constructor(readonly canvas: HTMLCanvasElement, readonly size: Size, useFrameBuffer: boolean) {
+        super(canvas, size);
         this.canvas.width = size.w;
         this.canvas.height = size.h;
 
@@ -49,14 +51,15 @@ export default class WebGLCanvas {
         this.onInitShaders();
         this.initBuffers();
 
-        if (useFrameBuffer)
+        if (useFrameBuffer) {
             this.initFramebuffer();
+        }
 
         this.onInitTextures();
         this.initScene();
     }
 
-    initFramebuffer() {
+    protected initFramebuffer(): void {
         const gl = this.gl;
         if (!gl) {
             error(`gl type is ${typeof gl}`);
@@ -78,7 +81,7 @@ export default class WebGLCanvas {
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
     }
 
-    initBuffers() {
+    protected initBuffers(): void {
         let tmp;
         const gl = this.gl;
 
@@ -101,8 +104,8 @@ export default class WebGLCanvas {
             -1.0, -1.0, 0.0];
 
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tmp), gl.STATIC_DRAW);
-        (<any>this.quadVPBuffer).itemSize = 3;
-        (<any>this.quadVPBuffer).numItems = 4;
+        // (this.quadVPBuffer as any).itemSize = 3;
+        // (this.quadVPBuffer as any).numItems = 4;
 
         /*
          +--------------------+
@@ -126,34 +129,34 @@ export default class WebGLCanvas {
             scaleX, 0.0,
             0.0, 0.0,
             scaleX, scaleY,
-            0.0, scaleY,
+            0.0, scaleY
         ];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tmp), gl.STATIC_DRAW);
     }
 
-    mvIdentity() {
+    protected mvIdentity() : void {
         this.mvMatrix = Matrix.I(4);
     }
 
-    mvMultiply(m: number) {
+    protected mvMultiply(m: number): void {
         this.mvMatrix = this.mvMatrix.x(m);
     }
 
-    mvTranslate(m: Array<number>) {
+    protected mvTranslate(m: number[]): void {
         const $V = Vector.create;
         this.mvMultiply(Matrix.Translation($V([m[0], m[1], m[2]])).ensure4x4());
     }
 
-    setMatrixUniforms() {
+    protected setMatrixUniforms(): void {
         if (!this.program) {
             error(`Program type is ${typeof this.program}`);
             return;
         }
-        this.program.setMatrixUniform("uPMatrix", new Float32Array(this.perspectiveMatrix.flatten()));
-        this.program.setMatrixUniform("uMVMatrix", new Float32Array(this.mvMatrix.flatten()));
+        this.program.setMatrixUniform('uPMatrix', new Float32Array(this.perspectiveMatrix.flatten()));
+        this.program.setMatrixUniform('uMVMatrix', new Float32Array(this.mvMatrix.flatten()));
     }
 
-    initScene() {
+    protected initScene(): void {
         const gl = this.gl;
 
         if (!gl) {
@@ -168,7 +171,7 @@ export default class WebGLCanvas {
 
         this.perspectiveMatrix = makePerspective(45, 1, 0.1, 100.0);
 
-        // Set the drawing position to the "identity" point, which is
+        // Set the drawing position to the 'identity' point, which is
         // the center of the scene.
         this.mvIdentity();
 
@@ -178,54 +181,54 @@ export default class WebGLCanvas {
 
         // Draw the cube by binding the array buffer to the cube's vertices
         // array, setting attributes, and pushing it to GL.
-        gl.bindBuffer(gl.ARRAY_BUFFER, <WebGLBuffer>this.quadVPBuffer);
-        gl.vertexAttribPointer(<number>this.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.quadVPBuffer as WebGLBuffer);
+        gl.vertexAttribPointer(this.vertexPositionAttribute as number, 3, gl.FLOAT, false, 0, 0);
 
         // Set the texture coordinates attribute for the vertices.
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, <WebGLBuffer>this.quadVTCBuffer);
-        gl.vertexAttribPointer(<number>this.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.quadVTCBuffer as WebGLBuffer);
+        gl.vertexAttribPointer(this.textureCoordAttribute as number, 2, gl.FLOAT, false, 0, 0);
 
         this.onInitSceneTextures();
 
         this.setMatrixUniforms();
 
         if (this.framebuffer) {
-            console.log("Bound Frame Buffer");
+            console.log('Bound Frame Buffer');
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
         }
     }
 
-    toString() {
-        return "WebGLCanvas Size: " + this.size;
+    public toString(): string {
+        return 'WebGLCanvas Size: ' + this.size;
     }
 
-    checkLastError(operation: string) {
+    protected checkLastError(operation: string): void {
         if (!this.gl || !this.glNames) {
             return;
         }
         const err = this.gl.getError();
-        if (err != this.gl.NO_ERROR) {
+        if (err !== this.gl.NO_ERROR) {
             let name = this.glNames[err];
-            name = (name !== undefined) ? name + "(" + err + ")" :
-                ("Unknown WebGL ENUM (0x" + err.toString(16) + ")");
+            name = (name !== undefined) ? name + '(' + err + ')' :
+                ('Unknown WebGL ENUM (0x' + err.toString(16) + ')');
             if (operation) {
-                console.log("WebGL Error: %s, %s", operation, name);
+                console.log('WebGL Error: %s, %s', operation, name);
             } else {
-                console.log("WebGL Error: %s", name);
+                console.log('WebGL Error: %s', name);
             }
             console.trace();
         }
     }
 
-    onInitWebGL() {
+    protected onInitWebGL(): void {
         try {
-            this.gl = this.canvas.getContext("experimental-webgl");
+            this.gl = this.canvas.getContext('experimental-webgl');
         } catch (e) {
         }
 
         if (!this.gl) {
-            error("Unable to initialize WebGL. Your browser may not support it.");
+            error('Unable to initialize WebGL. Your browser may not support it.');
             return;
         }
         if (this.glNames) {
@@ -233,13 +236,13 @@ export default class WebGLCanvas {
         }
         this.glNames = {};
         for (let propertyName in this.gl) {
-            if (typeof (<any>this.gl)[propertyName] == 'number') {
-                this.glNames[(<any>this.gl)[propertyName]] = propertyName;
+            if (typeof (this.gl as any)[propertyName] === 'number') {
+                this.glNames[(this.gl as any)[propertyName]] = propertyName;
             }
         }
     }
 
-    onInitShaders() {
+    protected onInitShaders(): void {
         const gl = this.gl;
         if (!gl) {
             error(`gl type is ${typeof gl}`);
@@ -250,13 +253,13 @@ export default class WebGLCanvas {
         this.program.attach(new Shader(gl, WebGLCanvas.fragmentShaderScript));
         this.program.link();
         this.program.use();
-        this.vertexPositionAttribute = this.program.getAttributeLocation("aVertexPosition");
-        gl.enableVertexAttribArray(<number>this.vertexPositionAttribute);
-        this.textureCoordAttribute = this.program.getAttributeLocation("aTextureCoord");
-        gl.enableVertexAttribArray(<number>this.textureCoordAttribute);
+        this.vertexPositionAttribute = this.program.getAttributeLocation('aVertexPosition');
+        gl.enableVertexAttribArray(this.vertexPositionAttribute as number);
+        this.textureCoordAttribute = this.program.getAttributeLocation('aTextureCoord');
+        gl.enableVertexAttribArray(this.textureCoordAttribute as number);
     }
 
-    onInitTextures() {
+    protected onInitTextures(): void {
         const gl = this.gl;
         if (!gl) {
             error(`gl type is ${typeof gl}`);
@@ -265,7 +268,7 @@ export default class WebGLCanvas {
         this.texture = new Texture(gl, this.size, gl.RGBA);
     }
 
-    onInitSceneTextures() {
+    protected onInitSceneTextures(): void {
         if (!this.texture) {
             error(`texture type is ${typeof this.texture}`);
             return;
@@ -274,10 +277,10 @@ export default class WebGLCanvas {
             error(`program type is ${typeof this.texture}`);
             return;
         }
-        this.texture.bind(0, this.program, "texture");
+        this.texture.bind(0, this.program, 'texture');
     }
 
-    drawScene() {
+    protected drawScene(): void {
         const gl = this.gl;
         if (!gl) {
             error(`gl type is ${typeof gl}`);
@@ -286,7 +289,7 @@ export default class WebGLCanvas {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
-    readPixels(buffer: Uint8Array) {
+    protected readPixels(buffer: Uint8Array): void {
         const gl = this.gl;
         if (!gl) {
             error(`gl type is ${typeof gl}`);

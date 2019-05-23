@@ -1,6 +1,6 @@
 export default class Size {
-    readonly w: number;
-    readonly h: number;
+    public readonly w: number;
+    public readonly h: number;
 
     constructor(readonly width: number, readonly height: number) {
         this.w = width;
@@ -15,10 +15,10 @@ export default class Size {
         if (this === o) {
             return true;
         }
-        if (o == null) {
+        if (o === null) {
             return false;
         }
-        return this.width == o.width && this.height == o.height;
+        return this.width === o.width && this.height === o.height;
     }
 
     public getHalfSize(): Size {

@@ -1,20 +1,21 @@
-import {StreamInfo} from "./StreamInfo";
-import {ControlEvent, MotionControlEvent} from "./ControlEvent";
-import MotionEvent from "./MotionEvent";
-import Position from "./Position";
-import Size from "./Size";
-import Point from "./Point";
-import Decoder from "./decoder/Decoder";
-import Util from "./Util";
+import { StreamInfo } from './StreamInfo';
+import ControlEvent from './controlEvent/ControlEvent';
+import MotionEvent from './MotionEvent';
+import Position from './Position';
+import Size from './Size';
+import Point from './Point';
+import Decoder from './decoder/Decoder';
+import Util from './Util';
+import MotionControlEvent from './controlEvent/MotionControlEvent';
 
-const MESSAGE_TYPE_TEXT = "text";
-const MESSAGE_TYPE_STREAM_INFO = "stream_info";
+const MESSAGE_TYPE_TEXT = 'text';
+const MESSAGE_TYPE_STREAM_INFO = 'stream_info';
 const DEVICE_NAME_FIELD_LENGTH = 64;
-const MAGIC = "scrcpy";
+const MAGIC = 'scrcpy';
 const DEVICE_INFO_LENGTH = DEVICE_NAME_FIELD_LENGTH + 9 + MAGIC.length;
 
-export interface ErrorListener {
-    OnError: (this: ErrorListener, ev: Event | string) => any;
+export interface IErrorListener {
+    OnError(this: IErrorListener, ev: Event | string): void;
 }
 
 export class DeviceConnection {
@@ -24,12 +25,12 @@ export class DeviceConnection {
         2: 26  // ?? BUTTON_SECONDARY
     };
     private static EVENT_ACTION_MAP: Record<string, number> = {
-        'mousedown': MotionEvent.ACTION_DOWN,
-        'mousemove': MotionEvent.ACTION_MOVE,
-        'mouseup': MotionEvent.ACTION_UP,
+        mousedown: MotionEvent.ACTION_DOWN,
+        mousemove: MotionEvent.ACTION_MOVE,
+        mouseup: MotionEvent.ACTION_UP
     };
-    readonly ws: WebSocket;
-    private errorListener?: ErrorListener;
+    public readonly ws: WebSocket;
+    private errorListener?: IErrorListener;
     private name: string = '';
 
     constructor(private decoder: Decoder, readonly url: string) {
@@ -46,7 +47,7 @@ export class DeviceConnection {
         }
         const width = streamInfo.width;
         const height = streamInfo.height;
-        const target: HTMLElement = <HTMLElement>e.target;
+        const target: HTMLElement = e.target as HTMLElement;
         let {clientWidth, clientHeight} = target;
         let touchX = (e.clientX - target.offsetLeft);
         let touchY = (e.clientY - target.offsetTop);
@@ -79,7 +80,7 @@ export class DeviceConnection {
 
     public stop(): void {
         if (this.haveConnection()) {
-            this.ws.close()
+            this.ws.close();
         }
         if (this.decoder) {
             this.decoder.pause();
@@ -92,7 +93,7 @@ export class DeviceConnection {
         }
     }
 
-    public setErrorListener(listener: ErrorListener): void {
+    public setErrorListener(listener: IErrorListener): void {
         this.errorListener = listener;
     }
 
@@ -104,7 +105,7 @@ export class DeviceConnection {
         return this.ws && this.ws.readyState === this.ws.OPEN;
     }
 
-    private init() {
+    private init(): void {
         let tag: HTMLElement = this.decoder.getElement();
         const ws = this.ws;
 
@@ -113,7 +114,7 @@ export class DeviceConnection {
                 this.errorListener.OnError.call(this.errorListener, e);
             }
             if (ws.readyState === ws.CLOSED) {
-                console.error("WS closed");
+                console.error('WS closed');
             }
         };
 
@@ -128,8 +129,7 @@ export class DeviceConnection {
                         let nameBytes = new Uint8Array(e.data, 0, DEVICE_NAME_FIELD_LENGTH);
                         nameBytes = Util.filterTrailingZeroes(nameBytes);
                         this.name = Util.utf8ByteArrayToString(nameBytes);
-                        const data = new Uint8Array(e.data, DEVICE_NAME_FIELD_LENGTH, 9);
-                        const buffer = new Buffer(data);
+                        const buffer = new Buffer(new Uint8Array(e.data, DEVICE_NAME_FIELD_LENGTH, 9));
                         const newInfo = StreamInfo.fromBuffer(buffer);
                         this.decoder.setStreamInfo(newInfo);
                         tag = this.decoder.getElement();
@@ -164,7 +164,6 @@ export class DeviceConnection {
             }
         };
 
-
         let down = 0;
 
         const onMouseEvent = (e: MouseEvent) => {
@@ -184,15 +183,15 @@ export class DeviceConnection {
             return true;
         };
 
-        document.body.onmousedown = function (e) {
+        document.body.onmousedown = function(e: MouseEvent): void {
             down++;
             onMouseEvent(e);
         };
-        document.body.onmouseup = function (e) {
+        document.body.onmouseup = function(e: MouseEvent): void {
             down--;
             onMouseEvent(e);
         };
-        document.body.onmousemove = function (e) {
+        document.body.onmousemove = function(e: MouseEvent): void {
             if (down > 0) {
                 onMouseEvent(e);
             }

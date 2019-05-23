@@ -1,11 +1,11 @@
 export default class Util {
 
-    static filterTrailingZeroes(bytes: Uint8Array): Uint8Array {
+    public static filterTrailingZeroes(bytes: Uint8Array): Uint8Array {
         let b = 0;
-        return bytes.reverse().filter(i => { return b || (b = i)}).reverse();
+        return bytes.reverse().filter(i => b || (b = i)).reverse();
     }
 
-    //https://github.com/google/closure-library/blob/51e5a5ac373aefa354a991816ec418d730e29a7e/closure/goog/crypt/crypt.js#L117
+    // https://github.com/google/closure-library/blob/51e5a5ac373aefa354a991816ec418d730e29a7e/closure/goog/crypt/crypt.js#L117
 /*
     Copyright 2008 The Closure Library Authors. All Rights Reserved.
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@ export default class Util {
     See the License for the specific language governing permissions and
     limitations under the License.
  */
-
+    /* tslint:disable */
     static utf8ByteArrayToString(bytes: Uint8Array): string {
         // TODO(user): Use native implementations if/when available
         var out = [], pos = 0, c = 0;
@@ -49,4 +49,5 @@ export default class Util {
         }
         return out.join('');
     };
+    /* tslint:enable */
 }

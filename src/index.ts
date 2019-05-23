@@ -1,31 +1,27 @@
-import {CommandControlEvent, TextControlEvent} from "./ControlEvent";
-import {DeviceConnection, ErrorListener} from "./DeviceConnection";
-import NativeDecoder from "./decoder/NativeDecoder";
-import {BroadwayDecoder, CANVAS_TYPE} from "./decoder/BroadwayDecoder";
-import Decoder from "./decoder/Decoder";
-import {StreamInfo} from "./StreamInfo";
+import { DeviceConnection, IErrorListener } from './DeviceConnection';
+import NativeDecoder from './decoder/NativeDecoder';
+import { BroadwayDecoder, CANVAS_TYPE } from './decoder/BroadwayDecoder';
+import Decoder from './decoder/Decoder';
+import { StreamInfo } from './StreamInfo';
+import ErrorHandler from './ErrorHandler';
+import TextControlEvent from './controlEvent/TextControlEvent';
+import CommandControlEvent from './controlEvent/CommandControlEvent';
 
 const wsUrl = 'ws://172.17.1.68:8886/';
 
-interface StartArguments {
-    decoderName: string,
-    decoder: Decoder,
-    startText: string,
-    onclick: () => void
+interface IStartArguments {
+    decoderName: string;
+    decoder: Decoder;
+    startText: string;
+    onclick(): void;
 }
 
-class ErrorHandler {
-    constructor(readonly OnError: (ev: string | Event) => void) {
-    }
-}
-
-class Main implements ErrorListener {
-    private static inputWrapperId = 'inputWrap';
-    private static controlsWrapperId = 'controlsWrap';
-    private static commandsWrapperId = 'commandsWrap';
+class Main implements IErrorListener {
+    private static inputWrapperId: string = 'inputWrap';
+    private static controlsWrapperId: string = 'controlsWrap';
+    private static commandsWrapperId: string = 'commandsWrap';
     private static instance?: Main;
     public decoder?: Decoder;
-    private screen?: DeviceConnection;
 
     constructor() {
         Main.instance = this;
@@ -35,12 +31,12 @@ class Main implements ErrorListener {
         return Main.instance || new Main();
     }
 
-    public OnError(ev: string | Event) {
+    public OnError(ev: string | Event): void {
         console.error(ev);
     }
 
-    public startNative(this: HTMLButtonElement) {
-        const tag: HTMLVideoElement = <HTMLVideoElement>document.getElementById('videoTagId');
+    public startNative(this: HTMLButtonElement): void {
+        const tag: HTMLVideoElement = document.getElementById('videoTagId') as HTMLVideoElement;
         if (tag) {
             tag.style.display = 'block';
             const decoder = new NativeDecoder(tag);
@@ -54,8 +50,8 @@ class Main implements ErrorListener {
 
     }
 
-    public startBroadway(this: HTMLButtonElement) {
-        const tag: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvasTagId');
+    public startBroadway(this: HTMLButtonElement): void {
+        const tag: HTMLCanvasElement = document.getElementById('canvasTagId') as HTMLCanvasElement;
         if (tag) {
             tag.style.display = 'block';
             const decoder = new BroadwayDecoder(tag, CANVAS_TYPE.WEBGL);
@@ -68,17 +64,15 @@ class Main implements ErrorListener {
         }
     }
 
-    public start(this: HTMLButtonElement, params: StartArguments): void {
+    public start(this: HTMLButtonElement, params: IStartArguments): void {
         const {decoder, decoderName, startText, onclick} = params;
-        const main = Main.getInstance();
         const screen = new DeviceConnection(decoder, wsUrl);
-        main.screen = screen;
 
         this.innerText = `Stop ${decoderName}`;
 
         const controlsWrapper = document.getElementById(Main.controlsWrapperId);
         if (!controlsWrapper) {
-            return
+            return;
         }
         const textWrap = document.createElement('div');
         textWrap.id = Main.inputWrapperId;
@@ -91,53 +85,49 @@ class Main implements ErrorListener {
         controlsWrapper.appendChild(textWrap);
         sendButton.onclick = () => {
             if (input.value) {
-                const screen = Main.getInstance().screen;
-                if (screen) {
-                    screen.sendEvent(new TextControlEvent(input.value));
-                }
+                screen.sendEvent(new TextControlEvent(input.value));
             }
         };
         const cmdWrap = document.createElement('div');
         cmdWrap.id = Main.commandsWrapperId;
         const codes = CommandControlEvent.CommandCodes;
-        for (let command in codes) if (codes.hasOwnProperty(command)) {
-            const action: number = codes[command];
-            const btn = document.createElement('button');
-            let streamInfo: StreamInfo;
-            let bitrateInput: HTMLInputElement;
-            let frameRateInput: HTMLInputElement;
-            if (action === CommandControlEvent.CommandCodes.COMMAND_CHANGE_STREAM_PARAMETERS) {
-                let bitrate = 2000000;
-                let frameRate = 24;
-                if (decoder instanceof NativeDecoder) {
-                    bitrate = 8000000;
-                    frameRate = 60;
+        for (const command in codes) {
+            if (codes.hasOwnProperty(command)) {
+                const action: number = codes[command];
+                const btn = document.createElement('button');
+                let streamInfo: StreamInfo;
+                let bitrateInput: HTMLInputElement;
+                let frameRateInput: HTMLInputElement;
+                if (action === CommandControlEvent.CommandCodes.COMMAND_CHANGE_STREAM_PARAMETERS) {
+                    let bitrate = 2000000;
+                    let frameRate = 24;
+                    if (decoder instanceof NativeDecoder) {
+                        bitrate = 8000000;
+                        frameRate = 60;
+                    }
+                    const bitrateWrap = document.createElement('div');
+                    const bitrateLabel = document.createElement('label');
+                    bitrateLabel.innerText = 'Bitrate:';
+                    bitrateInput = document.createElement('input');
+                    bitrateInput.placeholder = `bitrate (${bitrate})`;
+                    bitrateInput.value = bitrate.toString();
+
+                    const framerateWrap = document.createElement('div');
+                    const framerateLabel = document.createElement('label');
+                    framerateLabel.innerText = 'Framerate:';
+                    frameRateInput = document.createElement('input');
+                    frameRateInput.placeholder = `framerate (${frameRate})`;
+                    frameRateInput.value = frameRate.toString();
+
+                    bitrateWrap.appendChild(bitrateLabel);
+                    bitrateWrap.appendChild(bitrateInput);
+                    cmdWrap.appendChild(bitrateWrap);
+                    framerateWrap.appendChild(framerateLabel);
+                    framerateWrap.appendChild(frameRateInput);
+                    cmdWrap.appendChild(framerateWrap);
                 }
-                const bitrateWrap = document.createElement('div');
-                const bitrateLabel = document.createElement('label');
-                bitrateLabel.innerText = 'Bitrate:';
-                bitrateInput = document.createElement('input');
-                bitrateInput.placeholder = `bitrate (${bitrate})`;
-                bitrateInput.value = bitrate.toString();
-
-                const framerateWrap = document.createElement('div');
-                const framerateLabel = document.createElement('label');
-                framerateLabel.innerText = 'Framerate:';
-                frameRateInput = document.createElement('input');
-                frameRateInput.placeholder = `framerate (${frameRate})`;
-                frameRateInput.value = frameRate.toString();
-
-                bitrateWrap.appendChild(bitrateLabel);
-                bitrateWrap.appendChild(bitrateInput);
-                cmdWrap.appendChild(bitrateWrap);
-                framerateWrap.appendChild(framerateLabel);
-                framerateWrap.appendChild(frameRateInput);
-                cmdWrap.appendChild(framerateWrap);
-            }
-            btn.innerText = command;
-            btn.onclick = () => {
-                const screen = Main.getInstance().screen;
-                if (screen) {
+                btn.innerText = command;
+                btn.onclick = () => {
                     let buffer;
                     if (action === CommandControlEvent.CommandCodes.COMMAND_CHANGE_STREAM_PARAMETERS) {
                         const bitrate = parseInt(bitrateInput.value, 10);
@@ -154,9 +144,9 @@ class Main implements ErrorListener {
                         buffer = streamInfo.toBuffer();
                     }
                     screen.sendEvent(new CommandControlEvent(action, buffer));
-                }
-            };
-            cmdWrap.appendChild(btn);
+                };
+                cmdWrap.appendChild(btn);
+            }
         }
         controlsWrapper.appendChild(cmdWrap);
 
@@ -188,9 +178,13 @@ class Main implements ErrorListener {
     }
 }
 
-window.onload = function () {
-    const btnNative: HTMLButtonElement = <HTMLButtonElement>document.getElementById('startNative');
-    btnNative.onclick = Main.getInstance().startNative.bind(btnNative);
-    const btnBroadway: HTMLButtonElement = <HTMLButtonElement>document.getElementById('startBroadway');
-    btnBroadway.onclick = Main.getInstance().startBroadway.bind(btnBroadway);
+window.onload = function(): void {
+    const btnNative = document.getElementById('startNative');
+    if (btnNative && btnNative instanceof HTMLButtonElement) {
+        btnNative.onclick = Main.getInstance().startNative.bind(btnNative);
+    }
+    const btnBroadway = document.getElementById('startBroadway');
+    if (btnBroadway && btnBroadway instanceof HTMLButtonElement) {
+        btnBroadway.onclick = Main.getInstance().startBroadway.bind(btnBroadway);
+    }
 };

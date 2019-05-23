@@ -1,10 +1,10 @@
-import Size from "../Size";
-import assert from "./utils/assert";
-import Program from "./Program";
+import Size from '../Size';
+import assert from './utils/assert';
+import Program from './Program';
 
 export default class Texture {
-    readonly texture: WebGLTexture | null;
-    readonly textureIDs: Array<number>;
+    public readonly texture: WebGLTexture | null;
+    private textureIDs: number[];
 
     constructor(readonly gl: WebGLRenderingContext, readonly size: Size, readonly format?: GLenum) {
         this.texture = gl.createTexture();
@@ -15,16 +15,16 @@ export default class Texture {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        this.textureIDs = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2]
+        this.textureIDs = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2];
     }
 
-    fill(textureData: Uint8Array, useTexSubImage2D?: boolean) {
+    public fill(textureData: Uint8Array, useTexSubImage2D?: boolean): void {
         if (!this.format) {
             return;
         }
         const gl = this.gl;
-        assert((<any>textureData).length >= this.size.w * this.size.h,
-            "Texture size mismatch, data:" + (<any>textureData).length + ", texture: " + this.size.w * this.size.h);
+        assert(textureData.length >= this.size.w * this.size.h,
+            'Texture size mismatch, data:' + textureData.length + ', texture: ' + this.size.w * this.size.h);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         if (useTexSubImage2D) {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.size.w, this.size.h, this.format, gl.UNSIGNED_BYTE, textureData);
@@ -34,7 +34,7 @@ export default class Texture {
         }
     }
 
-    bind(n: number, program: Program, name: string) {
+    public bind(n: number, program: Program, name: string): void {
         const gl = this.gl;
         if (!program.program) {
             return;

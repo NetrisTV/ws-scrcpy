@@ -8,7 +8,7 @@ export default class Point {
         if (this === o) {
             return true;
         }
-        if (o == null) {
+        if (o === null) {
             return false;
         }
         return this.x === o.x && this.y === o.y;

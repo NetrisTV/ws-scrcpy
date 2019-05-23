@@ -1,23 +1,23 @@
-import Decoder from "./Decoder";
-import VideoConverter from "h264-converter";
+import Decoder from './Decoder';
+import VideoConverter from 'h264-converter';
 
 export default class NativeDecoder extends Decoder {
-    protected TAG = "NativeDecoder";
-    static readonly DEFAULT_FRAME_PER_FRAGMENT = 6;
+    private static DEFAULT_FRAME_PER_FRAGMENT: number = 6;
+    protected TAG: string = 'NativeDecoder';
     private converter?: VideoConverter;
 
     constructor(protected tag: HTMLVideoElement, private fpf: number = NativeDecoder.DEFAULT_FRAME_PER_FRAGMENT) {
         super(tag);
-        tag.onerror = function (e) {
+        tag.onerror = function(e: Event | string): void {
             console.error(e);
         };
-        tag.oncontextmenu = function (e) {
+        tag.oncontextmenu = function(e: MouseEvent): boolean {
             e.preventDefault();
             return false;
         };
     }
 
-    play() {
+    public play(): void {
         if (!this.streamInfo) {
             return;
         }
@@ -30,7 +30,7 @@ export default class NativeDecoder extends Decoder {
         this.converter.play();
     }
 
-    pause() {
+    public pause(): void {
         if (this.converter) {
             this.converter.appendRawData(new Uint8Array([]));
             this.converter.pause();
@@ -38,7 +38,7 @@ export default class NativeDecoder extends Decoder {
         }
     }
 
-    pushFrame(frame: Uint8Array) {
+    public pushFrame(frame: Uint8Array): void {
         if (this.converter) {
             this.converter.appendRawData(frame);
         }
