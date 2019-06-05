@@ -8,6 +8,7 @@ import ErrorHandler from './ErrorHandler';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
 import Size from './Size';
+import { IDevice } from './server/ServerDeviceConnection';
 
 interface IStartArguments {
     stream: VideoSettings;
@@ -241,6 +242,69 @@ class Main implements IErrorListener {
 
         connection.setErrorListener(new ErrorHandler(stop));
     }
+
+    public listen(): void {
+        const ws = new WebSocket(`ws://${location.host}/`);
+        const onclick = function(this: GlobalEventHandlers): void {
+            if (!(this instanceof HTMLButtonElement)) {
+                return;
+            }
+            const addressInput = document.getElementById(Main.addressInputId);
+            if (addressInput && addressInput instanceof HTMLInputElement) {
+                const ip = this.getAttribute('data-ip');
+                if (ip) {
+                    addressInput.value = `ws://${ip}:8886/`;
+                }
+            }
+        };
+        ws.onclose = () => {
+            console.log('Connection closed');
+            setTimeout(() => {
+                this.listen();
+            }, 2000);
+        };
+        ws.onmessage = (e: MessageEvent) => {
+            let data: IDevice[];
+            try {
+                data = JSON.parse(e.data);
+            } catch (error) {
+                console.error(error.message);
+                console.log(e.data);
+                return;
+            }
+            const devices = document.getElementById('devices');
+            if (!devices) {
+                return;
+            }
+            const children = devices.children;
+            /* tslint:disable: prefer-for-of */
+            for (let i = 0; i < children.length; i++) {
+                const element = children[i];
+                const udid = element.getAttribute('data-udid');
+                const list = data.filter(item => item.udid === udid);
+                if (!list.length) {
+                    devices.removeChild(element);
+                }
+            }
+            /* tslint:enable*/
+            data.forEach(item => {
+                let element = document.getElementById(item.udid);
+                if (!element) {
+                    element = document.createElement('button');
+                    element.id = item.udid;
+                    if (children.length) {
+                        devices.insertBefore(element, children[0]);
+                    } else {
+                        devices.appendChild(element);
+                    }
+                    element.innerText = `${item.manufacturer} ${item.model}`;
+                    element.setAttribute('data-udid', item.udid);
+                    element.onclick = onclick;
+                }
+                element.setAttribute('data-ip', item.ip);
+            });
+        };
+    }
 }
 
 window.onload = function(): void {
@@ -256,4 +320,5 @@ window.onload = function(): void {
     if (h264bsd && h264bsd instanceof HTMLButtonElement) {
         h264bsd.onclick = Main.getInstance().startH264bsd.bind(h264bsd);
     }
+    Main.getInstance().listen();
 };
