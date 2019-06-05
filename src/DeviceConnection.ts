@@ -243,7 +243,8 @@ export class DeviceConnection {
                 let data;
                 try {
                     data = JSON.parse(e.data);
-                } catch (e) {
+                } catch (error) {
+                    console.error(error.message);
                     console.log(e.data);
                     return;
                 }
