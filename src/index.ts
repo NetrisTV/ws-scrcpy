@@ -169,8 +169,8 @@ class Main implements IErrorListener {
                         if (isNaN(bitrate) || isNaN(frameRate)) {
                             return;
                         }
-                        const width = document.body.clientWidth & ~7;
-                        const height = document.body.clientHeight & ~7;
+                        const width = document.body.clientWidth & ~15;
+                        const height = document.body.clientHeight & ~15;
                         const bounds: Size = new Size(width, height);
                         event = CommandControlEvent.createSetVideoSettingsCommand(new VideoSettings({
                             bounds,
