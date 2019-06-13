@@ -5,7 +5,7 @@ interface IStreamInfoInterface {
     bitrate: number;
 }
 
-export class StreamInfo {
+export default class StreamInfo {
     public readonly width: number = 0;
     public readonly height: number = 0;
     public readonly frameRate: number = 0;

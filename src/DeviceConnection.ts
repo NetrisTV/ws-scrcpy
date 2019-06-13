@@ -1,4 +1,4 @@
-import { StreamInfo } from './StreamInfo';
+import StreamInfo from './StreamInfo';
 import ControlEvent from './controlEvent/ControlEvent';
 import MotionEvent from './MotionEvent';
 import Position from './Position';
@@ -7,6 +7,7 @@ import Point from './Point';
 import Decoder from './decoder/Decoder';
 import Util from './Util';
 import MotionControlEvent from './controlEvent/MotionControlEvent';
+import CommandControlEvent from './controlEvent/CommandControlEvent';
 
 const MESSAGE_TYPE_TEXT = 'text';
 const DEVICE_NAME_FIELD_LENGTH = 64;
@@ -30,6 +31,7 @@ export class DeviceConnection {
     };
     private static instances: Record<string, DeviceConnection> = {};
     public readonly ws: WebSocket;
+    private events: ControlEvent[] = [];
     private decoders: Set<Decoder> = new Set<Decoder>();
     private errorListener?: IErrorListener;
     private name: string = '';
@@ -87,6 +89,24 @@ export class DeviceConnection {
     }
 
     public addDecoder(decoder: Decoder): void {
+        let min: StreamInfo = decoder.getPreferredStreamSetting();
+        let playing = false;
+        this.decoders.forEach(d => {
+            const state = d.getState();
+            if (state === Decoder.STATE.PLAYING || state === Decoder.STATE.PAUSED) {
+                playing = true;
+            }
+            const info = d.getStreamInfo();
+            if (info && info.width < min.width && info.height < min.height) {
+                min = info;
+            }
+        });
+        if (playing) {
+            // Will trigger encoding restart
+            this.sendEvent(CommandControlEvent.createChangeStreamCommand(min));
+            // Decoder will wait for new streamInfo and then start to play
+            decoder.pause();
+        }
         this.decoders.add(decoder);
     }
 
@@ -103,11 +123,14 @@ export class DeviceConnection {
         }
         this.decoders.forEach(decoder => decoder.pause());
         delete DeviceConnection.instances[this.url];
+        this.events.length = 0;
     }
 
     public sendEvent(event: ControlEvent): void {
         if (this.haveConnection()) {
             this.ws.send(event.toBuffer());
+        } else {
+            this.events.push(event);
         }
     }
 
@@ -135,6 +158,14 @@ export class DeviceConnection {
             }
         };
 
+        ws.onopen = () => {
+            let e = this.events.shift();
+            while (e) {
+                this.sendEvent(e);
+                e = this.events.shift();
+            }
+        };
+
         ws.onmessage = (e: MessageEvent) => {
             if (e.data instanceof ArrayBuffer) {
                 const data = new Uint8Array(e.data);
@@ -147,15 +178,41 @@ export class DeviceConnection {
                         this.name = Util.utf8ByteArrayToString(nameBytes);
                         const buffer = new Buffer(new Uint8Array(e.data, DEVICE_NAME_FIELD_LENGTH, 9));
                         const newInfo = StreamInfo.fromBuffer(buffer);
+                        let min = newInfo;
+                        let playing = false;
                         this.decoders.forEach(decoder => {
-                            if (!newInfo.equals(decoder.getStreamInfo())) {
-                                decoder.setStreamInfo(newInfo);
+                            const STATE = Decoder.STATE;
+                            if (decoder.getState() === STATE.PAUSED) {
                                 decoder.play();
                             }
+                            if (decoder.getState() === STATE.PLAYING) {
+                                playing = true;
+                            }
+                            const oldInfo = decoder.getStreamInfo();
+                            if (!newInfo.equals(oldInfo)) {
+                                decoder.setStreamInfo(newInfo);
+                            }
+                            if (!oldInfo) {
+                                const preferred = decoder.getPreferredStreamSetting();
+                                if (preferred.width < newInfo.width || preferred.height < newInfo.height) {
+                                    min = preferred;
+                                }
+                            }
                         });
+                        if (!min.equals(newInfo) || !playing) {
+                            this.sendEvent(CommandControlEvent.createChangeStreamCommand(min));
+                        }
                     }
                 } else {
-                    this.decoders.forEach(decoder => decoder.pushFrame(new Uint8Array(e.data)));
+                    this.decoders.forEach(decoder => {
+                        const STATE = Decoder.STATE;
+                        if (decoder.getState() === STATE.PAUSED) {
+                            decoder.play();
+                        }
+                        if (decoder.getState() === STATE.PLAYING) {
+                            decoder.pushFrame(new Uint8Array(e.data));
+                        }
+                    });
                 }
             } else {
                 let data;
@@ -186,7 +243,7 @@ export class DeviceConnection {
                         }
                         const event = DeviceConnection.buildMotionEvent(e, streamInfo);
                         if (event) {
-                            this.ws.send(event.toBuffer());
+                            this.sendEvent(event);
                         }
                         e.preventDefault();
                         e.stopPropagation();

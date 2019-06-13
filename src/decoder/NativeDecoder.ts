@@ -1,7 +1,14 @@
 import Decoder from './Decoder';
 import VideoConverter from 'h264-converter';
+import StreamInfo from '../StreamInfo';
 
 export default class NativeDecoder extends Decoder {
+    public static readonly preferredStreamSettings: StreamInfo = new StreamInfo({
+        bitrate: 8000000,
+        frameRate: 60,
+        width: 720,
+        height: 720
+    });
     private static DEFAULT_FRAME_PER_FRAGMENT: number = 6;
     protected TAG: string = 'NativeDecoder';
     private converter?: VideoConverter;
@@ -18,7 +25,8 @@ export default class NativeDecoder extends Decoder {
     }
 
     public play(): void {
-        if (!this.streamInfo) {
+        super.play();
+        if (this.getState() !== Decoder.STATE.PLAYING || !this.streamInfo) {
             return;
         }
         if (!this.converter) {
@@ -31,16 +39,30 @@ export default class NativeDecoder extends Decoder {
     }
 
     public pause(): void {
-        if (this.converter) {
-            this.converter.appendRawData(new Uint8Array([]));
-            this.converter.pause();
-            delete this.converter;
-        }
+        super.pause();
+        this.stopConverter();
+    }
+
+    public stop(): void {
+        super.stop();
+        this.stopConverter();
+    }
+
+    public getPreferredStreamSetting(): StreamInfo {
+        return NativeDecoder.preferredStreamSettings;
     }
 
     public pushFrame(frame: Uint8Array): void {
         if (this.converter) {
             this.converter.appendRawData(frame);
+        }
+    }
+
+    private stopConverter(): void {
+        if (this.converter) {
+            this.converter.appendRawData(new Uint8Array([]));
+            this.converter.pause();
+            delete this.converter;
         }
     }
 }

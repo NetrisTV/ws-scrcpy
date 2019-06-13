@@ -16,4 +16,8 @@ export default class ControlEvent {
     public toBuffer(): Buffer {
         throw Error('Not implemented');
     }
+
+    public toString(): string {
+        return 'ControlEvent';
+    }
 }

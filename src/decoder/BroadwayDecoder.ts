@@ -4,7 +4,7 @@ import YUVCanvas from '../h264-live-player/YUVCanvas';
 import YUVWebGLCanvas from '../h264-live-player/YUVWebGLCanvas';
 // @ts-ignore
 import * as Avc from '../Decoder';
-import { StreamInfo } from '../StreamInfo';
+import StreamInfo from '../StreamInfo';
 import Canvas from '../h264-live-player/Canvas';
 
 export const CANVAS_TYPE: Record<string, string> = {
@@ -14,11 +14,16 @@ export const CANVAS_TYPE: Record<string, string> = {
 };
 
 export class BroadwayDecoder extends Decoder {
+    public static readonly preferredStreamSettings: StreamInfo = new StreamInfo({
+        bitrate: 500000,
+        frameRate: 24,
+        width: 480,
+        height: 480
+    });
     protected TAG: string = 'BroadwayDecoder';
     private avc?: Avc;
     private canvas?: Canvas;
     private framesList: Uint8Array[] = [];
-    private running: boolean = false;
 
     constructor(protected tag: HTMLCanvasElement, private canvastype: string) {
         super(tag);
@@ -44,6 +49,12 @@ export class BroadwayDecoder extends Decoder {
                 this.tag = tag;
             }
         }
+        this.tag.onerror = function(e: Event | string): void {
+            console.error(e);
+        };
+        this.tag.oncontextmenu = function(e: MouseEvent): void {
+            e.preventDefault();
+        };
         this.canvas = new canvasFactory(this.tag, new Size(width, height));
         this.avc = new Avc();
         this.avc.onPictureDecoded = this.canvas.decode.bind(this.canvas);
@@ -52,7 +63,7 @@ export class BroadwayDecoder extends Decoder {
     }
 
     private shiftFrame(): void {
-        if (!this.running) {
+        if (this.getState() !== Decoder.STATE.PLAYING) {
             return;
         }
 
@@ -83,26 +94,30 @@ export class BroadwayDecoder extends Decoder {
         this.avc.decode(data);
     }
 
-    public pause(): void {
-        this.running = false;
-    }
-
     public play(): void {
-        if (!this.streamInfo) {
+        super.play();
+        if (this.getState() !== Decoder.STATE.PLAYING || !this.streamInfo) {
             return;
         }
         if (!this.canvas) {
             this.initCanvas(this.streamInfo.width, this.streamInfo.height);
         }
-        this.running = true;
         requestAnimationFrame(this.shiftFrame.bind(this));
+    }
+
+    public stop(): void {
+        super.stop();
+        this.clearState();
     }
 
     public setStreamInfo(streamInfo: StreamInfo): void {
         super.setStreamInfo(streamInfo);
-        this.pause();
-        this.framesList = [];
+        this.clearState();
         this.initCanvas(streamInfo.width, streamInfo.height);
+    }
+
+    public getPreferredStreamSetting(): StreamInfo {
+        return BroadwayDecoder.preferredStreamSettings;
     }
 
     public pushFrame(frame: Uint8Array): void {
@@ -115,5 +130,9 @@ export class BroadwayDecoder extends Decoder {
             }
         }
         this.framesList.push(frame);
+    }
+
+    private clearState(): void {
+        this.framesList = [];
     }
 }

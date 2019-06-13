@@ -2,12 +2,13 @@ import { DeviceConnection, IErrorListener } from './DeviceConnection';
 import NativeDecoder from './decoder/NativeDecoder';
 import { BroadwayDecoder, CANVAS_TYPE } from './decoder/BroadwayDecoder';
 import Decoder from './decoder/Decoder';
-import { StreamInfo } from './StreamInfo';
+import StreamInfo from './StreamInfo';
 import ErrorHandler from './ErrorHandler';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
 
 interface IStartArguments {
+    stream: StreamInfo;
     connection: DeviceConnection;
     decoderName: string;
     decoder: Decoder;
@@ -55,8 +56,16 @@ class Main implements IErrorListener {
         const startText = this.innerText;
         const decoderName = 'Native';
         const connection = DeviceConnection.getInstance(url);
+        const stream = NativeDecoder.preferredStreamSettings;
         connection.addDecoder(decoder);
-        main.start.call(this, {connection, decoder, decoderName, startText, onclick});
+        main.start.call(this, {
+            connection,
+            decoder,
+            decoderName,
+            onclick,
+            startText,
+            stream
+        });
     }
 
     public startBroadway(this: HTMLButtonElement): void {
@@ -72,12 +81,20 @@ class Main implements IErrorListener {
         const startText = this.innerText;
         const decoderName = 'Broadway';
         const connection = DeviceConnection.getInstance(url);
+        const stream = BroadwayDecoder.preferredStreamSettings;
         connection.addDecoder(decoder);
-        main.start.call(this, {connection, decoder, decoderName, startText, onclick});
+        main.start.call(this, {
+            connection,
+            decoder,
+            decoderName,
+            onclick,
+            startText,
+            stream
+        });
     }
 
     public start(this: HTMLButtonElement, params: IStartArguments): void {
-        const {connection, decoder, decoderName, startText, onclick} = params;
+        const {connection, decoder, decoderName, onclick, startText, stream} = params;
 
         this.innerText = `Stop ${decoderName}`;
 
@@ -106,29 +123,22 @@ class Main implements IErrorListener {
             if (codes.hasOwnProperty(command)) {
                 const action: number = codes[command];
                 const btn = document.createElement('button');
-                let streamInfo: StreamInfo;
                 let bitrateInput: HTMLInputElement;
                 let frameRateInput: HTMLInputElement;
                 if (action === CommandControlEvent.CommandCodes.COMMAND_CHANGE_STREAM_PARAMETERS) {
-                    let bitrate = 2000000;
-                    let frameRate = 24;
-                    if (decoder instanceof NativeDecoder) {
-                        bitrate = 8000000;
-                        frameRate = 60;
-                    }
                     const bitrateWrap = document.createElement('div');
                     const bitrateLabel = document.createElement('label');
                     bitrateLabel.innerText = 'Bitrate:';
                     bitrateInput = document.createElement('input');
-                    bitrateInput.placeholder = `bitrate (${bitrate})`;
-                    bitrateInput.value = bitrate.toString();
+                    bitrateInput.placeholder = `bitrate (${stream.bitrate})`;
+                    bitrateInput.value = stream.bitrate.toString();
 
                     const framerateWrap = document.createElement('div');
                     const framerateLabel = document.createElement('label');
                     framerateLabel.innerText = 'Framerate:';
                     frameRateInput = document.createElement('input');
-                    frameRateInput.placeholder = `framerate (${frameRate})`;
-                    frameRateInput.value = frameRate.toString();
+                    frameRateInput.placeholder = `framerate (${stream.frameRate})`;
+                    frameRateInput.value = stream.frameRate.toString();
 
                     bitrateWrap.appendChild(bitrateLabel);
                     bitrateWrap.appendChild(bitrateInput);
@@ -139,22 +149,23 @@ class Main implements IErrorListener {
                 }
                 btn.innerText = command;
                 btn.onclick = () => {
-                    let buffer;
+                    let event: CommandControlEvent;
                     if (action === CommandControlEvent.CommandCodes.COMMAND_CHANGE_STREAM_PARAMETERS) {
                         const bitrate = parseInt(bitrateInput.value, 10);
                         const frameRate = parseInt(frameRateInput.value, 10);
                         if (isNaN(bitrate) || isNaN(frameRate)) {
                             return;
                         }
-                        streamInfo = new StreamInfo({
+                        event = CommandControlEvent.createChangeStreamCommand(new StreamInfo({
                             width: (document.body.clientWidth / 8 | 0) * 8,
                             height: (document.body.clientHeight / 8 | 0) * 8,
                             bitrate,
                             frameRate
-                        });
-                        buffer = streamInfo.toBuffer();
+                        }));
+                    } else {
+                        event = new CommandControlEvent(action);
                     }
-                    connection.sendEvent(new CommandControlEvent(action, buffer));
+                    connection.sendEvent(event);
                 };
                 cmdWrap.appendChild(btn);
             }
