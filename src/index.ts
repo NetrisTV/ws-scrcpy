@@ -2,13 +2,14 @@ import { DeviceConnection, IErrorListener } from './DeviceConnection';
 import NativeDecoder from './decoder/NativeDecoder';
 import { BroadwayDecoder, CANVAS_TYPE } from './decoder/BroadwayDecoder';
 import Decoder from './decoder/Decoder';
-import StreamInfo from './StreamInfo';
+import VideoSettings from './VideoSettings';
 import ErrorHandler from './ErrorHandler';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
+import Size from './Size';
 
 interface IStartArguments {
-    stream: StreamInfo;
+    stream: VideoSettings;
     connection: DeviceConnection;
     decoderName: string;
     decoder: Decoder;
@@ -56,7 +57,7 @@ class Main implements IErrorListener {
         const startText = this.innerText;
         const decoderName = 'Native';
         const connection = DeviceConnection.getInstance(url);
-        const stream = NativeDecoder.preferredStreamSettings;
+        const stream = NativeDecoder.preferredVideoSettings;
         connection.addDecoder(decoder);
         main.start.call(this, {
             connection,
@@ -81,7 +82,7 @@ class Main implements IErrorListener {
         const startText = this.innerText;
         const decoderName = 'Broadway';
         const connection = DeviceConnection.getInstance(url);
-        const stream = BroadwayDecoder.preferredStreamSettings;
+        const stream = BroadwayDecoder.preferredVideoSettings;
         connection.addDecoder(decoder);
         main.start.call(this, {
             connection,
@@ -125,13 +126,16 @@ class Main implements IErrorListener {
                 const btn = document.createElement('button');
                 let bitrateInput: HTMLInputElement;
                 let frameRateInput: HTMLInputElement;
-                if (action === CommandControlEvent.CommandCodes.COMMAND_CHANGE_STREAM_PARAMETERS) {
+                let iFrameIntervalInput: HTMLInputElement;
+                if (action === CommandControlEvent.CommandCodes.COMMAND_SET_VIDEO_SETTINGS) {
                     const bitrateWrap = document.createElement('div');
                     const bitrateLabel = document.createElement('label');
                     bitrateLabel.innerText = 'Bitrate:';
                     bitrateInput = document.createElement('input');
                     bitrateInput.placeholder = `bitrate (${stream.bitrate})`;
                     bitrateInput.value = stream.bitrate.toString();
+                    bitrateWrap.appendChild(bitrateLabel);
+                    bitrateWrap.appendChild(bitrateInput);
 
                     const framerateWrap = document.createElement('div');
                     const framerateLabel = document.createElement('label');
@@ -139,28 +143,41 @@ class Main implements IErrorListener {
                     frameRateInput = document.createElement('input');
                     frameRateInput.placeholder = `framerate (${stream.frameRate})`;
                     frameRateInput.value = stream.frameRate.toString();
-
-                    bitrateWrap.appendChild(bitrateLabel);
-                    bitrateWrap.appendChild(bitrateInput);
-                    cmdWrap.appendChild(bitrateWrap);
                     framerateWrap.appendChild(framerateLabel);
                     framerateWrap.appendChild(frameRateInput);
+
+                    const iFrameIntervalWrap = document.createElement('div');
+                    const iFrameIntervalLabel = document.createElement('label');
+                    iFrameIntervalLabel.innerText = 'I-Frame Interval:';
+                    iFrameIntervalInput = document.createElement('input');
+                    iFrameIntervalInput.placeholder = `I-frame interval (${stream.iFrameInterval})`;
+                    iFrameIntervalInput.value = stream.iFrameInterval.toString();
+                    iFrameIntervalWrap.appendChild(iFrameIntervalLabel);
+                    iFrameIntervalWrap.appendChild(iFrameIntervalInput);
+
+                    cmdWrap.appendChild(bitrateWrap);
                     cmdWrap.appendChild(framerateWrap);
+                    cmdWrap.appendChild(iFrameIntervalWrap);
                 }
                 btn.innerText = command;
                 btn.onclick = () => {
                     let event: CommandControlEvent;
-                    if (action === CommandControlEvent.CommandCodes.COMMAND_CHANGE_STREAM_PARAMETERS) {
+                    if (action === CommandControlEvent.CommandCodes.COMMAND_SET_VIDEO_SETTINGS) {
                         const bitrate = parseInt(bitrateInput.value, 10);
                         const frameRate = parseInt(frameRateInput.value, 10);
+                        const iFrameInterval = parseInt(iFrameIntervalInput.value, 10);
                         if (isNaN(bitrate) || isNaN(frameRate)) {
                             return;
                         }
-                        event = CommandControlEvent.createChangeStreamCommand(new StreamInfo({
-                            width: (document.body.clientWidth / 8 | 0) * 8,
-                            height: (document.body.clientHeight / 8 | 0) * 8,
+                        const width = document.body.clientWidth & ~7;
+                        const height = document.body.clientHeight & ~7;
+                        const bounds: Size = new Size(width, height);
+                        event = CommandControlEvent.createSetVideoSettingsCommand(new VideoSettings({
+                            bounds,
                             bitrate,
-                            frameRate
+                            frameRate,
+                            iFrameInterval,
+                            sendFrameMeta: false
                         }));
                     } else {
                         event = new CommandControlEvent(action);

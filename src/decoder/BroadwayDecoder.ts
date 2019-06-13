@@ -4,8 +4,9 @@ import YUVCanvas from '../h264-live-player/YUVCanvas';
 import YUVWebGLCanvas from '../h264-live-player/YUVWebGLCanvas';
 // @ts-ignore
 import * as Avc from '../Decoder';
-import StreamInfo from '../StreamInfo';
+import VideoSettings from '../VideoSettings';
 import Canvas from '../h264-live-player/Canvas';
+import ScreenInfo from '../ScreenInfo';
 
 export const CANVAS_TYPE: Record<string, string> = {
     WEBGL: 'webgl',
@@ -14,11 +15,12 @@ export const CANVAS_TYPE: Record<string, string> = {
 };
 
 export class BroadwayDecoder extends Decoder {
-    public static readonly preferredStreamSettings: StreamInfo = new StreamInfo({
+    public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         bitrate: 500000,
         frameRate: 24,
-        width: 480,
-        height: 480
+        iFrameInterval: 5,
+        bounds: new Size(480, 480),
+        sendFrameMeta: false
     });
     protected TAG: string = 'BroadwayDecoder';
     private avc?: Avc;
@@ -96,11 +98,12 @@ export class BroadwayDecoder extends Decoder {
 
     public play(): void {
         super.play();
-        if (this.getState() !== Decoder.STATE.PLAYING || !this.streamInfo) {
+        if (this.getState() !== Decoder.STATE.PLAYING || !this.screenInfo) {
             return;
         }
         if (!this.canvas) {
-            this.initCanvas(this.streamInfo.width, this.streamInfo.height);
+            const {width, height} = this.screenInfo.videoSize;
+            this.initCanvas(width, height);
         }
         requestAnimationFrame(this.shiftFrame.bind(this));
     }
@@ -110,20 +113,23 @@ export class BroadwayDecoder extends Decoder {
         this.clearState();
     }
 
-    public setStreamInfo(streamInfo: StreamInfo): void {
-        super.setStreamInfo(streamInfo);
+    public setScreenInfo(screenInfo: ScreenInfo): void {
+        super.setScreenInfo(screenInfo);
         this.clearState();
-        this.initCanvas(streamInfo.width, streamInfo.height);
+        const {width, height} = screenInfo.videoSize;
+        this.initCanvas(width, height);
     }
 
-    public getPreferredStreamSetting(): StreamInfo {
-        return BroadwayDecoder.preferredStreamSettings;
+    public getPreferredVideoSetting(): VideoSettings {
+        return BroadwayDecoder.preferredVideoSettings;
     }
 
     public pushFrame(frame: Uint8Array): void {
         if (BroadwayDecoder.isIFrame(frame)) {
-            if (this.streamInfo) {
-                if (this.framesList.length > this.streamInfo.frameRate / 2) {
+            console.log(this.TAG, 'IFrame');
+            if (this.videoSettings) {
+                const {frameRate} = this.videoSettings;
+                if (this.framesList.length > frameRate / 2) {
                     console.log('Dropping frames', this.framesList.length);
                     this.framesList = [];
                 }

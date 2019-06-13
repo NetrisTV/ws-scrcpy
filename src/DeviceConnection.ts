@@ -1,4 +1,4 @@
-import StreamInfo from './StreamInfo';
+import VideoSettings from './VideoSettings';
 import ControlEvent from './controlEvent/ControlEvent';
 import MotionEvent from './MotionEvent';
 import Position from './Position';
@@ -8,11 +8,13 @@ import Decoder from './decoder/Decoder';
 import Util from './Util';
 import MotionControlEvent from './controlEvent/MotionControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
+import ScreenInfo from './ScreenInfo';
 
 const MESSAGE_TYPE_TEXT = 'text';
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC = 'scrcpy';
-const DEVICE_INFO_LENGTH = DEVICE_NAME_FIELD_LENGTH + 9 + MAGIC.length;
+const DEVICE_INFO_LENGTH = MAGIC.length + DEVICE_NAME_FIELD_LENGTH +
+    ScreenInfo.BUFFER_LENGTH + VideoSettings.BUFFER_LENGTH;
 
 export interface IErrorListener {
     OnError(this: IErrorListener, ev: Event | string): void;
@@ -35,6 +37,8 @@ export class DeviceConnection {
     private decoders: Set<Decoder> = new Set<Decoder>();
     private errorListener?: IErrorListener;
     private name: string = '';
+    // private videoSettings?: VideoSettings;
+    // private screenInfo?: ScreenInfo;
 
     constructor(readonly url: string) {
         this.url = url;
@@ -50,13 +54,12 @@ export class DeviceConnection {
         return this.instances[url];
     }
 
-    private static buildMotionEvent(e: MouseEvent, streamInfo: StreamInfo): MotionControlEvent | null {
+    private static buildMotionEvent(e: MouseEvent, screenInfo: ScreenInfo): MotionControlEvent | null {
         const action = this.EVENT_ACTION_MAP[e.type];
-        if (typeof action === 'undefined' || !streamInfo) {
+        if (typeof action === 'undefined' || !screenInfo) {
             return null;
         }
-        const width = streamInfo.width;
-        const height = streamInfo.height;
+        const {width, height} = screenInfo.videoSize;
         const target: HTMLElement = e.target as HTMLElement;
         let {clientWidth, clientHeight} = target;
         let touchX = (e.clientX - target.offsetLeft);
@@ -89,22 +92,33 @@ export class DeviceConnection {
     }
 
     public addDecoder(decoder: Decoder): void {
-        let min: StreamInfo = decoder.getPreferredStreamSetting();
+        let min: VideoSettings = decoder.getPreferredVideoSetting();
+        const bounds: Size = min.bounds as Size;
         let playing = false;
         this.decoders.forEach(d => {
             const state = d.getState();
             if (state === Decoder.STATE.PLAYING || state === Decoder.STATE.PAUSED) {
                 playing = true;
             }
-            const info = d.getStreamInfo();
-            if (info && info.width < min.width && info.height < min.height) {
-                min = info;
+            const info = d.getScreenInfo() as ScreenInfo;
+            const videoSize = info.videoSize;
+            const {crop, bitrate, frameRate, iFrameInterval, sendFrameMeta} =
+                d.getVideoSettings() as VideoSettings;
+            if (videoSize.width < bounds.width && videoSize.height < bounds.height) {
+                min = new VideoSettings({
+                    bounds: videoSize,
+                    crop,
+                    bitrate,
+                    frameRate,
+                    iFrameInterval,
+                    sendFrameMeta
+                });
             }
         });
         if (playing) {
             // Will trigger encoding restart
-            this.sendEvent(CommandControlEvent.createChangeStreamCommand(min));
-            // Decoder will wait for new streamInfo and then start to play
+            this.sendEvent(CommandControlEvent.createSetVideoSettingsCommand(min));
+            // Decoder will wait for new screenInfo and then start to play
             decoder.pause();
         }
         this.decoders.add(decoder);
@@ -170,15 +184,20 @@ export class DeviceConnection {
             if (e.data instanceof ArrayBuffer) {
                 const data = new Uint8Array(e.data);
                 if (data.length === DEVICE_INFO_LENGTH) {
-                    const magicBytes = new Uint8Array(e.data, DEVICE_NAME_FIELD_LENGTH + 9, MAGIC.length);
+                    const magicBytes = new Uint8Array(e.data, 0, MAGIC.length);
                     const text = Util.utf8ByteArrayToString(magicBytes);
                     if (text === MAGIC) {
-                        let nameBytes = new Uint8Array(e.data, 0, DEVICE_NAME_FIELD_LENGTH);
+                        let nameBytes = new Uint8Array(e.data, MAGIC.length, DEVICE_NAME_FIELD_LENGTH);
                         nameBytes = Util.filterTrailingZeroes(nameBytes);
                         this.name = Util.utf8ByteArrayToString(nameBytes);
-                        const buffer = new Buffer(new Uint8Array(e.data, DEVICE_NAME_FIELD_LENGTH, 9));
-                        const newInfo = StreamInfo.fromBuffer(buffer);
-                        let min = newInfo;
+                        let processedLength = MAGIC.length + DEVICE_NAME_FIELD_LENGTH;
+                        let temp = new Buffer(new Uint8Array(e.data, processedLength, ScreenInfo.BUFFER_LENGTH));
+                        processedLength += ScreenInfo.BUFFER_LENGTH;
+                        const screenInfo: ScreenInfo = ScreenInfo.fromBuffer(temp);
+                        temp = new Buffer(new Uint8Array(e.data, processedLength, VideoSettings.BUFFER_LENGTH));
+                        const videoSettings: VideoSettings = VideoSettings.fromBuffer(temp);
+
+                        let min: VideoSettings = VideoSettings.copy(videoSettings) as VideoSettings;
                         let playing = false;
                         this.decoders.forEach(decoder => {
                             const STATE = Decoder.STATE;
@@ -188,19 +207,25 @@ export class DeviceConnection {
                             if (decoder.getState() === STATE.PLAYING) {
                                 playing = true;
                             }
-                            const oldInfo = decoder.getStreamInfo();
-                            if (!newInfo.equals(oldInfo)) {
-                                decoder.setStreamInfo(newInfo);
+                            const oldInfo = decoder.getScreenInfo();
+                            if (!screenInfo.equals(oldInfo)) {
+                                decoder.setScreenInfo(screenInfo);
+                            }
+                            const oldSettings = decoder.getVideoSettings();
+                            if (!videoSettings.equals(oldSettings)) {
+                                decoder.setVideoSettings(videoSettings);
                             }
                             if (!oldInfo) {
-                                const preferred = decoder.getPreferredStreamSetting();
-                                if (preferred.width < newInfo.width || preferred.height < newInfo.height) {
+                                const preferred = decoder.getPreferredVideoSetting();
+                                const bounds: Size = preferred.bounds as Size;
+                                const videoSize: Size = screenInfo.videoSize;
+                                if (bounds.width < videoSize.width || bounds.height < videoSize.height) {
                                     min = preferred;
                                 }
                             }
                         });
-                        if (!min.equals(newInfo) || !playing) {
-                            this.sendEvent(CommandControlEvent.createChangeStreamCommand(min));
+                        if (!min.equals(videoSettings) || !playing) {
+                            this.sendEvent(CommandControlEvent.createSetVideoSettingsCommand(min));
                         }
                     }
                 } else {
@@ -237,11 +262,11 @@ export class DeviceConnection {
                 this.decoders.forEach(decoder => {
                     const tag = decoder.getElement();
                     if (e.target === tag) {
-                        const streamInfo = decoder.getStreamInfo();
-                        if (!streamInfo) {
+                        const screenInfo: ScreenInfo = decoder.getScreenInfo() as ScreenInfo;
+                        if (!screenInfo) {
                             return;
                         }
-                        const event = DeviceConnection.buildMotionEvent(e, streamInfo);
+                        const event = DeviceConnection.buildMotionEvent(e, screenInfo);
                         if (event) {
                             this.sendEvent(event);
                         }

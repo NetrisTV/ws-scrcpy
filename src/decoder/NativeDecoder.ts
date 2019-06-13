@@ -1,13 +1,15 @@
 import Decoder from './Decoder';
 import VideoConverter from 'h264-converter';
-import StreamInfo from '../StreamInfo';
+import VideoSettings from '../VideoSettings';
+import Size from '../Size';
 
 export default class NativeDecoder extends Decoder {
-    public static readonly preferredStreamSettings: StreamInfo = new StreamInfo({
+    public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         bitrate: 8000000,
         frameRate: 60,
-        width: 720,
-        height: 720
+        iFrameInterval: 10,
+        bounds: new Size(720, 720),
+        sendFrameMeta: false
     });
     private static DEFAULT_FRAME_PER_FRAGMENT: number = 6;
     protected TAG: string = 'NativeDecoder';
@@ -26,11 +28,15 @@ export default class NativeDecoder extends Decoder {
 
     public play(): void {
         super.play();
-        if (this.getState() !== Decoder.STATE.PLAYING || !this.streamInfo) {
+        if (this.getState() !== Decoder.STATE.PLAYING || !this.screenInfo) {
             return;
         }
         if (!this.converter) {
-            const fps = 60 /*this.streamInfo.frameRate*/;
+            const fps = 60;
+            // for some reason stream work only with fps === 60
+            // if (this.videoSettings) {
+            //     fps = this.videoSettings.frameRate;
+            // }
             const fpf = this.fpf;
             console.log(`Create new VideoConverter(fps=${fps}, fpf=${fpf})`);
             this.converter = new VideoConverter(this.tag, fps, fpf);
@@ -48,8 +54,15 @@ export default class NativeDecoder extends Decoder {
         this.stopConverter();
     }
 
-    public getPreferredStreamSetting(): StreamInfo {
-        return NativeDecoder.preferredStreamSettings;
+    public setVideoSettings(videoSettings: VideoSettings): void {
+        if (this.videoSettings && this.videoSettings.frameRate !== videoSettings.frameRate) {
+            // if it was actual frameRate we will need to create new VideoConverter
+        }
+        this.videoSettings = videoSettings;
+    }
+
+    public getPreferredVideoSetting(): VideoSettings {
+        return NativeDecoder.preferredVideoSettings;
     }
 
     public pushFrame(frame: Uint8Array): void {
