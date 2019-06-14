@@ -22,6 +22,14 @@ export class BroadwayDecoder extends Decoder {
         bounds: new Size(480, 480),
         sendFrameMeta: false
     });
+    public static createElement(id?: string): HTMLCanvasElement {
+        const tag = document.createElement('canvas') as HTMLCanvasElement;
+        if (id) {
+            tag.id = id;
+        }
+        tag.className = 'video';
+        return tag;
+    }
     protected TAG: string = 'BroadwayDecoder';
     private avc?: Avc;
     private canvas?: Canvas;

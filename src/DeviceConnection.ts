@@ -31,6 +31,7 @@ export class DeviceConnection {
         mousemove: MotionEvent.ACTION_MOVE,
         mouseup: MotionEvent.ACTION_UP
     };
+    private static hasListeners: boolean = false;
     private static instances: Record<string, DeviceConnection> = {};
     public readonly ws: WebSocket;
     private events: ControlEvent[] = [];
@@ -52,6 +53,49 @@ export class DeviceConnection {
             this.instances[url] = new DeviceConnection(url);
         }
         return this.instances[url];
+    }
+
+    private static setListeners(): void {
+        if (!this.hasListeners) {
+            let down = 0;
+
+            const onMouseEvent = (e: MouseEvent) => {
+                Object.values(this.instances).forEach((connection: DeviceConnection) => {
+                    if (connection.haveConnection()) {
+                        connection.decoders.forEach(decoder => {
+                            const tag = decoder.getElement();
+                            if (e.target === tag) {
+                                const screenInfo: ScreenInfo = decoder.getScreenInfo() as ScreenInfo;
+                                if (!screenInfo) {
+                                    return;
+                                }
+                                const event = DeviceConnection.buildMotionEvent(e, screenInfo);
+                                if (event) {
+                                    connection.sendEvent(event);
+                                }
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }
+                        });
+                    }
+                });
+            };
+
+            document.body.onmousedown = function(e: MouseEvent): void {
+                down++;
+                onMouseEvent(e);
+            };
+            document.body.onmouseup = function(e: MouseEvent): void {
+                down--;
+                onMouseEvent(e);
+            };
+            document.body.onmousemove = function(e: MouseEvent): void {
+                if (down > 0) {
+                    onMouseEvent(e);
+                }
+            };
+            this.hasListeners = true;
+        }
     }
 
     private static buildMotionEvent(e: MouseEvent, screenInfo: ScreenInfo): MotionControlEvent | null {
@@ -122,6 +166,7 @@ export class DeviceConnection {
             decoder.pause();
         }
         this.decoders.add(decoder);
+        DeviceConnection.setListeners();
     }
 
     public removeDecoder(decoder: Decoder): void {
@@ -191,9 +236,11 @@ export class DeviceConnection {
                         nameBytes = Util.filterTrailingZeroes(nameBytes);
                         this.name = Util.utf8ByteArrayToString(nameBytes);
                         let processedLength = MAGIC.length + DEVICE_NAME_FIELD_LENGTH;
+
                         let temp = new Buffer(new Uint8Array(e.data, processedLength, ScreenInfo.BUFFER_LENGTH));
                         processedLength += ScreenInfo.BUFFER_LENGTH;
                         const screenInfo: ScreenInfo = ScreenInfo.fromBuffer(temp);
+
                         temp = new Buffer(new Uint8Array(e.data, processedLength, VideoSettings.BUFFER_LENGTH));
                         const videoSettings: VideoSettings = VideoSettings.fromBuffer(temp);
 
@@ -253,42 +300,6 @@ export class DeviceConnection {
                 } else {
                     console.log(e.data);
                 }
-            }
-        };
-
-        let down = 0;
-
-        const onMouseEvent = (e: MouseEvent) => {
-            if (this.haveConnection()) {
-                this.decoders.forEach(decoder => {
-                    const tag = decoder.getElement();
-                    if (e.target === tag) {
-                        const screenInfo: ScreenInfo = decoder.getScreenInfo() as ScreenInfo;
-                        if (!screenInfo) {
-                            return;
-                        }
-                        const event = DeviceConnection.buildMotionEvent(e, screenInfo);
-                        if (event) {
-                            this.sendEvent(event);
-                        }
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-                });
-            }
-        };
-
-        document.body.onmousedown = function(e: MouseEvent): void {
-            down++;
-            onMouseEvent(e);
-        };
-        document.body.onmouseup = function(e: MouseEvent): void {
-            down--;
-            onMouseEvent(e);
-        };
-        document.body.onmousemove = function(e: MouseEvent): void {
-            if (down > 0) {
-                onMouseEvent(e);
             }
         };
     }

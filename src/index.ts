@@ -15,8 +15,12 @@ interface IStartArguments {
     connection: DeviceConnection;
     decoderName: string;
     decoder: Decoder;
-    startText: string;
-    onclick(): void;
+    deviceName: string;
+}
+
+interface IArguments {
+    url: string;
+    name: string;
 }
 
 class Main implements IErrorListener {
@@ -24,6 +28,7 @@ class Main implements IErrorListener {
     private static controlsWrapperId: string = 'controlsWrap';
     private static commandsWrapperId: string = 'commandsWrap';
     private static addressInputId: string = 'deviceAddress';
+    private static nameInputId: string = 'deviceName';
     private static instance?: Main;
 
     constructor() {
@@ -38,98 +43,78 @@ class Main implements IErrorListener {
         console.error(ev);
     }
 
-    private static getAddress(): string | null {
-        const addressInput = document.getElementById(Main.addressInputId);
-        if (addressInput && addressInput instanceof HTMLInputElement) {
-            return addressInput.value || null;
-        }
-        return null;
-    }
-
-    public startNative(this: HTMLButtonElement): void {
-        const tag: HTMLVideoElement = document.getElementById('videoTagId') as HTMLVideoElement;
-        const url = Main.getAddress();
-        if (!tag || !url) {
-            return;
-        }
+    public static startNative(params: IArguments): void {
+        const {url, name} = params;
+        const tag = NativeDecoder.createElement();
+        document.body.append(tag);
         tag.style.display = 'block';
         const decoder = new NativeDecoder(tag);
         const main = Main.getInstance();
-        const onclick = main.startNative;
-        const startText = this.innerText;
         const decoderName = 'Native';
+        const deviceName = name;
         const connection = DeviceConnection.getInstance(url);
         const stream = NativeDecoder.preferredVideoSettings;
         connection.addDecoder(decoder);
-        main.start.call(this, {
+        main.start({
             connection,
             decoder,
             decoderName,
-            onclick,
-            startText,
+            deviceName,
             stream
         });
     }
 
-    public startBroadway(this: HTMLButtonElement): void {
-        const tag: HTMLCanvasElement = document.getElementById('canvasTagId') as HTMLCanvasElement;
-        const url = Main.getAddress();
-        if (!tag || !url) {
-            return;
-        }
+    public static startBroadway(params: IArguments): void {
+        const {url, name} = params;
+        const tag = BroadwayDecoder.createElement();
+        document.body.append(tag);
         tag.style.display = 'block';
         const decoder = new BroadwayDecoder(tag, CANVAS_TYPE.WEBGL);
         const main = Main.getInstance();
-        const onclick = main.startBroadway;
-        const startText = this.innerText;
         const decoderName = 'Broadway';
+        const deviceName = name;
         const connection = DeviceConnection.getInstance(url);
         const stream = BroadwayDecoder.preferredVideoSettings;
         connection.addDecoder(decoder);
-        main.start.call(this, {
+        main.start({
             connection,
             decoder,
             decoderName,
-            onclick,
-            startText,
+            deviceName,
             stream
         });
     }
 
-    public startH264bsd(this: HTMLButtonElement): void {
-        const tag: HTMLCanvasElement = document.getElementById('canvasTagId') as HTMLCanvasElement;
-        const url = Main.getAddress();
-        if (!tag || !url) {
-            return;
-        }
+    public static startH264bsd(params: IArguments): void {
+        const {url, name} = params;
+        const tag = BroadwayDecoder.createElement();
+        document.body.append(tag);
         tag.style.display = 'block';
         const decoder = new H264bsdDecoder(tag);
         const main = Main.getInstance();
-        const onclick = main.startH264bsd;
-        const startText = this.innerText;
         const decoderName = 'H264bsdDecoder';
+        const deviceName = name;
         const connection = DeviceConnection.getInstance(url);
         const stream = H264bsdDecoder.preferredVideoSettings;
         connection.addDecoder(decoder);
-        main.start.call(this, {
+        main.start({
             connection,
             decoder,
             decoderName,
-            onclick,
-            startText,
+            deviceName,
             stream
         });
     }
 
-    public start(this: HTMLButtonElement, params: IStartArguments): void {
-        const {connection, decoder, decoderName, onclick, startText, stream} = params;
-
-        this.innerText = `Stop ${decoderName}`;
+    public start(params: IStartArguments): void {
+        const {connection, decoder, decoderName, deviceName, stream} = params;
 
         const controlsWrapper = document.getElementById(Main.controlsWrapperId);
         if (!controlsWrapper) {
             return;
         }
+        const wrapper = document.createElement('div');
+        wrapper.className = 'decoder-controls-wrapper';
         const textWrap = document.createElement('div');
         textWrap.id = Main.inputWrapperId;
         const input = document.createElement('input');
@@ -138,7 +123,7 @@ class Main implements IErrorListener {
         textWrap.appendChild(input);
         textWrap.appendChild(sendButton);
 
-        controlsWrapper.appendChild(textWrap);
+        wrapper.appendChild(textWrap);
         sendButton.onclick = () => {
             if (input.value) {
                 connection.sendEvent(new TextControlEvent(input.value));
@@ -214,20 +199,21 @@ class Main implements IErrorListener {
                 cmdWrap.appendChild(btn);
             }
         }
-        controlsWrapper.appendChild(cmdWrap);
+        wrapper.appendChild(cmdWrap);
 
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
                 console.error(ev);
             }
             connection.removeDecoder(decoder);
-            this.innerText = startText;
-            this.onclick = onclick;
             const tag = decoder.getElement();
-            if (tag) {
-                tag.style.display = 'none';
-            }
             let parent;
+            if (tag) {
+                parent = tag.parentElement;
+                if (parent) {
+                    parent.removeChild(tag);
+                }
+            }
             parent = textWrap.parentElement;
             if (parent) {
                 parent.removeChild(textWrap);
@@ -236,10 +222,20 @@ class Main implements IErrorListener {
             if (parent) {
                 parent.removeChild(cmdWrap);
             }
+            parent = stopBtn.parentElement;
+            if (parent) {
+                parent.removeChild(stopBtn);
+            }
+            parent = wrapper.parentElement;
+            if (parent) {
+                parent.removeChild(wrapper);
+            }
         };
-
-        this.onclick = stop;
-
+        const stopBtn = document.createElement('button') as HTMLButtonElement;
+        stopBtn.innerText = `Stop ${deviceName} (${decoderName})`;
+        stopBtn.onclick = stop;
+        wrapper.appendChild(stopBtn);
+        controlsWrapper.appendChild(wrapper);
         connection.setErrorListener(new ErrorHandler(stop));
     }
 
@@ -254,6 +250,13 @@ class Main implements IErrorListener {
                 const ip = this.getAttribute('data-ip');
                 if (ip) {
                     addressInput.value = `ws://${ip}:8886/`;
+                }
+            }
+            const deviceNameInput = document.getElementById(Main.nameInputId);
+            if (deviceNameInput && deviceNameInput instanceof HTMLInputElement) {
+                const name = this.getAttribute('data-udid');
+                if (name) {
+                    deviceNameInput.value = name;
                 }
             }
         };
@@ -297,10 +300,10 @@ class Main implements IErrorListener {
                     } else {
                         devices.appendChild(element);
                     }
-                    element.innerText = `${item.manufacturer} ${item.model}`;
-                    element.setAttribute('data-udid', item.udid);
                     element.onclick = onclick;
                 }
+                element.innerText = `${item.manufacturer} ${item.model}`;
+                element.setAttribute('data-udid', item.udid);
                 element.setAttribute('data-ip', item.ip);
             });
         };
@@ -308,17 +311,33 @@ class Main implements IErrorListener {
 }
 
 window.onload = function(): void {
-    const btnNative = document.getElementById('startNative');
-    if (btnNative && btnNative instanceof HTMLButtonElement) {
-        btnNative.onclick = Main.getInstance().startNative.bind(btnNative);
-    }
-    const btnBroadway = document.getElementById('startBroadway');
-    if (btnBroadway && btnBroadway instanceof HTMLButtonElement) {
-        btnBroadway.onclick = Main.getInstance().startBroadway.bind(btnBroadway);
-    }
-    const h264bsd = document.getElementById('startH264bsd');
-    if (h264bsd && h264bsd instanceof HTMLButtonElement) {
-        h264bsd.onclick = Main.getInstance().startH264bsd.bind(h264bsd);
+    const form = document.querySelector('form') as HTMLFormElement;
+    if (form) {
+        form.addEventListener('submit', function(event: Event): void {
+            const data = new FormData(form);
+            const decoderName = data.get('decoder');
+            const name = (data.get('name') || '').toString();
+            const url = (data.get('url') || '').toString();
+            if (!url) {
+                return;
+            }
+            switch (decoderName) {
+                case 'native':
+                    Main.startNative({url, name});
+                    break;
+                case 'broadway':
+                    Main.startBroadway({url, name});
+                    break;
+                case 'h264bsd':
+                    Main.startH264bsd({url, name});
+                    break;
+                default:
+                    return;
+            }
+
+            console.log(decoderName, name, url);
+            event.preventDefault();
+        }, false);
     }
     Main.getInstance().listen();
 };

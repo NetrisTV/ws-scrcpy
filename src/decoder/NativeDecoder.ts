@@ -12,6 +12,14 @@ export default class NativeDecoder extends Decoder {
         sendFrameMeta: false
     });
     private static DEFAULT_FRAME_PER_FRAGMENT: number = 6;
+    public static createElement(id?: string): HTMLVideoElement {
+        const tag = document.createElement('video') as HTMLVideoElement;
+        if (id) {
+            tag.id = id;
+        }
+        tag.className = 'video';
+        return tag;
+    }
     protected TAG: string = 'NativeDecoder';
     private converter?: VideoConverter;
 

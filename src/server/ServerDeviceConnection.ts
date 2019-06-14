@@ -78,8 +78,8 @@ export class ServerDeviceConnection extends EventEmitter {
                 const result = await adb.shell('ip route|grep wlan0|grep -v default');
                 const temp = result.split(' ').filter((i: string) => !!i);
                 ip = temp[8];
-                model = await adb.getModel();
-                manufacturer = await adb.getManufacturer();
+                model = (await adb.getModel()) || 'Model';
+                manufacturer = (await adb.getManufacturer()) || 'Manufacturer';
                 const pid: number[] = await adb.getPIDsByName('scrcpy');
                 this.log.info(`PIDs: ${JSON.stringify(pid)}`);
                 if (!pid || !pid.length) {
