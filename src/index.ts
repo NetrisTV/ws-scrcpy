@@ -171,7 +171,7 @@ class Main implements IErrorListener {
                     cmdWrap.appendChild(framerateWrap);
                     cmdWrap.appendChild(iFrameIntervalWrap);
                 }
-                btn.innerText = command;
+                btn.innerText = CommandControlEvent.CommandNames[action];
                 btn.onclick = () => {
                     let event: CommandControlEvent;
                     if (action === CommandControlEvent.CommandCodes.COMMAND_SET_VIDEO_SETTINGS) {
@@ -302,7 +302,11 @@ class Main implements IErrorListener {
                     }
                     element.onclick = onclick;
                 }
-                element.innerText = `${item.manufacturer} ${item.model}`;
+                let text = `${item.manufacturer} ${item.model}`;
+                if (!text.trim()) {
+                    text = item.udid;
+                }
+                element.innerText = text;
                 element.setAttribute('data-udid', item.udid);
                 element.setAttribute('data-ip', item.ip);
             });

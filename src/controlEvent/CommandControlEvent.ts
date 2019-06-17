@@ -9,6 +9,13 @@ export default class CommandControlEvent extends ControlEvent {
         COMMAND_SET_VIDEO_SETTINGS: 3
     };
 
+    public static CommandNames: Record<number, string> = {
+        0: 'Back / Turn Screen On',
+        1: 'Expand panel',
+        2: 'Collapse panel',
+        3: 'Change video settings'
+    };
+
     public static createSetVideoSettingsCommand(videoSettings: VideoSettings): CommandControlEvent {
         const temp = videoSettings.toBuffer();
         const event = new CommandControlEvent(this.CommandCodes.COMMAND_SET_VIDEO_SETTINGS);
