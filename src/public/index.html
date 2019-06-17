@@ -34,6 +34,32 @@
             max-width: 100%;
             background-color: black;
         }
+
+        .spoiler > input ~ .box {
+            display: none;
+        }
+
+        .spoiler > input:checked ~ .box {
+            display: block;
+        }
+
+        .spoiler > label::before {
+            content: '►';
+            margin-right: 5px;
+        }
+
+        .spoiler > input:checked ~ label::before {
+            content: '▼';
+        }
+
+        .spoiler > input:checked ~ div {
+            display: block;
+            padding: 10px;
+        }
+
+        .spoiler > input {
+            display: none;
+        }
     </style>
     <script src="bundle.js" type="application/javascript"></script>
     <script type="application/javascript">

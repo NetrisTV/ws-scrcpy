@@ -140,6 +140,23 @@ class Main implements IErrorListener {
                 let frameRateInput: HTMLInputElement;
                 let iFrameIntervalInput: HTMLInputElement;
                 if (action === CommandControlEvent.CommandCodes.COMMAND_SET_VIDEO_SETTINGS) {
+                    const spoiler = document.createElement('div');
+                    const spoilerLabel = document.createElement('label');
+                    const spoilerCheck = document.createElement('input');
+
+                    const innerDiv = document.createElement('div');
+                    const id = `spoiler_video_${deviceName}_${decoderName}_${action}`;
+
+                    spoiler.className = 'spoiler';
+                    spoilerCheck.type = 'checkbox';
+                    spoilerCheck.id = id;
+                    spoilerLabel.htmlFor = id;
+                    spoilerLabel.innerText = CommandControlEvent.CommandNames[action];
+                    innerDiv.className = 'box';
+                    spoiler.appendChild(spoilerCheck);
+                    spoiler.appendChild(spoilerLabel);
+                    spoiler.appendChild(innerDiv);
+
                     const bitrateWrap = document.createElement('div');
                     const bitrateLabel = document.createElement('label');
                     bitrateLabel.innerText = 'Bitrate:';
@@ -167,9 +184,13 @@ class Main implements IErrorListener {
                     iFrameIntervalWrap.appendChild(iFrameIntervalLabel);
                     iFrameIntervalWrap.appendChild(iFrameIntervalInput);
 
-                    cmdWrap.appendChild(bitrateWrap);
-                    cmdWrap.appendChild(framerateWrap);
-                    cmdWrap.appendChild(iFrameIntervalWrap);
+                    innerDiv.appendChild(bitrateWrap);
+                    innerDiv.appendChild(framerateWrap);
+                    innerDiv.appendChild(iFrameIntervalWrap);
+                    innerDiv.appendChild(btn);
+                    cmdWrap.appendChild(spoiler);
+                } else {
+                    cmdWrap.appendChild(btn);
                 }
                 btn.innerText = CommandControlEvent.CommandNames[action];
                 btn.onclick = () => {
@@ -196,7 +217,6 @@ class Main implements IErrorListener {
                     }
                     connection.sendEvent(event);
                 };
-                cmdWrap.appendChild(btn);
             }
         }
         wrapper.appendChild(cmdWrap);
