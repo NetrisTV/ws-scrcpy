@@ -103,11 +103,13 @@ export class DeviceConnection {
         if (typeof action === 'undefined' || !screenInfo) {
             return null;
         }
+        const htmlTag = document.getElementsByTagName('html')[0] as HTMLElement;
         const {width, height} = screenInfo.videoSize;
         const target: HTMLElement = e.target as HTMLElement;
+        const {scrollTop, scrollLeft} = htmlTag;
         let {clientWidth, clientHeight} = target;
-        let touchX = (e.clientX - target.offsetLeft);
-        let touchY = (e.clientY - target.offsetTop);
+        let touchX = (e.clientX - target.offsetLeft) + scrollLeft;
+        let touchY = (e.clientY - target.offsetTop) + scrollTop;
         const eps = 1e5;
         const ratio = width / height;
         const shouldBe = Math.round(eps * ratio);
