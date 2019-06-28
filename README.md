@@ -31,6 +31,13 @@ npm start
 * The server on the Android Emulator listens on internal interface and not available from the outside (as workaround you can do `adb forward tcp:8886 tcp:8886`)
 * H264bsdDecoder may fail to start 
 
+## Related projects
+* [Genymobile/scrcpy](https://github.com/Genymobile/scrcpy)
+* [xevokk/h264-converter](https://github.com/xevokk/h264-converter)
+* [131/h264-live-player](https://github.com/131/h264-live-player)
+* [oneam/h264bsd](https://github.com/oneam/h264bsd)
+* [mbebenita/Broadway](https://github.com/mbebenita/Broadway)
+
 ## scrcpy websocket fork
 
 Currently support of WebSocket protocol added to v1.8 of scrcpy
