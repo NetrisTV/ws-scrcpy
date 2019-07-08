@@ -14,7 +14,7 @@ You'll need a web browser with these technologies support:
 ## Build and Start
 
 ```shell
-git clone https://github.com/drauggres/ws-scrcpy.git
+git clone https://github.com/NetrisTV/ws-scrcpy.git
 cd ws-scrcpy
 npm install
 npm start
@@ -41,5 +41,5 @@ npm start
 ## scrcpy websocket fork
 
 Currently support of WebSocket protocol added to v1.8 of scrcpy
-* [Prebuilt package](https://github.com/drauggres/scrcpy/releases/download/v1.8.1/scrcpy-server.jar)
-* [Source code](https://github.com/drauggres/scrcpy/tree/feature/websocket-server)
+* [Prebuilt package](https://github.com/NetrisTV/scrcpy/releases/download/v1.8.1/scrcpy-server.jar)
+* [Source code](https://github.com/NetrisTV/scrcpy/tree/feature/websocket-server)
