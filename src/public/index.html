@@ -3,68 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>WS scrcpy</title>
-    <style>
-        body {
-            position: absolute;
-            margin: 0;
-            height: 100%;
-            width: 100%;
-        }
-
-        #controls {
-            float: left;
-            position: relative;
-            width: 25%;
-            height: 100%;
-            margin: 20px;
-        }
-
-        #controlsWrap {
-            position: relative;
-            top: 0;
-        }
-
-        .decoder-controls-wrapper {
-            padding: 10px;
-        }
-
-        .video {
-            float: right;
-            max-height: 100%;
-            max-width: 100%;
-            background-color: black;
-        }
-
-        .spoiler > input ~ .box {
-            display: none;
-        }
-
-        .spoiler > input:checked ~ .box {
-            display: block;
-        }
-
-        .spoiler > label::before {
-            content: '►';
-            margin-right: 5px;
-        }
-
-        .spoiler > input:checked ~ label::before {
-            content: '▼';
-        }
-
-        .spoiler > input:checked ~ div {
-            display: block;
-            padding: 10px;
-        }
-
-        .spoiler > input {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="style.css" />
     <script src="bundle.js" type="application/javascript"></script>
-    <script type="application/javascript">
-
-    </script>
 </head>
 <body>
 <div id="controls">

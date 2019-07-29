@@ -9,6 +9,9 @@ import TextControlEvent from './controlEvent/TextControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
 import Size from './Size';
 import { IDevice } from './server/ServerDeviceConnection';
+import ControlEvent from './controlEvent/ControlEvent';
+import KeyEvent from './android/KeyEvent';
+import KeyCodeControlEvent from './controlEvent/KeyCodeControlEvent';
 
 interface IStartArguments {
     stream: VideoSettings;
@@ -115,11 +118,14 @@ class Main implements IErrorListener {
         }
         const wrapper = document.createElement('div');
         wrapper.className = 'decoder-controls-wrapper';
+        const nameSpan = document.createElement('span');
+        nameSpan.innerText = `${deviceName} (${decoderName})`;
+        wrapper.appendChild(nameSpan);
         const textWrap = document.createElement('div');
         textWrap.id = Main.inputWrapperId;
         const input = document.createElement('input');
         const sendButton = document.createElement('button');
-        sendButton.innerText = 'Send';
+        sendButton.innerText = 'Send as keys';
         textWrap.appendChild(input);
         textWrap.appendChild(sendButton);
 
@@ -139,7 +145,7 @@ class Main implements IErrorListener {
                 let bitrateInput: HTMLInputElement;
                 let frameRateInput: HTMLInputElement;
                 let iFrameIntervalInput: HTMLInputElement;
-                if (action === CommandControlEvent.CommandCodes.COMMAND_SET_VIDEO_SETTINGS) {
+                if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
                     const spoiler = document.createElement('div');
                     const spoilerLabel = document.createElement('label');
                     const spoilerCheck = document.createElement('input');
@@ -194,8 +200,8 @@ class Main implements IErrorListener {
                 }
                 btn.innerText = CommandControlEvent.CommandNames[action];
                 btn.onclick = () => {
-                    let event: CommandControlEvent;
-                    if (action === CommandControlEvent.CommandCodes.COMMAND_SET_VIDEO_SETTINGS) {
+                    let event: CommandControlEvent|undefined;
+                    if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
                         const bitrate = parseInt(bitrateInput.value, 10);
                         const frameRate = parseInt(frameRateInput.value, 10);
                         const iFrameInterval = parseInt(iFrameIntervalInput.value, 10);
@@ -212,13 +218,53 @@ class Main implements IErrorListener {
                             iFrameInterval,
                             sendFrameMeta: false
                         }));
+                    } else if (action === CommandControlEvent.TYPE_SET_CLIPBOARD) {
+                        const text = input.value;
+                        if (text) {
+                            event = CommandControlEvent.createSetClipboard(text);
+                        }
                     } else {
                         event = new CommandControlEvent(action);
                     }
-                    connection.sendEvent(event);
+                    if (event) {
+                        connection.sendEvent(event);
+                    }
                 };
             }
         }
+        const list = [{
+            code: KeyEvent.KEYCODE_POWER,
+            name: 'power'
+        },{
+            code: KeyEvent.KEYCODE_VOLUME_DOWN,
+            name: 'volume-down'
+        },{
+            code: KeyEvent.KEYCODE_VOLUME_UP,
+            name: 'volume-up'
+        },{
+            code: KeyEvent.KEYCODE_BACK,
+            name: 'back'
+        },{
+            code: KeyEvent.KEYCODE_HOME,
+            name: 'home'
+        }, {
+            code: KeyEvent.KEYCODE_APP_SWITCH,
+            name: 'app-switch'
+        }];
+        list.forEach(item => {
+            const {code, name} = item;
+            const btn = document.createElement('button');
+            btn.classList.add('control-button', name);
+            btn.onmousedown = () => {
+                const event = new KeyCodeControlEvent(KeyEvent.ACTION_DOWN, code, 0);
+                connection.sendEvent(event);
+            };
+            btn.onmouseup = () => {
+                const event = new KeyCodeControlEvent(KeyEvent.ACTION_UP, code, 0);
+                connection.sendEvent(event);
+            };
+            cmdWrap.appendChild(btn);
+        });
         wrapper.appendChild(cmdWrap);
 
         const stop = (ev?: string | Event) => {
@@ -252,7 +298,7 @@ class Main implements IErrorListener {
             }
         };
         const stopBtn = document.createElement('button') as HTMLButtonElement;
-        stopBtn.innerText = `Stop ${deviceName} (${decoderName})`;
+        stopBtn.innerText = `Disconnect`;
         stopBtn.onclick = stop;
         wrapper.appendChild(stopBtn);
         controlsWrapper.appendChild(wrapper);

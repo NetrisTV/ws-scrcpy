@@ -1,0 +1,120 @@
+body {
+    background-color: #f0f0f0;
+    position: absolute;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+
+:focus {
+    outline: none;
+}
+
+#controls {
+    float: left;
+    position: relative;
+    width: 25%;
+    height: 100%;
+    margin: 20px;
+}
+
+#controlsWrap {
+    position: relative;
+    top: 0;
+}
+
+.decoder-controls-wrapper {
+    padding: 10px;
+    border: solid 1px #778899;
+}
+
+.video {
+    float: right;
+    max-height: 100%;
+    max-width: 100%;
+    background-color: #000000;
+}
+
+.spoiler > input ~ .box {
+    display: none;
+}
+
+.spoiler > input:checked ~ .box {
+    display: block;
+}
+
+.spoiler > label::before {
+    content: '►';
+    margin-right: 5px;
+}
+
+.spoiler > input:checked ~ label::before {
+    content: '▼';
+}
+
+.spoiler > input:checked ~ div {
+    display: block;
+    padding: 10px;
+}
+
+.spoiler > input {
+    display: none;
+}
+
+.control-button {
+    margin: 0 11px;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-image: url('icons.png');
+    opacity: 0.75;
+}
+
+.control-button:hover {
+    opacity: 1;
+}
+
+.control-button.menu {
+    background-position: 0 0;
+}
+
+.control-button.app-switch {
+    background-position: -30px 0;
+}
+
+.control-button.home {
+    background-position: -60px 0;
+}
+
+.control-button.back {
+    background-position: -90px 0;
+}
+
+.control-button.zoom {
+    background-position: 0 -30px;
+}
+
+.control-button.screen-shot {
+    background-position: -30px -30px;
+}
+
+.control-button.rotate-clockwise {
+    background-position: -60px -30px;
+}
+
+.control-button.rotate-counter-clockwise {
+    background-position: -90px -30px;
+}
+
+.control-button.volume-down {
+    background-position: 0 -60px;
+}
+
+.control-button.volume-up {
+    background-position: -30px -60px;
+}
+
+.control-button.power {
+    background-position: -60px -60px;
+}

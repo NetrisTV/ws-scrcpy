@@ -9,6 +9,7 @@ import Util from './Util';
 import MotionControlEvent from './controlEvent/MotionControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
 import ScreenInfo from './ScreenInfo';
+import DeviceMessage from './DeviceMessage';
 
 const MESSAGE_TYPE_TEXT = 'text';
 const DEVICE_NAME_FIELD_LENGTH = 64;
@@ -18,6 +19,10 @@ const DEVICE_INFO_LENGTH = MAGIC.length + DEVICE_NAME_FIELD_LENGTH +
 
 export interface IErrorListener {
     OnError(this: IErrorListener, ev: Event | string): void;
+}
+
+export interface IDeviceMessageListener {
+    OnDeviceMessage(this: IDeviceMessageListener, ev: DeviceMessage): void;
 }
 
 export class DeviceConnection {
@@ -37,6 +42,7 @@ export class DeviceConnection {
     private events: ControlEvent[] = [];
     private decoders: Set<Decoder> = new Set<Decoder>();
     private errorListener?: IErrorListener;
+    private deviceMessageListener?: IDeviceMessageListener;
     private name: string = '';
     // private videoSettings?: VideoSettings;
     // private screenInfo?: ScreenInfo;
@@ -199,6 +205,10 @@ export class DeviceConnection {
         this.errorListener = listener;
     }
 
+    public setDeviceMessageListener(listener: IDeviceMessageListener): void {
+        this.deviceMessageListener = listener;
+    }
+
     public getDeviceName(): string {
         return this.name;
     }
@@ -230,10 +240,10 @@ export class DeviceConnection {
         ws.onmessage = (e: MessageEvent) => {
             if (e.data instanceof ArrayBuffer) {
                 const data = new Uint8Array(e.data);
-                if (data.length === DEVICE_INFO_LENGTH) {
-                    const magicBytes = new Uint8Array(e.data, 0, MAGIC.length);
-                    const text = Util.utf8ByteArrayToString(magicBytes);
-                    if (text === MAGIC) {
+                const magicBytes = new Uint8Array(e.data, 0, MAGIC.length);
+                const text = Util.utf8ByteArrayToString(magicBytes);
+                if (text === MAGIC) {
+                    if (data.length === DEVICE_INFO_LENGTH) {
                         let nameBytes = new Uint8Array(e.data, MAGIC.length, DEVICE_NAME_FIELD_LENGTH);
                         nameBytes = Util.filterTrailingZeroes(nameBytes);
                         this.name = Util.utf8ByteArrayToString(nameBytes);
@@ -275,6 +285,11 @@ export class DeviceConnection {
                         });
                         if (!min.equals(videoSettings) || !playing) {
                             this.sendEvent(CommandControlEvent.createSetVideoSettingsCommand(min));
+                        }
+                    } else {
+                        const message = DeviceMessage.fromBuffer(e.data);
+                        if (this.deviceMessageListener) {
+                            this.deviceMessageListener.OnDeviceMessage(message);
                         }
                     }
                 } else {
