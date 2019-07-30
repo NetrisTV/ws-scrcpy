@@ -3,13 +3,12 @@ import ADB from 'appium-adb';
 // @ts-ignore
 import { logger } from 'appium-support';
 import { EventEmitter } from 'events';
-import * as path from 'path';
 import Timeout = NodeJS.Timeout;
 
-const TEMP_PATH = '/data/local/tmp/';
-const FILE_DIR = process.cwd();
-const FILE_NAME = 'scrcpy-server.jar';
-const ARGS = '/ com.genymobile.scrcpy.Server 0 8000000 false - false web&';
+// const TEMP_PATH = '/data/local/tmp/';
+// const FILE_DIR = process.cwd();
+// const FILE_NAME = 'scrcpy-server.jar';
+// const ARGS = '/ com.genymobile.scrcpy.Server 0 8000000 false - false true web&';
 
 export interface IDevice {
     udid: string;
@@ -80,13 +79,13 @@ export class ServerDeviceConnection extends EventEmitter {
                 ip = temp[8];
                 model = (await adb.getModel()) || 'Model';
                 manufacturer = (await adb.getManufacturer()) || 'Manufacturer';
-                const pid: number[] = await adb.getPIDsByName('scrcpy');
-                this.log.info(`PIDs: ${JSON.stringify(pid)}`);
-                if (!pid || !pid.length) {
-                    await adb.push(path.join(FILE_DIR, FILE_NAME), TEMP_PATH);
-                    const exit = await adb.shell(`CLASSPATH=${TEMP_PATH}${FILE_NAME} app_process ${ARGS}`);
-                    console.log(`exit code: ${exit}`);
-                }
+                // const pid: number[] = await adb.getPIDsByName('scrcpy');
+                // this.log.info(`PIDs: ${JSON.stringify(pid)}`);
+                // if (!pid || !pid.length) {
+                //     await adb.push(path.join(FILE_DIR, FILE_NAME), TEMP_PATH);
+                //     const exit = await adb.shell(`CLASSPATH=${TEMP_PATH}${FILE_NAME} app_process ${ARGS}`);
+                //     console.log(`exit code: ${exit}`);
+                // }
             } catch (e) {
                 this.log.error(e);
             }
