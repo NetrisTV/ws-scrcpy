@@ -2,6 +2,8 @@ import { Buffer } from 'buffer';
 import ControlEvent from './ControlEvent';
 
 export default class KeyCodeControlEvent extends ControlEvent {
+    public static PAYLOAD_LENGTH: number = 9;
+
     constructor(readonly action: number, readonly keycode: number, readonly metaState: number) {
         super(ControlEvent.TYPE_KEYCODE);
     }
@@ -10,7 +12,7 @@ export default class KeyCodeControlEvent extends ControlEvent {
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer = new Buffer(ControlEvent.KEYCODE_PAYLOAD_LENGTH + 1);
+        const buffer = new Buffer(KeyCodeControlEvent.PAYLOAD_LENGTH + 1);
         buffer.writeUInt8(this.type, 0);
         buffer.writeUInt8(this.action, 1);
         buffer.writeUInt32BE(this.keycode, 2);

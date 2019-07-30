@@ -3,6 +3,8 @@ import VideoSettings from '../VideoSettings';
 import Util from '../Util';
 
 export default class CommandControlEvent extends ControlEvent {
+    public static PAYLOAD_LENGTH: number = 0;
+
     public static CommandCodes: Record<string, number> = {
         TYPE_EXPAND_NOTIFICATION_PANEL: ControlEvent.TYPE_EXPAND_NOTIFICATION_PANEL,
         TYPE_COLLAPSE_NOTIFICATION_PANEL: ControlEvent.TYPE_COLLAPSE_NOTIFICATION_PANEL,
@@ -22,7 +24,7 @@ export default class CommandControlEvent extends ControlEvent {
     public static createSetVideoSettingsCommand(videoSettings: VideoSettings): CommandControlEvent {
         const temp = videoSettings.toBuffer();
         const event = new CommandControlEvent(ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS);
-        const offset = ControlEvent.COMMAND_PAYLOAD_LENGTH + 1;
+        const offset = CommandControlEvent.PAYLOAD_LENGTH + 1;
         const buffer = new Buffer(offset + temp.length);
         buffer.writeUInt8(event.type, 0);
         temp.forEach((byte, index) => {
@@ -35,7 +37,7 @@ export default class CommandControlEvent extends ControlEvent {
     public static createSetClipboard(text: string): CommandControlEvent {
         const event = new CommandControlEvent(ControlEvent.TYPE_SET_CLIPBOARD);
         const temp = Util.stringToUtf8ByteArray(text);
-        let offset = ControlEvent.COMMAND_PAYLOAD_LENGTH + 1;
+        let offset = CommandControlEvent.PAYLOAD_LENGTH + 1;
         const buffer = new Buffer(offset + 2 + temp.length);
         buffer.writeUInt8(event.type, 0);
         buffer.writeUInt16BE(temp.length, offset);
@@ -58,7 +60,7 @@ export default class CommandControlEvent extends ControlEvent {
      */
     public toBuffer(): Buffer {
         if (!this.buffer) {
-            const buffer = new Buffer(ControlEvent.COMMAND_PAYLOAD_LENGTH + 1);
+            const buffer = new Buffer(CommandControlEvent.PAYLOAD_LENGTH + 1);
             buffer.writeUInt8(this.type, 0);
             this.buffer = buffer;
         }

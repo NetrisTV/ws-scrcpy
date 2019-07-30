@@ -1,35 +1,15 @@
-import { DeviceConnection, IErrorListener } from './DeviceConnection';
 import NativeDecoder from './decoder/NativeDecoder';
 import { BroadwayDecoder, CANVAS_TYPE } from './decoder/BroadwayDecoder';
-import Decoder from './decoder/Decoder';
-import VideoSettings from './VideoSettings';
 import H264bsdDecoder from './decoder/H264bsdDecoder';
-import ErrorHandler from './ErrorHandler';
-import TextControlEvent from './controlEvent/TextControlEvent';
-import CommandControlEvent from './controlEvent/CommandControlEvent';
-import Size from './Size';
 import { IDevice } from './server/ServerDeviceConnection';
-import ControlEvent from './controlEvent/ControlEvent';
-import KeyEvent from './android/KeyEvent';
-import KeyCodeControlEvent from './controlEvent/KeyCodeControlEvent';
-
-interface IStartArguments {
-    stream: VideoSettings;
-    connection: DeviceConnection;
-    decoderName: string;
-    decoder: Decoder;
-    deviceName: string;
-}
+import { DeviceController } from './DeviceController';
 
 interface IArguments {
     url: string;
     name: string;
 }
 
-class Main implements IErrorListener {
-    private static inputWrapperId: string = 'inputWrap';
-    private static controlsWrapperId: string = 'controlsWrap';
-    private static commandsWrapperId: string = 'commandsWrap';
+class Main {
     private static addressInputId: string = 'deviceAddress';
     private static nameInputId: string = 'deviceName';
     private static instance?: Main;
@@ -42,267 +22,43 @@ class Main implements IErrorListener {
         return Main.instance || new Main();
     }
 
-    public OnError(ev: string | Event): void {
-        console.error(ev);
-    }
-
     public static startNative(params: IArguments): void {
         const {url, name} = params;
         const tag = NativeDecoder.createElement();
-        document.body.append(tag);
-        tag.style.display = 'block';
         const decoder = new NativeDecoder(tag);
-        const main = Main.getInstance();
-        const decoderName = 'Native';
-        const deviceName = name;
-        const connection = DeviceConnection.getInstance(url);
-        const stream = NativeDecoder.preferredVideoSettings;
-        connection.addDecoder(decoder);
-        main.start({
-            connection,
+        const controller = new DeviceController({
+            url,
+            name,
             decoder,
-            decoderName,
-            deviceName,
-            stream
+            videoSettings: NativeDecoder.preferredVideoSettings
         });
+        controller.start();
     }
 
     public static startBroadway(params: IArguments): void {
         const {url, name} = params;
         const tag = BroadwayDecoder.createElement();
-        document.body.append(tag);
-        tag.style.display = 'block';
         const decoder = new BroadwayDecoder(tag, CANVAS_TYPE.WEBGL);
-        const main = Main.getInstance();
-        const decoderName = 'Broadway';
-        const deviceName = name;
-        const connection = DeviceConnection.getInstance(url);
-        const stream = BroadwayDecoder.preferredVideoSettings;
-        connection.addDecoder(decoder);
-        main.start({
-            connection,
+        const controller = new DeviceController({
+            url,
+            name,
             decoder,
-            decoderName,
-            deviceName,
-            stream
+            videoSettings: BroadwayDecoder.preferredVideoSettings
         });
+        controller.start();
     }
 
     public static startH264bsd(params: IArguments): void {
         const {url, name} = params;
-        const tag = BroadwayDecoder.createElement();
-        document.body.append(tag);
-        tag.style.display = 'block';
+        const tag = H264bsdDecoder.createElement();
         const decoder = new H264bsdDecoder(tag);
-        const main = Main.getInstance();
-        const decoderName = 'H264bsdDecoder';
-        const deviceName = name;
-        const connection = DeviceConnection.getInstance(url);
-        const stream = H264bsdDecoder.preferredVideoSettings;
-        connection.addDecoder(decoder);
-        main.start({
-            connection,
+        const controller = new DeviceController({
+            url,
+            name,
             decoder,
-            decoderName,
-            deviceName,
-            stream
+            videoSettings: H264bsdDecoder.preferredVideoSettings
         });
-    }
-
-    public start(params: IStartArguments): void {
-        const {connection, decoder, decoderName, deviceName, stream} = params;
-
-        const controlsWrapper = document.getElementById(Main.controlsWrapperId);
-        if (!controlsWrapper) {
-            return;
-        }
-        const wrapper = document.createElement('div');
-        wrapper.className = 'decoder-controls-wrapper';
-        const nameSpan = document.createElement('span');
-        nameSpan.innerText = `${deviceName} (${decoderName})`;
-        wrapper.appendChild(nameSpan);
-        const textWrap = document.createElement('div');
-        textWrap.id = Main.inputWrapperId;
-        const input = document.createElement('input');
-        const sendButton = document.createElement('button');
-        sendButton.innerText = 'Send as keys';
-        textWrap.appendChild(input);
-        textWrap.appendChild(sendButton);
-
-        wrapper.appendChild(textWrap);
-        sendButton.onclick = () => {
-            if (input.value) {
-                connection.sendEvent(new TextControlEvent(input.value));
-            }
-        };
-        const cmdWrap = document.createElement('div');
-        cmdWrap.id = Main.commandsWrapperId;
-        const codes = CommandControlEvent.CommandCodes;
-        for (const command in codes) {
-            if (codes.hasOwnProperty(command)) {
-                const action: number = codes[command];
-                const btn = document.createElement('button');
-                let bitrateInput: HTMLInputElement;
-                let frameRateInput: HTMLInputElement;
-                let iFrameIntervalInput: HTMLInputElement;
-                if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
-                    const spoiler = document.createElement('div');
-                    const spoilerLabel = document.createElement('label');
-                    const spoilerCheck = document.createElement('input');
-
-                    const innerDiv = document.createElement('div');
-                    const id = `spoiler_video_${deviceName}_${decoderName}_${action}`;
-
-                    spoiler.className = 'spoiler';
-                    spoilerCheck.type = 'checkbox';
-                    spoilerCheck.id = id;
-                    spoilerLabel.htmlFor = id;
-                    spoilerLabel.innerText = CommandControlEvent.CommandNames[action];
-                    innerDiv.className = 'box';
-                    spoiler.appendChild(spoilerCheck);
-                    spoiler.appendChild(spoilerLabel);
-                    spoiler.appendChild(innerDiv);
-
-                    const bitrateWrap = document.createElement('div');
-                    const bitrateLabel = document.createElement('label');
-                    bitrateLabel.innerText = 'Bitrate:';
-                    bitrateInput = document.createElement('input');
-                    bitrateInput.placeholder = `bitrate (${stream.bitrate})`;
-                    bitrateInput.value = stream.bitrate.toString();
-                    bitrateWrap.appendChild(bitrateLabel);
-                    bitrateWrap.appendChild(bitrateInput);
-
-                    const framerateWrap = document.createElement('div');
-                    const framerateLabel = document.createElement('label');
-                    framerateLabel.innerText = 'Framerate:';
-                    frameRateInput = document.createElement('input');
-                    frameRateInput.placeholder = `framerate (${stream.frameRate})`;
-                    frameRateInput.value = stream.frameRate.toString();
-                    framerateWrap.appendChild(framerateLabel);
-                    framerateWrap.appendChild(frameRateInput);
-
-                    const iFrameIntervalWrap = document.createElement('div');
-                    const iFrameIntervalLabel = document.createElement('label');
-                    iFrameIntervalLabel.innerText = 'I-Frame Interval:';
-                    iFrameIntervalInput = document.createElement('input');
-                    iFrameIntervalInput.placeholder = `I-frame interval (${stream.iFrameInterval})`;
-                    iFrameIntervalInput.value = stream.iFrameInterval.toString();
-                    iFrameIntervalWrap.appendChild(iFrameIntervalLabel);
-                    iFrameIntervalWrap.appendChild(iFrameIntervalInput);
-
-                    innerDiv.appendChild(bitrateWrap);
-                    innerDiv.appendChild(framerateWrap);
-                    innerDiv.appendChild(iFrameIntervalWrap);
-                    innerDiv.appendChild(btn);
-                    cmdWrap.appendChild(spoiler);
-                } else {
-                    cmdWrap.appendChild(btn);
-                }
-                btn.innerText = CommandControlEvent.CommandNames[action];
-                btn.onclick = () => {
-                    let event: CommandControlEvent|undefined;
-                    if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
-                        const bitrate = parseInt(bitrateInput.value, 10);
-                        const frameRate = parseInt(frameRateInput.value, 10);
-                        const iFrameInterval = parseInt(iFrameIntervalInput.value, 10);
-                        if (isNaN(bitrate) || isNaN(frameRate)) {
-                            return;
-                        }
-                        const width = document.body.clientWidth & ~15;
-                        const height = document.body.clientHeight & ~15;
-                        const bounds: Size = new Size(width, height);
-                        event = CommandControlEvent.createSetVideoSettingsCommand(new VideoSettings({
-                            bounds,
-                            bitrate,
-                            frameRate,
-                            iFrameInterval,
-                            sendFrameMeta: false
-                        }));
-                    } else if (action === CommandControlEvent.TYPE_SET_CLIPBOARD) {
-                        const text = input.value;
-                        if (text) {
-                            event = CommandControlEvent.createSetClipboard(text);
-                        }
-                    } else {
-                        event = new CommandControlEvent(action);
-                    }
-                    if (event) {
-                        connection.sendEvent(event);
-                    }
-                };
-            }
-        }
-        const list = [{
-            code: KeyEvent.KEYCODE_POWER,
-            name: 'power'
-        },{
-            code: KeyEvent.KEYCODE_VOLUME_DOWN,
-            name: 'volume-down'
-        },{
-            code: KeyEvent.KEYCODE_VOLUME_UP,
-            name: 'volume-up'
-        },{
-            code: KeyEvent.KEYCODE_BACK,
-            name: 'back'
-        },{
-            code: KeyEvent.KEYCODE_HOME,
-            name: 'home'
-        }, {
-            code: KeyEvent.KEYCODE_APP_SWITCH,
-            name: 'app-switch'
-        }];
-        list.forEach(item => {
-            const {code, name} = item;
-            const btn = document.createElement('button');
-            btn.classList.add('control-button', name);
-            btn.onmousedown = () => {
-                const event = new KeyCodeControlEvent(KeyEvent.ACTION_DOWN, code, 0);
-                connection.sendEvent(event);
-            };
-            btn.onmouseup = () => {
-                const event = new KeyCodeControlEvent(KeyEvent.ACTION_UP, code, 0);
-                connection.sendEvent(event);
-            };
-            cmdWrap.appendChild(btn);
-        });
-        wrapper.appendChild(cmdWrap);
-
-        const stop = (ev?: string | Event) => {
-            if (ev && ev instanceof Event && ev.type === 'error') {
-                console.error(ev);
-            }
-            connection.removeDecoder(decoder);
-            const tag = decoder.getElement();
-            let parent;
-            if (tag) {
-                parent = tag.parentElement;
-                if (parent) {
-                    parent.removeChild(tag);
-                }
-            }
-            parent = textWrap.parentElement;
-            if (parent) {
-                parent.removeChild(textWrap);
-            }
-            parent = cmdWrap.parentElement;
-            if (parent) {
-                parent.removeChild(cmdWrap);
-            }
-            parent = stopBtn.parentElement;
-            if (parent) {
-                parent.removeChild(stopBtn);
-            }
-            parent = wrapper.parentElement;
-            if (parent) {
-                parent.removeChild(wrapper);
-            }
-        };
-        const stopBtn = document.createElement('button') as HTMLButtonElement;
-        stopBtn.innerText = `Disconnect`;
-        stopBtn.onclick = stop;
-        wrapper.appendChild(stopBtn);
-        controlsWrapper.appendChild(wrapper);
-        connection.setErrorListener(new ErrorHandler(stop));
+        controller.start();
     }
 
     public listen(): void {

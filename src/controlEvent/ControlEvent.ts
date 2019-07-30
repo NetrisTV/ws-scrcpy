@@ -11,11 +11,6 @@ export default class ControlEvent {
     public static TYPE_SET_SCREEN_POWER_MODE: number = 9;
     public static TYPE_CHANGE_STREAM_PARAMETERS: number = 10;
 
-    public static KEYCODE_PAYLOAD_LENGTH: number = 9;
-    public static MOUSE_PAYLOAD_LENGTH: number = 17;
-    public static SCROLL_PAYLOAD_LENGTH: number = 20;
-    public static COMMAND_PAYLOAD_LENGTH: number = 0;
-
     constructor(readonly type: number) {
     }
 

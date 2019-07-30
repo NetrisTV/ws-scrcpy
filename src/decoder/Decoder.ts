@@ -59,4 +59,8 @@ export default abstract class Decoder {
         this.pause();
         this.screenInfo = screenInfo;
     }
+
+    public getName(): string {
+        return this.TAG;
+    }
 }

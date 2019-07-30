@@ -2,6 +2,8 @@ import ControlEvent from './ControlEvent';
 import Position from '../Position';
 
 export default class MotionControlEvent extends ControlEvent {
+    public static PAYLOAD_LENGTH: number = 17;
+
     constructor(readonly action: number, readonly buttons: number, readonly position: Position) {
         super(ControlEvent.TYPE_MOUSE);
     }
@@ -10,7 +12,7 @@ export default class MotionControlEvent extends ControlEvent {
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer: Buffer = new Buffer(ControlEvent.MOUSE_PAYLOAD_LENGTH + 1);
+        const buffer: Buffer = new Buffer(MotionControlEvent.PAYLOAD_LENGTH + 1);
         buffer.writeUInt8(this.type, 0);
         buffer.writeUInt8(this.action, 1);
         buffer.writeUInt32BE(this.buttons, 2);

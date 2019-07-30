@@ -61,8 +61,13 @@ body {
     display: none;
 }
 
+.control-buttons-list {
+    float: right;
+    width: 52px;
+}
+
 .control-button {
-    margin: 0 11px;
+    margin: 5px 11px;
     padding: 0;
     width: 30px;
     height: 30px;
