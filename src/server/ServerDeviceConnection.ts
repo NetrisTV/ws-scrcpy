@@ -11,6 +11,10 @@ const FILE_DIR = process.cwd();
 const FILE_NAME = 'scrcpy-server.jar';
 const ARGS = '/ com.genymobile.scrcpy.Server 0 8000000 false - false web&';
 
+const GET_SHELL_PROCESSES = 'find /proc -type d -maxdepth 1 -user shell -group shell 2>/dev/null';
+const CHECK_CMDLINE = 'test -f "$a/cmdline" && grep -av find "$a/cmdline" |grep -sa scrcpy 2>&1 > /dev/null && echo $a |cut -d "/" -f 3;';
+const CMD = 'for a in `' + GET_SHELL_PROCESSES + '`; do ' + CHECK_CMDLINE + ' done; exit 0';
+
 export interface IDevice {
     udid: string;
     state: string;
@@ -80,12 +84,13 @@ export class ServerDeviceConnection extends EventEmitter {
                 ip = temp[8];
                 model = (await adb.getModel()) || 'Model';
                 manufacturer = (await adb.getManufacturer()) || 'Manufacturer';
-                const pid: number[] = await adb.getPIDsByName('scrcpy');
-                this.log.info(`PIDs: ${JSON.stringify(pid)}`);
-                if (!pid || !pid.length) {
+                const shellProcessesString = await adb.shell(CMD);
+                const shellProcessesArray = shellProcessesString.split('\n').filter((pid: string) => pid.trim().length);
+                this.log.info(`[${item.udid}] PIDs: ${JSON.stringify(shellProcessesArray)}`);
+                if (!shellProcessesArray.length) {
                     await adb.push(path.join(FILE_DIR, FILE_NAME), TEMP_PATH);
                     const exit = await adb.shell(`CLASSPATH=${TEMP_PATH}${FILE_NAME} app_process ${ARGS}`);
-                    console.log(`exit code: ${exit}`);
+                    console.log(`[${item.udid}] Exit code: ${exit}`);
                 }
             } catch (e) {
                 this.log.error(e);
