@@ -1,6 +1,6 @@
 {
   "name": "ws-scrcpy",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "ws client for scrcpy",
   "scripts": {
     "build": "npm run compile && npm run copy:vendor && npx browserify build/index.js -o build/bundle.js",
