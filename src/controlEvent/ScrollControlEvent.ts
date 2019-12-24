@@ -2,6 +2,8 @@ import ControlEvent from './ControlEvent';
 import Position from '../Position';
 
 export default class ScrollControlEvent extends ControlEvent {
+    public static PAYLOAD_LENGTH: number = 20;
+
     constructor(readonly position: Position, readonly hScroll: number, readonly vScroll: number) {
         super(ControlEvent.TYPE_SCROLL);
     }
@@ -10,7 +12,7 @@ export default class ScrollControlEvent extends ControlEvent {
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer = new Buffer(ControlEvent.SCROLL_PAYLOAD_LENGTH + 1);
+        const buffer = new Buffer(ScrollControlEvent.PAYLOAD_LENGTH + 1);
         buffer.writeUInt8(this.type, 0);
         buffer.writeUInt32BE(this.position.point.x, 1);
         buffer.writeUInt32BE(this.position.point.y, 5);

@@ -1,29 +1,49 @@
 import ControlEvent from './ControlEvent';
 import VideoSettings from '../VideoSettings';
+import Util from '../Util';
 
 export default class CommandControlEvent extends ControlEvent {
+    public static PAYLOAD_LENGTH: number = 0;
+
     public static CommandCodes: Record<string, number> = {
-        COMMAND_BACK_OR_SCREEN_ON: 0,
-        COMMAND_EXPAND_NOTIFICATION_PANEL: 1,
-        COMMAND_COLLAPSE_NOTIFICATION_PANEL: 2,
-        COMMAND_SET_VIDEO_SETTINGS: 3
+        TYPE_EXPAND_NOTIFICATION_PANEL: ControlEvent.TYPE_EXPAND_NOTIFICATION_PANEL,
+        TYPE_COLLAPSE_NOTIFICATION_PANEL: ControlEvent.TYPE_COLLAPSE_NOTIFICATION_PANEL,
+        TYPE_GET_CLIPBOARD: ControlEvent.TYPE_GET_CLIPBOARD,
+        TYPE_SET_CLIPBOARD: ControlEvent.TYPE_SET_CLIPBOARD,
+        TYPE_CHANGE_STREAM_PARAMETERS: ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS
     };
 
     public static CommandNames: Record<number, string> = {
-        0: 'Back / Turn Screen On',
-        1: 'Expand panel',
-        2: 'Collapse panel',
-        3: 'Change video settings'
+        5: 'Expand panel',
+        6: 'Collapse panel',
+        7: 'Get clipboard',
+        8: 'Set clipboard',
+        10: 'Change video settings'
     };
 
     public static createSetVideoSettingsCommand(videoSettings: VideoSettings): CommandControlEvent {
         const temp = videoSettings.toBuffer();
-        const event = new CommandControlEvent(this.CommandCodes.COMMAND_SET_VIDEO_SETTINGS);
-        const buffer = new Buffer(ControlEvent.COMMAND_PAYLOAD_LENGTH + 1 + temp.length);
+        const event = new CommandControlEvent(ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS);
+        const offset = CommandControlEvent.PAYLOAD_LENGTH + 1;
+        const buffer = new Buffer(offset + temp.length);
         buffer.writeUInt8(event.type, 0);
-        buffer.writeUInt8(event.action, 1);
         temp.forEach((byte, index) => {
-            buffer.writeUInt8(byte, index + 2);
+            buffer.writeUInt8(byte, index + offset);
+        });
+        event.buffer = buffer;
+        return event;
+    }
+
+    public static createSetClipboard(text: string): CommandControlEvent {
+        const event = new CommandControlEvent(ControlEvent.TYPE_SET_CLIPBOARD);
+        const temp = Util.stringToUtf8ByteArray(text);
+        let offset = CommandControlEvent.PAYLOAD_LENGTH + 1;
+        const buffer = new Buffer(offset + 2 + temp.length);
+        buffer.writeUInt8(event.type, 0);
+        buffer.writeUInt16BE(temp.length, offset);
+        offset += 2;
+        temp.forEach((byte, index) => {
+            buffer.writeUInt8(byte, index + offset);
         });
         event.buffer = buffer;
         return event;
@@ -31,8 +51,8 @@ export default class CommandControlEvent extends ControlEvent {
 
     private buffer?: Buffer;
 
-    constructor(readonly action: number) {
-        super(ControlEvent.TYPE_COMMAND);
+    constructor(readonly type: number) {
+        super(type);
     }
 
     /**
@@ -40,9 +60,8 @@ export default class CommandControlEvent extends ControlEvent {
      */
     public toBuffer(): Buffer {
         if (!this.buffer) {
-            const buffer = new Buffer(ControlEvent.COMMAND_PAYLOAD_LENGTH + 1);
+            const buffer = new Buffer(CommandControlEvent.PAYLOAD_LENGTH + 1);
             buffer.writeUInt8(this.type, 0);
-            buffer.writeUInt8(this.action, 1);
             this.buffer = buffer;
         }
         return this.buffer;
@@ -50,6 +69,6 @@ export default class CommandControlEvent extends ControlEvent {
 
     public toString(): string {
         const buffer = this.buffer ? `, buffer=[${this.buffer.join(',')}]` : '';
-        return `CommandControlEvent{action=${this.action}${buffer}}`;
+        return `CommandControlEvent{action=${this.type}${buffer}}`;
     }
 }

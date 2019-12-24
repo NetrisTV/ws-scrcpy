@@ -40,6 +40,6 @@ npm start
 
 ## scrcpy websocket fork
 
-Currently support of WebSocket protocol added to v1.8 of scrcpy
-* [Prebuilt package](https://github.com/NetrisTV/scrcpy/releases/download/v1.8.1/scrcpy-server.jar)
-* [Source code](https://github.com/NetrisTV/scrcpy/tree/feature/websocket-server)
+Currently support of WebSocket protocol added to v1.9 of scrcpy
+* [Prebuilt package](https://github.com/NetrisTV/scrcpy/releases/download/v1.9-ws/scrcpy-server.jar)
+* [Source code](https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.9)
