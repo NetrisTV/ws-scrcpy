@@ -18,18 +18,18 @@
     "mkdirs": "npx mkdirp dist/public",
     "start": "npm run dist && npm run start:dist",
     "start:dist": "cd dist && npm start",
-    "dist:start": "cd public && npx ws --websocket ../server/websocket.js --spa index.html",
+    "dist:start": "cd server && node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Sergey Volkov <s.volkov@netris.ru>",
   "license": "MIT",
   "dependencies": {
     "appium-adb": "^7.7.1",
-    "local-web-server": "^2.6.1"
+    "ws": "^7.2.3"
   },
   "devDependencies": {
     "@types/node": "^12.0.2",
-    "@types/ws": "^6.0.1",
+    "@types/ws": "^6.0.4",
     "browserify": "^16.2.3",
     "buffer": "^5.2.1",
     "h264-converter": "^0.1.0",

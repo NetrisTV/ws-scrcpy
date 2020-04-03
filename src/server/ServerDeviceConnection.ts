@@ -7,7 +7,7 @@ import * as path from 'path';
 import Timeout = NodeJS.Timeout;
 
 const TEMP_PATH = '/data/local/tmp/';
-const FILE_DIR = process.cwd();
+const FILE_DIR = path.join(__dirname, '../public');
 const FILE_NAME = 'scrcpy-server.jar';
 const ARGS = '/ com.genymobile.scrcpy.Server 0 8000000 false - false true web >/dev/null&';
 

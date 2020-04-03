@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": { "*": ["types/*"] },
     /* Basic Options */
