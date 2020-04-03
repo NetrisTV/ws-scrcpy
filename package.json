@@ -19,6 +19,7 @@
     "start": "npm run dist && npm run start:dist",
     "start:dist": "cd dist && npm start",
     "dist:start": "cd server && node index.js",
+    "lint": "npx tslint --project .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Sergey Volkov <s.volkov@netris.ru>",
