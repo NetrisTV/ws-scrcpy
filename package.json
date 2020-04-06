@@ -12,8 +12,7 @@
     "copy:public": "node -e \"require('recursive-copy')('src/public','dist/public', {overwrite: true, debug: true} ,function(e){if(e)process.exit(1);process.exit(0);})\"",
     "copy:server": "node -e \"require('recursive-copy')('build/server','dist/server', {overwrite: true, debug: true} ,function(e){if(e)process.exit(1);process.exit(0);})\"",
     "copy:vendor": "node -e \"require('recursive-copy')('src/vendor','build', {overwrite: true, debug: true} ,function(e){if(e)process.exit(1);process.exit(0);})\"",
-    "dist": "npm run build && npm run download && npm run copy:package.json && npm run copy:public && npm run copy:bundle && npm run copy:server",
-    "download": "npm run mkdirs && cd dist/public && node -e \"fs.existsSync('scrcpy-server.jar')||require('node-wget')('https://github.com/NetrisTV/scrcpy/releases/download/v1.9-ws/scrcpy-server.jar')\"",
+    "dist": "npm run build && npm run mkdirs && npm run copy:package.json && npm run copy:public && npm run copy:bundle && npm run copy:server",
     "copy:package.json": "node -e \"const j=require('./package.json');const {name,version,description,author,license,dependencies,scripts}=j; const p={name, version, description,author,license,dependencies}; p.scripts={start: scripts['dist:start']};fs.writeFileSync('./dist/package.json', JSON.stringify(p, null, '  '))\"",
     "mkdirs": "npx mkdirp dist/public",
     "start": "npm run dist && npm run start:dist",
@@ -26,6 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "appium-adb": "^7.7.1",
+    "tslib": "^1.9.3",
     "ws": "^7.2.3"
   },
   "devDependencies": {
@@ -35,11 +35,9 @@
     "buffer": "^5.2.1",
     "h264-converter": "^0.1.0",
     "mkdirp": "^0.5.1",
-    "node-wget": "^0.4.3",
     "recursive-copy": "^2.0.10",
     "rimraf": "^3.0.0",
     "sylvester.js": "^0.1.1",
-    "tslib": "^1.9.3",
     "tslint": "^5.16.0",
     "tslint-react": "^4.0.0",
     "typescript": "^3.4.5"

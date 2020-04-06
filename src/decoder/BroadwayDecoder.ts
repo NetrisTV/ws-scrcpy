@@ -3,7 +3,7 @@ import Size from '../Size';
 import YUVCanvas from '../h264-live-player/YUVCanvas';
 import YUVWebGLCanvas from '../h264-live-player/YUVWebGLCanvas';
 // @ts-ignore
-import * as Avc from '../Decoder';
+import Avc from '../Decoder';
 import VideoSettings from '../VideoSettings';
 import Canvas from '../h264-live-player/Canvas';
 import ScreenInfo from '../ScreenInfo';
