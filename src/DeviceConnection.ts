@@ -17,12 +17,12 @@ const MAGIC = 'scrcpy';
 const DEVICE_INFO_LENGTH = MAGIC.length + DEVICE_NAME_FIELD_LENGTH +
     ScreenInfo.BUFFER_LENGTH + VideoSettings.BUFFER_LENGTH;
 
-export interface IErrorListener {
-    OnError(this: IErrorListener, ev: Event | string): void;
+export interface ErrorListener {
+    OnError(this: ErrorListener, ev: Event | string): void;
 }
 
-export interface IDeviceMessageListener {
-    OnDeviceMessage(this: IDeviceMessageListener, ev: DeviceMessage): void;
+export interface DeviceMessageListener {
+    OnDeviceMessage(this: DeviceMessageListener, ev: DeviceMessage): void;
 }
 
 export class DeviceConnection {
@@ -41,8 +41,8 @@ export class DeviceConnection {
     public readonly ws: WebSocket;
     private events: ControlEvent[] = [];
     private decoders: Set<Decoder> = new Set<Decoder>();
-    private errorListener?: IErrorListener;
-    private deviceMessageListener?: IDeviceMessageListener;
+    private errorListener?: ErrorListener;
+    private deviceMessageListener?: DeviceMessageListener;
     private name: string = '';
     // private videoSettings?: VideoSettings;
     // private screenInfo?: ScreenInfo;
@@ -201,11 +201,11 @@ export class DeviceConnection {
         }
     }
 
-    public setErrorListener(listener: IErrorListener): void {
+    public setErrorListener(listener: ErrorListener): void {
         this.errorListener = listener;
     }
 
-    public setDeviceMessageListener(listener: IDeviceMessageListener): void {
+    public setDeviceMessageListener(listener: DeviceMessageListener): void {
         this.deviceMessageListener = listener;
     }
 

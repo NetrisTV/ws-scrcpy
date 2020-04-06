@@ -86,7 +86,7 @@
     "class-name": true,
     "comment-format": [true, "check-space"],
     "import-spacing": true,
-    "interface-name": [true, "always-prefix"],
+    "interface-name": [true, "never-prefix"],
     "new-parens": true,
     "no-angle-bracket-type-assertion": true,
     "no-consecutive-blank-lines": true,

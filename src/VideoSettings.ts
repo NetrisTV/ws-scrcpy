@@ -1,7 +1,7 @@
 import Size from './Size';
 import Rect from './Rect';
 
-interface IVideoSettings {
+interface Settings {
     crop?: Rect | null;
     bitrate: number;
     bounds?: Size | null;
@@ -19,7 +19,7 @@ export default class VideoSettings {
     public readonly iFrameInterval: number = 0;
     public readonly sendFrameMeta: boolean = false;
 
-    constructor(data?: IVideoSettings) {
+    constructor(data?: Settings) {
         if (data) {
             this.crop = data.crop;
             this.bitrate = data.bitrate;

@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http';
-import { IDevice, ServerDeviceConnection } from './ServerDeviceConnection';
+import { Device, ServerDeviceConnection } from './ServerDeviceConnection';
 
 const port = parseInt(process.argv[2], 10) || 9000;
 const map: Record<string, string> = {
@@ -62,7 +62,7 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse) => 
 
 const wss = new WebSocket.Server({ server });
 wss.on('connection', async (ws: WebSocket) => {
-    const sendDeviceList = (data: IDevice[]) => {
+    const sendDeviceList = (data: Device[]) => {
         ws.send(JSON.stringify(data));
     };
     const adbPolling = await ServerDeviceConnection.getInstance();

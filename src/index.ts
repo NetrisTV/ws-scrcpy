@@ -1,10 +1,10 @@
 import NativeDecoder from './decoder/NativeDecoder';
 import { BroadwayDecoder, CANVAS_TYPE } from './decoder/BroadwayDecoder';
 import H264bsdDecoder from './decoder/H264bsdDecoder';
-import { IDevice } from './server/ServerDeviceConnection';
+import { Device } from './server/ServerDeviceConnection';
 import { DeviceController } from './DeviceController';
 
-interface IArguments {
+interface Arguments {
     url: string;
     name: string;
 }
@@ -22,7 +22,7 @@ class Main {
         return Main.instance || new Main();
     }
 
-    public static startNative(params: IArguments): void {
+    public static startNative(params: Arguments): void {
         const {url, name} = params;
         const tag = NativeDecoder.createElement();
         const decoder = new NativeDecoder(tag);
@@ -35,7 +35,7 @@ class Main {
         controller.start();
     }
 
-    public static startBroadway(params: IArguments): void {
+    public static startBroadway(params: Arguments): void {
         const {url, name} = params;
         const tag = BroadwayDecoder.createElement();
         const decoder = new BroadwayDecoder(tag, CANVAS_TYPE.WEBGL);
@@ -48,7 +48,7 @@ class Main {
         controller.start();
     }
 
-    public static startH264bsd(params: IArguments): void {
+    public static startH264bsd(params: Arguments): void {
         const {url, name} = params;
         const tag = H264bsdDecoder.createElement();
         const decoder = new H264bsdDecoder(tag);
@@ -89,7 +89,7 @@ class Main {
             }, 2000);
         };
         ws.onmessage = (e: MessageEvent) => {
-            let data: IDevice[];
+            let data: Device[];
             try {
                 data = JSON.parse(e.data);
             } catch (error) {

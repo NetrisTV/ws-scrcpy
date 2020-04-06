@@ -1,5 +1,5 @@
 import Decoder from './decoder/Decoder';
-import { DeviceConnection, IDeviceMessageListener } from './DeviceConnection';
+import { DeviceConnection, DeviceMessageListener } from './DeviceConnection';
 import VideoSettings from './VideoSettings';
 import ErrorHandler from './ErrorHandler';
 import KeyCodeControlEvent from './controlEvent/KeyCodeControlEvent';
@@ -10,20 +10,20 @@ import ControlEvent from './controlEvent/ControlEvent';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import DeviceMessage from './DeviceMessage';
 
-export interface IDeviceControllerParams {
+export interface DeviceControllerParams {
     url: string;
     name: string;
     decoder: Decoder;
     videoSettings: VideoSettings;
 }
 
-export class DeviceController implements IDeviceMessageListener {
+export class DeviceController implements DeviceMessageListener {
     public readonly decoder: Decoder;
     public readonly controls: HTMLDivElement;
     public readonly deviceView: HTMLDivElement;
     public readonly input: HTMLInputElement;
 
-    constructor(params: IDeviceControllerParams) {
+    constructor(params: DeviceControllerParams) {
         const decoder = this.decoder = params.decoder;
         const deviceName = params.name;
         const decoderName = this.decoder.getName();

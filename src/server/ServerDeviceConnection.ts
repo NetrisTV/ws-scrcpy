@@ -15,7 +15,7 @@ const GET_SHELL_PROCESSES = 'find /proc -type d -maxdepth 1 -user shell -group s
 const CHECK_CMDLINE = 'test -f "$a/cmdline" && grep -av find "$a/cmdline" |grep -sa scrcpy 2>&1 > /dev/null && echo $a |cut -d "/" -f 3;';
 const CMD = 'for a in `' + GET_SHELL_PROCESSES + '`; do ' + CHECK_CMDLINE + ' done; exit 0';
 
-export interface IDevice {
+export interface Device {
     udid: string;
     state: string;
     ip: string;
@@ -27,10 +27,10 @@ export class ServerDeviceConnection extends EventEmitter {
     private static UPDATE_EVENT: string = 'update';
     private static instance: ServerDeviceConnection;
     private static cacheTime: number = 15000;
-    private cache?: IDevice[];
+    private cache?: Device[];
     private adb: ADB;
     private adbPromise: Promise<ADB>;
-    private updatePromise: Promise<IDevice[]>;
+    private updatePromise: Promise<Device[]>;
     private checkTimeout?: Timeout;
     private adbList: Record<string, ADB> = {};
     public static async getInstance(): Promise<ServerDeviceConnection> {
@@ -60,11 +60,11 @@ export class ServerDeviceConnection extends EventEmitter {
         }
         return adb;
     }
-    private async getDevices_(): Promise<IDevice[]> {
+    private async getDevices_(): Promise<Device[]> {
         const adb = await this.getAdb();
         return adb.getConnectedDevices();
     }
-    public async getDevices(force?: boolean): Promise<IDevice[]> {
+    public async getDevices(force?: boolean): Promise<Device[]> {
         if (this.cache && !force) {
             return this.cache;
         }
@@ -73,7 +73,7 @@ export class ServerDeviceConnection extends EventEmitter {
         }
         const list = await this.updatePromise;
         delete this.updatePromise;
-        const all = list.map(async (item: IDevice) => {
+        const all = list.map(async (item: Device) => {
             const adb: ADB = await this.getOrCreateAdb(item.udid);
             let ip = '';
             let model = '';
