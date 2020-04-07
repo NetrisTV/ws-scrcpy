@@ -7,7 +7,7 @@ import * as readline from 'readline';
 import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http';
 import { Device, ServerDeviceConnection } from './ServerDeviceConnection';
 
-const port = parseInt(process.argv[2], 10) || 9000;
+const port = parseInt(process.argv[2], 10) || 8000;
 const map: Record<string, string> = {
     '.wasm': 'application/wasm',
     '.js': 'text/javascript',
@@ -65,15 +65,16 @@ wss.on('connection', async (ws: WebSocket) => {
     const sendDeviceList = (data: Device[]) => {
         ws.send(JSON.stringify(data));
     };
-    const adbPolling = await ServerDeviceConnection.getInstance();
-    sendDeviceList(await adbPolling.getDevices());
+    const deviceConnection = await ServerDeviceConnection.getInstance();
+    await deviceConnection.init();
+    sendDeviceList(await deviceConnection.getDevices());
 
-    adbPolling.on('update', sendDeviceList);
+    deviceConnection.addListener(ServerDeviceConnection.UPDATE_EVENT, sendDeviceList);
     ws.on('message', (data: WebSocket.Data) => {
         ws.send(`message received: ${data.toString()}`);
     });
     ws.on('close', () => {
-        adbPolling.off('update', sendDeviceList);
+        deviceConnection.removeListener(ServerDeviceConnection.UPDATE_EVENT, sendDeviceList);
     });
 });
 

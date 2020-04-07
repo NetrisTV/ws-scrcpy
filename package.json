@@ -24,7 +24,7 @@
   "author": "Sergey Volkov <s.volkov@netris.ru>",
   "license": "MIT",
   "dependencies": {
-    "appium-adb": "^7.7.1",
+    "adbkit": "^2.11.1",
     "tslib": "^1.9.3",
     "ws": "^7.2.3"
   },
