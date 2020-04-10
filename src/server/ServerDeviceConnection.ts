@@ -3,8 +3,9 @@ import ADB from 'adbkit';
 // @ts-ignore
 import { EventEmitter } from 'events';
 import * as path from 'path';
-import { Stream } from 'stream';
-import { Socket } from 'net';
+import { Device } from '../common/Device';
+import { AdbKitLogcatReader } from '../common/AdbKitLogcat';
+import { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker } from '../common/AdbKit';
 
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, '../public');
@@ -15,56 +16,16 @@ const GET_SHELL_PROCESSES = 'find /proc -type d -maxdepth 1 -user shell -group s
 const CHECK_CMDLINE = 'test -f "$a/cmdline" && grep -av find "$a/cmdline" |grep -sa scrcpy 2>&1 > /dev/null && echo $a |cut -d "/" -f 3;';
 const CMD = 'for a in `' + GET_SHELL_PROCESSES + '`; do ' + CHECK_CMDLINE + ' done; exit 0';
 
-// tslint:disable-next-line:no-any
-type Callback = (err: Error | null, result?: any) => void;
-
-interface PushTransfer extends EventEmitter {}
-interface AdbKitTracker extends EventEmitter {
-    deviceList: AdbKitDevice[];
-    deviceMap: Record<string, AdbKitDevice>;
-}
-
-interface AdbKitDevice {
-    id: string;
-    type: string;
-}
-
-interface AdbKitClient {
-    listDevices(): Promise<AdbKitDevice[]>;
-    trackDevices(): Promise<AdbKitTracker>;
-    getProperties(serial: string): Promise<Record<string, string>>;
-    push(serial: string, contents: string | Stream, path: string, mode?: number, callback?: Callback): Promise<PushTransfer>;
-    shell(serial: string, command: string, callback?: Callback): Promise<Socket>;
-    waitBootComplete(serial: string): Promise<string>;
-}
-
-interface AdbKitChangesSet {
-    added: AdbKitDevice[];
-    removed: AdbKitDevice[];
-    changed: AdbKitDevice[];
-}
-
-export interface Device {
-    udid: string;
-    state: string;
-    ip: string;
-    model: string;
-    manufacturer: string;
-    pid: number;
-}
-
 export class ServerDeviceConnection extends EventEmitter {
     public static readonly UPDATE_EVENT: string = 'update';
     private static instance: ServerDeviceConnection;
-    private static cacheTime: number = 15000;
-    private lastUpdate: number = 0;
     private cache: Device[] = [];
     private deviceMap: Map<string, Device> = new Map();
     private clientMap: Map<string, AdbKitClient> = new Map();
     private client: AdbKitClient = ADB.createClient();
     private tracker?: AdbKitTracker;
     private initialized: boolean = false;
-    public static async getInstance(): Promise<ServerDeviceConnection> {
+    public static getInstance(): ServerDeviceConnection {
         if (!this.instance) {
             this.instance = new ServerDeviceConnection();
         }
@@ -80,6 +41,11 @@ export class ServerDeviceConnection extends EventEmitter {
         }
         await this.initTracker();
         this.initialized = true;
+    }
+
+    public async openLogcat(udid: string): Promise<AdbKitLogcatReader> {
+        const client = this.getOrCreateClient(udid);
+        return client.openLogcat(udid);
     }
 
     private async initTracker(): Promise<AdbKitTracker> {
@@ -119,11 +85,11 @@ export class ServerDeviceConnection extends EventEmitter {
                 }
             }
             this.cache = Array.from(this.deviceMap.values());
-            this.lastUpdate = Date.now();
             this.emit(ServerDeviceConnection.UPDATE_EVENT, this.cache);
         });
         return tracker;
     }
+
     private async mapDevicesToDescriptors(list: AdbKitDevice[]): Promise<Device[]> {
         const all = await Promise.all(list.map(device => this.getDescriptor(device)));
         list.forEach((device: AdbKitDevice, idx: number) => {this.deviceMap.set(device.id, all[idx]);});
@@ -146,10 +112,13 @@ export class ServerDeviceConnection extends EventEmitter {
         const {id: udid, type: state} = device;
         if (state === 'offline') {
             return {
+                'build.version.release': '',
+                'build.version.sdk': '',
+                'ro.product.cpu.abi': '',
+                'product.manufacturer': '',
+                'product.model': '',
                 pid: -1,
                 ip: '0.0.0.0',
-                manufacturer: '',
-                model: '',
                 state,
                 udid
             };
@@ -161,8 +130,11 @@ export class ServerDeviceConnection extends EventEmitter {
         const descriptor: Device = {
             pid: -1,
             ip: '127.0.0.1',
-            manufacturer: props['ro.product.manufacturer'],
-            model: props['ro.product.model'],
+            'ro.product.cpu.abi': props['ro.product.cpu.abi'],
+            'product.manufacturer': props['ro.product.manufacturer'],
+            'product.model': props['ro.product.model'],
+            'build.version.release': props['ro.build.version.release'],
+            'build.version.sdk': props['ro.build.version.sdk'],
             state,
             udid
         };
@@ -224,14 +196,7 @@ export class ServerDeviceConnection extends EventEmitter {
         }
     }
 
-    public async getDevices(): Promise<Device[]> {
-        if (Date.now() - this.lastUpdate > ServerDeviceConnection.cacheTime) {
-            if (this.tracker) {
-                const deviceList = this.tracker.deviceList || [];
-                this.cache = await this.mapDevicesToDescriptors(deviceList);
-                this.lastUpdate = Date.now();
-            }
-        }
+    public getDevices(): Device[] {
         return this.cache;
     }
 }

@@ -25,6 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "adbkit": "^2.11.1",
+    "adbkit-logcat": "^2.0.1",
     "tslib": "^1.9.3",
     "ws": "^7.2.3"
   },

@@ -3,9 +3,16 @@ import * as http from 'http';
 import * as url from 'url';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as querystring from 'querystring';
 import * as readline from 'readline';
 import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http';
-import { Device, ServerDeviceConnection } from './ServerDeviceConnection';
+import { ServiceLogsProxy } from './ServiceLogsProxy';
+import { ServiceDeviceTracker } from './ServiceDeviceTracker';
+// import { AdbKitLogcatEntry, AdbKitLogcatReader } from '../common/AdbKitLogcat';
+// import { ServerDeviceConnection } from './ServerDeviceConnection';
+// import { Message } from '../common/Message';
+// import { Device } from '../common/Device';
+// @ts-ignore
 
 const port = parseInt(process.argv[2], 10) || 8000;
 const map: Record<string, string> = {
@@ -61,21 +68,24 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse) => 
 });
 
 const wss = new WebSocket.Server({ server });
-wss.on('connection', async (ws: WebSocket) => {
-    const sendDeviceList = (data: Device[]) => {
-        ws.send(JSON.stringify(data));
-    };
-    const deviceConnection = await ServerDeviceConnection.getInstance();
-    await deviceConnection.init();
-    sendDeviceList(await deviceConnection.getDevices());
-
-    deviceConnection.addListener(ServerDeviceConnection.UPDATE_EVENT, sendDeviceList);
-    ws.on('message', (data: WebSocket.Data) => {
-        ws.send(`message received: ${data.toString()}`);
-    });
-    ws.on('close', () => {
-        deviceConnection.removeListener(ServerDeviceConnection.UPDATE_EVENT, sendDeviceList);
-    });
+wss.on('connection', async (ws: WebSocket, req) => {
+    if (!req.url) {
+        ws.close(-1, 'Invalid url');
+        return;
+    }
+    const parsed = url.parse(req.url);
+    const parsedQuery = querystring.parse(parsed.query || '');
+    switch (parsedQuery.action) {
+        case 'logcat':
+            ServiceLogsProxy.createService(ws);
+            break;
+        case 'devicelist':
+            ServiceDeviceTracker.createService(ws);
+            break;
+        default:
+            ws.close(-2, 'Invalid action');
+            return;
+    }
 });
 
 server.listen(port);
