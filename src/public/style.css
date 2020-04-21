@@ -146,6 +146,20 @@ pre.might-overflow:hover {
     border: solid 1px hsl(210, 14%, 53%);
 }
 
+.device-view {
+    float: right;
+}
+
+.video-layer {
+    position: absolute;
+    z-index: 0;
+}
+
+.touch-layer {
+    position: absolute;
+    z-index: 1;
+}
+
 .video {
     float: right;
     max-height: 100%;

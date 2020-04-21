@@ -5,7 +5,6 @@ import ErrorHandler from './ErrorHandler';
 import KeyCodeControlEvent from './controlEvent/KeyCodeControlEvent';
 import KeyEvent from './android/KeyEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
-import Size from './Size';
 import ControlEvent from './controlEvent/ControlEvent';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import DeviceMessage from './DeviceMessage';
@@ -29,6 +28,7 @@ export class DeviceController implements DeviceMessageListener {
         const decoderName = this.decoder.getName();
         const controlsWrapper = this.controls = document.createElement('div');
         const deviceView = this.deviceView = document.createElement('div');
+        deviceView.className = 'device-view';
         const connection = DeviceConnection.getInstance(params.url);
         const stream = params.videoSettings;
         connection.addDecoder(this.decoder);
@@ -127,12 +127,13 @@ export class DeviceController implements DeviceMessageListener {
                         }
                         const width = document.body.clientWidth & ~15;
                         const height = document.body.clientHeight & ~15;
-                        const bounds: Size = new Size(width, height);
+                        const maxSize = Math.min(width, height);
                         event = CommandControlEvent.createSetVideoSettingsCommand(new VideoSettings({
-                            bounds,
+                            maxSize,
                             bitrate,
                             frameRate,
                             iFrameInterval,
+                            lockedVideoOrientation: -1,
                             sendFrameMeta: false
                         }));
                     } else if (action === CommandControlEvent.TYPE_SET_CLIPBOARD) {
@@ -205,7 +206,10 @@ export class DeviceController implements DeviceMessageListener {
         wrapper.appendChild(stopBtn);
         controlsWrapper.appendChild(wrapper);
         deviceView.appendChild(deviceButtons);
-        deviceView.appendChild(this.decoder.getElement());
+        const video = document.createElement('div');
+        video.className = 'video';
+        deviceView.appendChild(video);
+        this.decoder.setParent(video);
         connection.setErrorListener(new ErrorHandler(stop));
     }
 

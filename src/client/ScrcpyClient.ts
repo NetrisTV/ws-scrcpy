@@ -3,6 +3,7 @@ import { DeviceController } from '../DeviceController';
 import { BroadwayDecoder, CANVAS_TYPE } from '../decoder/BroadwayDecoder';
 import H264bsdDecoder from '../decoder/H264bsdDecoder';
 import { ParsedUrlQueryInput } from 'querystring';
+import { BaseClient } from './BaseClient';
 
 export interface Arguments {
     url: string;
@@ -19,28 +20,35 @@ export interface StreamParams extends ParsedUrlQueryInput {
     port: string;
 }
 
-export class ClientStream {
+export class ScrcpyClient extends BaseClient {
     public static ACTION: string = 'stream';
-    private static instance?: ClientStream;
-    public static start(params: StreamParams): ClientStream {
-        let controlsWrap = document.getElementById('controlsWrap');
-        if (!controlsWrap) {
-            controlsWrap = document.createElement('div');
-            controlsWrap.id = 'controlsWrap';
-            document.body.append(controlsWrap);
-        }
+    private static instance?: ScrcpyClient;
+    public static start(params: StreamParams): ScrcpyClient {
+        this.getOrCreateControlsWrapper();
         const client = this.getInstance();
         client.startStream(params.udid, params.decoder, `ws://${params.ip}:${params.port}`);
+        client.setTitle(`WS scrcpy ${params.decoder} ${params.udid}`);
 
         return client;
     }
 
     constructor() {
-        ClientStream.instance = this;
+        super();
+        ScrcpyClient.instance = this;
     }
 
-    public static getInstance(): ClientStream {
-        return ClientStream.instance || new ClientStream();
+    public static getInstance(): ScrcpyClient {
+        return ScrcpyClient.instance || new ScrcpyClient();
+    }
+
+    public static getOrCreateControlsWrapper(): HTMLDivElement {
+        let controlsWrap = document.getElementById('controlsWrap') as HTMLDivElement;
+        if (!controlsWrap) {
+            controlsWrap = document.createElement('div');
+            controlsWrap.id = 'controlsWrap';
+            document.body.append(controlsWrap);
+        }
+        return controlsWrap;
     }
 
     public static startNative(params: Arguments): void {
@@ -88,13 +96,13 @@ export class ClientStream {
         }
         switch (decoderName) {
             case 'native':
-                ClientStream.startNative({url, name});
+                ScrcpyClient.startNative({url, name});
                 break;
             case 'broadway':
-                ClientStream.startBroadway({url, name});
+                ScrcpyClient.startBroadway({url, name});
                 break;
             case 'h264bsd':
-                ClientStream.startH264bsd({url, name});
+                ScrcpyClient.startH264bsd({url, name});
                 break;
             default:
                 return;

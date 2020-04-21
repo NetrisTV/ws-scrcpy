@@ -1,23 +1,24 @@
 import Decoder from './Decoder';
 import VideoConverter from 'h264-converter';
 import VideoSettings from '../VideoSettings';
-import Size from '../Size';
 
 export default class NativeDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
+        lockedVideoOrientation: -1,
         bitrate: 8000000,
         frameRate: 60,
         iFrameInterval: 10,
-        bounds: new Size(720, 720),
+        maxSize: 720,
         sendFrameMeta: false
     });
     private static DEFAULT_FRAME_PER_FRAGMENT: number = 6;
     public static createElement(id?: string): HTMLVideoElement {
         const tag = document.createElement('video') as HTMLVideoElement;
-        if (id) {
+        tag.setAttribute('muted', 'muted');
+        if (typeof id === 'string') {
             tag.id = id;
         }
-        tag.className = 'video';
+        tag.className = 'video-layer';
         return tag;
     }
     protected TAG: string = 'NativeDecoder';

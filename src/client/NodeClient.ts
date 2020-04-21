@@ -1,4 +1,6 @@
-export abstract class Client {
+import { BaseClient } from './BaseClient';
+
+export abstract class NodeClient extends BaseClient {
     public static ACTION: string = 'unknown';
 
     // tslint:disable-next-line:no-any
@@ -9,15 +11,8 @@ export abstract class Client {
     protected ws: WebSocket;
 
     protected constructor(protected readonly action: string) {
+        super();
         this.ws = this.openNewWebSocket();
-    }
-
-    protected setTitle(text: string): void {
-        let titleTag: HTMLTitleElement | null = document.querySelector('head > title');
-        if (!titleTag) {
-            titleTag = document.createElement('title');
-        }
-        titleTag.innerText = text;
     }
 
     protected openNewWebSocket(): WebSocket {

@@ -1,16 +1,15 @@
 import * as querystring from 'querystring';
-import { Client } from './Client';
+import { NodeClient } from './NodeClient';
 import { Message } from '../common/Message';
 import { Device } from '../common/Device';
-import { StreamParams } from './ClientStream';
+import { StreamParams } from './ScrcpyClient';
 import { LogsParams } from './ClientLogsProxy';
+import { SERVER_PORT } from '../server/Constants';
 
 type MapItem = {
     field?: keyof Device;
     title: string;
 };
-
-const DEFAULT_PORT = '8886';
 
 const FIELDS_MAP: MapItem[] = [
     {
@@ -55,7 +54,7 @@ type Decoders = 'broadway' | 'native' | 'h264bsd';
 
 const DECODERS: Decoders[] = ['broadway', 'native', 'h264bsd' ];
 
-export class ClientDeviceTracker extends Client {
+export class ClientDeviceTracker extends NodeClient {
     public static ACTION: string = 'devicelist';
     public static start(): ClientDeviceTracker {
         return new ClientDeviceTracker(ClientDeviceTracker.ACTION);
@@ -142,7 +141,7 @@ export class ClientDeviceTracker extends Client {
                         udid: device.udid,
                         decoder: decoderName,
                         ip: device.ip,
-                        port: DEFAULT_PORT
+                        port: SERVER_PORT.toString(10)
                     }, 'stream'));
                 }
                 row.append(decoderTd);

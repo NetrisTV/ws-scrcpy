@@ -3,23 +3,23 @@ import VideoSettings from '../VideoSettings';
 // @ts-ignore
 import { H264bsdCanvas } from '../h264bsd_canvas.js';
 import ScreenInfo from '../ScreenInfo';
-import Size from '../Size';
 import H264bsdWorker from './H264bsdWorker';
 
 export default class H264bsdDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
+        lockedVideoOrientation: -1,
         bitrate: 500000,
         frameRate: 24,
         iFrameInterval: 5,
-        bounds: new Size(480, 480),
+        maxSize: 480,
         sendFrameMeta: false
     });
     public static createElement(id?: string): HTMLCanvasElement {
         const tag = document.createElement('canvas') as HTMLCanvasElement;
-        if (id) {
+        if (typeof id === 'string') {
             tag.id = id;
         }
-        tag.className = 'video';
+        tag.className = 'video-layer';
         return tag;
     }
     protected TAG: string = 'H264bsdDecoder';
@@ -94,11 +94,10 @@ export default class H264bsdDecoder extends Decoder {
         if (this.display) {
             const parent = this.tag.parentNode;
             if (parent) {
-                const id = this.tag.id;
-                const tag = document.createElement('canvas');
-                tag.classList.value = this.tag.classList.value;
-                tag.id = id;
+                const tag = H264bsdDecoder.createElement(this.tag.id);
+                tag.className = this.tag.className;
                 parent.replaceChild(tag, this.tag);
+                parent.append(this.touchableCanvas);
                 this.tag = tag;
             }
         }
@@ -111,6 +110,10 @@ export default class H264bsdDecoder extends Decoder {
         };
         this.tag.width = width;
         this.tag.height = height;
+        // if (this.parentElement) {
+        //     this.parentElement.style.height = `${height}px`;
+        //     this.parentElement.style.width = `${width}px`;
+        // }
     }
 
     private shiftFrame(): void {

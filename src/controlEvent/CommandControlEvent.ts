@@ -10,6 +10,7 @@ export default class CommandControlEvent extends ControlEvent {
         TYPE_COLLAPSE_NOTIFICATION_PANEL: ControlEvent.TYPE_COLLAPSE_NOTIFICATION_PANEL,
         TYPE_GET_CLIPBOARD: ControlEvent.TYPE_GET_CLIPBOARD,
         TYPE_SET_CLIPBOARD: ControlEvent.TYPE_SET_CLIPBOARD,
+        TYPE_ROTATE_DEVICE: ControlEvent.TYPE_ROTATE_DEVICE,
         TYPE_CHANGE_STREAM_PARAMETERS: ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS
     };
 
@@ -18,7 +19,8 @@ export default class CommandControlEvent extends ControlEvent {
         6: 'Collapse panel',
         7: 'Get clipboard',
         8: 'Set clipboard',
-        10: 'Change video settings'
+        10: 'Rotate device',
+        11: 'Change video settings'
     };
 
     public static createSetVideoSettingsCommand(videoSettings: VideoSettings): CommandControlEvent {

@@ -1,7 +1,7 @@
 import * as querystring from 'querystring';
 import { ClientDeviceTracker } from './client/ClientDeviceTracker';
 import { ClientLogsProxy, LogsParams } from './client/ClientLogsProxy';
-import { ClientStream, StreamParams } from './client/ClientStream';
+import { ScrcpyClient, StreamParams } from './client/ScrcpyClient';
 
 window.onload = function(): void {
     const hash = location.hash.replace(/^#!/, '');
@@ -9,8 +9,8 @@ window.onload = function(): void {
     const action = parsedQuery.action;
     if (action === ClientLogsProxy.ACTION && typeof parsedQuery.udid === 'string') {
         ClientLogsProxy.start(parsedQuery as LogsParams);
-    } else if (action === ClientStream.ACTION && typeof parsedQuery.udid === 'string') {
-        ClientStream.start(parsedQuery as StreamParams);
+    } else if (action === ScrcpyClient.ACTION && typeof parsedQuery.udid === 'string') {
+        ScrcpyClient.start(parsedQuery as StreamParams);
     } else {
         ClientDeviceTracker.start();
     }

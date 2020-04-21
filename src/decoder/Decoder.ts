@@ -10,9 +10,13 @@ export default abstract class Decoder {
     protected TAG: string = 'Decoder';
     protected screenInfo?: ScreenInfo;
     protected videoSettings?: VideoSettings;
+    protected parentElement?: HTMLElement;
+    protected touchableCanvas: HTMLCanvasElement;
     private state: number = Decoder.STATE.STOPPED;
 
     protected constructor(protected tag: HTMLElement) {
+        this.touchableCanvas = document.createElement('canvas');
+        this.touchableCanvas.className = 'touch-layer';
     }
 
     public play(): void {
@@ -38,8 +42,14 @@ export default abstract class Decoder {
 
     public abstract getPreferredVideoSetting(): VideoSettings;
 
-    public getElement(): HTMLElement {
-        return this.tag;
+    public getTouchableElement(): HTMLElement {
+        return this.touchableCanvas;
+    }
+
+    public setParent(parent: HTMLElement): void {
+        this.parentElement = parent;
+        parent.append(this.tag);
+        parent.append(this.touchableCanvas);
     }
 
     public getVideoSettings(): VideoSettings|undefined {
@@ -58,6 +68,13 @@ export default abstract class Decoder {
         console.log(`${this.TAG}.setScreenInfo(${screenInfo})`);
         this.pause();
         this.screenInfo = screenInfo;
+        const {width, height} = screenInfo.videoSize;
+        this.touchableCanvas.width = width;
+        this.touchableCanvas.height = height;
+        if (this.parentElement) {
+            this.parentElement.style.height = `${height}px`;
+            this.parentElement.style.width = `${width}px`;
+        }
     }
 
     public getName(): string {

@@ -33,6 +33,6 @@ export default class ScreenInfo {
     public toString(): string {
         return `ScreenInfo{contentRect=${
             this.contentRect}, videoSize=${
-            this.videoSize}, rotated=${this.rotated}`;
+            this.videoSize}, rotated=${this.rotated}}`;
     }
 }

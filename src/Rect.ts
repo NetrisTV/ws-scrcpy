@@ -32,6 +32,6 @@ export default class Rect {
             this.left}, top=${
             this.top}, right=${
             this.right}, bottom=${
-            this.bottom}`;
+            this.bottom}}`;
     }
 }

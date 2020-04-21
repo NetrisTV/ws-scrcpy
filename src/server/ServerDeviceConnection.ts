@@ -6,11 +6,12 @@ import * as path from 'path';
 import { Device } from '../common/Device';
 import { AdbKitLogcatReader } from '../common/AdbKitLogcat';
 import { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker } from '../common/AdbKit';
+import { SERVER_PORT, SERVER_VERSION } from './Constants';
 
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, '../public');
 const FILE_NAME = 'scrcpy-server.jar';
-const ARGS = '/ com.genymobile.scrcpy.Server 0 8000000 false - false true web >/dev/null&';
+const ARGS = `/ com.genymobile.scrcpy.Server ${SERVER_VERSION} 0 8000000 60 -1 false - false false 0 web ${SERVER_PORT} >/dev/null&`;
 
 const GET_SHELL_PROCESSES = 'find /proc -type d -maxdepth 1 -user shell -group shell 2>/dev/null';
 const CHECK_CMDLINE = 'test -f "$a/cmdline" && grep -av find "$a/cmdline" |grep -sa scrcpy 2>&1 > /dev/null && echo $a |cut -d "/" -f 3;';

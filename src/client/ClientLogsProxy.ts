@@ -1,4 +1,4 @@
-import { Client } from './Client';
+import { NodeClient } from './NodeClient';
 import { Message } from '../common/Message';
 import { Filters, FiltersJoin, LogcatServiceMessage, TextFilter } from '../common/LogcatMessage';
 import { AdbKitLogcatEntry } from '../common/AdbKitLogcat';
@@ -19,7 +19,7 @@ export interface LogsParams extends ParsedUrlQueryInput {
     udid: string;
 }
 
-export class ClientLogsProxy extends Client {
+export class ClientLogsProxy extends NodeClient {
     public static readonly defaultPriority: PriorityLevel = PriorityLevel.ERROR;
     public static ACTION: string = 'logcat';
     public static start(params: LogsParams): ClientLogsProxy {
