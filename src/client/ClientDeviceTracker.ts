@@ -37,6 +37,10 @@ const FIELDS_MAP: MapItem[] = [
         title: 'State'
     },
     {
+        field: 'pid',
+        title: 'Pid'
+    },
+    {
         title: 'Broadway'
     },
     {
@@ -107,7 +111,7 @@ export class ClientDeviceTracker extends NodeClient {
                 const {title} = item;
                 const td = document.createElement('th');
                 td.innerText = title;
-                td.className = title.replace('►', '').toLowerCase();
+                td.className = title.toLowerCase();
                 headRow.append(td);
             });
             thead.append(headRow);
