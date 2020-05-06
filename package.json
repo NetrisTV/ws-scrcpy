@@ -12,7 +12,8 @@
     "copy:public": "node -e \"require('recursive-copy')('src/public','dist/public', {overwrite: true, debug: true} ,function(e){if(e)process.exit(1);process.exit(0);})\"",
     "copy:server": "node -e \"require('recursive-copy')('build/server','dist/server', {overwrite: true, debug: true} ,function(e){if(e)process.exit(1);process.exit(0);})\"",
     "copy:vendor": "node -e \"require('recursive-copy')('src/vendor','build', {overwrite: true, debug: true} ,function(e){if(e)process.exit(1);process.exit(0);})\"",
-    "dist": "npm run build && npm run mkdirs && npm run copy:package.json && npm run copy:public && npm run copy:bundle && npm run copy:server",
+    "copy:xterm.css": "node -e \"require('recursive-copy')('node_modules/xterm/css','dist/public', {overwrite: true, debug: true} ,function(e){if(e)process.exit(1);process.exit(0);})\"",
+    "dist": "npm run build && npm run mkdirs && npm run copy:package.json && npm run copy:public && npm run copy:xterm.css && npm run copy:bundle && npm run copy:server",
     "copy:package.json": "node -e \"const j=require('./package.json');const {name,version,description,author,license,dependencies,scripts}=j; const p={name, version, description,author,license,dependencies}; p.scripts={start: scripts['dist:start']};fs.writeFileSync('./dist/package.json', JSON.stringify(p, null, '  '))\"",
     "mkdirs": "npx mkdirp dist/public",
     "start": "npm run dist && npm run start:dist",
@@ -26,6 +27,7 @@
   "dependencies": {
     "adbkit": "^2.11.1",
     "adbkit-logcat": "^2.0.1",
+    "node-pty": "^0.9.0",
     "tslib": "^1.9.3",
     "ws": "^7.2.3"
   },
@@ -41,6 +43,9 @@
     "sylvester.js": "^0.1.1",
     "tslint": "^5.16.0",
     "tslint-react": "^4.0.0",
-    "typescript": "^3.4.5"
+    "typescript": "^3.4.5",
+    "xterm": "^4.5.0",
+    "xterm-addon-attach": "^0.5.0",
+    "xterm-addon-fit": "^0.3.0"
   }
 }

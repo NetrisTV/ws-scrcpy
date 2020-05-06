@@ -6,4 +6,8 @@ export class BaseClient {
         }
         titleTag.innerText = text;
     }
+
+    public escapeUdid(udid: string): string {
+        return 'udid_' + udid.replace(/[. :]/g, '_');
+    }
 }

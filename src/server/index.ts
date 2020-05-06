@@ -8,11 +8,7 @@ import * as readline from 'readline';
 import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http';
 import { ServiceLogsProxy } from './ServiceLogsProxy';
 import { ServiceDeviceTracker } from './ServiceDeviceTracker';
-// import { AdbKitLogcatEntry, AdbKitLogcatReader } from '../common/AdbKitLogcat';
-// import { ServerDeviceConnection } from './ServerDeviceConnection';
-// import { Message } from '../common/Message';
-// import { Device } from '../common/Device';
-// @ts-ignore
+import { ServiceShell } from './ServiceShell';
 
 const port = parseInt(process.argv[2], 10) || 8000;
 const map: Record<string, string> = {
@@ -81,6 +77,9 @@ wss.on('connection', async (ws: WebSocket, req) => {
             break;
         case 'devicelist':
             ServiceDeviceTracker.createService(ws);
+            break;
+        case 'shell':
+            ServiceShell.createService(ws);
             break;
         default:
             ws.close(-2, 'Invalid action');

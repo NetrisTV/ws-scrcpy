@@ -5,6 +5,7 @@ import { Device } from '../common/Device';
 import { StreamParams } from './ScrcpyClient';
 import { LogsParams } from './ClientLogsProxy';
 import { SERVER_PORT } from '../server/Constants';
+import { ShellParams } from './ClientShell';
 
 type MapItem = {
     field?: keyof Device;
@@ -51,6 +52,9 @@ const FIELDS_MAP: MapItem[] = [
     },
     {
         title: 'Logs'
+    },
+    {
+        title: 'Shell'
     }
 ];
 
@@ -159,11 +163,19 @@ export class ClientDeviceTracker extends NodeClient {
                 }, 'logs'));
             }
             row.append(logsTd);
+            const shellTd = document.createElement('td');
+            if (isActive) {
+                shellTd.append(ClientDeviceTracker.buildLink({
+                    action: 'shell',
+                    udid: device.udid
+                }, 'shell'));
+            }
+            row.append(shellTd);
             tbody.append(row);
         });
     }
 
-    private static buildLink(q: LogsParams | StreamParams, text: string): HTMLAnchorElement {
+    private static buildLink(q: LogsParams | StreamParams | ShellParams, text: string): HTMLAnchorElement {
         const hash = `#!${querystring.encode(q)}`;
         const a = document.createElement('a');
         a.setAttribute('href', `${location.origin}${location.pathname}${hash}`);

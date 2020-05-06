@@ -36,8 +36,8 @@ export class ClientLogsProxy extends NodeClient {
     constructor(action: string, private readonly udid: string) {
         super(action);
         this.ws.onopen = this.onSocketOpen.bind(this);
-        this.escapedUdid = ClientLogsProxy.escapeUdid(udid);
-        document.body.className = 'flex';
+        this.escapedUdid = this.escapeUdid(udid);
+        document.body.className = 'body-logcat';
         this.setTitle(`Logcat ${udid}`);
         this.createFilterInputs();
         ClientLogsProxy.getOrCreateTbody(this.escapedUdid);
@@ -268,10 +268,6 @@ export class ClientLogsProxy extends NodeClient {
         return e;
     }
 
-    private static escapeUdid(udid: string): string {
-        return 'udid_' + udid.replace(/[. :]/g, '_');
-    }
-
     private static getOrCreateWrapper(): Element {
         let wrapper = document.getElementById('logcat');
         if (!wrapper) {
@@ -427,7 +423,7 @@ export class ClientLogsProxy extends NodeClient {
         if (!LogsFilter.filterEvent(this.filters, entry)) {
             return;
         }
-        const tbody = ClientLogsProxy.getOrCreateTbody(ClientLogsProxy.escapeUdid(logcatMessage.udid));
+        const tbody = ClientLogsProxy.getOrCreateTbody(this.escapeUdid(logcatMessage.udid));
         const row = ClientLogsProxy.createRow(entry);
         if (tbody.children.length) {
             tbody.insertBefore(row, tbody.children[0]);

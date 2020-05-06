@@ -19,10 +19,15 @@ export abstract class NodeClient extends BaseClient {
         if (this.ws && this.ws.readyState === this.ws.OPEN) {
             this.ws.close();
         }
-        this.ws = new WebSocket(`ws://${location.host}/?action=${this.action}`);
+        this.ws = new WebSocket(this.buildWebSocketUrl());
         this.ws.onmessage = this.onSocketMessage.bind(this);
         this.ws.onclose = this.onSocketClose.bind(this);
         return this.ws;
+    }
+
+    protected buildWebSocketUrl(): string {
+        const proto = (location.protocol === 'https:') ? 'wss' : 'ws';
+        return `${proto}://${location.host}/?action=${this.action}`;
     }
 
     protected abstract onSocketMessage(e: MessageEvent): void;
