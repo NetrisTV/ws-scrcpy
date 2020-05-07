@@ -4,6 +4,7 @@ import { BroadwayDecoder, CANVAS_TYPE } from '../decoder/BroadwayDecoder';
 import H264bsdDecoder from '../decoder/H264bsdDecoder';
 import { ParsedUrlQueryInput } from 'querystring';
 import { BaseClient } from './BaseClient';
+import Decoder from '../decoder/Decoder';
 
 export interface Arguments {
     url: string;
@@ -18,6 +19,7 @@ export interface StreamParams extends ParsedUrlQueryInput {
     decoder: Decoders;
     ip: string;
     port: string;
+    showFps?: boolean;
 }
 
 export class ScrcpyClient extends BaseClient {
@@ -26,7 +28,10 @@ export class ScrcpyClient extends BaseClient {
     public static start(params: StreamParams): ScrcpyClient {
         this.getOrCreateControlsWrapper();
         const client = this.getInstance();
-        client.startStream(params.udid, params.decoder, `ws://${params.ip}:${params.port}`);
+        const decoder = client.startStream(params.udid, params.decoder, `ws://${params.ip}:${params.port}`);
+        if (decoder) {
+            decoder.showFps = !!params.showFps;
+        }
         client.setTitle(`WS scrcpy ${params.decoder} ${params.udid}`);
 
         return client;
@@ -51,7 +56,7 @@ export class ScrcpyClient extends BaseClient {
         return controlsWrap;
     }
 
-    public static startNative(params: Arguments): void {
+    public static startNative(params: Arguments): Decoder {
         const {url, name} = params;
         const tag = NativeDecoder.createElement();
         const decoder = new NativeDecoder(tag);
@@ -62,9 +67,10 @@ export class ScrcpyClient extends BaseClient {
             videoSettings: NativeDecoder.preferredVideoSettings
         });
         controller.start();
+        return decoder;
     }
 
-    public static startBroadway(params: Arguments): void {
+    public static startBroadway(params: Arguments): Decoder {
         const {url, name} = params;
         const tag = BroadwayDecoder.createElement();
         const decoder = new BroadwayDecoder(tag, CANVAS_TYPE.WEBGL);
@@ -75,9 +81,10 @@ export class ScrcpyClient extends BaseClient {
             videoSettings: BroadwayDecoder.preferredVideoSettings
         });
         controller.start();
+        return decoder;
     }
 
-    public static startH264bsd(params: Arguments): void {
+    public static startH264bsd(params: Arguments): Decoder {
         const {url, name} = params;
         const tag = H264bsdDecoder.createElement();
         const decoder = new H264bsdDecoder(tag);
@@ -88,25 +95,28 @@ export class ScrcpyClient extends BaseClient {
             videoSettings: H264bsdDecoder.preferredVideoSettings
         });
         controller.start();
+        return decoder;
     }
 
-    public startStream(name: string, decoderName: string, url: string): void {
+    public startStream(name: string, decoderName: string, url: string): Decoder | undefined {
         if (!url || !name) {
             return;
         }
+        let decoder: Decoder;
         switch (decoderName) {
             case 'native':
-                ScrcpyClient.startNative({url, name});
+                decoder = ScrcpyClient.startNative({url, name});
                 break;
             case 'broadway':
-                ScrcpyClient.startBroadway({url, name});
+                decoder = ScrcpyClient.startBroadway({url, name});
                 break;
             case 'h264bsd':
-                ScrcpyClient.startH264bsd({url, name});
+                decoder = ScrcpyClient.startH264bsd({url, name});
                 break;
             default:
                 return;
         }
         console.log(decoderName, name, url);
+        return decoder;
     }
 }

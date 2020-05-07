@@ -145,6 +145,7 @@ export class ClientDeviceTracker extends NodeClient {
                 const decoderTd = document.createElement('td');
                 if (isActive) {
                     decoderTd.append(ClientDeviceTracker.buildLink({
+                        showFps: true,
                         action: 'stream',
                         udid: device.udid,
                         decoder: decoderName,

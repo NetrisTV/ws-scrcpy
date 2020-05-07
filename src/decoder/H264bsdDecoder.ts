@@ -117,6 +117,7 @@ export default class H264bsdDecoder extends Decoder {
     }
 
     private shiftFrame(): void {
+        this.updateFps(false);
         if (!this.running) {
             return;
         }
@@ -125,6 +126,7 @@ export default class H264bsdDecoder extends Decoder {
 
         if (frame) {
             this.decode(frame);
+            this.updateFps(true);
         }
 
         requestAnimationFrame(this.shiftFrame.bind(this));

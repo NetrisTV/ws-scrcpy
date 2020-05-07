@@ -77,6 +77,7 @@ export class BroadwayDecoder extends Decoder {
     }
 
     private shiftFrame(): void {
+        this.updateFps(false);
         if (this.getState() !== Decoder.STATE.PLAYING) {
             return;
         }
@@ -85,8 +86,8 @@ export class BroadwayDecoder extends Decoder {
 
         if (frame) {
             this.decode(frame);
+            this.updateFps(true);
         }
-
         requestAnimationFrame(this.shiftFrame.bind(this));
     }
 
@@ -138,7 +139,6 @@ export class BroadwayDecoder extends Decoder {
 
     public pushFrame(frame: Uint8Array): void {
         if (BroadwayDecoder.isIFrame(frame)) {
-            console.log(this.TAG, 'IFrame');
             if (this.videoSettings) {
                 const {frameRate} = this.videoSettings;
                 if (this.framesList.length > frameRate / 2) {
