@@ -1,32 +1,34 @@
-import Size from './Size';
 import Rect from './Rect';
 
-interface IVideoSettings {
+interface Settings {
     crop?: Rect | null;
     bitrate: number;
-    bounds?: Size | null;
+    maxSize: number;
     frameRate: number;
     iFrameInterval: number;
     sendFrameMeta: boolean;
+    lockedVideoOrientation: number;
 }
 
 export default class VideoSettings {
-    public static readonly BUFFER_LENGTH: number = 19;
+    public static readonly BUFFER_LENGTH: number = 20;
     public readonly crop?: Rect | null = null;
     public readonly bitrate: number = 0;
-    public readonly bounds?: Size | null = null;
+    public readonly maxSize: number = 0;
     public readonly frameRate: number = 0;
     public readonly iFrameInterval: number = 0;
     public readonly sendFrameMeta: boolean = false;
+    public readonly lockedVideoOrientation: number = -1;
 
-    constructor(data?: IVideoSettings) {
+    constructor(data?: Settings) {
         if (data) {
             this.crop = data.crop;
             this.bitrate = data.bitrate;
-            this.bounds = data.bounds;
+            this.maxSize = data.maxSize;
             this.frameRate = data.frameRate;
             this.iFrameInterval = data.iFrameInterval;
             this.sendFrameMeta = data.sendFrameMeta;
+            this.lockedVideoOrientation = data.lockedVideoOrientation;
         }
     }
 
@@ -34,27 +36,24 @@ export default class VideoSettings {
         const bitrate = buffer.readUInt32BE(0);
         const frameRate = buffer.readUInt8(4);
         const iFrameInterval = buffer.readUInt8(5);
-        const width = buffer.readUInt16BE(6);
-        const height = buffer.readUInt16BE(8);
+        const maxSize = buffer.readUInt32BE(6);
         const left = buffer.readUInt16BE(10);
         const top = buffer.readUInt16BE(12);
         const right = buffer.readUInt16BE(14);
         const bottom = buffer.readUInt16BE(16);
         const sendFrameMeta = !!buffer.readUInt8(18);
-        let bounds: Size | null = null;
+        const lockedVideoOrientation = buffer.readInt8(19);
         let crop: Rect | null = null;
-        if (width || height) {
-            bounds = new Size(width, height);
-        }
         if (left || top || right || bottom) {
             crop = new Rect(left, top, right, bottom);
         }
         return new VideoSettings({
             crop,
             bitrate,
-            bounds,
+            maxSize,
             frameRate,
             iFrameInterval,
+            lockedVideoOrientation,
             sendFrameMeta
         });
     }
@@ -66,9 +65,10 @@ export default class VideoSettings {
         return new VideoSettings({
             bitrate: a.bitrate,
             crop: Rect.copy(a.crop),
-            bounds: Size.copy(a.bounds),
+            maxSize: a.maxSize,
             frameRate: a.frameRate,
             iFrameInterval: a.iFrameInterval,
+            lockedVideoOrientation: a.lockedVideoOrientation,
             sendFrameMeta: a.sendFrameMeta
         });
     }
@@ -78,26 +78,27 @@ export default class VideoSettings {
             return false;
         }
         return Rect.equals(this.crop, o.crop) &&
-            Size.equals(this.bounds, o.bounds) &&
+            this.lockedVideoOrientation === o.lockedVideoOrientation &&
+            this.maxSize === o.maxSize &&
             this.bitrate === o.bitrate &&
             this.frameRate === o.frameRate &&
             this.iFrameInterval === o.iFrameInterval;
     }
 
     public toBuffer(): Buffer {
-        const buffer = new Buffer(21);
-        const {width = 0, height = 0} = this.bounds || {};
+        const buffer = new Buffer(VideoSettings.BUFFER_LENGTH);
         const {left = 0, top = 0, right = 0, bottom = 0} = this.crop || {};
-        buffer.writeUInt32BE(this.bitrate, 0);
-        buffer.writeUInt8(this.frameRate, 4);
-        buffer.writeUInt8(this.iFrameInterval, 5);
-        buffer.writeUInt16BE(width, 6);
-        buffer.writeUInt16BE(height, 8);
-        buffer.writeUInt16BE(left, 10);
-        buffer.writeUInt16BE(top, 12);
-        buffer.writeUInt16BE(right, 14);
-        buffer.writeUInt16BE(bottom, 16);
-        buffer.writeUInt8(this.sendFrameMeta ? 1 : 0, 16);
+        let offset = 0;
+        offset = buffer.writeUInt32BE(this.bitrate, offset);
+        offset = buffer.writeUInt8(this.frameRate, offset);
+        offset = buffer.writeUInt8(this.iFrameInterval, offset);
+        offset = buffer.writeUInt32BE(this.maxSize, offset);
+        offset = buffer.writeUInt16BE(left, offset);
+        offset = buffer.writeUInt16BE(top, offset);
+        offset = buffer.writeUInt16BE(right, offset);
+        offset = buffer.writeUInt16BE(bottom, offset);
+        offset = buffer.writeUInt8(this.sendFrameMeta ? 1 : 0, offset);
+        buffer.writeInt8(this.lockedVideoOrientation,offset);
         return buffer;
     }
 
@@ -105,8 +106,10 @@ export default class VideoSettings {
         return `VideoSettings{bitrate=${
             this.bitrate}, frameRate=${
             this.frameRate}, iFrameInterval=${
-            this.iFrameInterval}, bounds=${
-            this.bounds}, crop=${
-            this.crop}}`;
+            this.iFrameInterval}, maxSize=${
+            this.maxSize}, crop=${
+            this.crop}, metaFrame=${
+            this.sendFrameMeta}, lockedVideoOrientation=${
+            this.lockedVideoOrientation}}`;
     }
 }

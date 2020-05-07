@@ -25,7 +25,7 @@ Matrix.Translation = function(v: Matrix): Matrix {
 
 Matrix.prototype.flatten = function(): number[] {
     const result = [];
-    /* tslint:disable: no-invalid-this */
+    /* tslint:disable: no-invalid-this prefer-for-of */
     if (this.elements.length === 0) {
         return [];
     }

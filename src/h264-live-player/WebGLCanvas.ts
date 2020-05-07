@@ -235,9 +235,12 @@ export default abstract class WebGLCanvas extends Canvas {
             return;
         }
         this.glNames = {};
-        for (let propertyName in this.gl) {
-            if (typeof (this.gl as any)[propertyName] === 'number') {
-                this.glNames[(this.gl as any)[propertyName]] = propertyName;
+        for (const propertyName in this.gl) {
+            if (this.gl.hasOwnProperty(propertyName)) {
+                const value = (this.gl as unknown as Record<string, number>)[propertyName];
+                if (typeof value === 'number') {
+                    this.glNames[value] = propertyName;
+                }
             }
         }
     }

@@ -3,7 +3,7 @@ import Size from '../Size';
 import YUVCanvas from '../h264-live-player/YUVCanvas';
 import YUVWebGLCanvas from '../h264-live-player/YUVWebGLCanvas';
 // @ts-ignore
-import * as Avc from '../Decoder';
+import Avc from '../Decoder';
 import VideoSettings from '../VideoSettings';
 import Canvas from '../h264-live-player/Canvas';
 import ScreenInfo from '../ScreenInfo';
@@ -16,18 +16,19 @@ export const CANVAS_TYPE: Record<string, string> = {
 
 export class BroadwayDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
+        lockedVideoOrientation: -1,
         bitrate: 500000,
         frameRate: 24,
         iFrameInterval: 5,
-        bounds: new Size(480, 480),
+        maxSize: 480,
         sendFrameMeta: false
     });
     public static createElement(id?: string): HTMLCanvasElement {
         const tag = document.createElement('canvas') as HTMLCanvasElement;
-        if (id) {
+        if (typeof id === 'string') {
             tag.id = id;
         }
-        tag.className = 'video';
+        tag.className = 'video-layer';
         return tag;
     }
     protected TAG: string = 'BroadwayDecoder';
@@ -51,11 +52,10 @@ export class BroadwayDecoder extends Decoder {
         if (this.canvas) {
             const parent = this.tag.parentNode;
             if (parent) {
-                const id = this.tag.id;
-                const tag = document.createElement('canvas');
-                tag.classList.value = this.tag.classList.value;
-                tag.id = id;
+                const tag = BroadwayDecoder.createElement(this.tag.id);
+                tag.className = this.tag.className;
                 parent.replaceChild(tag, this.tag);
+                parent.append(this.touchableCanvas);
                 this.tag = tag;
             }
         }
@@ -70,9 +70,14 @@ export class BroadwayDecoder extends Decoder {
         this.avc.onPictureDecoded = this.canvas.decode.bind(this.canvas);
         this.tag.width = width;
         this.tag.height = height;
+        // if (this.parentElement) {
+        //     this.parentElement.style.height = `${height}px`;
+        //     this.parentElement.style.width = `${width}px`;
+        // }
     }
 
     private shiftFrame(): void {
+        this.updateFps(false);
         if (this.getState() !== Decoder.STATE.PLAYING) {
             return;
         }
@@ -81,8 +86,8 @@ export class BroadwayDecoder extends Decoder {
 
         if (frame) {
             this.decode(frame);
+            this.updateFps(true);
         }
-
         requestAnimationFrame(this.shiftFrame.bind(this));
     }
 
@@ -134,7 +139,6 @@ export class BroadwayDecoder extends Decoder {
 
     public pushFrame(frame: Uint8Array): void {
         if (BroadwayDecoder.isIFrame(frame)) {
-            console.log(this.TAG, 'IFrame');
             if (this.videoSettings) {
                 const {frameRate} = this.videoSettings;
                 if (this.framesList.length > frameRate / 2) {

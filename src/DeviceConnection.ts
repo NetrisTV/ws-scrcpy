@@ -6,23 +6,36 @@ import Size from './Size';
 import Point from './Point';
 import Decoder from './decoder/Decoder';
 import Util from './Util';
-import MotionControlEvent from './controlEvent/MotionControlEvent';
+import TouchControlEvent from './controlEvent/TouchControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
 import ScreenInfo from './ScreenInfo';
 import DeviceMessage from './DeviceMessage';
 
-const MESSAGE_TYPE_TEXT = 'text';
+const CURSOR_RADIUS = 10;
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC = 'scrcpy';
-const DEVICE_INFO_LENGTH = MAGIC.length + DEVICE_NAME_FIELD_LENGTH +
-    ScreenInfo.BUFFER_LENGTH + VideoSettings.BUFFER_LENGTH;
+const DEVICE_INFO_LENGTH = MAGIC.length + DEVICE_NAME_FIELD_LENGTH + ScreenInfo.BUFFER_LENGTH + VideoSettings.BUFFER_LENGTH;
 
-export interface IErrorListener {
-    OnError(this: IErrorListener, ev: Event | string): void;
+export interface ErrorListener {
+    OnError(this: ErrorListener, ev: Event | string): void;
 }
 
-export interface IDeviceMessageListener {
-    OnDeviceMessage(this: IDeviceMessageListener, ev: DeviceMessage): void;
+export interface DeviceMessageListener {
+    OnDeviceMessage(this: DeviceMessageListener, ev: DeviceMessage): void;
+}
+
+interface Touch {
+    action: number;
+    position: Position;
+    buttons: number;
+}
+
+interface TouchOnClient {
+    client: {
+        width: number;
+        height: number;
+    };
+    touch: Touch;
 }
 
 export class DeviceConnection {
@@ -36,16 +49,18 @@ export class DeviceConnection {
         mousemove: MotionEvent.ACTION_MOVE,
         mouseup: MotionEvent.ACTION_UP
     };
+    private static multiTouchActive: boolean = false;
+    private static multiTouchCenter?: Point;
+    private static multiTouchShift: boolean = false;
+    private static dirtyPlace: Point[] = [];
     private static hasListeners: boolean = false;
     private static instances: Record<string, DeviceConnection> = {};
     public readonly ws: WebSocket;
     private events: ControlEvent[] = [];
     private decoders: Set<Decoder> = new Set<Decoder>();
-    private errorListener?: IErrorListener;
-    private deviceMessageListener?: IDeviceMessageListener;
+    private errorListener?: ErrorListener;
+    private deviceMessageListener?: DeviceMessageListener;
     private name: string = '';
-    // private videoSettings?: VideoSettings;
-    // private screenInfo?: ScreenInfo;
 
     constructor(readonly url: string) {
         this.url = url;
@@ -64,20 +79,19 @@ export class DeviceConnection {
     private static setListeners(): void {
         if (!this.hasListeners) {
             let down = 0;
-
             const onMouseEvent = (e: MouseEvent) => {
                 Object.values(this.instances).forEach((connection: DeviceConnection) => {
                     if (connection.haveConnection()) {
                         connection.decoders.forEach(decoder => {
-                            const tag = decoder.getElement();
+                            const tag = decoder.getTouchableElement();
                             if (e.target === tag) {
                                 const screenInfo: ScreenInfo = decoder.getScreenInfo() as ScreenInfo;
                                 if (!screenInfo) {
                                     return;
                                 }
-                                const event = DeviceConnection.buildMotionEvent(e, screenInfo);
-                                if (event) {
-                                    connection.sendEvent(event);
+                                const events = DeviceConnection.buildTouchEvent(e, screenInfo);
+                                if (events && events.length && down > 0) {
+                                    events.forEach(event => connection.sendEvent(event));
                                 }
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -86,25 +100,50 @@ export class DeviceConnection {
                     }
                 });
             };
-
             document.body.onmousedown = function(e: MouseEvent): void {
                 down++;
                 onMouseEvent(e);
             };
             document.body.onmouseup = function(e: MouseEvent): void {
-                down--;
                 onMouseEvent(e);
+                down--;
             };
             document.body.onmousemove = function(e: MouseEvent): void {
-                if (down > 0) {
-                    onMouseEvent(e);
-                }
+                onMouseEvent(e);
             };
             this.hasListeners = true;
         }
     }
 
-    private static buildMotionEvent(e: MouseEvent, screenInfo: ScreenInfo): MotionControlEvent | null {
+    private static buildTouchEvent(e: MouseEvent, screenInfo: ScreenInfo): TouchControlEvent[] | null {
+        const touches = this.getTouch(e, screenInfo);
+        if (!touches) {
+            return null;
+        }
+        const target = e.target as HTMLCanvasElement;
+        if (this.multiTouchActive) {
+            const ctx = target.getContext('2d');
+            if (ctx) {
+                this.clearCanvas(target);
+                touches.forEach(touch => {
+                    const { point } = touch.position;
+                    this.drawCircle(ctx, point);
+                    if (this.multiTouchCenter) {
+                        this.drawLine(ctx, point, this.multiTouchCenter);
+                    }
+                });
+                if (this.multiTouchCenter) {
+                    this.drawCircle(ctx, this.multiTouchCenter, 5);
+                }
+            }
+        }
+        return touches.map((touch: Touch, pointerId: number) => {
+            const { action, buttons, position } = touch;
+            return new TouchControlEvent(action, pointerId, position, 255, buttons);
+        });
+    }
+
+    private static calculateCoordinates(e: MouseEvent, screenInfo: ScreenInfo): TouchOnClient | null {
         const action = this.EVENT_ACTION_MAP[e.type];
         if (typeof action === 'undefined' || !screenInfo) {
             return null;
@@ -139,13 +178,117 @@ export class DeviceConnection {
         }
         const x = touchX * width / clientWidth;
         const y = touchY * height / clientHeight;
-        const position = new Position(new Point(x, y), new Size(width, height));
-        return new MotionControlEvent(action, this.BUTTONS_MAP[e.button], position);
+        const size = new Size(width, height);
+        const point = new Point(x, y);
+        const position = new Position(point, size);
+        const buttons = this.BUTTONS_MAP[e.button];
+        return {
+            client: {
+                width: clientWidth,
+                height: clientHeight
+            },
+            touch: {
+                action,
+                position,
+                buttons
+            }
+        };
+    }
+
+    private static getTouch(e: MouseEvent, screenInfo: ScreenInfo): Touch[] | null {
+        const touchOnClient = this.calculateCoordinates(e, screenInfo);
+        if (!touchOnClient) {
+            return null;
+        }
+        const { client, touch } = touchOnClient;
+        const result: Touch[] = [touch];
+        if (!e.ctrlKey) {
+            this.multiTouchActive = false;
+            this.multiTouchCenter = undefined;
+            this.multiTouchShift = false;
+            this.clearCanvas(e.target as HTMLCanvasElement);
+            return result;
+        }
+        const { position, action, buttons } = touch;
+        const { point, screenSize } = position;
+        const { width, height } = screenSize;
+        const { x, y } = point;
+        if (!this.multiTouchActive) {
+            if (e.shiftKey) {
+                this.multiTouchCenter = point;
+                this.multiTouchShift = true;
+            } else {
+                this.multiTouchCenter = new Point(client.width / 2, client.height / 2);
+            }
+        }
+        this.multiTouchActive = true;
+        let opposite: Point | undefined;
+        if (this.multiTouchShift && this.multiTouchCenter) {
+            const oppoX = 2 * this.multiTouchCenter.x - x;
+            const oppoY = 2 * this.multiTouchCenter.y - y;
+            if (oppoX <= width && oppoX >= 0 && oppoY <= height && oppoY >= 0) {
+                opposite = new Point(oppoX, oppoY);
+            }
+        } else {
+            opposite = new Point(client.width - x, client.height - y);
+        }
+        if (opposite) {
+            result.push({
+                action,
+                buttons,
+                position: new Position(opposite, screenSize)
+            });
+        }
+        return result;
+    }
+
+    private static drawCircle(ctx: CanvasRenderingContext2D, point: Point, radius: number = CURSOR_RADIUS): void {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
+        ctx.stroke();
+        const l = ctx.lineWidth;
+        const topLeft = new Point(point.x - radius - l, point.y - radius - l);
+        const bottomRight = new Point(point.x + radius + l, point.y + radius + l);
+        this.updateDirty(topLeft, bottomRight);
+    }
+
+    private static drawLine(ctx: CanvasRenderingContext2D, point1: Point, point2: Point): void {
+        ctx.beginPath();
+        ctx.moveTo(point1.x, point1.y);
+        ctx.lineTo(point2.x, point2.y);
+        ctx.stroke();
+    }
+
+    private static updateDirty(topLeft: Point, bottomRight: Point): void {
+        if (!this.dirtyPlace.length) {
+            this.dirtyPlace.push(topLeft, bottomRight);
+            return;
+        }
+        const currentTopLeft = this.dirtyPlace[0];
+        const currentBottomRight = this.dirtyPlace[1];
+        const newTopLeft = new Point(Math.min(currentTopLeft.x, topLeft.x), Math.min(currentTopLeft.y, topLeft.y));
+        const newBottomRight = new Point(Math.max(currentBottomRight.x, bottomRight.x), Math.max(currentBottomRight.y, bottomRight.y));
+        this.dirtyPlace.length = 0;
+        this.dirtyPlace.push(newTopLeft, newBottomRight);
+    }
+
+    private static clearCanvas(target: HTMLCanvasElement): void {
+        const {clientWidth, clientHeight} = target;
+        const ctx = target.getContext('2d');
+        if (ctx && this.dirtyPlace.length) {
+            const topLeft = this.dirtyPlace[0];
+            const bottomRight = this.dirtyPlace[1];
+            const x = Math.max(topLeft.x, 0);
+            const y = Math.max(topLeft.y, 0);
+            const w = Math.min(clientWidth, bottomRight.x - x);
+            const h = Math.min(clientHeight, bottomRight.y - y);
+            ctx.clearRect(x, y, w, h);
+        }
     }
 
     public addDecoder(decoder: Decoder): void {
         let min: VideoSettings = decoder.getPreferredVideoSetting();
-        const bounds: Size = min.bounds as Size;
+        const { maxSize } = min;
         let playing = false;
         this.decoders.forEach(d => {
             const state = d.getState();
@@ -154,16 +297,17 @@ export class DeviceConnection {
             }
             const info = d.getScreenInfo() as ScreenInfo;
             const videoSize = info.videoSize;
-            const {crop, bitrate, frameRate, iFrameInterval, sendFrameMeta} =
+            const {crop, bitrate, frameRate, iFrameInterval, sendFrameMeta, lockedVideoOrientation} =
                 d.getVideoSettings() as VideoSettings;
-            if (videoSize.width < bounds.width && videoSize.height < bounds.height) {
+            if (videoSize.width < maxSize && videoSize.height < maxSize) {
                 min = new VideoSettings({
-                    bounds: videoSize,
+                    maxSize: Math.max(videoSize.width, videoSize.height),
                     crop,
                     bitrate,
                     frameRate,
                     iFrameInterval,
-                    sendFrameMeta
+                    sendFrameMeta,
+                    lockedVideoOrientation
                 });
             }
         });
@@ -201,11 +345,11 @@ export class DeviceConnection {
         }
     }
 
-    public setErrorListener(listener: IErrorListener): void {
+    public setErrorListener(listener: ErrorListener): void {
         this.errorListener = listener;
     }
 
-    public setDeviceMessageListener(listener: IDeviceMessageListener): void {
+    public setDeviceMessageListener(listener: DeviceMessageListener): void {
         this.deviceMessageListener = listener;
     }
 
@@ -219,7 +363,6 @@ export class DeviceConnection {
 
     private init(): void {
         const ws = this.ws;
-
         ws.onerror = (e: Event | string) => {
             if (this.errorListener) {
                 this.errorListener.OnError.call(this.errorListener, e);
@@ -228,7 +371,6 @@ export class DeviceConnection {
                 console.error('WS closed');
             }
         };
-
         ws.onopen = () => {
             let e = this.events.shift();
             while (e) {
@@ -236,7 +378,6 @@ export class DeviceConnection {
                 e = this.events.shift();
             }
         };
-
         ws.onmessage = (e: MessageEvent) => {
             if (e.data instanceof ArrayBuffer) {
                 const data = new Uint8Array(e.data);
@@ -248,14 +389,11 @@ export class DeviceConnection {
                         nameBytes = Util.filterTrailingZeroes(nameBytes);
                         this.name = Util.utf8ByteArrayToString(nameBytes);
                         let processedLength = MAGIC.length + DEVICE_NAME_FIELD_LENGTH;
-
                         let temp = new Buffer(new Uint8Array(e.data, processedLength, ScreenInfo.BUFFER_LENGTH));
                         processedLength += ScreenInfo.BUFFER_LENGTH;
                         const screenInfo: ScreenInfo = ScreenInfo.fromBuffer(temp);
-
                         temp = new Buffer(new Uint8Array(e.data, processedLength, VideoSettings.BUFFER_LENGTH));
                         const videoSettings: VideoSettings = VideoSettings.fromBuffer(temp);
-
                         let min: VideoSettings = VideoSettings.copy(videoSettings) as VideoSettings;
                         let playing = false;
                         this.decoders.forEach(decoder => {
@@ -276,9 +414,9 @@ export class DeviceConnection {
                             }
                             if (!oldInfo) {
                                 const preferred = decoder.getPreferredVideoSetting();
-                                const bounds: Size = preferred.bounds as Size;
+                                const maxSize: number = preferred.maxSize;
                                 const videoSize: Size = screenInfo.videoSize;
-                                if (bounds.width < videoSize.width || bounds.height < videoSize.height) {
+                                if (maxSize < videoSize.width || maxSize < videoSize.height) {
                                     min = preferred;
                                 }
                             }
@@ -304,19 +442,7 @@ export class DeviceConnection {
                     });
                 }
             } else {
-                let data;
-                try {
-                    data = JSON.parse(e.data);
-                } catch (error) {
-                    console.error(error.message);
-                    console.log(e.data);
-                    return;
-                }
-                if (data.type === MESSAGE_TYPE_TEXT) {
-                    console.log(data.message);
-                } else {
-                    console.log(e.data);
-                }
+                console.error(`Unexpexted message: ${e.data}`);
             }
         };
     }

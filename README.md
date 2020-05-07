@@ -22,9 +22,11 @@ npm start
 
 ## Supported features
 * Screen casting
-* Touch events
+* Touch events (including multi-touch)
 * Input events
-* Video setting changing
+* Clipboard events
+* Device "rotation"
+* Video settings changing
 
 ## Known issues
 
@@ -37,9 +39,12 @@ npm start
 * [131/h264-live-player](https://github.com/131/h264-live-player)
 * [oneam/h264bsd](https://github.com/oneam/h264bsd)
 * [mbebenita/Broadway](https://github.com/mbebenita/Broadway)
+* [openstf/adbkit](https://github.com/openstf/adbkit)
+* [openstf/adbkit-logcat](https://github.com/openstf/adbkit-logcat)
+* [xtermjs/xterm.js](https://github.com/xtermjs/xterm.js)
 
 ## scrcpy websocket fork
 
-Currently support of WebSocket protocol added to v1.9 of scrcpy
-* [Prebuilt package](https://github.com/NetrisTV/scrcpy/releases/download/v1.9-ws/scrcpy-server.jar)
-* [Source code](https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.9)
+Currently support of WebSocket protocol added to v1.13 of scrcpy
+* [Prebuilt package](https://github.com/NetrisTV/scrcpy/releases/download/v1.13-ws/scrcpy-server.jar)
+* [Source code](https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.13)

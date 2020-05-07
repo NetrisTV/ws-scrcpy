@@ -4,6 +4,22 @@ body {
     margin: 0;
     height: 100%;
     width: 100%;
+    overflow: hidden;
+}
+
+.body-logcat {
+    display: flex;
+    flex-flow: column;
+}
+
+.body-shell {
+    background-color: black;
+}
+
+.terminal-container {
+    width: 100%;
+    height: 100%;
+    padding: 5px;
 }
 
 :focus {
@@ -11,21 +27,147 @@ body {
 }
 
 #controls {
-    float: left;
-    position: relative;
-    width: 25%;
-    height: 100%;
+    width: 100%;
     margin: 20px;
 }
 
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: initial;
+}
+
+.buttons-wrapper {
+    max-height: 5%;
+}
+
+.filter-button {
+    font-family: monospace;
+    border: solid 1px black;
+    width: auto;
+    display: inline-block;
+    border-radius: 1em;
+    margin: 2px;
+    padding: 2px 5px;
+}
+
+.filter-button:hover {
+    border-width: 2px;
+    border-style: dotted;
+    padding: 1px 4px;
+    cursor: pointer;
+}
+
+.client-filter {
+    border-color: hsl(120, 33%, 50%);
+}
+
+#filterInput {
+    margin: 0 5px;
+}
+
+pre.might-overflow {
+    text-overflow: ellipsis;
+    overflow : hidden;
+    white-space: nowrap;
+    margin: 0.5em 0;
+    padding: 0;
+}
+
+pre.might-overflow:hover {
+    text-overflow: clip;
+    word-break: break-all;
+    overflow-x: visible;
+    white-space: pre;
+    margin: 0;
+    padding: 0.5em 0;
+}
+
+.table-wrapper {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow-y: scroll;
+}
+
+.table-wrapper table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    font-family: monospace;
+}
+
+.table-wrapper table thead {
+    font-weight: bolder;
+}
+
+.table-wrapper table td, .table-wrapper table th {
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+}
+
+.table-wrapper table tr:hover {
+    background-color: hsl(110, 14%, 53%);
+}
+
+.table-wrapper table th {
+    position: sticky;
+    top: -1px;
+    background-color: hsl(210, 14%, 53%);
+}
+
+.table-wrapper table .date {
+    white-space: nowrap;
+    width: 7%;
+}
+
+.table-wrapper table .pid, .table-wrapper table .tid  {
+    width: 5%;
+}
+
+.table-wrapper table .p {
+    width: 3%;
+}
+
+.table-wrapper table .tag {
+    max-width: 20em;
+    width: 10%;
+}
+
+.table-wrapper table .message {
+    width: 70%;
+    text-overflow: ellipsis;
+    white-space: pre;
+    max-width: 0;
+    overflow: hidden;
+}
+
 #controlsWrap {
+    float: left;
     position: relative;
     top: 0;
 }
 
 .decoder-controls-wrapper {
     padding: 10px;
-    border: solid 1px #778899;
+    border: solid 1px hsl(210, 14%, 53%);
+}
+
+.device-view {
+    float: right;
+}
+
+.video-layer {
+    position: absolute;
+    z-index: 0;
+}
+
+.touch-layer {
+    position: absolute;
+    z-index: 1;
 }
 
 .video {
