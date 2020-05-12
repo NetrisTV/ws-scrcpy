@@ -66,13 +66,13 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse) => 
 const wss = new WebSocket.Server({ server });
 wss.on('connection', async (ws: WebSocket, req) => {
     if (!req.url) {
-        ws.close(1, 'Invalid url');
+        ws.close(4001, 'Invalid url');
         return;
     }
     const parsed = url.parse(req.url);
     const parsedQuery = querystring.parse(parsed.query || '');
     if (typeof parsedQuery.action === 'undefined') {
-        ws.close(2, `Missing required parameter "action"`);
+        ws.close(4002, `Missing required parameter "action"`);
     }
     switch (parsedQuery.action) {
         case 'logcat':
@@ -85,7 +85,7 @@ wss.on('connection', async (ws: WebSocket, req) => {
             ServiceShell.createService(ws);
             break;
         default:
-            ws.close(3, `Invalid value "${parsedQuery.action}" for "action" parameter`);
+            ws.close(4003, `Invalid value "${parsedQuery.action}" for "action" parameter`);
             return;
     }
 });
