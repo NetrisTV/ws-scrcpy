@@ -20,6 +20,7 @@ const CMD = 'UID=`id -nu`; GID=`id -ng`; for a in `' + GET_SHELL_PROCESSES + '`;
 export class ServerDeviceConnection extends EventEmitter {
     public static readonly UPDATE_EVENT: string = 'update';
     private static instance: ServerDeviceConnection;
+    private pendingUpdate: boolean = false;
     private cache: Device[] = [];
     private deviceMap: Map<string, Device> = new Map();
     private clientMap: Map<string, AdbKitClient> = new Map();
@@ -200,7 +201,14 @@ export class ServerDeviceConnection extends EventEmitter {
         });
     }
 
-    public getDevices(): Device[] {
+    private updateDeviceList(): void {
+        if (this.pendingUpdate) {
+            return;
+        }
+        this.pendingUpdate = true;
+        const anyway = () => {
+            this.pendingUpdate = false;
+        };
         this.initTracker()
             .then(tracker => {
                 if (tracker && tracker.deviceList && tracker.deviceList.length) {
@@ -211,7 +219,12 @@ export class ServerDeviceConnection extends EventEmitter {
             .then(list => {
                 this.cache = list;
                 this.emit(ServerDeviceConnection.UPDATE_EVENT, this.cache);
-            });
+            })
+            .then(anyway, anyway);
+    }
+
+    public getDevices(): Device[] {
+        this.updateDeviceList();
         return this.cache;
     }
 }
