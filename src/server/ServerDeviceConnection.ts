@@ -2,6 +2,7 @@
 import ADB from 'adbkit';
 // @ts-ignore
 import { EventEmitter } from 'events';
+import { spawn } from 'child_process';
 import * as path from 'path';
 import { Device } from '../common/Device';
 import { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from '../common/AdbKit';
@@ -10,7 +11,7 @@ import { SERVER_PACKAGE, SERVER_PORT, SERVER_VERSION } from './Constants';
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, '../public');
 const FILE_NAME = 'scrcpy-server.jar';
-const ARGS = `/ ${SERVER_PACKAGE} ${SERVER_VERSION} 0 8000000 60 -1 false - false false 0 web ${SERVER_PORT} > ${TEMP_PATH}OUTPUT&`;
+const ARGS = `/ ${SERVER_PACKAGE} ${SERVER_VERSION} 0 8000000 60 -1 false - false false 0 web ${SERVER_PORT} > ${TEMP_PATH}OUTPUT 2> ${TEMP_PATH}/ERROR&`;
 
 const GET_SHELL_PROCESSES = 'find /proc -type d -maxdepth 1 -user $UID -group $GID 2>/dev/null';
 const CHECK_CMDLINE = `test -f "$a/cmdline" && grep -av find "$a/cmdline" |grep -sa ${SERVER_PACKAGE} |grep ${SERVER_VERSION} 2>&1 > /dev/null && echo $a |cut -d "/" -f 3;`;
@@ -144,7 +145,7 @@ export class ServerDeviceConnection extends EventEmitter {
                 await this.copyServer(device);
             }
             while (isNaN(pid) && count < 5) {
-                await this.startServer(device);
+                this.spawnServer(device);
                 pid = await this.getPID(device);
                 count++;
             }
@@ -181,21 +182,22 @@ export class ServerDeviceConnection extends EventEmitter {
         return client.push(udid, src, dst);
     }
 
-    private async startServer(device: AdbKitDevice): Promise<void> {
+    private spawnServer(device: AdbKitDevice): void {
         const {id: udid} = device;
-        const client = this.getOrCreateClient(udid);
         const command = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS}`;
-        const result = await Promise.race([
-            new Promise(resolve => {
-                setTimeout(resolve, 2000);
-            }),
-            client.shell(udid, command).then(ADB.util.readAll).catch(e => {
-                console.error(`[${udid}] error: ${e.message}`);
-            })
-        ]);
-        if (result) {
-            console.info(`[${udid}] Result: ${result}`);
-        }
+        const adb = spawn('adb', ['-s', `${udid}`, 'shell', command], { stdio: ['ignore', 'pipe', 'pipe'] });
+
+        adb.stdout.on('data', data => {
+            console.log(`[${udid}] stdout: ${data}`);
+        });
+
+        adb.stderr.on('data', data => {
+            console.error(`[${udid}] stderr: ${data}`);
+        });
+
+        adb.on('close', code => {
+            console.log(`[${udid}] adb process exited with code ${code}`);
+        });
     }
 
     public getDevices(): Device[] {
