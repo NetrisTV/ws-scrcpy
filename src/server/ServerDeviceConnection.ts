@@ -11,10 +11,10 @@ import { SERVER_PACKAGE, SERVER_PORT, SERVER_VERSION } from './Constants';
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, '../public');
 const FILE_NAME = 'scrcpy-server.jar';
-const ARGS = `/ ${SERVER_PACKAGE} ${SERVER_VERSION} 0 8000000 60 -1 false - false false 0 web ${SERVER_PORT} > ${TEMP_PATH}OUTPUT 2> ${TEMP_PATH}/ERROR&`;
+const ARGS = `/ ${SERVER_PACKAGE} ${SERVER_VERSION} 0 8000000 60 -1 false - false false 0 web ${SERVER_PORT} 2>&1 > /dev/null`;
 
 const GET_SHELL_PROCESSES = 'find /proc -type d -maxdepth 1 -user $UID -group $GID 2>/dev/null';
-const CHECK_CMDLINE = `test -f "$a/cmdline" && grep -av find "$a/cmdline" |grep -sa ${SERVER_PACKAGE} |grep ${SERVER_VERSION} 2>&1 > /dev/null && echo $a |cut -d "/" -f 3;`;
+const CHECK_CMDLINE = `test -f "$a/cmdline" && grep -av find "$a/cmdline" |grep -sae app_process.*${SERVER_PACKAGE} |grep ${SERVER_VERSION} 2>&1 > /dev/null && echo $a |cut -d "/" -f 3;`;
 const CMD = 'UID=`id -nu`; GID=`id -ng`; for a in `' + GET_SHELL_PROCESSES + '`; do ' + CHECK_CMDLINE + ' done; exit 0';
 
 export class ServerDeviceConnection extends EventEmitter {
