@@ -31,7 +31,8 @@ npm start
 ## Known issues
 
 * The server on the Android Emulator listens on internal interface and not available from the outside (as workaround you can do `adb forward tcp:8886 tcp:8886` and use `127.0.0.1` instead of emulator IP address)
-* H264bsdDecoder may fail to start 
+* H264bsdDecoder may fail to start
+* Version `0.2.0` is incompatible with previous. Reboot device or manually kill `app_process`.
 
 ## Related projects
 * [Genymobile/scrcpy](https://github.com/Genymobile/scrcpy)
