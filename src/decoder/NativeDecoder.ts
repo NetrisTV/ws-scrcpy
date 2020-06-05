@@ -15,7 +15,7 @@ export default class NativeDecoder extends Decoder {
     private static DEFAULT_FRAMES_PER_SECOND: number = 60;
     public static createElement(id?: string): HTMLVideoElement {
         const tag = document.createElement('video') as HTMLVideoElement;
-        tag.setAttribute('muted', 'muted');
+        tag.muted = true;
         if (typeof id === 'string') {
             tag.id = id;
         }
