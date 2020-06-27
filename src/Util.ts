@@ -1,4 +1,5 @@
 export default class Util {
+    private static supportsPassiveValue: boolean | undefined;
 
     public static filterTrailingZeroes(bytes: Uint8Array): Uint8Array {
         let b = 0;
@@ -88,4 +89,31 @@ export default class Util {
         return out.join('');
     };
     /* tslint:enable */
+
+    // https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
+    static supportsPassive(): boolean {
+        if (typeof Util.supportsPassiveValue === 'boolean') {
+            return Util.supportsPassiveValue;
+        }
+
+        // Test via a getter in the options object to see if the passive property is accessed
+        let supportsPassive = false;
+        try {
+            const opts = Object.defineProperty({}, 'passive', {
+                get: function() {
+                    supportsPassive = true;
+                }
+            });
+
+            // @ts-ignore
+            window.addEventListener('testPassive', null, opts);
+            // @ts-ignore
+            window.removeEventListener('testPassive', null, opts);
+        } catch (e) {}
+
+        return Util.supportsPassiveValue = supportsPassive;
+
+        // Use our detect's results. passive applied if supported, capture will be false either way.
+        // elem.addEventListener('touchstart', fn, supportsPassive ? { passive: true } : false);
+    }
 }
