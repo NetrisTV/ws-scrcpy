@@ -34,10 +34,19 @@ export class DeviceController implements DeviceMessageListener {
         connection.addDecoder(this.decoder);
         connection.setDeviceMessageListener(this);
         const wrapper = document.createElement('div');
-        wrapper.className = 'decoder-controls-wrapper';
-        const nameSpan = document.createElement('span');
-        nameSpan.innerText = `${deviceName} (${decoderName})`;
-        wrapper.appendChild(nameSpan);
+        wrapper.className = 'decoder-controls-wrapper menu';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        const controlsId = `controls_${deviceName}_${decoderName}`;
+        checkbox.id = controlsId;
+        const label = document.createElement('label');
+        label.htmlFor = controlsId;
+        // label.innerText = `${deviceName} (${decoderName})`;
+        wrapper.appendChild(checkbox);
+        wrapper.appendChild(label);
+        const box = document.createElement('div');
+        box.className = 'box';
+        wrapper.appendChild(box);
         const textWrap = document.createElement('div');
         const input = this.input = document.createElement('input');
         const sendButton = document.createElement('button');
@@ -45,7 +54,7 @@ export class DeviceController implements DeviceMessageListener {
         textWrap.appendChild(input);
         textWrap.appendChild(sendButton);
 
-        wrapper.appendChild(textWrap);
+        box.appendChild(textWrap);
         sendButton.onclick = () => {
             if (input.value) {
                 connection.sendEvent(new TextControlEvent(input.value));
@@ -183,7 +192,7 @@ export class DeviceController implements DeviceMessageListener {
             };
             deviceButtons.appendChild(btn);
         });
-        wrapper.appendChild(cmdWrap);
+        box.appendChild(cmdWrap);
 
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
@@ -203,7 +212,7 @@ export class DeviceController implements DeviceMessageListener {
         const stopBtn = document.createElement('button') as HTMLButtonElement;
         stopBtn.innerText = `Disconnect`;
         stopBtn.onclick = stop;
-        wrapper.appendChild(stopBtn);
+        box.appendChild(stopBtn);
         controlsWrapper.appendChild(wrapper);
         deviceView.appendChild(deviceButtons);
         const video = document.createElement('div');

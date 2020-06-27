@@ -146,17 +146,19 @@ pre.might-overflow:hover {
 }
 
 #controlsWrap {
-    float: left;
-    position: relative;
+    position: fixed;
     top: 0;
+    left: 0;
+    z-index: 2;
+    background-color: hsla(210, 14%, 53%, 0.5);
 }
 
 .decoder-controls-wrapper {
-    padding: 10px;
-    border: solid 1px hsl(210, 14%, 53%);
+    padding: 5px;
 }
 
 .device-view {
+    z-index: 1;
     float: right;
 }
 
@@ -200,6 +202,32 @@ pre.might-overflow:hover {
 }
 
 .spoiler > input {
+    display: none;
+}
+
+.menu > input ~ .box {
+    display: none;
+}
+
+.menu > input:checked ~ .box {
+    display: block;
+}
+
+.menu > label::before {
+    content: '≡';
+    margin: 5px;
+}
+
+.menu > input:checked ~ label::before {
+    content: '◃';
+}
+
+.menu > input:checked ~ div {
+    display: block;
+    padding: 10px;
+}
+
+.menu > input {
     display: none;
 }
 
