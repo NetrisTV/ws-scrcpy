@@ -6,7 +6,7 @@ export default class NativeDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 8000000,
-        frameRate: 60,
+        frameRate: 24,
         iFrameInterval: 10,
         maxSize: 720,
         sendFrameMeta: false
