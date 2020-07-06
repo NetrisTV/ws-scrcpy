@@ -73,6 +73,8 @@ export class DeviceConnection {
     private errorListener?: ErrorListener;
     private deviceMessageListener?: DeviceMessageListener;
     private name: string = '';
+    private static idToPointerMap: Map<number, number> = new Map();
+    private static pointerToIdMap: Map<number, number> = new Map();
 
     constructor(readonly url: string) {
         this.url = url;
@@ -112,7 +114,6 @@ export class DeviceConnection {
                                 }
                                 if (events && events.length && condition) {
                                     events.forEach(event => {
-                                        console.log(`sendEvent(${e.type}): ${event.toString()}`);
                                         connection.sendEvent(event);
                                     });
                                 }
@@ -156,12 +157,11 @@ export class DeviceConnection {
 
     private static formatTouchEvent(e: TouchEvent, screenInfo: ScreenInfo, tag: HTMLElement): TouchControlEvent[] | null {
         const events: TouchControlEvent[] = [];
-        const touches = (e.touches && e.touches.length) ? e.touches : e.changedTouches;
+        const touches = e.changedTouches;
         if (touches && touches.length) {
-            // FIXME: Disable multi-touch for now
-            for (let i = 0, l = 1/*touches.length*/; i < l; i++) {
-                const pointerId = i;
+            for (let i = 0, l = touches.length; i < l; i++) {
                 const touch = touches[i];
+                const pointerId = DeviceConnection.getPointerId(e.type, touch.identifier);
                 if (touch.target !== tag) {
                     continue;
                 }
@@ -188,6 +188,26 @@ export class DeviceConnection {
             return events;
         }
         return null;
+    }
+    private static getPointerId(type: string, identifier: number): number {
+        // I'm not sure that we can directly use touch identifier as pointerId
+        let pointerId: number;
+        if (this.idToPointerMap.has(identifier)) {
+            pointerId = this.idToPointerMap.get(identifier) as number;
+            if (type === 'touchend' || type === 'touchcancel') {
+                this.idToPointerMap.delete(identifier);
+                this.pointerToIdMap.delete(pointerId);
+            }
+            return pointerId;
+        } else {
+            pointerId = 0;
+            while (this.idToPointerMap.has(pointerId)) {
+                pointerId++;
+            }
+            this.idToPointerMap.set(identifier, pointerId);
+            this.pointerToIdMap.set(pointerId, identifier);
+            return pointerId;
+        }
     }
     private static buildTouchEvent(e: MouseEvent, screenInfo: ScreenInfo): TouchControlEvent[] | null {
         const touches = this.getTouch(e, screenInfo);
