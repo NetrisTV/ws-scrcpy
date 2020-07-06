@@ -21,6 +21,7 @@ export class DeviceController implements DeviceMessageListener {
     public readonly controls: HTMLDivElement;
     public readonly deviceView: HTMLDivElement;
     public readonly input: HTMLInputElement;
+    private readonly controlButtons: HTMLElement;
 
     constructor(params: DeviceControllerParams) {
         const decoder = this.decoder = params.decoder;
@@ -60,8 +61,8 @@ export class DeviceController implements DeviceMessageListener {
                 connection.sendEvent(new TextControlEvent(input.value));
             }
         };
-        const deviceButtons = document.createElement('div');
-        deviceButtons.className = 'control-buttons-list';
+        this.controlButtons = document.createElement('div');
+        this.controlButtons.className = 'control-buttons-list';
         const cmdWrap = document.createElement('div');
         const codes = CommandControlEvent.CommandCodes;
         for (const command in codes) {
@@ -134,9 +135,7 @@ export class DeviceController implements DeviceMessageListener {
                         if (isNaN(bitrate) || isNaN(frameRate)) {
                             return;
                         }
-                        const width = document.body.clientWidth & ~15;
-                        const height = document.body.clientHeight & ~15;
-                        const maxSize = Math.min(width, height);
+                        const maxSize = this.getMaxSize();
                         event = CommandControlEvent.createSetVideoSettingsCommand(new VideoSettings({
                             maxSize,
                             bitrate,
@@ -190,7 +189,7 @@ export class DeviceController implements DeviceMessageListener {
                 const event = new KeyCodeControlEvent(KeyEvent.ACTION_UP, code, 0);
                 connection.sendEvent(event);
             };
-            deviceButtons.appendChild(btn);
+            this.controlButtons.appendChild(btn);
         });
         box.appendChild(cmdWrap);
 
@@ -214,12 +213,19 @@ export class DeviceController implements DeviceMessageListener {
         stopBtn.onclick = stop;
         box.appendChild(stopBtn);
         controlsWrapper.appendChild(wrapper);
-        deviceView.appendChild(deviceButtons);
+        deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');
         video.className = 'video';
         deviceView.appendChild(video);
         this.decoder.setParent(video);
         connection.setErrorListener(new ErrorHandler(stop));
+    }
+
+    private getMaxSize(): number {
+        const body = document.body;
+        const width = (body.clientWidth - this.controlButtons.clientWidth) & ~15;
+        const height = body.clientHeight & ~15;
+        return Math.min(width, height);
     }
 
     public start(): void {
