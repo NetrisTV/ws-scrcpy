@@ -4,13 +4,20 @@ import Program from './Program';
 
 export default class Texture {
     public readonly texture: WebGLTexture | null;
+    public readonly format: GLenum;
     private textureIDs: number[];
 
-    constructor(readonly gl: WebGLRenderingContext, readonly size: Size, readonly format?: GLenum) {
+    static create (gl: WebGLRenderingContext, format: number): Texture {
+        return new Texture(gl, undefined, format);
+    }
+
+    constructor(readonly gl: WebGLRenderingContext, readonly size?: Size, format?: GLenum) {
         this.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         this.format = format ? format : gl.LUMINANCE;
-        gl.texImage2D(gl.TEXTURE_2D, 0, this.format, size.width, size.height, 0, this.format, gl.UNSIGNED_BYTE, null);
+        if (size) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, size.width, size.height, 0, this.format, gl.UNSIGNED_BYTE, null);
+        }
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -18,20 +25,28 @@ export default class Texture {
         this.textureIDs = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2];
     }
 
-    public fill(textureData: Uint8Array, useTexSubImage2D?: boolean): void {
-        if (!this.format) {
-            return;
+    public fill(textureData: Uint8Array, useTexSubImage2D?: boolean, w?: number, h?: number): void {
+        if (typeof w === 'undefined' || typeof h === 'undefined') {
+            if (!this.size) {
+                return;
+            }
+            w = this.size.w;
+            h = this.size.h;
         }
         const gl = this.gl;
-        assert(textureData.length >= this.size.w * this.size.h,
-            'Texture size mismatch, data:' + textureData.length + ', texture: ' + this.size.w * this.size.h);
+        assert(textureData.length >= w * h,
+            'Texture size mismatch, data:' + textureData.length + ', texture: ' + w * h);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         if (useTexSubImage2D) {
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.size.w, this.size.h, this.format, gl.UNSIGNED_BYTE, textureData);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, w, h, this.format, gl.UNSIGNED_BYTE, textureData);
         } else {
             // texImage2D seems to be faster, thus keeping it as the default
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.size.w, this.size.h, 0, this.format, gl.UNSIGNED_BYTE, textureData);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, w, h, 0, this.format, gl.UNSIGNED_BYTE, textureData);
         }
+    }
+
+    public image2dBuffer (buffer: Uint8Array, width: number, height: number) {
+        this.fill(buffer, false, width, height);
     }
 
     public bind(n: number, program: Program, name: string): void {

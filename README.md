@@ -4,12 +4,11 @@ Web client prototype for [scrcpy](https://github.com/Genymobile/scrcpy).
 
 ## Requirements
 
-You'll need a web browser with these technologies support:
+You'll need a web browser that supports the following technologies:
 * WebSockets
 * Media Source Extensions and h264 decoding ([NativeDecoder](/src/decoder/NativeDecoder.ts))
-* WebGL ([Broadway.js](/src/decoder/BroadwayDecoder.ts))
-* WebWorkers ([h264bsd](/src/decoder/H264bsdDecoder.ts))
-* WebAssembly  (both [Broadway.js](/src/decoder/BroadwayDecoder.ts) and [h264bsd](/src/decoder/H264bsdDecoder.ts))
+* WebWorkers ([h264bsd](/src/decoder/H264bsdDecoder.ts), [tinyh264](/src/decoder/Tinyh264Decoder.ts))
+* WebAssembly  ([Broadway.js](/src/decoder/BroadwayDecoder.ts) and [h264bsd](/src/decoder/H264bsdDecoder.ts), [tinyh264](/src/decoder/Tinyh264Decoder.ts))
 
 ## Build and Start
 
@@ -43,6 +42,7 @@ npm start
 * [openstf/adbkit](https://github.com/openstf/adbkit)
 * [openstf/adbkit-logcat](https://github.com/openstf/adbkit-logcat)
 * [xtermjs/xterm.js](https://github.com/xtermjs/xterm.js)
+* [udevbe/tinyh264](https://github.com/udevbe/tinyh264)
 
 ## scrcpy websocket fork
 

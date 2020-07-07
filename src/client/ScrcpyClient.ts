@@ -5,13 +5,14 @@ import H264bsdDecoder from '../decoder/H264bsdDecoder';
 import { ParsedUrlQueryInput } from 'querystring';
 import { BaseClient } from './BaseClient';
 import Decoder from '../decoder/Decoder';
+import Tinyh264Decoder from "../decoder/Tinyh264Decoder";
 
 export interface Arguments {
     url: string;
     name: string;
 }
 
-export type Decoders = 'broadway' | 'h264bsd' | 'native';
+export type Decoders = 'broadway' | 'h264bsd' | 'native' | 'tinyh264';
 
 export interface StreamParams extends ParsedUrlQueryInput {
     action: 'stream';
@@ -98,6 +99,20 @@ export class ScrcpyClient extends BaseClient {
         return decoder;
     }
 
+    public static startTinyh264(params: Arguments): Decoder {
+        const {url, name} = params;
+        const tag = Tinyh264Decoder.createElement();
+        const decoder = new Tinyh264Decoder(tag);
+        const controller = new DeviceController({
+            url,
+            name,
+            decoder,
+            videoSettings: Tinyh264Decoder.preferredVideoSettings
+        });
+        controller.start();
+        return decoder;
+    }
+
     public startStream(name: string, decoderName: string, url: string): Decoder | undefined {
         if (!url || !name) {
             return;
@@ -112,6 +127,9 @@ export class ScrcpyClient extends BaseClient {
                 break;
             case 'h264bsd':
                 decoder = ScrcpyClient.startH264bsd({url, name});
+                break;
+            case 'tinyh264':
+                decoder = ScrcpyClient.startTinyh264({url, name});
                 break;
             default:
                 return;
