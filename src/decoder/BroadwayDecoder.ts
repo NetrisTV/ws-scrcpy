@@ -55,7 +55,7 @@ export class BroadwayDecoder extends Decoder {
                 const tag = BroadwayDecoder.createElement(this.tag.id);
                 tag.className = this.tag.className;
                 parent.replaceChild(tag, this.tag);
-                parent.append(this.touchableCanvas);
+                parent.appendChild(this.touchableCanvas);
                 this.tag = tag;
             }
         }

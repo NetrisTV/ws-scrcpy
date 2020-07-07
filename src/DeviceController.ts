@@ -229,7 +229,7 @@ export class DeviceController implements DeviceMessageListener {
     }
 
     public start(): void {
-        document.body.append(this.deviceView);
+        document.body.appendChild(this.deviceView);
         const temp = document.getElementById('controlsWrap');
         if (temp) {
             temp.appendChild(this.controls);

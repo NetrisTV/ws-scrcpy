@@ -16,7 +16,9 @@ export default class NativeDecoder extends Decoder {
     public static createElement(id?: string): HTMLVideoElement {
         const tag = document.createElement('video') as HTMLVideoElement;
         tag.muted = true;
+        tag.autoplay = true;
         tag.setAttribute('muted', 'muted');
+        tag.setAttribute('autoplay', 'autoplay');
         if (typeof id === 'string') {
             tag.id = id;
         }

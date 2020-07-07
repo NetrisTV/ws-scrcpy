@@ -51,7 +51,7 @@ export class ScrcpyClient extends BaseClient {
         if (!controlsWrap) {
             controlsWrap = document.createElement('div');
             controlsWrap.id = 'controlsWrap';
-            document.body.append(controlsWrap);
+            document.body.appendChild(controlsWrap);
         }
         return controlsWrap;
     }

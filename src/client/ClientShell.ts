@@ -75,7 +75,7 @@ export class ClientShell extends NodeClient {
             container = document.createElement('div');
             container.className = 'terminal-container';
             container.id = udid;
-            document.body.append(container);
+            document.body.appendChild(container);
         }
         return container;
     }

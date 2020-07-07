@@ -51,8 +51,8 @@ export default abstract class Decoder {
 
     public setParent(parent: HTMLElement): void {
         this.parentElement = parent;
-        parent.append(this.tag);
-        parent.append(this.touchableCanvas);
+        parent.appendChild(this.tag);
+        parent.appendChild(this.touchableCanvas);
     }
 
     public getVideoSettings(): VideoSettings|undefined {

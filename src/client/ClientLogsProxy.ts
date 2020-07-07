@@ -141,16 +141,16 @@ export class ClientLogsProxy extends NodeClient {
         const cInputId = INPUT_TEXT_ID;
         label.setAttribute('for', cInputId);
         label.innerText = 'Add filter:';
-        parag.append(label);
+        parag.appendChild(label);
         const selectField = document.createElement('select');
         selectField.id = SELECT_FIELD_ID;
         FILTER_TYPE.forEach(type => {
             const option = document.createElement('option');
             option.value = type.toLowerCase();
             option.innerText = type;
-            selectField.append(option);
+            selectField.appendChild(option);
         });
-        parag.append(selectField);
+        parag.appendChild(selectField);
         const selectPriority = document.createElement('select');
         selectPriority.id = SELECT_PRIORITY_ID;
         PRIORITY_LEVELS.forEach((level: string, idx: number) => {
@@ -160,16 +160,16 @@ export class ClientLogsProxy extends NodeClient {
             const option = document.createElement('option');
             option.value = idx.toString();
             option.innerText = level;
-            selectPriority.append(option);
+            selectPriority.appendChild(option);
             if (idx === PriorityLevel.VERBOSE) {
                 option.selected = true;
             }
         });
-        parag.append(selectPriority);
+        parag.appendChild(selectPriority);
 
         const input = document.createElement('input');
         input.id = cInputId;
-        parag.append(input);
+        parag.appendChild(input);
         selectField.onchange = () => {
             if (selectField.options[selectField.selectedIndex].value.toLowerCase() === Fields.Priority) {
                 input.style.display = 'none';
@@ -187,7 +187,7 @@ export class ClientLogsProxy extends NodeClient {
             this.addFilter(type, input.value.trim(), priority);
             input.value = '';
         };
-        parag.append(buttonToClient);
+        parag.appendChild(buttonToClient);
         // const buttonToServer = document.createElement('button');
         // buttonToServer.id = 'sFilterButton';
         // buttonToServer.className = 'button-add-filter button-add-filter-server';
@@ -196,9 +196,9 @@ export class ClientLogsProxy extends NodeClient {
         //     console.error('Not implemented');
         //     input.value = '';
         // };
-        // parag.append(buttonToServer);
-        wrapper.append(parag);
-        document.body.append(wrapper);
+        // parag.appendChild(buttonToServer);
+        wrapper.appendChild(parag);
+        document.body.appendChild(wrapper);
     }
 
     private addFilter(type: string, input: string, priority: PriorityLevel): void {
@@ -235,7 +235,7 @@ export class ClientLogsProxy extends NodeClient {
             buttons.removeChild(buttons.children[0]);
         }
         list.forEach(e => {
-            buttons.append(e);
+            buttons.appendChild(e);
         });
     }
 
@@ -274,7 +274,7 @@ export class ClientLogsProxy extends NodeClient {
             wrapper = document.createElement('div');
             wrapper.id = 'logcat';
             wrapper.className = 'table-wrapper';
-            document.body.append(wrapper);
+            document.body.appendChild(wrapper);
         }
         return wrapper;
     }
@@ -288,7 +288,7 @@ export class ClientLogsProxy extends NodeClient {
             if (document.body.children.length) {
                 document.body.insertBefore(buttons, document.body.children[0]);
             } else {
-                document.body.append(buttons);
+                document.body.appendChild(buttons);
             }
             buttons.onclick = this.onClickFilterButtons.bind(this);
         }
@@ -306,15 +306,15 @@ export class ClientLogsProxy extends NodeClient {
                 const td = document.createElement('th');
                 td.innerText = name;
                 td.className = name.toLowerCase();
-                headRow.append(td);
+                headRow.appendChild(td);
             });
-            thead.append(headRow);
-            table.append(thead);
+            thead.appendChild(headRow);
+            table.appendChild(thead);
             tbody = document.createElement('tbody') as HTMLTableSectionElement;
             table.id = udid;
-            table.append(tbody);
+            table.appendChild(tbody);
             table.setAttribute('width', '100%');
-            wrapper.append(table);
+            wrapper.appendChild(table);
             tbody.addEventListener('mouseup', () => {
                 const selection = window.getSelection();
                 const text = selection?.toString().trim();
@@ -384,7 +384,7 @@ export class ClientLogsProxy extends NodeClient {
             }
         }
         rows.forEach(row => {
-            tbody.append(row);
+            tbody.appendChild(row);
         });
     }
 
@@ -393,27 +393,27 @@ export class ClientLogsProxy extends NodeClient {
         const dateTd = document.createElement('td');
         dateTd.innerText = ClientLogsProxy.formatDate(new Date(entry.date));
         dateTd.className = 'date';
-        row.append(dateTd);
+        row.appendChild(dateTd);
         const pid = document.createElement('td');
         pid.innerText = `[${entry.pid}]`;
         pid.className = 'pid';
-        row.append(pid);
+        row.appendChild(pid);
         const tid = document.createElement('td');
         tid.innerText = `[${entry.tid}]`;
         tid.className = 'tid';
-        row.append(tid);
+        row.appendChild(tid);
         const priority = document.createElement('td');
         priority.innerText = LogsFilter.priorityToLetter(entry.priority);
         priority.className = 'p';
-        row.append(priority);
+        row.appendChild(priority);
         const tag = document.createElement('td');
         tag.innerHTML = `<pre class="might-overflow">${entry.tag}</pre>`;
         tag.className = 'tag';
-        row.append(tag);
+        row.appendChild(tag);
         const message = document.createElement('td');
         message.className = 'message';
         message.innerHTML = `<pre class="might-overflow">${entry.message}</pre>`;
-        row.append(message);
+        row.appendChild(message);
         return row;
     }
 
@@ -428,7 +428,7 @@ export class ClientLogsProxy extends NodeClient {
         if (tbody.children.length) {
             tbody.insertBefore(row, tbody.children[0]);
         } else {
-            tbody.append(row);
+            tbody.appendChild(row);
         }
         this.entryToRowMap.set(entry, row);
         this.rowToEntryMap.set(row, entry);

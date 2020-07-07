@@ -80,7 +80,8 @@ export class DeviceConnection {
         if (!this.hasListeners) {
             let down = 0;
             const onMouseEvent = (e: MouseEvent) => {
-                Object.values(this.instances).forEach((connection: DeviceConnection) => {
+                for (let key in this.instances) {
+                    const connection: DeviceConnection = this.instances[key];
                     if (connection.haveConnection()) {
                         connection.decoders.forEach(decoder => {
                             const tag = decoder.getTouchableElement();
@@ -98,7 +99,7 @@ export class DeviceConnection {
                             }
                         });
                     }
-                });
+                }
             };
             document.body.onmousedown = function(e: MouseEvent): void {
                 down++;
