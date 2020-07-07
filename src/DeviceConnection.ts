@@ -38,6 +38,14 @@ interface TouchOnClient {
     touch: Touch;
 }
 
+interface CommonTouchAndMouse {
+    clientX: number;
+    clientY: number;
+    type: string;
+    target: EventTarget | null;
+    button: number;
+}
+
 export class DeviceConnection {
     private static BUTTONS_MAP: Record<number, number> = {
         0: 17, // ?? BUTTON_PRIMARY
@@ -45,6 +53,10 @@ export class DeviceConnection {
         2: 26  // ?? BUTTON_SECONDARY
     };
     private static EVENT_ACTION_MAP: Record<string, number> = {
+        touchstart: MotionEvent.ACTION_DOWN,
+        touchend: MotionEvent.ACTION_UP,
+        touchmove: MotionEvent.ACTION_MOVE,
+        touchcancel: MotionEvent.ACTION_UP,
         mousedown: MotionEvent.ACTION_DOWN,
         mousemove: MotionEvent.ACTION_MOVE,
         mouseup: MotionEvent.ACTION_UP
@@ -61,6 +73,8 @@ export class DeviceConnection {
     private errorListener?: ErrorListener;
     private deviceMessageListener?: DeviceMessageListener;
     private name: string = '';
+    private static idToPointerMap: Map<number, number> = new Map();
+    private static pointerToIdMap: Map<number, number> = new Map();
 
     constructor(readonly url: string) {
         this.url = url;
@@ -79,7 +93,8 @@ export class DeviceConnection {
     private static setListeners(): void {
         if (!this.hasListeners) {
             let down = 0;
-            const onMouseEvent = (e: MouseEvent) => {
+            const supportsPassive = Util.supportsPassive();
+            const onMouseEvent = (e: MouseEvent | TouchEvent) => {
                 for (let key in this.instances) {
                     const connection: DeviceConnection = this.instances[key];
                     if (connection.haveConnection()) {
@@ -90,17 +105,42 @@ export class DeviceConnection {
                                 if (!screenInfo) {
                                     return;
                                 }
-                                const events = DeviceConnection.buildTouchEvent(e, screenInfo);
-                                if (events && events.length && down > 0) {
-                                    events.forEach(event => connection.sendEvent(event));
+                                let events: TouchControlEvent[] | null = null;
+                                let condition = true;
+                                if (e instanceof MouseEvent) {
+                                    condition = down > 0;
+                                    events = DeviceConnection.buildTouchEvent(e, screenInfo);
+                                } else if (e instanceof TouchEvent) {
+                                    events = DeviceConnection.formatTouchEvent(e, screenInfo, tag);
                                 }
-                                e.preventDefault();
+                                if (events && events.length && condition) {
+                                    events.forEach(event => {
+                                        connection.sendEvent(event);
+                                    });
+                                }
+                                if (e.cancelable) {
+                                    e.preventDefault();
+                                }
                                 e.stopPropagation();
                             }
                         });
                     }
                 }
             };
+
+            const options = supportsPassive ? { passive: false } : false;
+            document.body.addEventListener('touchstart', (e: TouchEvent): void => {
+                onMouseEvent(e);
+            }, options);
+            document.body.addEventListener('touchend', (e: TouchEvent): void => {
+                onMouseEvent(e);
+            }, options);
+            document.body.addEventListener('touchmove', (e: TouchEvent): void => {
+                onMouseEvent(e);
+            }, options);
+            document.body.addEventListener('touchcancel', (e: TouchEvent): void => {
+                onMouseEvent(e);
+            }, options);
             document.body.onmousedown = function(e: MouseEvent): void {
                 down++;
                 onMouseEvent(e);
@@ -116,6 +156,60 @@ export class DeviceConnection {
         }
     }
 
+    private static formatTouchEvent(e: TouchEvent, screenInfo: ScreenInfo, tag: HTMLElement): TouchControlEvent[] | null {
+        const events: TouchControlEvent[] = [];
+        const touches = e.changedTouches;
+        if (touches && touches.length) {
+            for (let i = 0, l = touches.length; i < l; i++) {
+                const touch = touches[i];
+                const pointerId = DeviceConnection.getPointerId(e.type, touch.identifier);
+                if (touch.target !== tag) {
+                    continue;
+                }
+                const item: CommonTouchAndMouse = {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    type: e.type,
+                    button: 0,
+                    target: e.target
+                }
+                const event = this.calculateCoordinates(item, screenInfo);
+                if (event) {
+                    const { action, buttons, position } = event.touch;
+                    const pressure = touch.force * 255;
+                    events.push(new TouchControlEvent(action, pointerId, position, pressure, buttons));
+                } else {
+                    console.error(`Failed to format touch`, touch);
+                }
+            }
+        } else {
+            console.error('No "touches"', e);
+        }
+        if (events.length) {
+            return events;
+        }
+        return null;
+    }
+    private static getPointerId(type: string, identifier: number): number {
+        // I'm not sure that we can directly use touch identifier as pointerId
+        let pointerId: number;
+        if (this.idToPointerMap.has(identifier)) {
+            pointerId = this.idToPointerMap.get(identifier) as number;
+            if (type === 'touchend' || type === 'touchcancel') {
+                this.idToPointerMap.delete(identifier);
+                this.pointerToIdMap.delete(pointerId);
+            }
+            return pointerId;
+        } else {
+            pointerId = 0;
+            while (this.idToPointerMap.has(pointerId)) {
+                pointerId++;
+            }
+            this.idToPointerMap.set(identifier, pointerId);
+            this.pointerToIdMap.set(pointerId, identifier);
+            return pointerId;
+        }
+    }
     private static buildTouchEvent(e: MouseEvent, screenInfo: ScreenInfo): TouchControlEvent[] | null {
         const touches = this.getTouch(e, screenInfo);
         if (!touches) {
@@ -144,7 +238,7 @@ export class DeviceConnection {
         });
     }
 
-    private static calculateCoordinates(e: MouseEvent, screenInfo: ScreenInfo): TouchOnClient | null {
+    private static calculateCoordinates(e: CommonTouchAndMouse, screenInfo: ScreenInfo): TouchOnClient | null {
         const action = this.EVENT_ACTION_MAP[e.type];
         if (typeof action === 'undefined' || !screenInfo) {
             return null;
