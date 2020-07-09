@@ -17,6 +17,23 @@ export default abstract class Decoder {
     private state: number = Decoder.STATE.STOPPED;
     public showFps: boolean = true;
 
+    public static hasWebGLSupport(): boolean {
+        // For some reason if I use here `this.tag` image on canvas will be flattened
+        const testCanvas: HTMLCanvasElement = document.createElement('canvas');
+        const validContextNames = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"];
+        let index = 0;
+        let gl: any = null;
+        while (!gl && index++ < validContextNames.length) {
+            try {
+                gl = testCanvas.getContext(validContextNames[index]);
+            } catch (e) {
+                gl = null;
+            }
+        }
+        console.log('WebGL support:' + !!gl);
+        return !!gl;
+    }
+
     protected constructor(protected tag: HTMLElement) {
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';

@@ -57,23 +57,9 @@ export class BroadwayDecoder extends Decoder {
             e.preventDefault();
         };
 
-        // For some reason if I use here `this.tag` image on canvas will be flattened
-        const testCanvas: HTMLCanvasElement = document.createElement('canvas');
-        const validContextNames = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"];
-        let index = 0;
-        let gl: any = null;
-        while (!gl && index++ < validContextNames.length) {
-            try {
-                gl = testCanvas.getContext(validContextNames[index]);
-            } catch (e) {
-                gl = null;
-            }
-        }
-        if (gl) {
-            console.log(this.TAG, 'initCanvas', 'WebGl');
+        if (Decoder.hasWebGLSupport()) {
             this.canvas = new YUVWebGLCanvas(this.tag, new Size(width, height));
         } else {
-            console.log(this.TAG, 'initCanvas', '2d');
             this.canvas = new YUVCanvas(this.tag, new Size(width, height));
         }
         this.avc = new Avc();
