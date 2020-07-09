@@ -1,6 +1,6 @@
 import NativeDecoder from '../decoder/NativeDecoder';
 import { DeviceController } from '../DeviceController';
-import { BroadwayDecoder, CANVAS_TYPE } from '../decoder/BroadwayDecoder';
+import { BroadwayDecoder } from '../decoder/BroadwayDecoder';
 import H264bsdDecoder from '../decoder/H264bsdDecoder';
 import { ParsedUrlQueryInput } from 'querystring';
 import { BaseClient } from './BaseClient';
@@ -73,7 +73,7 @@ export class ScrcpyClient extends BaseClient {
     public static startBroadway(params: Arguments): Decoder {
         const {url, name} = params;
         const tag = BroadwayDecoder.createElement();
-        const decoder = new BroadwayDecoder(tag, CANVAS_TYPE.WEBGL);
+        const decoder = new BroadwayDecoder(tag);
         const controller = new DeviceController({
             url,
             name,

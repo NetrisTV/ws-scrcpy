@@ -68,7 +68,6 @@ export default class YUVWebGLCanvas extends WebGLCanvas {
         if (!this.gl) {
             return;
         }
-        console.log('creatingTextures: size: ' + this.size);
         this.YTexture = new Texture(this.gl, this.size);
         this.UTexture = new Texture(this.gl, this.size.getHalfSize());
         this.VTexture = new Texture(this.gl, this.size.getHalfSize());

@@ -8,12 +8,6 @@ import VideoSettings from '../VideoSettings';
 import Canvas from '../h264-live-player/Canvas';
 import ScreenInfo from '../ScreenInfo';
 
-export const CANVAS_TYPE: Record<string, string> = {
-    WEBGL: 'webgl',
-    YUV: 'YUVWebGLCanvas',
-    CANVAS: 'YUVCanvas'
-};
-
 export class BroadwayDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
@@ -36,7 +30,7 @@ export class BroadwayDecoder extends Decoder {
     private canvas?: Canvas;
     private framesList: Uint8Array[] = [];
 
-    constructor(protected tag: HTMLCanvasElement, private canvastype: string) {
+    constructor(protected tag: HTMLCanvasElement) {
         super(tag);
         this.avc = new Avc();
     }
@@ -46,9 +40,6 @@ export class BroadwayDecoder extends Decoder {
     }
 
     protected initCanvas(width: number, height: number): void {
-        const canvasFactory = this.canvastype === 'webgl' || this.canvastype === 'YUVWebGLCanvas'
-            ? YUVWebGLCanvas
-            : YUVCanvas;
         if (this.canvas) {
             const parent = this.tag.parentNode;
             if (parent) {
@@ -59,13 +50,32 @@ export class BroadwayDecoder extends Decoder {
                 this.tag = tag;
             }
         }
-        this.tag.onerror = function(e: Event | string): void {
-            console.error(e);
+        this.tag.onerror = (e: Event | string): void => {
+            console.error(this.TAG, e);
         };
-        this.tag.oncontextmenu = function(e: MouseEvent): void {
+        this.tag.oncontextmenu = (e: MouseEvent): void => {
             e.preventDefault();
         };
-        this.canvas = new canvasFactory(this.tag, new Size(width, height));
+
+        // For some reason if I use here `this.tag` image on canvas will be flattened
+        const testCanvas: HTMLCanvasElement = document.createElement('canvas');
+        const validContextNames = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"];
+        let index = 0;
+        let gl: any = null;
+        while (!gl && index++ < validContextNames.length) {
+            try {
+                gl = testCanvas.getContext(validContextNames[index]);
+            } catch (e) {
+                gl = null;
+            }
+        }
+        if (gl) {
+            console.log(this.TAG, 'initCanvas', 'WebGl');
+            this.canvas = new YUVWebGLCanvas(this.tag, new Size(width, height));
+        } else {
+            console.log(this.TAG, 'initCanvas', '2d');
+            this.canvas = new YUVCanvas(this.tag, new Size(width, height));
+        }
         this.avc = new Avc();
         this.avc.onPictureDecoded = this.canvas.decode.bind(this.canvas);
         this.tag.width = width;
@@ -76,7 +86,7 @@ export class BroadwayDecoder extends Decoder {
         // }
     }
 
-    private shiftFrame(): void {
+    private shiftFrame = (): void => {
         this.updateFps(false);
         if (this.getState() !== Decoder.STATE.PLAYING) {
             return;
@@ -88,8 +98,8 @@ export class BroadwayDecoder extends Decoder {
             this.decode(frame);
             this.updateFps(true);
         }
-        requestAnimationFrame(this.shiftFrame.bind(this));
-    }
+        requestAnimationFrame(this.shiftFrame);
+    };
 
     public decode(data: Uint8Array): void {
         // let naltype = 'invalid frame';
@@ -118,7 +128,7 @@ export class BroadwayDecoder extends Decoder {
             const {width, height} = this.screenInfo.videoSize;
             this.initCanvas(width, height);
         }
-        requestAnimationFrame(this.shiftFrame.bind(this));
+        requestAnimationFrame(this.shiftFrame);
     }
 
     public stop(): void {
@@ -142,7 +152,7 @@ export class BroadwayDecoder extends Decoder {
             if (this.videoSettings) {
                 const {frameRate} = this.videoSettings;
                 if (this.framesList.length > frameRate / 2) {
-                    console.log('Dropping frames', this.framesList.length);
+                    console.log(this.TAG, 'Dropping frames', this.framesList.length);
                     this.framesList = [];
                 }
             }
