@@ -1,10 +1,9 @@
 // @ts-ignore
 import Worker from '../tinyh264/H264NALDecoder.worker'
-import Decoder from "./Decoder";
 import VideoSettings from "../VideoSettings";
-import ScreenInfo from "../ScreenInfo";
 import YUVWebGLCanvas from "../tinyh264/YUVWebGLCanvas";
 import YUVCanvas from "../tinyh264/YUVCanvas";
+import CanvasCommon from "./CanvasCommon";
 
 type WorkerMessage = {
   type: string;
@@ -14,7 +13,7 @@ type WorkerMessage = {
   renderStateId: number;
 }
 
-export default class Tinyh264Decoder extends Decoder {
+export default class Tinyh264Decoder extends CanvasCommon {
   private static videoStreamId = 1;
   public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
     lockedVideoOrientation: -1,
@@ -25,40 +24,22 @@ export default class Tinyh264Decoder extends Decoder {
     sendFrameMeta: false
   });
 
-  public static createElement(id?: string): HTMLCanvasElement {
-    const tag = document.createElement('canvas') as HTMLCanvasElement;
-    if (typeof id === 'string') {
-      tag.id = id;
-    }
-    tag.className = 'video-layer';
-
-    return tag;
-  }
-
   protected TAG: string = 'Tinyh264Decoder';
   private worker?: Worker;
-  private display?: YUVWebGLCanvas | YUVCanvas;
-  private framesList: Uint8Array[] = [];
-  private running: boolean = false;
-  private readonly bindedOnMessage: (e: MessageEvent) => void;
+  protected canvas?: YUVWebGLCanvas | YUVCanvas;
   private isDecoderReady: boolean = false;
 
   constructor(protected tag: HTMLCanvasElement) {
     super(tag);
-    this.bindedOnMessage = this.onWorkerMessage.bind(this);
   }
 
-  private static isIFrame(frame: Uint8Array): boolean {
-    return frame && frame.length > 4 && frame[4] === 0x65;
-  }
-
-  private onWorkerMessage(e: MessageEvent): void {
+  private onWorkerMessage = (e: MessageEvent): void => {
     const message: WorkerMessage = e.data
     switch (message.type) {
       case 'pictureReady':
         const { width, height, data } = message;
-        if (this.display) {
-          this.display.decode(new Uint8Array(data), width, height);
+        if (this.canvas) {
+          this.canvas.decode(new Uint8Array(data), width, height);
         }
         break
       case 'decoderReady':
@@ -68,59 +49,26 @@ export default class Tinyh264Decoder extends Decoder {
       default:
         console.error(this.TAG, Error(`Wrong message type "${message.type}"`));
     }
-  }
+  };
 
   private initWorker(): void {
     this.worker = new Worker();
-    this.worker.addEventListener('message', this.bindedOnMessage)
+    this.worker.addEventListener('message', this.onWorkerMessage)
   }
 
-  private initCanvas(width: number, height: number): void {
-    if (this.display) {
-      const parent = this.tag.parentNode;
-      if (parent) {
-        const tag = Tinyh264Decoder.createElement(this.tag.id);
-        tag.className = this.tag.className;
-        parent.replaceChild(tag, this.tag);
-        parent.appendChild(this.touchableCanvas);
-        this.tag = tag;
-      }
-    }
+  protected initCanvas(width: number, height: number): void {
+    super.initCanvas(width, height);
 
-    if (Decoder.hasWebGLSupport()) {
+    if (CanvasCommon.hasWebGLSupport()) {
       console.log(this.TAG, 'initCanvas', 'WebGl');
-      this.display = new YUVWebGLCanvas(this.tag);
+      this.canvas = new YUVWebGLCanvas(this.tag);
     } else {
       console.log(this.TAG, 'initCanvas', '2d');
-      this.display = new YUVCanvas(this.tag);
+      this.canvas = new YUVCanvas(this.tag);
     }
-    this.tag.onerror = function(e: Event | string): void {
-      console.error(e);
-    };
-    this.tag.oncontextmenu = function(e: MouseEvent): void {
-      e.preventDefault();
-    };
-    this.tag.width = width;
-    this.tag.height = height;
   }
 
-  private shiftFrame(): void {
-    this.updateFps(false);
-    if (!this.running) {
-      return;
-    }
-
-    const frame = this.framesList.shift();
-
-    if (frame) {
-      this.decode(frame);
-      this.updateFps(true);
-    }
-
-    requestAnimationFrame(this.shiftFrame.bind(this));
-  }
-
-  private decode(data: Uint8Array): void {
+  protected decode(data: Uint8Array): void {
     if (!this.worker || !this.isDecoderReady) {
       return;
     }
@@ -136,56 +84,26 @@ export default class Tinyh264Decoder extends Decoder {
 
   public play(): void {
     super.play();
-    if (this.getState() !== Decoder.STATE.PLAYING || !this.screenInfo) {
-      return;
-    }
-    if (!this.display) {
-      const {width, height} = this.screenInfo.videoSize;
-      this.initCanvas(width, height);
-    }
     if (!this.worker) {
       this.initWorker();
     }
-    this.running = true;
-    requestAnimationFrame(this.shiftFrame.bind(this));
   }
 
   public stop(): void {
     super.stop();
-    this.clearState();
     if (this.worker) {
-      this.worker.worker.removeEventListener('message', this.bindedOnMessage);
+      this.worker.worker.removeEventListener('message', this.onWorkerMessage);
       this.worker.postMessage({type: 'release', renderStateId: Tinyh264Decoder.videoStreamId});
       delete this.worker;
     }
-  }
-
-  public setScreenInfo(screenInfo: ScreenInfo): void {
-    super.setScreenInfo(screenInfo);
-    this.clearState();
-    const {width, height} = screenInfo.videoSize;
-    this.initCanvas(width, height);
   }
 
   public getPreferredVideoSetting(): VideoSettings {
     return Tinyh264Decoder.preferredVideoSettings;
   }
 
-  public pushFrame(frame: Uint8Array): void {
-    if (Tinyh264Decoder.isIFrame(frame)) {
-      if (this.videoSettings) {
-        const {frameRate} = this.videoSettings;
-        if (this.framesList.length > frameRate / 2) {
-          console.log(this.TAG, 'Dropping frames', this.framesList.length);
-          this.framesList = [];
-        }
-      }
-    }
-    this.framesList.push(frame);
-  }
-
-  private clearState(): void {
-    this.framesList = [];
+  protected clearState(): void {
+    super.clearState();
     if (this.worker) {
       this.worker.postMessage({type: 'release', renderStateId: Tinyh264Decoder.videoStreamId});
       Tinyh264Decoder.videoStreamId++;
