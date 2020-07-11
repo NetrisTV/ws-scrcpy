@@ -20,6 +20,7 @@ export class BroadwayDecoder extends CanvasCommon {
     protected TAG: string = 'BroadwayDecoder';
     protected canvas?: Canvas;
     private avc?: Avc;
+    public readonly supportsScreenshot: boolean = true;
 
     constructor(protected tag: HTMLCanvasElement) {
         super(tag);

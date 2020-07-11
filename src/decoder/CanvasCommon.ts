@@ -54,6 +54,10 @@ export default abstract class CanvasCommon extends Decoder {
         requestAnimationFrame(this.shiftFrame);
     };
 
+    public getImageDataURL(): string {
+        return this.tag.toDataURL();
+    }
+
     protected initCanvas(width: number, height: number): void {
         if (this.canvas) {
             const parent = this.tag.parentNode;

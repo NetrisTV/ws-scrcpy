@@ -191,6 +191,14 @@ export class DeviceController implements DeviceMessageListener {
             };
             this.controlButtons.appendChild(btn);
         });
+        if (decoder.supportsScreenshot) {
+            const screenshotButton = document.createElement('button');
+            screenshotButton.classList.add('control-button', 'screen-shot');
+            screenshotButton.onclick = () => {
+                decoder.createScreenshot(connection.getDeviceName());
+            }
+            this.controlButtons.appendChild(screenshotButton);
+        }
         box.appendChild(cmdWrap);
 
         const stop = (ev?: string | Event) => {

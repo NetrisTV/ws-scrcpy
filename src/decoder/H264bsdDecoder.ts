@@ -16,6 +16,7 @@ export default class H264bsdDecoder extends CanvasCommon {
     protected TAG: string = 'H264bsdDecoder';
     protected canvas?: H264bsdCanvas;
     private worker?: H264bsdWorker;
+    public readonly supportsScreenshot: boolean = true;
 
     constructor(protected tag: HTMLCanvasElement) {
         super(tag);

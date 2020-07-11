@@ -27,6 +27,7 @@ export default class NativeDecoder extends Decoder {
     }
     protected TAG: string = 'NativeDecoder';
     private converter?: VideoConverter;
+    public readonly supportsScreenshot: boolean = true;
 
     constructor(protected tag: HTMLVideoElement, private fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT) {
         super(tag);
@@ -44,6 +45,18 @@ export default class NativeDecoder extends Decoder {
                             fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT): VideoConverter {
         console.log(`Create new VideoConverter(fps=${fps}, fpf=${fpf})`);
         return new VideoConverter(tag, fps, fpf);
+    }
+
+    public getImageDataURL(): string {
+        const canvas = document.createElement("canvas");
+        canvas.width = this.tag.clientWidth;
+        canvas.height = this.tag.clientHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.drawImage(this.tag, 0, 0, canvas.width, canvas.height);
+        }
+
+        return canvas.toDataURL();
     }
 
     public play(): void {

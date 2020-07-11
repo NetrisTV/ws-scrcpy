@@ -16,6 +16,7 @@ export default abstract class Decoder {
     protected fpsCounter: number[] = [];
     private state: number = Decoder.STATE.STOPPED;
     public showFps: boolean = true;
+    public readonly supportsScreenshot: boolean = false;
 
     protected constructor(protected tag: HTMLElement) {
         this.touchableCanvas = document.createElement('canvas');
@@ -24,6 +25,15 @@ export default abstract class Decoder {
 
     protected static isIFrame(frame: Uint8Array): boolean {
         return frame && frame.length > 4 && frame[4] === 0x65;
+    }
+
+    public abstract getImageDataURL(): string;
+
+    public createScreenshot(deviceName: string): void {
+        const a = document.createElement('a');
+        a.href = this.getImageDataURL();
+        a.download = `${deviceName} ${new Date().toLocaleString()}.png`;
+        a.click();
     }
 
     public play(): void {

@@ -26,8 +26,9 @@ export default class Tinyh264Decoder extends CanvasCommon {
 
   protected TAG: string = 'Tinyh264Decoder';
   private worker?: Worker;
-  protected canvas?: YUVWebGLCanvas | YUVCanvas;
   private isDecoderReady: boolean = false;
+  protected canvas?: YUVWebGLCanvas | YUVCanvas;
+  public readonly supportsScreenshot: boolean = true;
 
   constructor(protected tag: HTMLCanvasElement) {
     super(tag);

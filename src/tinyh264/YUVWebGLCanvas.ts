@@ -14,7 +14,9 @@ export default class YUVWebGLCanvas extends Canvas {
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
-        const gl = canvas.getContext('experimental-webgl') as WebGLRenderingContext | null;
+        const gl = canvas.getContext('experimental-webgl', {
+            preserveDrawingBuffer: true
+        }) as WebGLRenderingContext | null;
         if (!gl) {
             throw new Error('Unable to initialize WebGL. Your browser may not support it.');
         }
