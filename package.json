@@ -36,7 +36,7 @@
     "@types/ws": "^6.0.4",
     "browserify": "^16.2.3",
     "buffer": "^5.2.1",
-    "h264-converter": "^0.1.0",
+    "h264-converter": "^0.1.1",
     "mkdirp": "^0.5.1",
     "recursive-copy": "^2.0.10",
     "rimraf": "^3.0.0",
