@@ -25,12 +25,12 @@ export default class NativeDecoder extends Decoder {
         tag.className = 'video-layer';
         return tag;
     }
-    protected TAG: string = 'NativeDecoder';
     private converter?: VideoConverter;
+    public fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
     public readonly supportsScreenshot: boolean = true;
 
-    constructor(protected tag: HTMLVideoElement, private fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT) {
-        super(tag);
+    constructor(protected tag: HTMLVideoElement, udid: string) {
+        super(tag, udid, 'NativeDecoder');
         tag.onerror = function(e: Event | string): void {
             console.error(e);
         };
@@ -95,7 +95,7 @@ export default class NativeDecoder extends Decoder {
                 this.play();
             }
         }
-        this.videoSettings = videoSettings;
+        super.setVideoSettings(videoSettings);
     }
 
     public getPreferredVideoSetting(): VideoSettings {

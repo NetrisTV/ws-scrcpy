@@ -13,13 +13,12 @@ export default class H264bsdDecoder extends CanvasCommon {
         maxSize: 480,
         sendFrameMeta: false
     });
-    protected TAG: string = 'H264bsdDecoder';
     protected canvas?: H264bsdCanvas;
     private worker?: H264bsdWorker;
     public readonly supportsScreenshot: boolean = true;
 
-    constructor(protected tag: HTMLCanvasElement) {
-        super(tag);
+    constructor(tag: HTMLCanvasElement, udid: string) {
+        super(tag, udid, 'H264bsdDecoder');
     }
 
     private onWorkerMessage = (e: MessageEvent): void => {

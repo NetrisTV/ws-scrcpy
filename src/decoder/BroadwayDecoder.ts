@@ -17,13 +17,12 @@ export class BroadwayDecoder extends CanvasCommon {
         sendFrameMeta: false
     });
 
-    protected TAG: string = 'BroadwayDecoder';
     protected canvas?: Canvas;
     private avc?: Avc;
     public readonly supportsScreenshot: boolean = true;
 
-    constructor(protected tag: HTMLCanvasElement) {
-        super(tag);
+    constructor(tag: HTMLCanvasElement, udid: string) {
+        super(tag, udid, 'BroadwayDecoder');
         this.avc = new Avc();
     }
 

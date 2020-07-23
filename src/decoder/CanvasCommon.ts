@@ -32,8 +32,8 @@ export default abstract class CanvasCommon extends Decoder {
         return tag;
     }
 
-    constructor(protected tag: HTMLCanvasElement) {
-        super(tag);
+    constructor(protected tag: HTMLCanvasElement, udid: string, name: string = 'Canvas') {
+        super(tag, udid, name);
     }
 
     protected abstract decode(data: Uint8Array): void;
@@ -108,7 +108,7 @@ export default abstract class CanvasCommon extends Decoder {
             if (this.videoSettings) {
                 const {frameRate} = this.videoSettings;
                 if (this.framesList.length > frameRate / 2) {
-                    console.log(this.TAG, 'Dropping frames', this.framesList.length);
+                    console.log(this.name, 'Dropping frames', this.framesList.length);
                     this.framesList = [];
                 }
             }

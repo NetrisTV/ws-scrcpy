@@ -11,9 +11,8 @@ import DeviceMessage from './DeviceMessage';
 
 export interface DeviceControllerParams {
     url: string;
-    name: string;
+    udid: string;
     decoder: Decoder;
-    videoSettings: VideoSettings;
 }
 
 export class DeviceController implements DeviceMessageListener {
@@ -25,20 +24,20 @@ export class DeviceController implements DeviceMessageListener {
 
     constructor(params: DeviceControllerParams) {
         const decoder = this.decoder = params.decoder;
-        const deviceName = params.name;
+        const udid = params.udid;
         const decoderName = this.decoder.getName();
         const controlsWrapper = this.controls = document.createElement('div');
         const deviceView = this.deviceView = document.createElement('div');
         deviceView.className = 'device-view';
-        const connection = DeviceConnection.getInstance(params.url);
-        const stream = params.videoSettings;
+        const connection = DeviceConnection.getInstance(udid, params.url);
+        const videoSettings = decoder.getVideoSettings();
         connection.addDecoder(this.decoder);
         connection.setDeviceMessageListener(this);
         const wrapper = document.createElement('div');
         wrapper.className = 'decoder-controls-wrapper menu';
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        const controlsId = `controls_${deviceName}_${decoderName}`;
+        const controlsId = `controls_${udid}_${decoderName}`;
         checkbox.id = controlsId;
         const label = document.createElement('label');
         label.htmlFor = controlsId;
@@ -78,7 +77,7 @@ export class DeviceController implements DeviceMessageListener {
                     const spoilerCheck = document.createElement('input');
 
                     const innerDiv = document.createElement('div');
-                    const id = `spoiler_video_${deviceName}_${decoderName}_${action}`;
+                    const id = `spoiler_video_${udid}_${decoderName}_${action}`;
 
                     spoiler.className = 'spoiler';
                     spoilerCheck.type = 'checkbox';
@@ -94,8 +93,8 @@ export class DeviceController implements DeviceMessageListener {
                     const bitrateLabel = document.createElement('label');
                     bitrateLabel.innerText = 'Bitrate:';
                     bitrateInput = document.createElement('input');
-                    bitrateInput.placeholder = `bitrate (${stream.bitrate})`;
-                    bitrateInput.value = stream.bitrate.toString();
+                    bitrateInput.placeholder = `bitrate (${videoSettings.bitrate})`;
+                    bitrateInput.value = videoSettings.bitrate.toString();
                     bitrateWrap.appendChild(bitrateLabel);
                     bitrateWrap.appendChild(bitrateInput);
 
@@ -103,8 +102,8 @@ export class DeviceController implements DeviceMessageListener {
                     const framerateLabel = document.createElement('label');
                     framerateLabel.innerText = 'Framerate:';
                     frameRateInput = document.createElement('input');
-                    frameRateInput.placeholder = `framerate (${stream.frameRate})`;
-                    frameRateInput.value = stream.frameRate.toString();
+                    frameRateInput.placeholder = `framerate (${videoSettings.frameRate})`;
+                    frameRateInput.value = videoSettings.frameRate.toString();
                     framerateWrap.appendChild(framerateLabel);
                     framerateWrap.appendChild(frameRateInput);
 
@@ -112,8 +111,8 @@ export class DeviceController implements DeviceMessageListener {
                     const iFrameIntervalLabel = document.createElement('label');
                     iFrameIntervalLabel.innerText = 'I-Frame Interval:';
                     iFrameIntervalInput = document.createElement('input');
-                    iFrameIntervalInput.placeholder = `I-frame interval (${stream.iFrameInterval})`;
-                    iFrameIntervalInput.value = stream.iFrameInterval.toString();
+                    iFrameIntervalInput.placeholder = `I-frame interval (${videoSettings.iFrameInterval})`;
+                    iFrameIntervalInput.value = videoSettings.iFrameInterval.toString();
                     iFrameIntervalWrap.appendChild(iFrameIntervalLabel);
                     iFrameIntervalWrap.appendChild(iFrameIntervalInput);
 

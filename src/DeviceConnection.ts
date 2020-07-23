@@ -76,18 +76,18 @@ export class DeviceConnection {
     private static idToPointerMap: Map<number, number> = new Map();
     private static pointerToIdMap: Map<number, number> = new Map();
 
-    constructor(readonly url: string) {
-        this.url = url;
+    constructor(readonly udid: string, readonly url: string) {
         this.ws = new WebSocket(url);
         this.ws.binaryType = 'arraybuffer';
         this.init();
     }
 
-    public static getInstance(url: string): DeviceConnection {
-        if (!this.instances[url]) {
-            this.instances[url] = new DeviceConnection(url);
+    public static getInstance(udid: string, url: string): DeviceConnection {
+        const key = `${udid}::${url}`
+        if (!this.instances[key]) {
+            this.instances[key] = new DeviceConnection(udid, url);
         }
-        return this.instances[url];
+        return this.instances[key];
     }
 
     private static setListeners(): void {
@@ -382,8 +382,8 @@ export class DeviceConnection {
     }
 
     public addDecoder(decoder: Decoder): void {
-        let min: VideoSettings = decoder.getPreferredVideoSetting();
-        const { maxSize } = min;
+        let videoSettings: VideoSettings = decoder.getVideoSettings();
+        const { maxSize } = videoSettings;
         let playing = false;
         this.decoders.forEach(d => {
             const state = d.getState();
@@ -395,7 +395,7 @@ export class DeviceConnection {
             const {crop, bitrate, frameRate, iFrameInterval, sendFrameMeta, lockedVideoOrientation} =
                 d.getVideoSettings() as VideoSettings;
             if (videoSize.width < maxSize && videoSize.height < maxSize) {
-                min = new VideoSettings({
+                videoSettings = new VideoSettings({
                     maxSize: Math.max(videoSize.width, videoSize.height),
                     crop,
                     bitrate,
@@ -408,7 +408,7 @@ export class DeviceConnection {
         });
         if (playing) {
             // Will trigger encoding restart
-            this.sendEvent(CommandControlEvent.createSetVideoSettingsCommand(min));
+            this.sendEvent(CommandControlEvent.createSetVideoSettingsCommand(videoSettings));
             // Decoder will wait for new screenInfo and then start to play
             decoder.pause();
         }
@@ -508,11 +508,10 @@ export class DeviceConnection {
                                 decoder.setVideoSettings(videoSettings);
                             }
                             if (!oldInfo) {
-                                const preferred = decoder.getPreferredVideoSetting();
-                                const maxSize: number = preferred.maxSize;
+                                const maxSize: number = oldSettings.maxSize;
                                 const videoSize: Size = screenInfo.videoSize;
                                 if (maxSize < videoSize.width || maxSize < videoSize.height) {
-                                    min = preferred;
+                                    min = oldSettings;
                                 }
                             }
                         });

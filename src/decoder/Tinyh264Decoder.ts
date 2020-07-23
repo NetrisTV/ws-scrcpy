@@ -24,14 +24,13 @@ export default class Tinyh264Decoder extends CanvasCommon {
     sendFrameMeta: false
   });
 
-  protected TAG: string = 'Tinyh264Decoder';
   private worker?: Worker;
   private isDecoderReady: boolean = false;
   protected canvas?: YUVWebGLCanvas | YUVCanvas;
   public readonly supportsScreenshot: boolean = true;
 
-  constructor(protected tag: HTMLCanvasElement) {
-    super(tag);
+  constructor(tag: HTMLCanvasElement, udid: string) {
+    super(tag, udid, 'Tinyh264Decoder');
   }
 
   private onWorkerMessage = (e: MessageEvent): void => {
@@ -44,11 +43,10 @@ export default class Tinyh264Decoder extends CanvasCommon {
         }
         break
       case 'decoderReady':
-        console.log(this.TAG, message.type);
         this.isDecoderReady = true;
         break
       default:
-        console.error(this.TAG, Error(`Wrong message type "${message.type}"`));
+        console.error(this.name, Error(`Wrong message type "${message.type}"`));
     }
   };
 
@@ -61,10 +59,8 @@ export default class Tinyh264Decoder extends CanvasCommon {
     super.initCanvas(width, height);
 
     if (CanvasCommon.hasWebGLSupport()) {
-      console.log(this.TAG, 'initCanvas', 'WebGl');
       this.canvas = new YUVWebGLCanvas(this.tag);
     } else {
-      console.log(this.TAG, 'initCanvas', '2d');
       this.canvas = new YUVCanvas(this.tag);
     }
   }

@@ -112,4 +112,15 @@ export default class VideoSettings {
             this.sendFrameMeta}, lockedVideoOrientation=${
             this.lockedVideoOrientation}}`;
     }
+
+    public toJSON(): Settings {
+        return {
+            bitrate: this.bitrate,
+            frameRate: this.frameRate,
+            iFrameInterval: this.iFrameInterval,
+            maxSize: this.maxSize,
+            crop: this.crop,
+            sendFrameMeta: this.sendFrameMeta,
+            lockedVideoOrientation: this.lockedVideoOrientation};
+    }
 }
