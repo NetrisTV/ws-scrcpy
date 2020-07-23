@@ -7,6 +7,7 @@ import * as path from 'path';
 import { Device } from '../common/Device';
 import { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from '../common/AdbKit';
 import { SERVER_PACKAGE, SERVER_PORT, SERVER_VERSION } from './Constants';
+import Timeout = NodeJS.Timeout;
 
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, '../public');
@@ -27,6 +28,8 @@ export class ServerDeviceConnection extends EventEmitter {
     private client: AdbKitClient = ADB.createClient();
     private tracker?: AdbKitTracker;
     private initialized: boolean = false;
+    private restartTimeoutId?: Timeout;
+    private waitAfterError = 1000;
     public static getInstance(): ServerDeviceConnection {
         if (!this.instance) {
             this.instance = new ServerDeviceConnection();
@@ -84,8 +87,24 @@ export class ServerDeviceConnection extends EventEmitter {
             this.cache = Array.from(this.deviceMap.values());
             this.emit(ServerDeviceConnection.UPDATE_EVENT, this.cache);
         });
+        tracker.on('end', this.restartTracker);
+        tracker.on('error', this.restartTracker);
         return tracker;
     }
+
+    restartTracker = (): void => {
+        if (this.restartTimeoutId) {
+            return;
+        }
+        console.log(`Device tracker is down. Will try to restart in ${this.waitAfterError}ms`);
+        this.restartTimeoutId = setTimeout(() => {
+            delete this.restartTimeoutId;
+            delete this.tracker;
+            this.waitAfterError *= 1.2;
+            this.pendingUpdate = false;
+            this.updateDeviceList();
+        }, this.waitAfterError);
+    };
 
     private async mapDevicesToDescriptors(list: AdbKitDevice[]): Promise<Device[]> {
         const all = await Promise.all(list.map(device => this.getDescriptor(device)));
