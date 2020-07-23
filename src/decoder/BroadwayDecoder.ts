@@ -7,7 +7,7 @@ import VideoSettings from '../VideoSettings';
 import Canvas from '../h264-live-player/Canvas';
 import CanvasCommon from "./CanvasCommon";
 
-export class BroadwayDecoder extends CanvasCommon {
+export default class BroadwayDecoder extends CanvasCommon {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 500000,
@@ -21,8 +21,8 @@ export class BroadwayDecoder extends CanvasCommon {
     private avc?: Avc;
     public readonly supportsScreenshot: boolean = true;
 
-    constructor(tag: HTMLCanvasElement, udid: string) {
-        super(tag, udid, 'BroadwayDecoder');
+    constructor(udid: string) {
+        super(udid, 'BroadwayDecoder');
         this.avc = new Avc();
     }
 

@@ -1,16 +1,11 @@
 import NativeDecoder from '../decoder/NativeDecoder';
 import { DeviceController } from '../DeviceController';
-import { BroadwayDecoder } from '../decoder/BroadwayDecoder';
+import BroadwayDecoder from '../decoder/BroadwayDecoder';
 import H264bsdDecoder from '../decoder/H264bsdDecoder';
 import { ParsedUrlQueryInput } from 'querystring';
 import { BaseClient } from './BaseClient';
 import Decoder from '../decoder/Decoder';
 import Tinyh264Decoder from "../decoder/Tinyh264Decoder";
-
-export interface Arguments {
-    url: string;
-    udid: string;
-}
 
 export type Decoders = 'broadway' | 'h264bsd' | 'native' | 'tinyh264';
 
@@ -57,80 +52,35 @@ export class ScrcpyClient extends BaseClient {
         return controlsWrap;
     }
 
-    public static startNative(params: Arguments): Decoder {
-        const {url, udid} = params;
-        const tag = NativeDecoder.createElement();
-        const decoder = new NativeDecoder(tag, udid);
-        const controller = new DeviceController({
-            url,
-            udid,
-            decoder
-        });
-        controller.start();
-        return decoder;
-    }
-
-    public static startBroadway(params: Arguments): Decoder {
-        const {url, udid} = params;
-        const tag = BroadwayDecoder.createElement();
-        const decoder = new BroadwayDecoder(tag, udid);
-        const controller = new DeviceController({
-            url,
-            udid,
-            decoder
-        });
-        controller.start();
-        return decoder;
-    }
-
-    public static startH264bsd(params: Arguments): Decoder {
-        const {url, udid} = params;
-        const tag = H264bsdDecoder.createElement();
-        const decoder = new H264bsdDecoder(tag, udid);
-        const controller = new DeviceController({
-            url,
-            udid,
-            decoder
-        });
-        controller.start();
-        return decoder;
-    }
-
-    public static startTinyh264(params: Arguments): Decoder {
-        const {url, udid} = params;
-        const tag = Tinyh264Decoder.createElement();
-        const decoder = new Tinyh264Decoder(tag, udid);
-        const controller = new DeviceController({
-            url,
-            udid,
-            decoder
-        });
-        controller.start();
-        return decoder;
-    }
-
     public startStream(udid: string, decoderName: string, url: string): Decoder | undefined {
         if (!url || !udid) {
             return;
         }
-        let decoder: Decoder;
+        let decoderClass: new (udid: string) => Decoder;
         switch (decoderName) {
             case 'native':
-                decoder = ScrcpyClient.startNative({url, udid});
+                decoderClass = NativeDecoder;
                 break;
             case 'broadway':
-                decoder = ScrcpyClient.startBroadway({url, udid});
+                decoderClass = BroadwayDecoder;
                 break;
             case 'h264bsd':
-                decoder = ScrcpyClient.startH264bsd({url, udid});
+                decoderClass = H264bsdDecoder
                 break;
             case 'tinyh264':
-                decoder = ScrcpyClient.startTinyh264({url, udid});
+                decoderClass = Tinyh264Decoder;
                 break;
             default:
                 return;
         }
-        console.log(decoderName, udid, url);
+        const decoder = new decoderClass(udid);
+        const controller = new DeviceController({
+            url,
+            udid,
+            decoder
+        });
+        controller.start();
+        console.log(decoder.getName(), udid, url);
         return decoder;
     }
 }

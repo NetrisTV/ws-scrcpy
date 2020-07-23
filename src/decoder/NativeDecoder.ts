@@ -29,8 +29,8 @@ export default class NativeDecoder extends Decoder {
     public fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
     public readonly supportsScreenshot: boolean = true;
 
-    constructor(protected tag: HTMLVideoElement, udid: string) {
-        super(tag, udid, 'NativeDecoder');
+    constructor(udid: string, protected tag: HTMLVideoElement = NativeDecoder.createElement()) {
+        super(udid, 'NativeDecoder', tag);
         tag.onerror = function(e: Event | string): void {
             console.error(e);
         };

@@ -32,8 +32,8 @@ export default abstract class CanvasCommon extends Decoder {
         return tag;
     }
 
-    constructor(protected tag: HTMLCanvasElement, udid: string, name: string = 'Canvas') {
-        super(tag, udid, name);
+    constructor(udid: string, name: string = 'Canvas', protected tag: HTMLCanvasElement = CanvasCommon.createElement()) {
+        super(udid, name, tag);
     }
 
     protected abstract decode(data: Uint8Array): void;

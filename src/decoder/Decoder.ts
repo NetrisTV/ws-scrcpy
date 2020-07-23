@@ -18,7 +18,7 @@ export default abstract class Decoder {
     public showFps: boolean = true;
     public readonly supportsScreenshot: boolean = false;
 
-    protected constructor(protected tag: HTMLElement, protected udid: string, protected name: string = 'Decoder') {
+    constructor(protected udid: string, protected name: string = 'Decoder', protected tag: HTMLElement = document.createElement('div')) {
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
         const preferred = this.getPreferredVideoSetting();

@@ -17,8 +17,8 @@ export default class H264bsdDecoder extends CanvasCommon {
     private worker?: H264bsdWorker;
     public readonly supportsScreenshot: boolean = true;
 
-    constructor(tag: HTMLCanvasElement, udid: string) {
-        super(tag, udid, 'H264bsdDecoder');
+    constructor(udid: string) {
+        super(udid, 'H264bsdDecoder');
     }
 
     private onWorkerMessage = (e: MessageEvent): void => {
