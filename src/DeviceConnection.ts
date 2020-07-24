@@ -8,6 +8,8 @@ import CommandControlEvent from './controlEvent/CommandControlEvent';
 import ScreenInfo from './ScreenInfo';
 import DeviceMessage from './DeviceMessage';
 import TouchHandler from "./TouchHandler";
+import {KeyEventListener, KeyInputHandler} from "./KeyInputHandler";
+import KeyCodeControlEvent from "./controlEvent/KeyCodeControlEvent";
 
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC = 'scrcpy';
@@ -21,7 +23,7 @@ export interface DeviceMessageListener {
     OnDeviceMessage(this: DeviceMessageListener, ev: DeviceMessage): void;
 }
 
-export class DeviceConnection {
+export class DeviceConnection implements KeyEventListener {
     private static hasListeners: boolean = false;
     private static instances: Record<string, DeviceConnection> = {};
     public readonly ws: WebSocket;
@@ -180,6 +182,19 @@ export class DeviceConnection {
 
     public getDeviceName(): string {
         return this.name;
+    }
+
+    public setHandleKeyboardEvents(value: boolean): void {
+        if (value) {
+            KeyInputHandler.addEventListener(this);
+        } else {
+            KeyInputHandler.removeEventListener(this);
+        }
+    }
+
+    public onKeyEvent(event: KeyCodeControlEvent): void {
+        console.log(event.toString());
+        this.sendEvent(event);
     }
 
     private haveConnection(): boolean {

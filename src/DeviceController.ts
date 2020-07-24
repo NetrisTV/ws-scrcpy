@@ -35,16 +35,14 @@ export class DeviceController implements DeviceMessageListener {
         connection.setDeviceMessageListener(this);
         const wrapper = document.createElement('div');
         wrapper.className = 'decoder-controls-wrapper menu';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = true;
-        const controlsId = `controls_${udid}_${decoderName}`;
-        checkbox.id = controlsId;
-        const label = document.createElement('label');
-        label.htmlFor = controlsId;
+        const menuCheck = document.createElement('input');
+        menuCheck.type = 'checkbox';
+        menuCheck.checked = true;
+        const menuLabel = document.createElement('label');
+        menuLabel.htmlFor = menuCheck.id = `controls_${udid}_${decoderName}`;
         // label.innerText = `${deviceName} (${decoderName})`;
-        wrapper.appendChild(checkbox);
-        wrapper.appendChild(label);
+        wrapper.appendChild(menuCheck);
+        wrapper.appendChild(menuLabel);
         const box = document.createElement('div');
         box.className = 'box';
         wrapper.appendChild(box);
@@ -61,6 +59,20 @@ export class DeviceController implements DeviceMessageListener {
                 connection.sendEvent(new TextControlEvent(input.value));
             }
         };
+        const sendKeyEventsWrap = document.createElement('div');
+        const sendKeyEventsCheck = document.createElement('input');
+        sendKeyEventsCheck.type = 'checkbox';
+        const sendKeyEventsLabel = document.createElement('label');
+        sendKeyEventsLabel.innerText = 'Capture keyboard events';
+        sendKeyEventsLabel.htmlFor = sendKeyEventsCheck.id = `sendkeys_${udid}_${decoderName}`;
+        sendKeyEventsWrap.appendChild(sendKeyEventsCheck);
+        sendKeyEventsWrap.appendChild(sendKeyEventsLabel);
+        box.appendChild(sendKeyEventsWrap);
+        sendKeyEventsCheck.onclick = (e: MouseEvent) => {
+            const checkbox = e.target as HTMLInputElement;
+            connection.setHandleKeyboardEvents(checkbox.checked);
+        }
+
         this.controlButtons = document.createElement('div');
         this.controlButtons.className = 'control-buttons-list';
         const cmdWrap = document.createElement('div');
