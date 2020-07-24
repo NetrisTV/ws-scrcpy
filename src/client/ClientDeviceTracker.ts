@@ -3,7 +3,6 @@ import { NodeClient } from './NodeClient';
 import { Message } from '../common/Message';
 import { Device } from '../common/Device';
 import { StreamParams } from './ScrcpyClient';
-import { LogsParams } from './ClientLogsProxy';
 import { SERVER_PORT } from '../server/Constants';
 import { ShellParams } from './ClientShell';
 
@@ -52,9 +51,6 @@ const FIELDS_MAP: MapItem[] = [
     },
     {
         title: 'tinyh264'
-    },
-    {
-        title: 'Logs'
     },
     {
         title: 'Shell'
@@ -159,14 +155,6 @@ export class ClientDeviceTracker extends NodeClient {
                 row.appendChild(decoderTd);
             });
 
-            const logsTd = document.createElement('td');
-            if (isActive) {
-                logsTd.appendChild(ClientDeviceTracker.buildLink({
-                    action: 'logcat',
-                    udid: device.udid
-                }, 'logs'));
-            }
-            row.appendChild(logsTd);
             const shellTd = document.createElement('td');
             if (isActive) {
                 shellTd.appendChild(ClientDeviceTracker.buildLink({
@@ -179,7 +167,7 @@ export class ClientDeviceTracker extends NodeClient {
         });
     }
 
-    private static buildLink(q: LogsParams | StreamParams | ShellParams, text: string): HTMLAnchorElement {
+    private static buildLink(q: StreamParams | ShellParams, text: string): HTMLAnchorElement {
         const hash = `#!${querystring.encode(q)}`;
         const a = document.createElement('a');
         a.setAttribute('href', `${location.origin}${location.pathname}${hash}`);

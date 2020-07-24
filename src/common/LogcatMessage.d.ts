@@ -1,5 +1,5 @@
 import { AdbKitLogcatEntry, AdbKitLogcatReaderEvents } from './AdbKitLogcat';
-import { PriorityLevel } from '../server/LogsFilter';
+import { PriorityLevel } from './PriorityLevel';
 
 export type FiltersMap = Map<string, PriorityLevel> | undefined;
 export interface TextFilter {

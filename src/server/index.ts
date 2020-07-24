@@ -7,7 +7,6 @@ import * as path from 'path';
 import * as querystring from 'querystring';
 import * as readline from 'readline';
 import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http';
-import { ServiceLogsProxy } from './ServiceLogsProxy';
 import { ServiceDeviceTracker } from './ServiceDeviceTracker';
 import { ServiceShell } from './ServiceShell';
 
@@ -76,9 +75,6 @@ wss.on('connection', async (ws: WebSocket, req) => {
         ws.close(4002, `Missing required parameter "action"`);
     }
     switch (parsedQuery.action) {
-        case 'logcat':
-            ServiceLogsProxy.createService(ws);
-            break;
         case 'devicelist':
             ServiceDeviceTracker.createService(ws);
             break;
