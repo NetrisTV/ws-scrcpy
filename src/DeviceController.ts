@@ -37,6 +37,7 @@ export class DeviceController implements DeviceMessageListener {
         wrapper.className = 'decoder-controls-wrapper menu';
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
+        checkbox.checked = true;
         const controlsId = `controls_${udid}_${decoderName}`;
         checkbox.id = controlsId;
         const label = document.createElement('label');
