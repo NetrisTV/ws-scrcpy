@@ -193,7 +193,6 @@ export class DeviceConnection implements KeyEventListener {
     }
 
     public onKeyEvent(event: KeyCodeControlEvent): void {
-        console.log(event.toString());
         this.sendEvent(event);
     }
 

@@ -10,7 +10,6 @@ export class KeyInputHandler {
     private static readonly listeners: Set<KeyEventListener> = new Set();
     private static handler = (e: Event): void => {
         const event = e as KeyboardEvent;
-        console.log(event.code);
         const keyCode = KeyToCodeMap.get(event.code);
         if (!keyCode) {
             return;
