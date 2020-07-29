@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.3.2 (12043) - http://www.bohemiancoding.com/sketch -->
+    <title>Artboard 1</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Artboard-1" sketch:type="MSArtboardGroup">
+            <g id="System_Back" sketch:type="MSLayerGroup">
+                <g id="Page-1" sketch:type="MSShapeGroup">
+                    <g id="System_Back">
+                        <g id="Rectangle-118-+-back-12-Copy-11">
+                            <rect id="Rectangle-118" x="0" y="0" width="48" height="48"></rect>
+                            <path d="M36.7088473,10.9494765 L36.7088478,37.6349688 C36.7088478,39.4039498 35.4820844,40.0949115 33.9646508,39.1757647 L12.1373795,25.9544497 C10.6218013,25.0364267 10.6199459,23.5491414 12.1373794,22.6299946 L33.9646503,9.40868054 C35.4802284,8.49065763 36.7088473,9.16835511 36.7088473,10.9494765 Z M33.5088482,13.4305237 L33.5088482,35.1305245 L15.5088482,24.2805241 L33.5088482,13.4305237 Z" id="Shape" fill="#617d8a"></path>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

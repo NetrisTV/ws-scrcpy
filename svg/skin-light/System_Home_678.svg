@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.3.2 (12043) - http://www.bohemiancoding.com/sketch -->
+    <title>System_Home</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="System_Home" sketch:type="MSArtboardGroup">
+            <g id="Rectangle-119-+-home-12-Copy-11" sketch:type="MSLayerGroup">
+                <rect id="Rectangle-119" sketch:type="MSShapeGroup" x="0" y="0" width="48" height="48"></rect>
+                <path d="M24,35.2 L24,35.2 C30.1855892,35.2 35.2,30.1855892 35.2,24 C35.2,17.8144108 30.1855892,12.8 24,12.8 C17.8144108,12.8 12.8,17.8144108 12.8,24 C12.8,30.1855892 17.8144108,35.2 24,35.2 L24,35.2 Z M24,38.4 L24,38.4 C16.0470996,38.4 9.6,31.9529004 9.6,24 C9.6,16.0470996 16.0470996,9.6 24,9.6 C31.9529004,9.6 38.4,16.0470996 38.4,24 C38.4,31.9529004 31.9529004,38.4 24,38.4 L24,38.4 Z" id="Shape" fill="#617d8a" sketch:type="MSShapeGroup"></path>
+            </g>
+        </g>
+    </g>
+</svg>

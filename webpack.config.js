@@ -14,6 +14,10 @@ module.exports = {
         use: { loader: 'worker-loader' }
       },
       {
+        test: /\.svg$/,
+        loader: 'svg-inline-loader'
+      },
+      {
         test: /\.(asset)$/i,
         use: [
           {

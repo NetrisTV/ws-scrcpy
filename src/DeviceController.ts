@@ -8,6 +8,7 @@ import CommandControlEvent from './controlEvent/CommandControlEvent';
 import ControlEvent from './controlEvent/ControlEvent';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import DeviceMessage from './DeviceMessage';
+import SvgImage from "./ui/SvgImage";
 
 export interface DeviceControllerParams {
     url: string;
@@ -172,27 +173,28 @@ export class DeviceController implements DeviceMessageListener {
         }
         const list = [{
             code: KeyEvent.KEYCODE_POWER,
-            name: 'power'
+            icon: SvgImage.Icon.POWER
         },{
             code: KeyEvent.KEYCODE_VOLUME_DOWN,
-            name: 'volume-down'
+            icon: SvgImage.Icon.VOLUME_DOWN
         },{
             code: KeyEvent.KEYCODE_VOLUME_UP,
-            name: 'volume-up'
+            icon: SvgImage.Icon.VOLUME_UP
         },{
             code: KeyEvent.KEYCODE_BACK,
-            name: 'back'
+            icon: SvgImage.Icon.BACK
         },{
             code: KeyEvent.KEYCODE_HOME,
-            name: 'home'
+            icon: SvgImage.Icon.HOME
         }, {
             code: KeyEvent.KEYCODE_APP_SWITCH,
-            name: 'app-switch'
+            icon: SvgImage.Icon.OVERVIEW
         }];
         list.forEach(item => {
-            const {code, name} = item;
+            const {code, icon} = item;
             const btn = document.createElement('button');
-            btn.classList.add('control-button', name);
+            btn.classList.add('control-button');
+            btn.appendChild(SvgImage.create(icon));
             btn.onmousedown = () => {
                 const event = new KeyCodeControlEvent(KeyEvent.ACTION_DOWN, code, 0);
                 connection.sendEvent(event);
@@ -205,7 +207,8 @@ export class DeviceController implements DeviceMessageListener {
         });
         if (decoder.supportsScreenshot) {
             const screenshotButton = document.createElement('button');
-            screenshotButton.classList.add('control-button', 'screen-shot');
+            screenshotButton.classList.add('control-button');
+            screenshotButton.appendChild(SvgImage.create(SvgImage.Icon.CAMERA));
             screenshotButton.onclick = () => {
                 decoder.createScreenshot(connection.getDeviceName());
             }

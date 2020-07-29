@@ -43,6 +43,7 @@
     "mkdirp": "^0.5.1",
     "recursive-copy": "^2.0.10",
     "rimraf": "^3.0.0",
+    "svg-inline-loader": "^0.8.2",
     "sylvester.js": "^0.1.1",
     "tinyh264": "0.0.5",
     "tslint": "^5.16.0",
