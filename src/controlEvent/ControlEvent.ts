@@ -10,7 +10,8 @@ export default class ControlEvent {
     public static TYPE_SET_CLIPBOARD: number = 8;
     public static TYPE_SET_SCREEN_POWER_MODE: number = 9;
     public static TYPE_ROTATE_DEVICE: number = 10;
-    public static TYPE_CHANGE_STREAM_PARAMETERS: number = 11;
+    public static TYPE_CHANGE_STREAM_PARAMETERS: number = 101;
+    public static TYPE_PUSH_FILE: number = 102;
 
     constructor(readonly type: number) {
     }

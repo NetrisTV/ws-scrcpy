@@ -2,6 +2,7 @@ import Util from './Util';
 
 export default class DeviceMessage {
     public static TYPE_CLIPBOARD: number = 0;
+    public static TYPE_PUSH_RESPONSE: number = 101;
 
     private static MAGIC: string = 'scrcpy';
 
@@ -26,6 +27,18 @@ export default class DeviceMessage {
         offset += 2;
         const textBytes = this.buffer.slice(offset, offset + length);
         return Util.utf8ByteArrayToString(textBytes);
+    }
+
+    public getPushStats(): { id: number, result: number } {
+        if (this.type !== DeviceMessage.TYPE_PUSH_RESPONSE) {
+            throw TypeError(`Wrong message type: ${this.type}`);
+        }
+        if (!this.buffer) {
+            throw Error('Empty buffer');
+        }
+        const id = this.buffer.readInt16BE(1);
+        const result = this.buffer.readInt8(3);
+        return {id, result};
     }
 
     public toString(): string {

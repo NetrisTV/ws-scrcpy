@@ -10,6 +10,8 @@ import DeviceMessage from './DeviceMessage';
 import TouchHandler from "./TouchHandler";
 import {KeyEventListener, KeyInputHandler} from "./KeyInputHandler";
 import KeyCodeControlEvent from "./controlEvent/KeyCodeControlEvent";
+import FilePushHandler from "./FilePushHandler";
+import DragAndPushLogger from "./DragAndPushLogger";
 
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC = 'scrcpy';
@@ -24,13 +26,14 @@ export interface DeviceMessageListener {
 }
 
 export class DeviceConnection implements KeyEventListener {
-    private static hasListeners: boolean = false;
+    private static hasTouchListeners: boolean = false;
     private static instances: Record<string, DeviceConnection> = {};
     public readonly ws: WebSocket;
     private events: ControlEvent[] = [];
     private decoders: Set<Decoder> = new Set<Decoder>();
+    private filePushHandlers: Map<Decoder, FilePushHandler> = new Map();
     private errorListener?: ErrorListener;
-    private deviceMessageListener?: DeviceMessageListener;
+    private deviceMessageListeners: Set<DeviceMessageListener> = new Set();
     private name: string = '';
 
     constructor(readonly udid: string, readonly url: string) {
@@ -47,15 +50,15 @@ export class DeviceConnection implements KeyEventListener {
         return this.instances[key];
     }
 
-    private static setListeners(): void {
-        if (!this.hasListeners) {
+    private static setTouchListeners(): void {
+        if (!this.hasTouchListeners) {
             TouchHandler.init();
             let down = 0;
             const supportsPassive = Util.supportsPassive();
             const onMouseEvent = (e: MouseEvent | TouchEvent) => {
                 for (let key in this.instances) {
                     const connection: DeviceConnection = this.instances[key];
-                    if (connection.haveConnection()) {
+                    if (connection.hasConnection()) {
                         connection.decoders.forEach(decoder => {
                             const tag = decoder.getTouchableElement();
                             if (e.target === tag) {
@@ -110,7 +113,7 @@ export class DeviceConnection implements KeyEventListener {
             document.body.onmousemove = function(e: MouseEvent): void {
                 onMouseEvent(e);
             };
-            this.hasListeners = true;
+            this.hasTouchListeners = true;
         }
     }
 
@@ -146,18 +149,30 @@ export class DeviceConnection implements KeyEventListener {
             decoder.pause();
         }
         this.decoders.add(decoder);
-        DeviceConnection.setListeners();
+        if (!this.filePushHandlers.has(decoder)) {
+            const element = decoder.getTouchableElement();
+            const handler = new FilePushHandler(element, this);
+            const logger = new DragAndPushLogger(element);
+            handler.addEventListener(logger);
+            this.filePushHandlers.set(decoder, handler);
+        }
+        DeviceConnection.setTouchListeners();
     }
 
     public removeDecoder(decoder: Decoder): void {
         this.decoders.delete(decoder);
+        const handler = this.filePushHandlers.get(decoder);
+        if (handler) {
+            handler.release();
+            this.filePushHandlers.delete(decoder);
+        }
         if (!this.decoders.size) {
             this.stop();
         }
     }
 
     public stop(): void {
-        if (this.haveConnection()) {
+        if (this.hasConnection()) {
             this.ws.close();
         }
         this.decoders.forEach(decoder => decoder.pause());
@@ -166,7 +181,7 @@ export class DeviceConnection implements KeyEventListener {
     }
 
     public sendEvent(event: ControlEvent): void {
-        if (this.haveConnection()) {
+        if (this.hasConnection()) {
             this.ws.send(event.toBuffer());
         } else {
             this.events.push(event);
@@ -177,8 +192,12 @@ export class DeviceConnection implements KeyEventListener {
         this.errorListener = listener;
     }
 
-    public setDeviceMessageListener(listener: DeviceMessageListener): void {
-        this.deviceMessageListener = listener;
+    public addEventListener(listener: DeviceMessageListener): void {
+        this.deviceMessageListeners.add(listener);
+    }
+
+    public removeEventListener(listener: DeviceMessageListener): void {
+        this.deviceMessageListeners.delete(listener);
     }
 
     public getDeviceName(): string {
@@ -197,7 +216,7 @@ export class DeviceConnection implements KeyEventListener {
         this.sendEvent(event);
     }
 
-    private haveConnection(): boolean {
+    public hasConnection(): boolean {
         return this.ws && this.ws.readyState === this.ws.OPEN;
     }
 
@@ -206,9 +225,6 @@ export class DeviceConnection implements KeyEventListener {
         ws.onerror = (e: Event | string) => {
             if (this.errorListener) {
                 this.errorListener.OnError.call(this.errorListener, e);
-            }
-            if (ws.readyState === ws.CLOSED) {
-                console.error('WS closed');
             }
         };
         ws.onopen = () => {
@@ -265,8 +281,10 @@ export class DeviceConnection implements KeyEventListener {
                         }
                     } else {
                         const message = DeviceMessage.fromBuffer(e.data);
-                        if (this.deviceMessageListener) {
-                            this.deviceMessageListener.OnDeviceMessage(message);
+                        if (this.deviceMessageListeners.size) {
+                            this.deviceMessageListeners.forEach(listener => {
+                               listener.OnDeviceMessage(message);
+                            });
                         }
                     }
                 } else {
@@ -284,5 +302,9 @@ export class DeviceConnection implements KeyEventListener {
                 console.error(`Unexpexted message: ${e.data}`);
             }
         };
+
+        ws.onclose = () => {
+            console.log('WS closed');
+        }
     }
 }

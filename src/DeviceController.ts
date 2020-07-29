@@ -33,7 +33,7 @@ export class DeviceController implements DeviceMessageListener {
         const connection = DeviceConnection.getInstance(udid, params.url);
         const videoSettings = decoder.getVideoSettings();
         connection.addDecoder(this.decoder);
-        connection.setDeviceMessageListener(this);
+        connection.addEventListener(this);
         const wrapper = document.createElement('div');
         wrapper.className = 'decoder-controls-wrapper menu';
         const menuCheck = document.createElement('input');
@@ -160,7 +160,7 @@ export class DeviceController implements DeviceMessageListener {
                     } else if (action === CommandControlEvent.TYPE_SET_CLIPBOARD) {
                         const text = input.value;
                         if (text) {
-                            event = CommandControlEvent.createSetClipboard(text);
+                            event = CommandControlEvent.createSetClipboardCommand(text);
                         }
                     } else {
                         event = new CommandControlEvent(action);
@@ -268,15 +268,12 @@ export class DeviceController implements DeviceMessageListener {
     }
 
     public OnDeviceMessage(ev: DeviceMessage): void {
-        switch (ev.type) {
-            case DeviceMessage.TYPE_CLIPBOARD:
-                this.input.value = ev.getText();
-                this.input.select();
-                document.execCommand('copy');
-                break;
-            default:
-                console.error(`Unknown message type: ${ev.type}`);
+        if (ev.type !== DeviceMessage.TYPE_CLIPBOARD) {
+            return;
         }
+        this.input.value = ev.getText();
+        this.input.select();
+        document.execCommand('copy');
     }
 
 }
