@@ -49,6 +49,11 @@ export default class SvgImage {
     public static create(type: Icon): Element {
         const dummy = document.createElement('div');
         dummy.innerHTML = this.getSvgString(type);
-        return dummy.children[0];
+        const svg = dummy.children[0];
+        const titles = svg.getElementsByTagName('title');
+        for (let i = 0, l = titles.length; i < l; i++) {
+            svg.removeChild(titles[i]);
+        }
+        return svg;
     }
 }

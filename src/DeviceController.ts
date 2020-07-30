@@ -172,28 +172,35 @@ export class DeviceController implements DeviceMessageListener {
             }
         }
         const list = [{
+            title: 'Power',
             code: KeyEvent.KEYCODE_POWER,
             icon: SvgImage.Icon.POWER
         },{
+            title: 'Volume-',
             code: KeyEvent.KEYCODE_VOLUME_DOWN,
             icon: SvgImage.Icon.VOLUME_DOWN
         },{
+            title: 'Volume+',
             code: KeyEvent.KEYCODE_VOLUME_UP,
             icon: SvgImage.Icon.VOLUME_UP
         },{
+            title: 'Back',
             code: KeyEvent.KEYCODE_BACK,
             icon: SvgImage.Icon.BACK
         },{
+            title: 'Home',
             code: KeyEvent.KEYCODE_HOME,
             icon: SvgImage.Icon.HOME
         }, {
+            title: 'Switch app',
             code: KeyEvent.KEYCODE_APP_SWITCH,
             icon: SvgImage.Icon.OVERVIEW
         }];
         list.forEach(item => {
-            const {code, icon} = item;
+            const {code, icon, title} = item;
             const btn = document.createElement('button');
             btn.classList.add('control-button');
+            btn.title = title;
             btn.appendChild(SvgImage.create(icon));
             btn.onmousedown = () => {
                 const event = new KeyCodeControlEvent(KeyEvent.ACTION_DOWN, code, 0);
@@ -208,6 +215,7 @@ export class DeviceController implements DeviceMessageListener {
         if (decoder.supportsScreenshot) {
             const screenshotButton = document.createElement('button');
             screenshotButton.classList.add('control-button');
+            screenshotButton.title = 'Save screenshot';
             screenshotButton.appendChild(SvgImage.create(SvgImage.Icon.CAMERA));
             screenshotButton.onclick = () => {
                 decoder.createScreenshot(connection.getDeviceName());
