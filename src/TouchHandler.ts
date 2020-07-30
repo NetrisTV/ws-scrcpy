@@ -4,6 +4,8 @@ import TouchControlEvent from "./controlEvent/TouchControlEvent";
 import Size from "./Size";
 import Point from "./Point";
 import Position from "./Position";
+import TouchPointPNG from '../images/multitouch/touch_point.png';
+import CenterPointPNG from '../images/multitouch/center_point.png';
 
 interface Touch {
     action: number;
@@ -28,7 +30,7 @@ interface CommonTouchAndMouse {
 }
 
 export default class TouchHandler {
-    private static readonly CURSOR_RADIUS = 10;
+    private static readonly STROKE_STYLE: string = '#00BEA4';
     private static BUTTONS_MAP: Record<number, number> = {
         0: 17, // ?? BUTTON_PRIMARY
         1: MotionEvent.BUTTON_TERTIARY,
@@ -49,6 +51,42 @@ export default class TouchHandler {
     private static dirtyPlace: Point[] = [];
     private static idToPointerMap: Map<number, number> = new Map();
     private static pointerToIdMap: Map<number, number> = new Map();
+    private static touchPointRadius = 10;
+    private static centerPointRadius = 5;
+    private static touchPointImage?: HTMLImageElement;
+    private static centerPointImage?: HTMLImageElement;
+    private static pointImagesLoaded: boolean = false;
+    private static initialized: boolean = false;
+
+    public static init(): void {
+        if (this.initialized) {
+            return;
+        }
+        this.loadImages();
+        this.initialized = true;
+    }
+
+    private static loadImages(): void {
+        const total = 2;
+        let current = 0;
+
+        const onload = (e: Event) => {
+            if (++current === total) {
+                this.pointImagesLoaded = true;
+            }
+            if (e.target === this.touchPointImage) {
+                this.touchPointRadius = this.touchPointImage.width / 2;
+            } else if (e.target === this.centerPointImage) {
+                this.centerPointRadius = this.centerPointImage.width / 2;
+            }
+        }
+        const touch = this.touchPointImage = new Image();
+        touch.src = TouchPointPNG;
+        touch.onload = onload;
+        const center = this.centerPointImage = new Image();
+        center.src = CenterPointPNG;
+        center.onload = onload;
+    }
 
     private static getPointerId(type: string, identifier: number): number {
         // I'm not sure that we can directly use touch identifier as pointerId
@@ -170,14 +208,10 @@ export default class TouchHandler {
         return result;
     }
 
-    private static drawCircle(ctx: CanvasRenderingContext2D, point: Point, radius: number = TouchHandler.CURSOR_RADIUS): void {
+    private static drawCircle(ctx: CanvasRenderingContext2D, point: Point, radius: number): void {
         ctx.beginPath();
         ctx.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
         ctx.stroke();
-        const l = ctx.lineWidth;
-        const topLeft = new Point(point.x - radius - l, point.y - radius - l);
-        const bottomRight = new Point(point.x + radius + l, point.y + radius + l);
-        this.updateDirty(topLeft, bottomRight);
     }
 
     private static drawLine(ctx: CanvasRenderingContext2D, point1: Point, point2: Point): void {
@@ -185,6 +219,21 @@ export default class TouchHandler {
         ctx.moveTo(point1.x, point1.y);
         ctx.lineTo(point2.x, point2.y);
         ctx.stroke();
+    }
+
+    private static drawPoint(ctx: CanvasRenderingContext2D, point: Point, radius: number, image?: HTMLImageElement): void {
+        let { lineWidth } = ctx;
+        if (this.pointImagesLoaded && image) {
+            radius = image.width / 2;
+            lineWidth = 0;
+            ctx.drawImage(image, point.x - radius, point.y - radius);
+        } else {
+            this.drawCircle(ctx, point, radius);
+        }
+
+        const topLeft = new Point(point.x - radius - lineWidth, point.y - radius - lineWidth);
+        const bottomRight = new Point(point.x + radius + lineWidth, point.y + radius + lineWidth);
+        this.updateDirty(topLeft, bottomRight);
     }
 
     private static updateDirty(topLeft: Point, bottomRight: Point): void {
@@ -260,15 +309,16 @@ export default class TouchHandler {
             const ctx = target.getContext('2d');
             if (ctx) {
                 this.clearCanvas(target);
+                ctx.strokeStyle = TouchHandler.STROKE_STYLE;
                 touches.forEach(touch => {
                     const { point } = touch.position;
-                    this.drawCircle(ctx, point);
+                    this.drawPoint(ctx, point, this.touchPointRadius, this.touchPointImage);
                     if (this.multiTouchCenter) {
-                        this.drawLine(ctx, point, this.multiTouchCenter);
+                        this.drawLine(ctx, this.multiTouchCenter, point);
                     }
                 });
                 if (this.multiTouchCenter) {
-                    this.drawCircle(ctx, this.multiTouchCenter, 5);
+                    this.drawPoint(ctx, this.multiTouchCenter, this.centerPointRadius, this.centerPointImage);
                 }
             }
         }

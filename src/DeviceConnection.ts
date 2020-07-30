@@ -49,6 +49,7 @@ export class DeviceConnection implements KeyEventListener {
 
     private static setListeners(): void {
         if (!this.hasListeners) {
+            TouchHandler.init();
             let down = 0;
             const supportsPassive = Util.supportsPassive();
             const onMouseEvent = (e: MouseEvent | TouchEvent) => {

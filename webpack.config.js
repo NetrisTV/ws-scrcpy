@@ -18,6 +18,14 @@ module.exports = {
         loader: 'svg-inline-loader'
       },
       {
+        test: /\.(png|jpe?g|gif)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+          },
+        ],
+      },
+      {
         test: /\.(asset)$/i,
         use: [
           {
