@@ -255,6 +255,7 @@ export default class TouchHandler {
         if (ctx && this.dirtyPlace.length) {
             const topLeft = this.dirtyPlace[0];
             const bottomRight = this.dirtyPlace[1];
+            this.dirtyPlace.length = 0;
             const x = Math.max(topLeft.x, 0);
             const y = Math.max(topLeft.y, 0);
             const w = Math.min(clientWidth, bottomRight.x - x);
