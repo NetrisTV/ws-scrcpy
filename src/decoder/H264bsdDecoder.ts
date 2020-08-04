@@ -1,8 +1,9 @@
 import VideoSettings from '../VideoSettings';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { H264bsdCanvas } from '../h264bsd_canvas.js';
 import H264bsdWorker from '../h264bsd/H264bsdWorker';
-import CanvasCommon from "./CanvasCommon";
+import CanvasCommon from './CanvasCommon';
 
 export default class H264bsdDecoder extends CanvasCommon {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
@@ -11,7 +12,7 @@ export default class H264bsdDecoder extends CanvasCommon {
         frameRate: 24,
         iFrameInterval: 5,
         maxSize: 480,
-        sendFrameMeta: false
+        sendFrameMeta: false,
     });
     protected canvas?: H264bsdCanvas;
     private worker?: H264bsdWorker;
@@ -45,7 +46,8 @@ export default class H264bsdDecoder extends CanvasCommon {
                     message.width,
                     message.height,
                     message.croppingParams,
-                    new Uint8Array(message.data));
+                    new Uint8Array(message.data),
+                );
                 break;
 
             // Posted after all of the queued data has been decoded
@@ -66,7 +68,7 @@ export default class H264bsdDecoder extends CanvasCommon {
             default:
                 throw Error(`Wrong message type "${message.type}"`);
         }
-    }
+    };
 
     private initWorker(): void {
         this.worker = H264bsdWorker.getInstance();
@@ -82,10 +84,13 @@ export default class H264bsdDecoder extends CanvasCommon {
         if (!this.worker || !this.worker.isDecoderReady()) {
             return;
         }
-        this.worker.worker.postMessage({
-            type: 'queueInput',
-            data: data.buffer
-        }, [data.buffer]);
+        this.worker.worker.postMessage(
+            {
+                type: 'queueInput',
+                data: data.buffer,
+            },
+            [data.buffer],
+        );
     }
 
     public play(): void {

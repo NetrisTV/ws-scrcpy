@@ -145,7 +145,6 @@ export default class UIEventsCode {
     public static readonly ScrollLock: string = 'ScrollLock';
     public static readonly Pause: string = 'Pause';
 
-
     // 3.1.6. Media Keys
     public static readonly BrowserBack: string = 'BrowserBack';
     public static readonly BrowserFavorites: string = 'BrowserFavorites';

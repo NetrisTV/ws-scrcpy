@@ -1,6 +1,6 @@
-import KeyCodeControlEvent from "./controlEvent/KeyCodeControlEvent";
-import KeyEvent from "./android/KeyEvent";
-import {KeyToCodeMap} from "./KeyToCodeMap";
+import KeyCodeControlEvent from './controlEvent/KeyCodeControlEvent';
+import KeyEvent from './android/KeyEvent';
+import { KeyToCodeMap } from './KeyToCodeMap';
 
 export interface KeyEventListener {
     onKeyEvent: (event: KeyCodeControlEvent) => void;
@@ -14,22 +14,23 @@ export class KeyInputHandler {
         if (!keyCode) {
             return;
         }
-        const action = event.type === 'keydown' ? KeyEvent.ACTION_DOWN :
-            event.type === 'keyup' ? KeyEvent.ACTION_UP : -1;
-        const metaState = (event.getModifierState('Alt') ? KeyEvent.META_ALT_ON : 0)
-            | (event.getModifierState('Shift') ? KeyEvent.META_SHIFT_ON : 0)
-            | (event.getModifierState('Control') ? KeyEvent.META_CTRL_ON : 0)
-            | (event.getModifierState('Meta') ? KeyEvent.META_META_ON : 0)
-            | (event.getModifierState('CapsLock') ? KeyEvent.META_CAPS_LOCK_ON : 0)
-            | (event.getModifierState('ScrollLock') ? KeyEvent.META_SCROLL_LOCK_ON : 0)
-            | (event.getModifierState('NumLock') ? KeyEvent.META_NUM_LOCK_ON : 0);
+        const action =
+            event.type === 'keydown' ? KeyEvent.ACTION_DOWN : event.type === 'keyup' ? KeyEvent.ACTION_UP : -1;
+        const metaState =
+            (event.getModifierState('Alt') ? KeyEvent.META_ALT_ON : 0) |
+            (event.getModifierState('Shift') ? KeyEvent.META_SHIFT_ON : 0) |
+            (event.getModifierState('Control') ? KeyEvent.META_CTRL_ON : 0) |
+            (event.getModifierState('Meta') ? KeyEvent.META_META_ON : 0) |
+            (event.getModifierState('CapsLock') ? KeyEvent.META_CAPS_LOCK_ON : 0) |
+            (event.getModifierState('ScrollLock') ? KeyEvent.META_SCROLL_LOCK_ON : 0) |
+            (event.getModifierState('NumLock') ? KeyEvent.META_NUM_LOCK_ON : 0);
 
         const controlEvent: KeyCodeControlEvent = new KeyCodeControlEvent(action, keyCode, metaState);
-        KeyInputHandler.listeners.forEach(listener => {
+        KeyInputHandler.listeners.forEach((listener) => {
             listener.onKeyEvent(controlEvent);
         });
         e.preventDefault();
-    }
+    };
     private static attachListeners(): void {
         document.body.addEventListener('keydown', this.handler);
         document.body.addEventListener('keyup', this.handler);

@@ -7,5 +7,5 @@ export enum PriorityLevel {
     WARN = 5,
     ERROR = 6,
     FATAL = 7,
-    SILENT = 8
+    SILENT = 8,
 }

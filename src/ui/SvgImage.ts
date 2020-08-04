@@ -17,7 +17,7 @@ enum Icon {
     VOLUME_DOWN,
     MORE,
     CAMERA,
-    KEYBOARD
+    KEYBOARD,
 }
 
 export default class SvgImage {

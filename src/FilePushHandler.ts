@@ -1,15 +1,13 @@
-import {DragAndDropHandler, DragEventListener} from "./DragAndDropHandler";
-import {DeviceConnection, DeviceMessageListener} from "./DeviceConnection";
-import DeviceMessage from "./DeviceMessage";
-import CommandControlEvent, {FilePushState} from "./controlEvent/CommandControlEvent";
+import { DragAndDropHandler, DragEventListener } from './DragAndDropHandler';
+import { DeviceConnection, DeviceMessageListener } from './DeviceConnection';
+import DeviceMessage from './DeviceMessage';
+import CommandControlEvent, { FilePushState } from './controlEvent/CommandControlEvent';
 
-const ALLOWED_TYPES = [
-    'application/vnd.android.package-archive'
-];
+const ALLOWED_TYPES = ['application/vnd.android.package-archive'];
 
 type Resolve = (result: number) => void;
 
-export type PushUpdateParams = { pushId: number, logString: string, fileName: string, error: boolean };
+export type PushUpdateParams = { pushId: number; logString: string; fileName: string; error: boolean };
 
 export interface DragAndPushListener {
     onDragEnter: () => void;
@@ -44,61 +42,62 @@ export default class FilePushHandler implements DragEventListener, DeviceMessage
     }
 
     private sendUpdate(params: PushUpdateParams): void {
-        this.listeners.forEach(listener => {
+        this.listeners.forEach((listener) => {
             listener.onFilePushUpdate(params);
         });
     }
 
     private logError(pushId: number, fileName: string, code: number): void {
         const msg = RESPONSE_CODES.get(code) || 'Unknown error';
-        this.sendUpdate({pushId, fileName, logString: `error: "${msg}"`, error: true});
+        this.sendUpdate({ pushId, fileName, logString: `error: "${msg}"`, error: true });
     }
 
     private async pushFile(file: File): Promise<void> {
         const start = Date.now();
         const { name: fileName, size: fileSize } = file;
         if (!this.connection.hasConnection()) {
-            this.listeners.forEach(listener => {
+            this.listeners.forEach((listener) => {
                 listener.onError('WebSocket is not ready');
             });
             return;
         }
         const id = FilePushHandler.REQUEST_NEW_PUSH_ID;
-        this.sendUpdate({pushId: id, fileName, logString: 'begin...', error: false});
-        const newParams = {id, state: FilePushState.NEW};
+        this.sendUpdate({ pushId: id, fileName, logString: 'begin...', error: false });
+        const newParams = { id, state: FilePushState.NEW };
         this.connection.sendEvent(CommandControlEvent.createPushFileCommand(newParams));
         const pushId: number = await this.waitForResponse(id);
         if (pushId <= 0) {
             this.logError(pushId, fileName, pushId);
         }
 
-        const startParams = {id: pushId, fileName, fileSize, state: FilePushState.START};
+        const startParams = { id: pushId, fileName, fileSize, state: FilePushState.START };
         this.connection.sendEvent(CommandControlEvent.createPushFileCommand(startParams));
         const stream = file.stream();
         const reader = stream.getReader();
-        const [startResponseCode, result]= await Promise.all([this.waitForResponse(pushId), reader.read()]);
+        const [startResponseCode, result] = await Promise.all([this.waitForResponse(pushId), reader.read()]);
         if (startResponseCode !== 0) {
             this.logError(pushId, fileName, startResponseCode);
             return;
         }
         let receivedBytes = 0;
 
-        const processData = async ({ done, value }: {done: boolean, value?: any}): Promise<void> => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const processData = async ({ done, value }: { done: boolean; value?: any }): Promise<void> => {
             if (done) {
-                const finishParams = {id: pushId, state: FilePushState.FINISH};
+                const finishParams = { id: pushId, state: FilePushState.FINISH };
                 this.connection.sendEvent(CommandControlEvent.createPushFileCommand(finishParams));
                 const finishResponseCode = await this.waitForResponse(pushId);
                 if (finishResponseCode !== 0) {
                     this.logError(pushId, fileName, finishResponseCode);
                 } else {
-                    this.sendUpdate({pushId, fileName, logString: 'success!', error: false});
+                    this.sendUpdate({ pushId, fileName, logString: 'success!', error: false });
                 }
                 console.log(`File "${fileName}" uploaded in ${Date.now() - start}ms`);
                 return;
             }
 
             receivedBytes += value.length;
-            const appendParams = {id: pushId, chunk: value, state: FilePushState.APPEND};
+            const appendParams = { id: pushId, chunk: value, state: FilePushState.APPEND };
             this.connection.sendEvent(CommandControlEvent.createPushFileCommand(appendParams));
 
             const [appendResponseCode, result] = await Promise.all([this.waitForResponse(pushId), reader.read()]);
@@ -106,10 +105,10 @@ export default class FilePushHandler implements DragEventListener, DeviceMessage
                 this.logError(pushId, fileName, appendResponseCode);
                 return;
             }
-            const percent = (receivedBytes * 100 / fileSize);
-            this.sendUpdate({pushId, fileName, logString: `${percent.toFixed(2)}%`, error: false});
+            const percent = (receivedBytes * 100) / fileSize;
+            this.sendUpdate({ pushId, fileName, logString: `${percent.toFixed(2)}%`, error: false });
             return processData(result);
-        }
+        };
         return processData(result);
     }
 
@@ -158,28 +157,33 @@ export default class FilePushHandler implements DragEventListener, DeviceMessage
             value = result;
         }
         func(value);
-    };
-    public onFilesDrop(files: File[]) {
-        this.listeners.forEach(listener => {
+    }
+    public onFilesDrop(files: File[]): void {
+        this.listeners.forEach((listener) => {
             listener.onDrop();
         });
         files.forEach((file: File) => {
-            const { type, name } = file
+            const { type, name } = file;
             if (ALLOWED_TYPES.includes(type)) {
                 this.pushFile(file);
             } else {
-                const errorParams = {pushId: FilePushHandler.REQUEST_NEW_PUSH_ID, fileName: name, logString: `Unsupported type "${type}"`, error: true}
+                const errorParams = {
+                    pushId: FilePushHandler.REQUEST_NEW_PUSH_ID,
+                    fileName: name,
+                    logString: `Unsupported type "${type}"`,
+                    error: true,
+                };
                 this.sendUpdate(errorParams);
             }
         });
     }
     public onDragEnter(): void {
-        this.listeners.forEach(listener => {
+        this.listeners.forEach((listener) => {
             listener.onDragEnter();
         });
     }
     public onDragLeave(): void {
-        this.listeners.forEach(listener => {
+        this.listeners.forEach((listener) => {
             listener.onDragLeave();
         });
     }
@@ -199,7 +203,6 @@ export default class FilePushHandler implements DragEventListener, DeviceMessage
     }
 }
 
-
 const RESPONSE_CODES = new Map([
     [FilePushHandler.NEW_PUSH_ID, 'New push id'],
     [FilePushHandler.NO_ERROR, 'No error'],
@@ -214,5 +217,5 @@ const RESPONSE_CODES = new Map([
     [FilePushHandler.ERROR_INVALID_STATE, 'Invalid state'],
     [FilePushHandler.ERROR_UNKNOWN_ID, 'Unknown id'],
     [FilePushHandler.ERROR_NO_FREE_ID, 'No free id'],
-    [FilePushHandler.ERROR_INCORRECT_SIZE, 'Incorrect size']
+    [FilePushHandler.ERROR_INCORRECT_SIZE, 'Incorrect size'],
 ]);

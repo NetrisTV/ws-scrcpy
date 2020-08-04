@@ -1,11 +1,12 @@
 import Size from '../Size';
 import YUVCanvas from '../h264-live-player/YUVCanvas';
 import YUVWebGLCanvas from '../h264-live-player/YUVWebGLCanvas';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Avc from '../Decoder';
 import VideoSettings from '../VideoSettings';
 import Canvas from '../h264-live-player/Canvas';
-import CanvasCommon from "./CanvasCommon";
+import CanvasCommon from './CanvasCommon';
 
 export default class BroadwayDecoder extends CanvasCommon {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
@@ -14,7 +15,7 @@ export default class BroadwayDecoder extends CanvasCommon {
         frameRate: 24,
         iFrameInterval: 5,
         maxSize: 480,
-        sendFrameMeta: false
+        sendFrameMeta: false,
     });
 
     protected canvas?: Canvas;

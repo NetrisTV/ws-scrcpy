@@ -1,0 +1,23 @@
+{
+    "extends": [
+        "plugin:@typescript-eslint/recommended",
+        "plugin:prettier/recommended",
+        "prettier",
+        "prettier/@typescript-eslint"
+    ],
+    "plugins": [
+        "progress",
+        "@typescript-eslint",
+        "prettier"
+    ],
+    "parserOptions":  {
+        "ecmaVersion":  2020,
+        "sourceType":  "module"
+    },
+    "rules": {
+        "progress/activate": 1,
+        "import/no-absolute-path": "off"
+    },
+    "overrides": [
+    ]
+}

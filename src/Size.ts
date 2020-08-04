@@ -7,14 +7,14 @@ export default class Size {
         this.h = height;
     }
 
-    public static equals(a?: Size|null, b?: Size|null): boolean {
+    public static equals(a?: Size | null, b?: Size | null): boolean {
         if (!a && !b) {
             return true;
         }
         return !!a && !!b && a.equals(b);
     }
 
-    public static copy(a?: Size|null): Size|null {
+    public static copy(a?: Size | null): Size | null {
         if (!a) {
             return null;
         }
@@ -25,7 +25,7 @@ export default class Size {
         return new Size(this.height, this.width);
     }
 
-    public equals(o: Size|null): boolean {
+    public equals(o: Size | null): boolean {
         if (this === o) {
             return true;
         }

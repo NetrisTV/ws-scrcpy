@@ -19,7 +19,7 @@ const map: Record<string, string> = {
     '.css': 'text/css',
     '.jar': 'application/java-archive',
     '.json': 'application/json',
-    '.jpg': 'image/jpeg'
+    '.jpg': 'image/jpeg',
 };
 const PUBLIC_DIR = path.join(__dirname, '../public');
 
@@ -30,10 +30,7 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse) => 
         return;
     }
     const parsedUrl = url.parse(req.url);
-    let pathname = path.join(
-        PUBLIC_DIR,
-        (parsedUrl.pathname || '.').replace(/^(\.)+/, '.')
-    );
+    let pathname = path.join(PUBLIC_DIR, (parsedUrl.pathname || '.').replace(/^(\.)+/, '.'));
     fs.stat(pathname, (statErr, stat) => {
         if (statErr) {
             if (statErr.code === 'ENOENT') {
@@ -56,7 +53,7 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse) => 
                 res.end(`Error getting the file: ${statErr}.`);
             } else {
                 // if the file is found, set Content-type and send data
-                res.setHeader('Content-type', map[ext] || 'text/plain' );
+                res.setHeader('Content-type', map[ext] || 'text/plain');
                 res.end(data);
             }
         });
@@ -103,9 +100,9 @@ function printListeningMsg(): void {
     };
     formatAddress(os.hostname(), false);
     Object.keys(os.networkInterfaces())
-        .map(key => os.networkInterfaces()[key])
-        .forEach(info => {
-            info.forEach(iface => {
+        .map((key) => os.networkInterfaces()[key])
+        .forEach((info) => {
+            info.forEach((iface) => {
                 const ipv4 = iface.family === 'IPv4';
                 const ipv6 = iface.family === 'IPv6';
                 if (!ipv4 && !ipv6) {
@@ -118,12 +115,14 @@ function printListeningMsg(): void {
 }
 
 if (process.platform === 'win32') {
-    readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    }).on('SIGINT', () => {
-        process.exit();
-    });
+    readline
+        .createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        })
+        .on('SIGINT', () => {
+            process.exit();
+        });
 }
 
 process.on('SIGINT', () => {

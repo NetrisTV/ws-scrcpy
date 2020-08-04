@@ -3,7 +3,7 @@ import { ClientDeviceTracker } from './client/ClientDeviceTracker';
 import { ScrcpyClient, StreamParams } from './client/ScrcpyClient';
 import { ShellParams, ClientShell } from './client/ClientShell';
 
-window.onload = function(): void {
+window.onload = function (): void {
     const hash = location.hash.replace(/^#!/, '');
     const parsedQuery = querystring.parse(hash);
     const action = parsedQuery.action;

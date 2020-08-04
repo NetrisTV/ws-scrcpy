@@ -1,24 +1,28 @@
 import VideoSettings from '../VideoSettings';
 import ScreenInfo from '../ScreenInfo';
-import Rect from "../Rect";
+import Rect from '../Rect';
 
 export default abstract class Decoder {
     public static STATE: Record<string, number> = {
         PLAYING: 1,
         PAUSED: 2,
-        STOPPED: 3
+        STOPPED: 3,
     };
     protected screenInfo?: ScreenInfo;
     protected videoSettings: VideoSettings;
     protected parentElement?: HTMLElement;
     protected touchableCanvas: HTMLCanvasElement;
-    protected fpsCurrentValue: number = 0;
+    protected fpsCurrentValue = 0;
     protected fpsCounter: number[] = [];
     private state: number = Decoder.STATE.STOPPED;
-    public showFps: boolean = true;
+    public showFps = true;
     public readonly supportsScreenshot: boolean = false;
 
-    constructor(protected udid: string, protected name: string = 'Decoder', protected tag: HTMLElement = document.createElement('div')) {
+    constructor(
+        protected udid: string,
+        protected name: string = 'Decoder',
+        protected tag: HTMLElement = document.createElement('div'),
+    ) {
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
         const preferred = this.getPreferredVideoSetting();
@@ -34,7 +38,11 @@ export default abstract class Decoder {
         return `${decoderName}:${udid}:${innerWidth}x${innerHeight}`;
     }
 
-    private static getVideoSettingFromStorage(preferred: VideoSettings, decoderName: string, deviceName: string): VideoSettings {
+    private static getVideoSettingFromStorage(
+        preferred: VideoSettings,
+        decoderName: string,
+        deviceName: string,
+    ): VideoSettings {
         if (!window.localStorage) {
             return preferred;
         }
@@ -52,11 +60,17 @@ export default abstract class Decoder {
             frameRate: !isNaN(frameRate) ? frameRate : preferred.frameRate,
             iFrameInterval: !isNaN(iFrameInterval) ? iFrameInterval : preferred.iFrameInterval,
             sendFrameMeta: typeof sendFrameMeta === 'boolean' ? sendFrameMeta : preferred.sendFrameMeta,
-            lockedVideoOrientation: !isNaN(lockedVideoOrientation) ? lockedVideoOrientation : preferred.lockedVideoOrientation
+            lockedVideoOrientation: !isNaN(lockedVideoOrientation)
+                ? lockedVideoOrientation
+                : preferred.lockedVideoOrientation,
         });
     }
 
-    private static putVideoSettingsToStorage(decoderName: string, deviceName: string, videoSettings: VideoSettings): void {
+    private static putVideoSettingsToStorage(
+        decoderName: string,
+        deviceName: string,
+        videoSettings: VideoSettings,
+    ): void {
         if (!window.localStorage) {
             return;
         }
@@ -122,7 +136,7 @@ export default abstract class Decoder {
     public setScreenInfo(screenInfo: ScreenInfo): void {
         this.pause();
         this.screenInfo = screenInfo;
-        const {width, height} = screenInfo.videoSize;
+        const { width, height } = screenInfo.videoSize;
         this.touchableCanvas.width = width;
         this.touchableCanvas.height = height;
         if (this.parentElement) {

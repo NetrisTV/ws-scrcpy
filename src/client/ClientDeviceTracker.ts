@@ -14,55 +14,55 @@ type MapItem = {
 const FIELDS_MAP: MapItem[] = [
     {
         field: 'product.manufacturer',
-        title: 'Manufacturer'
+        title: 'Manufacturer',
     },
     {
         field: 'product.model',
-        title: 'Model'
+        title: 'Model',
     },
     {
         field: 'build.version.release',
-        title: 'Release'
+        title: 'Release',
     },
     {
         field: 'build.version.sdk',
-        title: 'SDK'
+        title: 'SDK',
     },
     {
         field: 'udid',
-        title: 'Serial'
+        title: 'Serial',
     },
     {
         field: 'state',
-        title: 'State'
+        title: 'State',
     },
     {
         field: 'pid',
-        title: 'Pid'
+        title: 'Pid',
     },
     {
-        title: 'Broadway'
+        title: 'Broadway',
     },
     {
-        title: 'Native'
+        title: 'Native',
     },
     {
-        title: 'h264bsd'
+        title: 'h264bsd',
     },
     {
-        title: 'tinyh264'
+        title: 'tinyh264',
     },
     {
-        title: 'Shell'
-    }
+        title: 'Shell',
+    },
 ];
 
 type Decoders = 'broadway' | 'native' | 'h264bsd' | 'tinyh264';
 
-const DECODERS: Decoders[] = ['broadway', 'native', 'h264bsd', 'tinyh264' ];
+const DECODERS: Decoders[] = ['broadway', 'native', 'h264bsd', 'tinyh264'];
 
 export class ClientDeviceTracker extends NodeClient {
-    public static ACTION: string = 'devicelist';
+    public static ACTION = 'devicelist';
     public static start(): ClientDeviceTracker {
         return new ClientDeviceTracker(ClientDeviceTracker.ACTION);
     }
@@ -110,8 +110,8 @@ export class ClientDeviceTracker extends NodeClient {
             const table = document.createElement('table');
             const thead = document.createElement('thead');
             const headRow = document.createElement('tr');
-            FIELDS_MAP.forEach(item => {
-                const {title} = item;
+            FIELDS_MAP.forEach((item) => {
+                const { title } = item;
                 const td = document.createElement('th');
                 td.innerText = title;
                 td.className = title.toLowerCase();
@@ -130,9 +130,9 @@ export class ClientDeviceTracker extends NodeClient {
             }
         }
 
-        data.forEach(device => {
+        data.forEach((device) => {
             const row = document.createElement('tr');
-            FIELDS_MAP.forEach(item => {
+            FIELDS_MAP.forEach((item) => {
                 if (item.field) {
                     const td = document.createElement('td');
                     td.innerText = device[item.field].toString();
@@ -140,27 +140,37 @@ export class ClientDeviceTracker extends NodeClient {
                 }
             });
             const isActive = device.state === 'device';
-            DECODERS.forEach(decoderName => {
+            DECODERS.forEach((decoderName) => {
                 const decoderTd = document.createElement('td');
                 if (isActive) {
-                    decoderTd.appendChild(ClientDeviceTracker.buildLink({
-                        showFps: true,
-                        action: 'stream',
-                        udid: device.udid,
-                        decoder: decoderName,
-                        ip: device.ip,
-                        port: SERVER_PORT.toString(10)
-                    }, 'stream'));
+                    decoderTd.appendChild(
+                        ClientDeviceTracker.buildLink(
+                            {
+                                showFps: true,
+                                action: 'stream',
+                                udid: device.udid,
+                                decoder: decoderName,
+                                ip: device.ip,
+                                port: SERVER_PORT.toString(10),
+                            },
+                            'stream',
+                        ),
+                    );
                 }
                 row.appendChild(decoderTd);
             });
 
             const shellTd = document.createElement('td');
             if (isActive) {
-                shellTd.appendChild(ClientDeviceTracker.buildLink({
-                    action: 'shell',
-                    udid: device.udid
-                }, 'shell'));
+                shellTd.appendChild(
+                    ClientDeviceTracker.buildLink(
+                        {
+                            action: 'shell',
+                            udid: device.udid,
+                        },
+                        'shell',
+                    ),
+                );
             }
             row.appendChild(shellTd);
             tbody.appendChild(row);

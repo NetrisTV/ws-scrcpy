@@ -5,7 +5,7 @@ import H264bsdDecoder from '../decoder/H264bsdDecoder';
 import { ParsedUrlQueryInput } from 'querystring';
 import { BaseClient } from './BaseClient';
 import Decoder from '../decoder/Decoder';
-import Tinyh264Decoder from "../decoder/Tinyh264Decoder";
+import Tinyh264Decoder from '../decoder/Tinyh264Decoder';
 
 export type Decoders = 'broadway' | 'h264bsd' | 'native' | 'tinyh264';
 
@@ -19,7 +19,7 @@ export interface StreamParams extends ParsedUrlQueryInput {
 }
 
 export class ScrcpyClient extends BaseClient {
-    public static ACTION: string = 'stream';
+    public static ACTION = 'stream';
     private static instance?: ScrcpyClient;
     public static start(params: StreamParams): ScrcpyClient {
         this.getOrCreateControlsWrapper();
@@ -65,7 +65,7 @@ export class ScrcpyClient extends BaseClient {
                 decoderClass = BroadwayDecoder;
                 break;
             case 'h264bsd':
-                decoderClass = H264bsdDecoder
+                decoderClass = H264bsdDecoder;
                 break;
             case 'tinyh264':
                 decoderClass = Tinyh264Decoder;
@@ -77,7 +77,7 @@ export class ScrcpyClient extends BaseClient {
         const controller = new DeviceController({
             url,
             udid,
-            decoder
+            decoder,
         });
         controller.start();
         console.log(decoder.getName(), udid, url);

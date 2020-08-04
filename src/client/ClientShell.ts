@@ -11,7 +11,7 @@ export interface ShellParams extends ParsedUrlQueryInput {
 }
 
 export class ClientShell extends NodeClient {
-    public static ACTION: string = 'shell';
+    public static ACTION = 'shell';
     public static start(params: ShellParams): ClientShell {
         return new ClientShell(params.action, params.udid);
     }
@@ -58,14 +58,14 @@ export class ClientShell extends NodeClient {
                 type: 'start',
                 rows,
                 cols,
-                udid
-            }
+                udid,
+            },
         };
         this.ws.send(JSON.stringify(message));
     }
 
     protected buildWebSocketUrl(): string {
-        const proto = (location.protocol === 'https:') ? 'wss' : 'ws';
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
         return `${proto}://${location.host}/?action=${this.action}&`;
     }
 
@@ -81,11 +81,14 @@ export class ClientShell extends NodeClient {
     }
 
     private updateTerminalSize(): void {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const term: any = this.term;
         const terminalContainer: HTMLElement = ClientShell.getOrCreateContainer(this.escapedUdid);
         const { rows, cols } = this.fitAddon.proposeDimensions();
-        const width = (cols * term._core._renderService.dimensions.actualCellWidth + term._core.viewport.scrollBarWidth).toFixed(2) + 'px';
+        const width =
+            (cols * term._core._renderService.dimensions.actualCellWidth + term._core.viewport.scrollBarWidth).toFixed(
+                2,
+            ) + 'px';
         const height = (rows * term._core._renderService.dimensions.actualCellHeight).toFixed(2) + 'px';
         terminalContainer.style.width = width;
         terminalContainer.style.height = height;

@@ -1,9 +1,9 @@
 import { BaseClient } from './BaseClient';
 
 export abstract class NodeClient extends BaseClient {
-    public static ACTION: string = 'unknown';
+    public static ACTION = 'unknown';
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     public static start(..._rest: any[]): void {
         throw Error('Not implemented');
     }
@@ -26,7 +26,7 @@ export abstract class NodeClient extends BaseClient {
     }
 
     protected buildWebSocketUrl(): string {
-        const proto = (location.protocol === 'https:') ? 'wss' : 'ws';
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
         return `${proto}://${location.host}/?action=${this.action}`;
     }
 

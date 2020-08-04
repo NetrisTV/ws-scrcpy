@@ -7,15 +7,16 @@ import TouchControlEvent from './controlEvent/TouchControlEvent';
 import CommandControlEvent from './controlEvent/CommandControlEvent';
 import ScreenInfo from './ScreenInfo';
 import DeviceMessage from './DeviceMessage';
-import TouchHandler from "./TouchHandler";
-import {KeyEventListener, KeyInputHandler} from "./KeyInputHandler";
-import KeyCodeControlEvent from "./controlEvent/KeyCodeControlEvent";
-import FilePushHandler from "./FilePushHandler";
-import DragAndPushLogger from "./DragAndPushLogger";
+import TouchHandler from './TouchHandler';
+import { KeyEventListener, KeyInputHandler } from './KeyInputHandler';
+import KeyCodeControlEvent from './controlEvent/KeyCodeControlEvent';
+import FilePushHandler from './FilePushHandler';
+import DragAndPushLogger from './DragAndPushLogger';
 
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC = 'scrcpy';
-const DEVICE_INFO_LENGTH = MAGIC.length + DEVICE_NAME_FIELD_LENGTH + ScreenInfo.BUFFER_LENGTH + VideoSettings.BUFFER_LENGTH;
+const DEVICE_INFO_LENGTH =
+    MAGIC.length + DEVICE_NAME_FIELD_LENGTH + ScreenInfo.BUFFER_LENGTH + VideoSettings.BUFFER_LENGTH;
 
 export interface ErrorListener {
     OnError(this: ErrorListener, ev: Event | string): void;
@@ -26,7 +27,7 @@ export interface DeviceMessageListener {
 }
 
 export class DeviceConnection implements KeyEventListener {
-    private static hasTouchListeners: boolean = false;
+    private static hasTouchListeners = false;
     private static instances: Record<string, DeviceConnection> = {};
     public readonly ws: WebSocket;
     private events: ControlEvent[] = [];
@@ -34,7 +35,7 @@ export class DeviceConnection implements KeyEventListener {
     private filePushHandlers: Map<Decoder, FilePushHandler> = new Map();
     private errorListener?: ErrorListener;
     private deviceMessageListeners: Set<DeviceMessageListener> = new Set();
-    private name: string = '';
+    private name = '';
 
     constructor(readonly udid: string, readonly url: string) {
         this.ws = new WebSocket(url);
@@ -43,7 +44,7 @@ export class DeviceConnection implements KeyEventListener {
     }
 
     public static getInstance(udid: string, url: string): DeviceConnection {
-        const key = `${udid}::${url}`
+        const key = `${udid}::${url}`;
         if (!this.instances[key]) {
             this.instances[key] = new DeviceConnection(udid, url);
         }
@@ -56,10 +57,10 @@ export class DeviceConnection implements KeyEventListener {
             let down = 0;
             const supportsPassive = Util.supportsPassive();
             const onMouseEvent = (e: MouseEvent | TouchEvent) => {
-                for (let key in this.instances) {
+                for (const key in this.instances) {
                     const connection: DeviceConnection = this.instances[key];
                     if (connection.hasConnection()) {
-                        connection.decoders.forEach(decoder => {
+                        connection.decoders.forEach((decoder) => {
                             const tag = decoder.getTouchableElement();
                             if (e.target === tag) {
                                 const screenInfo: ScreenInfo = decoder.getScreenInfo() as ScreenInfo;
@@ -75,7 +76,7 @@ export class DeviceConnection implements KeyEventListener {
                                     events = TouchHandler.formatTouchEvent(e, screenInfo, tag);
                                 }
                                 if (events && events.length && condition) {
-                                    events.forEach(event => {
+                                    events.forEach((event) => {
                                         connection.sendEvent(event);
                                     });
                                 }
@@ -90,27 +91,43 @@ export class DeviceConnection implements KeyEventListener {
             };
 
             const options = supportsPassive ? { passive: false } : false;
-            document.body.addEventListener('touchstart', (e: TouchEvent): void => {
-                onMouseEvent(e);
-            }, options);
-            document.body.addEventListener('touchend', (e: TouchEvent): void => {
-                onMouseEvent(e);
-            }, options);
-            document.body.addEventListener('touchmove', (e: TouchEvent): void => {
-                onMouseEvent(e);
-            }, options);
-            document.body.addEventListener('touchcancel', (e: TouchEvent): void => {
-                onMouseEvent(e);
-            }, options);
-            document.body.onmousedown = function(e: MouseEvent): void {
+            document.body.addEventListener(
+                'touchstart',
+                (e: TouchEvent): void => {
+                    onMouseEvent(e);
+                },
+                options,
+            );
+            document.body.addEventListener(
+                'touchend',
+                (e: TouchEvent): void => {
+                    onMouseEvent(e);
+                },
+                options,
+            );
+            document.body.addEventListener(
+                'touchmove',
+                (e: TouchEvent): void => {
+                    onMouseEvent(e);
+                },
+                options,
+            );
+            document.body.addEventListener(
+                'touchcancel',
+                (e: TouchEvent): void => {
+                    onMouseEvent(e);
+                },
+                options,
+            );
+            document.body.onmousedown = function (e: MouseEvent): void {
                 down++;
                 onMouseEvent(e);
             };
-            document.body.onmouseup = function(e: MouseEvent): void {
+            document.body.onmouseup = function (e: MouseEvent): void {
                 onMouseEvent(e);
                 down--;
             };
-            document.body.onmousemove = function(e: MouseEvent): void {
+            document.body.onmousemove = function (e: MouseEvent): void {
                 onMouseEvent(e);
             };
             this.hasTouchListeners = true;
@@ -121,15 +138,21 @@ export class DeviceConnection implements KeyEventListener {
         let videoSettings: VideoSettings = decoder.getVideoSettings();
         const { maxSize } = videoSettings;
         let playing = false;
-        this.decoders.forEach(d => {
+        this.decoders.forEach((d) => {
             const state = d.getState();
             if (state === Decoder.STATE.PLAYING || state === Decoder.STATE.PAUSED) {
                 playing = true;
             }
             const info = d.getScreenInfo() as ScreenInfo;
             const videoSize = info.videoSize;
-            const {crop, bitrate, frameRate, iFrameInterval, sendFrameMeta, lockedVideoOrientation} =
-                d.getVideoSettings() as VideoSettings;
+            const {
+                crop,
+                bitrate,
+                frameRate,
+                iFrameInterval,
+                sendFrameMeta,
+                lockedVideoOrientation,
+            } = d.getVideoSettings() as VideoSettings;
             if (videoSize.width < maxSize && videoSize.height < maxSize) {
                 videoSettings = new VideoSettings({
                     maxSize: Math.max(videoSize.width, videoSize.height),
@@ -138,7 +161,7 @@ export class DeviceConnection implements KeyEventListener {
                     frameRate,
                     iFrameInterval,
                     sendFrameMeta,
-                    lockedVideoOrientation
+                    lockedVideoOrientation,
                 });
             }
         });
@@ -175,7 +198,7 @@ export class DeviceConnection implements KeyEventListener {
         if (this.hasConnection()) {
             this.ws.close();
         }
-        this.decoders.forEach(decoder => decoder.pause());
+        this.decoders.forEach((decoder) => decoder.pause());
         delete DeviceConnection.instances[this.url];
         this.events.length = 0;
     }
@@ -252,7 +275,7 @@ export class DeviceConnection implements KeyEventListener {
                         const videoSettings: VideoSettings = VideoSettings.fromBuffer(temp);
                         let min: VideoSettings = VideoSettings.copy(videoSettings) as VideoSettings;
                         let playing = false;
-                        this.decoders.forEach(decoder => {
+                        this.decoders.forEach((decoder) => {
                             const STATE = Decoder.STATE;
                             if (decoder.getState() === STATE.PAUSED) {
                                 decoder.play();
@@ -282,13 +305,13 @@ export class DeviceConnection implements KeyEventListener {
                     } else {
                         const message = DeviceMessage.fromBuffer(e.data);
                         if (this.deviceMessageListeners.size) {
-                            this.deviceMessageListeners.forEach(listener => {
-                               listener.OnDeviceMessage(message);
+                            this.deviceMessageListeners.forEach((listener) => {
+                                listener.OnDeviceMessage(message);
                             });
                         }
                     }
                 } else {
-                    this.decoders.forEach(decoder => {
+                    this.decoders.forEach((decoder) => {
                         const STATE = Decoder.STATE;
                         if (decoder.getState() === STATE.PAUSED) {
                             decoder.play();
@@ -305,6 +328,6 @@ export class DeviceConnection implements KeyEventListener {
 
         ws.onclose = () => {
             console.log('WS closed');
-        }
+        };
     }
 }

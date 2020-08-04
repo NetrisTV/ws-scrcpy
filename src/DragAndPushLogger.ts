@@ -1,4 +1,4 @@
-import FilePushHandler, {DragAndPushListener, PushUpdateParams} from "./FilePushHandler";
+import FilePushHandler, { DragAndPushListener, PushUpdateParams } from './FilePushHandler';
 
 export default class DragAndPushLogger implements DragAndPushListener {
     private static readonly X: number = 20;
@@ -24,7 +24,7 @@ export default class DragAndPushLogger implements DragAndPushListener {
         if (!this.ctx) {
             return;
         }
-        const {X, Y, HEIGHT} = DragAndPushLogger;
+        const { X, Y, HEIGHT } = DragAndPushLogger;
         const x = X;
         const y = Y + HEIGHT * line * 2;
         const dirty = this.dirtyMap.get(line);
@@ -35,7 +35,7 @@ export default class DragAndPushLogger implements DragAndPushListener {
         }
         this.dirtyLines[line] = false;
     };
-    private logText(text: string, line: number, scheduleCleanup: boolean = false, error: boolean = false): void {
+    private logText(text: string, line: number, scheduleCleanup = false, error = false): void {
         if (!this.ctx) {
             error ? console.error(text) : console.log(text);
             return;
@@ -45,19 +45,19 @@ export default class DragAndPushLogger implements DragAndPushListener {
         }
         this.cleanDirtyLine(line);
 
-        const {X, Y, HEIGHT} = DragAndPushLogger;
+        const { X, Y, HEIGHT } = DragAndPushLogger;
         const x = X;
         const y = Y + HEIGHT * line * 2;
         this.ctx.save();
         this.ctx.font = `${HEIGHT}px monospace`;
         const textMetrics = this.ctx.measureText(text);
-        const width  = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
-        this.ctx.canvas.width
+        const width = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        this.ctx.canvas.width;
         this.dirtyMap.set(line, width);
         this.ctx.fillStyle = DragAndPushLogger.LOG_BACKGROUND;
         const p = DragAndPushLogger.HEIGHT / 2 - 1;
         const d = p * 2;
-        this.ctx.fillRect(x - p, y - HEIGHT - p, width + d , HEIGHT + d);
+        this.ctx.fillRect(x - p, y - HEIGHT - p, width + d, HEIGHT + d);
         this.ctx.fillStyle = error ? DragAndPushLogger.ERROR_COLOR : DragAndPushLogger.DEBUG_COLOR;
         this.ctx.fillText(text, x, y);
         this.ctx.restore();
@@ -91,8 +91,8 @@ export default class DragAndPushLogger implements DragAndPushListener {
         this.cleanDirtyLine(1);
     }
 
-    onError(error: Error | string) {
-        const text = typeof error === 'string' ? error : error.message
+    onError(error: Error | string): void {
+        const text = typeof error === 'string' ? error : error.message;
         this.logText(text, 1, true);
     }
 
@@ -101,7 +101,7 @@ export default class DragAndPushLogger implements DragAndPushListener {
         const key = `${pushId}/${fileName}`;
         const firstKey = `${FilePushHandler.REQUEST_NEW_PUSH_ID}/${fileName}`;
         let line: number | undefined = this.pushLineMap.get(key);
-        let update: boolean = false;
+        let update = false;
         if (typeof line === 'undefined' && key !== firstKey) {
             line = this.pushLineMap.get(firstKey);
             if (typeof line !== 'undefined') {

@@ -8,7 +8,7 @@ import CommandControlEvent from './controlEvent/CommandControlEvent';
 import ControlEvent from './controlEvent/ControlEvent';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import DeviceMessage from './DeviceMessage';
-import SvgImage from "./ui/SvgImage";
+import SvgImage from './ui/SvgImage';
 
 export interface DeviceControllerParams {
     url: string;
@@ -24,11 +24,11 @@ export class DeviceController implements DeviceMessageListener {
     private readonly controlButtons: HTMLElement;
 
     constructor(params: DeviceControllerParams) {
-        const decoder = this.decoder = params.decoder;
+        const decoder = (this.decoder = params.decoder);
         const udid = params.udid;
         const decoderName = this.decoder.getName();
-        const controlsWrapper = this.controls = document.createElement('div');
-        const deviceView = this.deviceView = document.createElement('div');
+        const controlsWrapper = (this.controls = document.createElement('div'));
+        const deviceView = (this.deviceView = document.createElement('div'));
         deviceView.className = 'device-view';
         const connection = DeviceConnection.getInstance(udid, params.url);
         const videoSettings = decoder.getVideoSettings();
@@ -48,7 +48,7 @@ export class DeviceController implements DeviceMessageListener {
         box.className = 'box';
         wrapper.appendChild(box);
         const textWrap = document.createElement('div');
-        const input = this.input = document.createElement('input');
+        const input = (this.input = document.createElement('input'));
         const sendButton = document.createElement('button');
         sendButton.innerText = 'Send as keys';
         textWrap.appendChild(input);
@@ -72,7 +72,7 @@ export class DeviceController implements DeviceMessageListener {
         sendKeyEventsCheck.onclick = (e: MouseEvent) => {
             const checkbox = e.target as HTMLInputElement;
             connection.setHandleKeyboardEvents(checkbox.checked);
-        }
+        };
 
         this.controlButtons = document.createElement('div');
         this.controlButtons.className = 'control-buttons-list';
@@ -140,7 +140,7 @@ export class DeviceController implements DeviceMessageListener {
                 }
                 btn.innerText = CommandControlEvent.CommandNames[action];
                 btn.onclick = () => {
-                    let event: CommandControlEvent|undefined;
+                    let event: CommandControlEvent | undefined;
                     if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
                         const bitrate = parseInt(bitrateInput.value, 10);
                         const frameRate = parseInt(frameRateInput.value, 10);
@@ -149,14 +149,16 @@ export class DeviceController implements DeviceMessageListener {
                             return;
                         }
                         const maxSize = this.getMaxSize();
-                        event = CommandControlEvent.createSetVideoSettingsCommand(new VideoSettings({
-                            maxSize,
-                            bitrate,
-                            frameRate,
-                            iFrameInterval,
-                            lockedVideoOrientation: -1,
-                            sendFrameMeta: false
-                        }));
+                        event = CommandControlEvent.createSetVideoSettingsCommand(
+                            new VideoSettings({
+                                maxSize,
+                                bitrate,
+                                frameRate,
+                                iFrameInterval,
+                                lockedVideoOrientation: -1,
+                                sendFrameMeta: false,
+                            }),
+                        );
                     } else if (action === CommandControlEvent.TYPE_SET_CLIPBOARD) {
                         const text = input.value;
                         if (text) {
@@ -171,33 +173,40 @@ export class DeviceController implements DeviceMessageListener {
                 };
             }
         }
-        const list = [{
-            title: 'Power',
-            code: KeyEvent.KEYCODE_POWER,
-            icon: SvgImage.Icon.POWER
-        },{
-            title: 'Volume-',
-            code: KeyEvent.KEYCODE_VOLUME_DOWN,
-            icon: SvgImage.Icon.VOLUME_DOWN
-        },{
-            title: 'Volume+',
-            code: KeyEvent.KEYCODE_VOLUME_UP,
-            icon: SvgImage.Icon.VOLUME_UP
-        },{
-            title: 'Back',
-            code: KeyEvent.KEYCODE_BACK,
-            icon: SvgImage.Icon.BACK
-        },{
-            title: 'Home',
-            code: KeyEvent.KEYCODE_HOME,
-            icon: SvgImage.Icon.HOME
-        }, {
-            title: 'Switch app',
-            code: KeyEvent.KEYCODE_APP_SWITCH,
-            icon: SvgImage.Icon.OVERVIEW
-        }];
-        list.forEach(item => {
-            const {code, icon, title} = item;
+        const list = [
+            {
+                title: 'Power',
+                code: KeyEvent.KEYCODE_POWER,
+                icon: SvgImage.Icon.POWER,
+            },
+            {
+                title: 'Volume-',
+                code: KeyEvent.KEYCODE_VOLUME_DOWN,
+                icon: SvgImage.Icon.VOLUME_DOWN,
+            },
+            {
+                title: 'Volume+',
+                code: KeyEvent.KEYCODE_VOLUME_UP,
+                icon: SvgImage.Icon.VOLUME_UP,
+            },
+            {
+                title: 'Back',
+                code: KeyEvent.KEYCODE_BACK,
+                icon: SvgImage.Icon.BACK,
+            },
+            {
+                title: 'Home',
+                code: KeyEvent.KEYCODE_HOME,
+                icon: SvgImage.Icon.HOME,
+            },
+            {
+                title: 'Switch app',
+                code: KeyEvent.KEYCODE_APP_SWITCH,
+                icon: SvgImage.Icon.OVERVIEW,
+            },
+        ];
+        list.forEach((item) => {
+            const { code, icon, title } = item;
             const btn = document.createElement('button');
             btn.classList.add('control-button');
             btn.title = title;
@@ -219,7 +228,7 @@ export class DeviceController implements DeviceMessageListener {
             screenshotButton.appendChild(SvgImage.create(SvgImage.Icon.CAMERA));
             screenshotButton.onclick = () => {
                 decoder.createScreenshot(connection.getDeviceName());
-            }
+            };
             this.controlButtons.appendChild(screenshotButton);
         }
         box.appendChild(cmdWrap);
@@ -275,5 +284,4 @@ export class DeviceController implements DeviceMessageListener {
         this.input.select();
         document.execCommand('copy');
     }
-
 }

@@ -1,9 +1,9 @@
 import MotionEvent from './MotionEvent';
-import ScreenInfo from "./ScreenInfo";
-import TouchControlEvent from "./controlEvent/TouchControlEvent";
-import Size from "./Size";
-import Point from "./Point";
-import Position from "./Position";
+import ScreenInfo from './ScreenInfo';
+import TouchControlEvent from './controlEvent/TouchControlEvent';
+import Size from './Size';
+import Point from './Point';
+import Position from './Position';
 import TouchPointPNG from '../images/multitouch/touch_point.png';
 import CenterPointPNG from '../images/multitouch/center_point.png';
 
@@ -34,7 +34,7 @@ export default class TouchHandler {
     private static BUTTONS_MAP: Record<number, number> = {
         0: 17, // ?? BUTTON_PRIMARY
         1: MotionEvent.BUTTON_TERTIARY,
-        2: 26  // ?? BUTTON_SECONDARY
+        2: 26, // ?? BUTTON_SECONDARY
     };
     private static EVENT_ACTION_MAP: Record<string, number> = {
         touchstart: MotionEvent.ACTION_DOWN,
@@ -43,11 +43,11 @@ export default class TouchHandler {
         touchcancel: MotionEvent.ACTION_UP,
         mousedown: MotionEvent.ACTION_DOWN,
         mousemove: MotionEvent.ACTION_MOVE,
-        mouseup: MotionEvent.ACTION_UP
+        mouseup: MotionEvent.ACTION_UP,
     };
-    private static multiTouchActive: boolean = false;
+    private static multiTouchActive = false;
     private static multiTouchCenter?: Point;
-    private static multiTouchShift: boolean = false;
+    private static multiTouchShift = false;
     private static dirtyPlace: Point[] = [];
     private static idToPointerMap: Map<number, number> = new Map();
     private static pointerToIdMap: Map<number, number> = new Map();
@@ -55,8 +55,8 @@ export default class TouchHandler {
     private static centerPointRadius = 5;
     private static touchPointImage?: HTMLImageElement;
     private static centerPointImage?: HTMLImageElement;
-    private static pointImagesLoaded: boolean = false;
-    private static initialized: boolean = false;
+    private static pointImagesLoaded = false;
+    private static initialized = false;
 
     public static init(): void {
         if (this.initialized) {
@@ -79,11 +79,11 @@ export default class TouchHandler {
             } else if (e.target === this.centerPointImage) {
                 this.centerPointRadius = this.centerPointImage.width / 2;
             }
-        }
-        const touch = this.touchPointImage = new Image();
+        };
+        const touch = (this.touchPointImage = new Image());
         touch.src = TouchPointPNG;
         touch.onload = onload;
-        const center = this.centerPointImage = new Image();
+        const center = (this.centerPointImage = new Image());
         center.src = CenterPointPNG;
         center.onload = onload;
     }
@@ -115,16 +115,16 @@ export default class TouchHandler {
             return null;
         }
         const htmlTag = document.getElementsByTagName('html')[0] as HTMLElement;
-        const {width, height} = screenInfo.videoSize;
+        const { width, height } = screenInfo.videoSize;
         const target: HTMLElement = e.target as HTMLElement;
-        const {scrollTop, scrollLeft} = htmlTag;
-        let {clientWidth, clientHeight} = target;
-        let touchX = (e.clientX - target.offsetLeft) + scrollLeft;
-        let touchY = (e.clientY - target.offsetTop) + scrollTop;
+        const { scrollTop, scrollLeft } = htmlTag;
+        let { clientWidth, clientHeight } = target;
+        let touchX = e.clientX - target.offsetLeft + scrollLeft;
+        let touchY = e.clientY - target.offsetTop + scrollTop;
         const eps = 1e5;
         const ratio = width / height;
         const shouldBe = Math.round(eps * ratio);
-        const haveNow = Math.round(eps * clientWidth / clientHeight);
+        const haveNow = Math.round((eps * clientWidth) / clientHeight);
         if (shouldBe > haveNow) {
             const realHeight = Math.ceil(clientWidth / ratio);
             const top = (clientHeight - realHeight) / 2;
@@ -142,8 +142,8 @@ export default class TouchHandler {
             touchX -= left;
             clientWidth = realWidth;
         }
-        const x = touchX * width / clientWidth;
-        const y = touchY * height / clientHeight;
+        const x = (touchX * width) / clientWidth;
+        const y = (touchY * height) / clientHeight;
         const size = new Size(width, height);
         const point = new Point(x, y);
         const position = new Position(point, size);
@@ -151,13 +151,13 @@ export default class TouchHandler {
         return {
             client: {
                 width: clientWidth,
-                height: clientHeight
+                height: clientHeight,
             },
             touch: {
                 action,
                 position,
-                buttons
-            }
+                buttons,
+            },
         };
     }
 
@@ -202,7 +202,7 @@ export default class TouchHandler {
             result.push({
                 action,
                 buttons,
-                position: new Position(opposite, screenSize)
+                position: new Position(opposite, screenSize),
             });
         }
         return result;
@@ -221,7 +221,12 @@ export default class TouchHandler {
         ctx.stroke();
     }
 
-    private static drawPoint(ctx: CanvasRenderingContext2D, point: Point, radius: number, image?: HTMLImageElement): void {
+    private static drawPoint(
+        ctx: CanvasRenderingContext2D,
+        point: Point,
+        radius: number,
+        image?: HTMLImageElement,
+    ): void {
         let { lineWidth } = ctx;
         if (this.pointImagesLoaded && image) {
             radius = image.width / 2;
@@ -244,13 +249,16 @@ export default class TouchHandler {
         const currentTopLeft = this.dirtyPlace[0];
         const currentBottomRight = this.dirtyPlace[1];
         const newTopLeft = new Point(Math.min(currentTopLeft.x, topLeft.x), Math.min(currentTopLeft.y, topLeft.y));
-        const newBottomRight = new Point(Math.max(currentBottomRight.x, bottomRight.x), Math.max(currentBottomRight.y, bottomRight.y));
+        const newBottomRight = new Point(
+            Math.max(currentBottomRight.x, bottomRight.x),
+            Math.max(currentBottomRight.y, bottomRight.y),
+        );
         this.dirtyPlace.length = 0;
         this.dirtyPlace.push(newTopLeft, newBottomRight);
     }
 
     private static clearCanvas(target: HTMLCanvasElement): void {
-        const {clientWidth, clientHeight} = target;
+        const { clientWidth, clientHeight } = target;
         const ctx = target.getContext('2d');
         if (ctx && this.dirtyPlace.length) {
             const topLeft = this.dirtyPlace[0];
@@ -264,8 +272,11 @@ export default class TouchHandler {
         }
     }
 
-
-    public static formatTouchEvent(e: TouchEvent, screenInfo: ScreenInfo, tag: HTMLElement): TouchControlEvent[] | null {
+    public static formatTouchEvent(
+        e: TouchEvent,
+        screenInfo: ScreenInfo,
+        tag: HTMLElement,
+    ): TouchControlEvent[] | null {
         const events: TouchControlEvent[] = [];
         const touches = e.changedTouches;
         if (touches && touches.length) {
@@ -280,8 +291,8 @@ export default class TouchHandler {
                     clientY: touch.clientY,
                     type: e.type,
                     button: 0,
-                    target: e.target
-                }
+                    target: e.target,
+                };
                 const event = this.calculateCoordinates(item, screenInfo);
                 if (event) {
                     const { action, buttons, position } = event.touch;
@@ -311,7 +322,7 @@ export default class TouchHandler {
             if (ctx) {
                 this.clearCanvas(target);
                 ctx.strokeStyle = TouchHandler.STROKE_STYLE;
-                touches.forEach(touch => {
+                touches.forEach((touch) => {
                     const { point } = touch.position;
                     this.drawPoint(ctx, point, this.touchPointRadius, this.touchPointImage);
                     if (this.multiTouchCenter) {

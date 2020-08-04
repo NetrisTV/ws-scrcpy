@@ -1,5 +1,5 @@
-import KeyEvent from "./android/KeyEvent";
-import UIEventsCode from "./UIEventsCode";
+import KeyEvent from './android/KeyEvent';
+import UIEventsCode from './UIEventsCode';
 
 export const KeyToCodeMap = new Map([
     [UIEventsCode.Backquote, KeyEvent.KEYCODE_GRAVE],
@@ -114,7 +114,5 @@ export const KeyToCodeMap = new Map([
     [UIEventsCode.F12, KeyEvent.KEYCODE_F12],
     [UIEventsCode.Fn, KeyEvent.KEYCODE_FUNCTION],
     [UIEventsCode.PrintScreen, KeyEvent.KEYCODE_SYSRQ],
-    [UIEventsCode.Pause, KeyEvent.KEYCODE_BREAK]
-
-
+    [UIEventsCode.Pause, KeyEvent.KEYCODE_BREAK],
 ]);

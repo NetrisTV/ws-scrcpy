@@ -7,19 +7,19 @@ export enum FilePushState {
     START,
     APPEND,
     FINISH,
-    CANCEL
+    CANCEL,
 }
 
 type FilePushParams = {
-    id: number,
-    state: FilePushState,
-    chunk?: Uint8Array,
-    fileName?: string
-    fileSize?: number
-}
+    id: number;
+    state: FilePushState;
+    chunk?: Uint8Array;
+    fileName?: string;
+    fileSize?: number;
+};
 
 export default class CommandControlEvent extends ControlEvent {
-    public static PAYLOAD_LENGTH: number = 0;
+    public static PAYLOAD_LENGTH = 0;
 
     public static CommandCodes: Record<string, number> = {
         TYPE_EXPAND_NOTIFICATION_PANEL: ControlEvent.TYPE_EXPAND_NOTIFICATION_PANEL,
@@ -27,7 +27,7 @@ export default class CommandControlEvent extends ControlEvent {
         TYPE_GET_CLIPBOARD: ControlEvent.TYPE_GET_CLIPBOARD,
         TYPE_SET_CLIPBOARD: ControlEvent.TYPE_SET_CLIPBOARD,
         TYPE_ROTATE_DEVICE: ControlEvent.TYPE_ROTATE_DEVICE,
-        TYPE_CHANGE_STREAM_PARAMETERS: ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS
+        TYPE_CHANGE_STREAM_PARAMETERS: ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS,
     };
 
     public static CommandNames: Record<number, string> = {
@@ -36,7 +36,7 @@ export default class CommandControlEvent extends ControlEvent {
         7: 'Get clipboard',
         8: 'Set clipboard',
         10: 'Rotate device',
-        101: 'Change video settings'
+        101: 'Change video settings',
     };
 
     public static createSetVideoSettingsCommand(videoSettings: VideoSettings): CommandControlEvent {
@@ -68,7 +68,7 @@ export default class CommandControlEvent extends ControlEvent {
     }
 
     public static createPushFileCommand(params: FilePushParams): CommandControlEvent {
-        const {id, fileName, fileSize, chunk, state} = params;
+        const { id, fileName, fileSize, chunk, state } = params;
 
         if (state === FilePushState.START) {
             return this.createPushFileStartCommand(id, fileName as string, fileSize as number);

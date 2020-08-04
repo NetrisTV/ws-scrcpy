@@ -1,16 +1,18 @@
-import Decoder from "./Decoder";
-import ScreenInfo from "../ScreenInfo";
-import VideoSettings from "../VideoSettings";
+import Decoder from './Decoder';
+import ScreenInfo from '../ScreenInfo';
+import VideoSettings from '../VideoSettings';
 
 export default abstract class CanvasCommon extends Decoder {
     protected framesList: Uint8Array[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected canvas?: any;
 
     public static hasWebGLSupport(): boolean {
         // For some reason if I use here `this.tag` image on canvas will be flattened
         const testCanvas: HTMLCanvasElement = document.createElement('canvas');
-        const validContextNames = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"];
+        const validContextNames = ['webgl', 'experimental-webgl', 'moz-webgl', 'webkit-3d'];
         let index = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let gl: any = null;
         while (!gl && index++ < validContextNames.length) {
             try {
@@ -32,7 +34,7 @@ export default abstract class CanvasCommon extends Decoder {
         return tag;
     }
 
-    constructor(udid: string, name: string = 'Canvas', protected tag: HTMLCanvasElement = CanvasCommon.createElement()) {
+    constructor(udid: string, name = 'Canvas', protected tag: HTMLCanvasElement = CanvasCommon.createElement()) {
         super(udid, name, tag);
     }
 
@@ -69,10 +71,10 @@ export default abstract class CanvasCommon extends Decoder {
                 this.tag = tag;
             }
         }
-        this.tag.onerror = function(e: Event | string): void {
+        this.tag.onerror = function (e: Event | string): void {
             console.error(e);
         };
-        this.tag.oncontextmenu = function(e: MouseEvent): void {
+        this.tag.oncontextmenu = function (e: MouseEvent): void {
             e.preventDefault();
         };
         this.tag.width = width;
@@ -85,7 +87,7 @@ export default abstract class CanvasCommon extends Decoder {
             return;
         }
         if (!this.canvas) {
-            const {width, height} = this.screenInfo.videoSize;
+            const { width, height } = this.screenInfo.videoSize;
             this.initCanvas(width, height);
         }
         requestAnimationFrame(this.shiftFrame);
@@ -99,14 +101,14 @@ export default abstract class CanvasCommon extends Decoder {
     public setScreenInfo(screenInfo: ScreenInfo): void {
         super.setScreenInfo(screenInfo);
         this.clearState();
-        const {width, height} = screenInfo.videoSize;
+        const { width, height } = screenInfo.videoSize;
         this.initCanvas(width, height);
     }
 
     public pushFrame(frame: Uint8Array): void {
         if (Decoder.isIFrame(frame)) {
             if (this.videoSettings) {
-                const {frameRate} = this.videoSettings;
+                const { frameRate } = this.videoSettings;
                 if (this.framesList.length > frameRate / 2) {
                     console.log(this.name, 'Dropping frames', this.framesList.length);
                     this.framesList = [];

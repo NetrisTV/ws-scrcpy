@@ -30,20 +30,19 @@ export class DragAndDropHandler {
                 files.push(ev.dataTransfer.files[i]);
             }
         }
-        DragAndDropHandler.listeners.forEach(listener => {
+        DragAndDropHandler.listeners.forEach((listener) => {
             const element = listener.getElement();
             if (element === ev.target) {
                 listener.onFilesDrop(files);
             }
         });
-
     };
     private static dragOverHandler = (ev: DragEvent): void => {
         ev.preventDefault();
     };
     private static dragLeaveHandler = (ev: DragEvent): void => {
         ev.preventDefault();
-        DragAndDropHandler.listeners.forEach(listener => {
+        DragAndDropHandler.listeners.forEach((listener) => {
             const element = listener.getElement();
             if (element === ev.target) {
                 listener.onDragLeave();
@@ -52,13 +51,13 @@ export class DragAndDropHandler {
     };
     private static dragEnterHandler = (ev: DragEvent): void => {
         ev.preventDefault();
-        DragAndDropHandler.listeners.forEach(listener => {
+        DragAndDropHandler.listeners.forEach((listener) => {
             const element = listener.getElement();
             if (element === ev.target) {
                 listener.onDragEnter();
             }
         });
-    }
+    };
     private static attachListeners(element: HTMLElement): void {
         element.addEventListener('drop', this.dropHandler);
         element.addEventListener('dragover', this.dragOverHandler);

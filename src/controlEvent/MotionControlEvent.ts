@@ -2,7 +2,7 @@ import ControlEvent from './ControlEvent';
 import Position from '../Position';
 
 export default class MotionControlEvent extends ControlEvent {
-    public static PAYLOAD_LENGTH: number = 17;
+    public static PAYLOAD_LENGTH = 17;
 
     constructor(readonly action: number, readonly buttons: number, readonly position: Position) {
         super(ControlEvent.TYPE_MOUSE);

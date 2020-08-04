@@ -54,11 +54,11 @@ export default class VideoSettings {
             frameRate,
             iFrameInterval,
             lockedVideoOrientation,
-            sendFrameMeta
+            sendFrameMeta,
         });
     }
 
-    public static copy(a?: VideoSettings|null): VideoSettings|null {
+    public static copy(a?: VideoSettings | null): VideoSettings | null {
         if (!a) {
             return null;
         }
@@ -69,7 +69,7 @@ export default class VideoSettings {
             frameRate: a.frameRate,
             iFrameInterval: a.iFrameInterval,
             lockedVideoOrientation: a.lockedVideoOrientation,
-            sendFrameMeta: a.sendFrameMeta
+            sendFrameMeta: a.sendFrameMeta,
         });
     }
 
@@ -77,17 +77,19 @@ export default class VideoSettings {
         if (!o) {
             return false;
         }
-        return Rect.equals(this.crop, o.crop) &&
+        return (
+            Rect.equals(this.crop, o.crop) &&
             this.lockedVideoOrientation === o.lockedVideoOrientation &&
             this.maxSize === o.maxSize &&
             this.bitrate === o.bitrate &&
             this.frameRate === o.frameRate &&
-            this.iFrameInterval === o.iFrameInterval;
+            this.iFrameInterval === o.iFrameInterval
+        );
     }
 
     public toBuffer(): Buffer {
         const buffer = new Buffer(VideoSettings.BUFFER_LENGTH);
-        const {left = 0, top = 0, right = 0, bottom = 0} = this.crop || {};
+        const { left = 0, top = 0, right = 0, bottom = 0 } = this.crop || {};
         let offset = 0;
         offset = buffer.writeUInt32BE(this.bitrate, offset);
         offset = buffer.writeUInt8(this.frameRate, offset);
@@ -98,11 +100,12 @@ export default class VideoSettings {
         offset = buffer.writeUInt16BE(right, offset);
         offset = buffer.writeUInt16BE(bottom, offset);
         offset = buffer.writeUInt8(this.sendFrameMeta ? 1 : 0, offset);
-        buffer.writeInt8(this.lockedVideoOrientation,offset);
+        buffer.writeInt8(this.lockedVideoOrientation, offset);
         return buffer;
     }
 
     public toString(): string {
+        // prettier-ignore
         return `VideoSettings{bitrate=${
             this.bitrate}, frameRate=${
             this.frameRate}, iFrameInterval=${
@@ -121,6 +124,7 @@ export default class VideoSettings {
             maxSize: this.maxSize,
             crop: this.crop,
             sendFrameMeta: this.sendFrameMeta,
-            lockedVideoOrientation: this.lockedVideoOrientation};
+            lockedVideoOrientation: this.lockedVideoOrientation,
+        };
     }
 }

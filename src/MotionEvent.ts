@@ -1,7 +1,7 @@
 export default class MotionEvent {
-    public static ACTION_DOWN: number = 0;
-    public static ACTION_UP: number = 1;
-    public static ACTION_MOVE: number = 2;
+    public static ACTION_DOWN = 0;
+    public static ACTION_UP = 1;
+    public static ACTION_MOVE = 2;
     /**
      * Button constant: Primary button (left mouse button).
      */

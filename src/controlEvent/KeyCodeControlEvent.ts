@@ -2,7 +2,7 @@ import { Buffer } from 'buffer';
 import ControlEvent from './ControlEvent';
 
 export default class KeyCodeControlEvent extends ControlEvent {
-    public static PAYLOAD_LENGTH: number = 9;
+    public static PAYLOAD_LENGTH = 9;
 
     constructor(readonly action: number, readonly keycode: number, readonly metaState: number) {
         super(ControlEvent.TYPE_KEYCODE);

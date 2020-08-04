@@ -1,4 +1,4 @@
-import Canvas from "./Canvas";
+import Canvas from './Canvas';
 
 export default class YUVCanvas extends Canvas {
     private canvasCtx: CanvasRenderingContext2D;
@@ -8,7 +8,7 @@ export default class YUVCanvas extends Canvas {
         super(canvas);
         this.canvasCtx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     }
-    public decode(buffer: Uint8Array, width: number, height: number) {
+    public decode(buffer: Uint8Array, width: number, height: number): void {
         if (!buffer) {
             return;
         }

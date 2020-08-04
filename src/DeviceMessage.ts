@@ -1,13 +1,12 @@
 import Util from './Util';
 
 export default class DeviceMessage {
-    public static TYPE_CLIPBOARD: number = 0;
-    public static TYPE_PUSH_RESPONSE: number = 101;
+    public static TYPE_CLIPBOARD = 0;
+    public static TYPE_PUSH_RESPONSE = 101;
 
-    private static MAGIC: string = 'scrcpy';
+    private static MAGIC = 'scrcpy';
 
-    constructor(public readonly type: number, protected readonly buffer: Buffer) {
-    }
+    constructor(public readonly type: number, protected readonly buffer: Buffer) {}
 
     public static fromBuffer(data: ArrayBuffer): DeviceMessage {
         const buffer = Buffer.from(data, this.MAGIC.length, data.byteLength - this.MAGIC.length);
@@ -29,7 +28,7 @@ export default class DeviceMessage {
         return Util.utf8ByteArrayToString(textBytes);
     }
 
-    public getPushStats(): { id: number, result: number } {
+    public getPushStats(): { id: number; result: number } {
         if (this.type !== DeviceMessage.TYPE_PUSH_RESPONSE) {
             throw TypeError(`Wrong message type: ${this.type}`);
         }
@@ -38,7 +37,7 @@ export default class DeviceMessage {
         }
         const id = this.buffer.readInt16BE(1);
         const result = this.buffer.readInt8(3);
-        return {id, result};
+        return { id, result };
     }
 
     public toString(): string {

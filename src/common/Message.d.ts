@@ -1,11 +1,11 @@
 import { Device } from './Device';
-import { LogcatClientMessage, LogcatServiceMessage } from './LogcatMessage';
+import { LogcatClientMessage, LogcatServiceMessage } from 'adbkit/LogcatMessage';
 import { XtermClientMessage } from './XtermMessage';
 
 export enum MessageTypes {
     'devicelist',
     'logcat',
-    'shell'
+    'shell',
 }
 
 export interface Message {

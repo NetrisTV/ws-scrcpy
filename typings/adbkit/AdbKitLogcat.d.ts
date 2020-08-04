@@ -14,7 +14,7 @@ export enum AdbKitLogcatReaderEvents {
     'error',
     'end',
     'finish',
-    'entry'
+    'entry',
 }
 
 declare interface PriorityMethods {

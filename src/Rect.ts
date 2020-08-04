@@ -2,7 +2,7 @@ interface RectInterface {
     left: number;
     top: number;
     right: number;
-    bottom: number
+    bottom: number;
 }
 
 export default class Rect {
@@ -12,29 +12,29 @@ export default class Rect {
         this.right = right;
         this.bottom = bottom;
     }
-    public static equals(a?: Rect|null, b?: Rect|null): boolean {
+    public static equals(a?: Rect | null, b?: Rect | null): boolean {
         if (!a && !b) {
             return true;
         }
         return !!a && !!b && a.equals(b);
     }
-    public static copy(a?: Rect|null): Rect|null {
+    public static copy(a?: Rect | null): Rect | null {
         if (!a) {
             return null;
         }
         return new Rect(a.left, a.top, a.right, a.bottom);
     }
-    public equals(o: Rect|null): boolean {
+    public equals(o: Rect | null): boolean {
         if (this === o) {
             return true;
         }
         if (!o) {
             return false;
         }
-        return this.left === o.left && this.top === o.top &&
-            this.right === o.right && this.bottom === o.bottom;
+        return this.left === o.left && this.top === o.top && this.right === o.right && this.bottom === o.bottom;
     }
     public toString(): string {
+        // prettier-ignore
         return `Rect{left=${
             this.left}, top=${
             this.top}, right=${
@@ -47,7 +47,7 @@ export default class Rect {
             left: this.left,
             right: this.right,
             top: this.top,
-            bottom: this.bottom
-        }
+            bottom: this.bottom,
+        };
     }
 }
