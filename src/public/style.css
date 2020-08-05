@@ -164,3 +164,15 @@ body {
 .control-button:hover {
     opacity: 1;
 }
+
+.control-buttons-list > input[type=checkbox] {
+    display: none;
+}
+
+.control-buttons-list > label {
+    display: inline-block;
+}
+
+.control-buttons-list > input[type=checkbox]:checked + label > svg {
+    fill: #00bea4;
+}

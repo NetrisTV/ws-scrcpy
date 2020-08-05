@@ -60,19 +60,6 @@ export class DeviceController implements DeviceMessageListener {
                 connection.sendEvent(new TextControlEvent(input.value));
             }
         };
-        const sendKeyEventsWrap = document.createElement('div');
-        const sendKeyEventsCheck = document.createElement('input');
-        sendKeyEventsCheck.type = 'checkbox';
-        const sendKeyEventsLabel = document.createElement('label');
-        sendKeyEventsLabel.innerText = 'Capture keyboard events';
-        sendKeyEventsLabel.htmlFor = sendKeyEventsCheck.id = `sendkeys_${udid}_${decoderName}`;
-        sendKeyEventsWrap.appendChild(sendKeyEventsCheck);
-        sendKeyEventsWrap.appendChild(sendKeyEventsLabel);
-        box.appendChild(sendKeyEventsWrap);
-        sendKeyEventsCheck.onclick = (e: MouseEvent) => {
-            const checkbox = e.target as HTMLInputElement;
-            connection.setHandleKeyboardEvents(checkbox.checked);
-        };
 
         this.controlButtons = document.createElement('div');
         this.controlButtons.className = 'control-buttons-list';
@@ -231,6 +218,19 @@ export class DeviceController implements DeviceMessageListener {
             };
             this.controlButtons.appendChild(screenshotButton);
         }
+        const captureKeyboardInput = document.createElement('input');
+        captureKeyboardInput.type = 'checkbox';
+        const captureKeyboardLabel = document.createElement('label');
+        captureKeyboardLabel.title = 'Capture keyboard';
+        captureKeyboardLabel.classList.add('control-button');
+        captureKeyboardLabel.appendChild(SvgImage.create(SvgImage.Icon.KEYBOARD));
+        captureKeyboardLabel.htmlFor = captureKeyboardInput.id = `capture_keyboard_${udid}_${decoderName}`;
+        captureKeyboardInput.onclick = (e: MouseEvent) => {
+            const checkbox = e.target as HTMLInputElement;
+            connection.setHandleKeyboardEvents(checkbox.checked);
+        };
+        this.controlButtons.appendChild(captureKeyboardInput);
+        this.controlButtons.appendChild(captureKeyboardLabel);
         box.appendChild(cmdWrap);
 
         const stop = (ev?: string | Event) => {
