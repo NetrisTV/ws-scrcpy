@@ -167,14 +167,14 @@ export class DeviceController implements DeviceMessageListener {
                 icon: SvgImage.Icon.POWER,
             },
             {
-                title: 'Volume-',
-                code: KeyEvent.KEYCODE_VOLUME_DOWN,
-                icon: SvgImage.Icon.VOLUME_DOWN,
-            },
-            {
-                title: 'Volume+',
+                title: 'Volume up',
                 code: KeyEvent.KEYCODE_VOLUME_UP,
                 icon: SvgImage.Icon.VOLUME_UP,
+            },
+            {
+                title: 'Volume down',
+                code: KeyEvent.KEYCODE_VOLUME_DOWN,
+                icon: SvgImage.Icon.VOLUME_DOWN,
             },
             {
                 title: 'Back',
@@ -187,7 +187,7 @@ export class DeviceController implements DeviceMessageListener {
                 icon: SvgImage.Icon.HOME,
             },
             {
-                title: 'Switch app',
+                title: 'Overview',
                 code: KeyEvent.KEYCODE_APP_SWITCH,
                 icon: SvgImage.Icon.OVERVIEW,
             },
@@ -211,7 +211,7 @@ export class DeviceController implements DeviceMessageListener {
         if (decoder.supportsScreenshot) {
             const screenshotButton = document.createElement('button');
             screenshotButton.classList.add('control-button');
-            screenshotButton.title = 'Save screenshot';
+            screenshotButton.title = 'Take screenshot';
             screenshotButton.appendChild(SvgImage.create(SvgImage.Icon.CAMERA));
             screenshotButton.onclick = () => {
                 decoder.createScreenshot(connection.getDeviceName());
