@@ -28,7 +28,8 @@ export class ScrcpyClient extends BaseClient {
         if (decoder) {
             decoder.showFps = !!params.showFps;
         }
-        client.setTitle(`WS scrcpy ${params.decoder} ${params.udid}`);
+        client.setBodyClass('stream');
+        client.setTitle(`${params.udid} stream`);
 
         return client;
     }

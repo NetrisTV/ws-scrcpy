@@ -1,5 +1,50 @@
+:root {
+    --main-bg-color: hsl(0, 0%, 100%);
+    --stream-bg-color: hsl(0, 0%, 85%);
+    --shell-bg-color: hsl(0, 0%, 0%);
+    --row-bg-color_hover: hsl(218, 67%, 95%);
+    --table-header-bg-color: hsl(0, 0%, 95%);
+    --controls-bg-color: hsla(210, 14%, 53%, 0.5);
+    --control-buttons-bg-color: hsl(0, 0%, 95%);
+    --text-color: hsl(0, 0%, 20%);
+    --link-color: hsl(240, 100%, 47%);
+    --link-color_visited: hsl(271, 68%, 32%);
+    --svg-checkbox-bg-color: hsl(172, 100%, 37%);
+    --svg-button-fill: hsl(199, 17%, 46%);
+    --table-border-color: hsl(0, 0%, 82%);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --main-bg-color: hsl(0, 0%, 14%);
+        --stream-bg-color: hsl(0, 0%, 20%);
+        --shell-bg-color: hsl(0, 0%, 0%);
+        --row-bg-color_hover: hsl(218, 17%, 18%);
+        --table-header-bg-color: hsl(0, 0%, 20%);
+        --controls-bg-color: hsla(210, 14%, 43%, 0.5);
+        --control-buttons-bg-color: hsl(201, 18%, 19%);
+        --text-color: hsl(0, 0%, 90%);
+        --link-color: hsl(210, 63%, 47%);
+        /*--link-color_visited: hsl(241, 31%, 47%);*/
+        --link-color_visited: hsl(267, 31%, 47%);
+        /*--link-color_visited: hsl(267, 95%, 76%);*/
+        --svg-checkbox-bg-color: hsl(172, 100%, 27%);
+        --svg-button-fill: hsl(0, 0%, 100%);
+        --table-border-color: hsl(0, 0%, 32%);
+    }
+}
+
+a {
+    color: var(--link-color);
+}
+
+a:visited {
+    color: var(--link-color_visited);
+}
+
 body {
-    background-color: #f0f0f0;
+    color: var(--text-color);
+    background-color: var(--main-bg-color);
     position: absolute;
     margin: 0;
     height: 100%;
@@ -7,8 +52,12 @@ body {
     overflow: hidden;
 }
 
-.body-shell {
-    background-color: black;
+body.shell {
+    background-color: var(--shell-bg-color);
+}
+
+body.stream {
+    background-color: var(--stream-bg-color);
 }
 
 .terminal-container {
@@ -32,7 +81,6 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    overflow-y: scroll;
 }
 
 .table-wrapper table {
@@ -48,17 +96,17 @@ body {
 .table-wrapper table td, .table-wrapper table th {
     border-style: solid;
     border-width: 1px;
-    border-color: black;
+    border-color: var(--table-border-color);
 }
 
 .table-wrapper table tr:hover {
-    background-color: hsl(110, 14%, 53%);
+    background-color: var(--row-bg-color_hover)
 }
 
 .table-wrapper table th {
     position: sticky;
     top: -1px;
-    background-color: hsl(210, 14%, 53%);
+    background-color: var(--table-header-bg-color);
 }
 
 #controlsWrap {
@@ -66,7 +114,7 @@ body {
     top: 0;
     left: 0;
     z-index: 2;
-    background-color: hsla(210, 14%, 53%, 0.5);
+    background-color: var(--controls-bg-color)
 }
 
 .decoder-controls-wrapper {
@@ -150,6 +198,7 @@ body {
 .control-buttons-list {
     float: right;
     width: 52px;
+    background-color: var(--control-buttons-bg-color);
 }
 
 .control-button {
@@ -159,6 +208,7 @@ body {
     height: 30px;
     border: none;
     opacity: 0.75;
+    background-color: var(--control-buttons-bg-color);
 }
 
 .control-button:hover {
@@ -173,6 +223,10 @@ body {
     display: inline-block;
 }
 
+.control-button > svg {
+    fill: var(--svg-button-fill);
+}
+
 .control-buttons-list > input[type=checkbox]:checked + label > svg {
-    fill: #00bea4;
+    fill: var(--svg-checkbox-bg-color);
 }

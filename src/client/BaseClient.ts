@@ -7,6 +7,10 @@ export class BaseClient {
         titleTag.innerText = text;
     }
 
+    public setBodyClass(text: string): void {
+        document.body.className = text;
+    }
+
     public escapeUdid(udid: string): string {
         return 'udid_' + udid.replace(/[. :]/g, '_');
     }

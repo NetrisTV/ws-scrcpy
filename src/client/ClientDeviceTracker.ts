@@ -69,6 +69,7 @@ export class ClientDeviceTracker extends NodeClient {
 
     constructor(action: string) {
         super(action);
+        this.setBodyClass('list');
         this.setTitle('Device list');
     }
 

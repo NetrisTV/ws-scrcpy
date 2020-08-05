@@ -23,7 +23,7 @@ export class ClientShell extends NodeClient {
         super(action);
         this.ws.onopen = this.onSocketOpen.bind(this);
         this.setTitle(`Shell ${udid}`);
-        document.body.className = 'body-shell';
+        this.setBodyClass('shell');
         this.term = new Terminal();
         this.term.loadAddon(new AttachAddon(this.ws));
         this.fitAddon = new FitAddon();
@@ -89,6 +89,7 @@ export class ClientShell extends NodeClient {
             (cols * term._core._renderService.dimensions.actualCellWidth + term._core.viewport.scrollBarWidth).toFixed(
                 2,
             ) + 'px';
+        this.term
         const height = (rows * term._core._renderService.dimensions.actualCellHeight).toFixed(2) + 'px';
         terminalContainer.style.width = width;
         terminalContainer.style.height = height;
