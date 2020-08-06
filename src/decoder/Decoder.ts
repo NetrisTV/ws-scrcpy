@@ -124,9 +124,11 @@ export default abstract class Decoder {
         return this.videoSettings;
     }
 
-    public setVideoSettings(videoSettings: VideoSettings): void {
+    public setVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
         this.videoSettings = videoSettings;
-        Decoder.putVideoSettingsToStorage(this.name, this.udid, videoSettings);
+        if (saveToStorage) {
+            Decoder.putVideoSettingsToStorage(this.name, this.udid, videoSettings);
+        }
     }
 
     public getScreenInfo(): ScreenInfo | undefined {

@@ -86,7 +86,7 @@ export default class NativeDecoder extends Decoder {
         this.stopConverter();
     }
 
-    public setVideoSettings(videoSettings: VideoSettings): void {
+    public setVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
         if (this.videoSettings && this.videoSettings.frameRate !== videoSettings.frameRate) {
             const state = this.getState();
             if (this.converter) {
@@ -97,7 +97,7 @@ export default class NativeDecoder extends Decoder {
                 this.play();
             }
         }
-        super.setVideoSettings(videoSettings);
+        super.setVideoSettings(videoSettings, saveToStorage);
     }
 
     public getPreferredVideoSetting(): VideoSettings {

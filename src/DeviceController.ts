@@ -136,16 +136,15 @@ export class DeviceController implements DeviceMessageListener {
                             return;
                         }
                         const maxSize = this.getMaxSize();
-                        event = CommandControlEvent.createSetVideoSettingsCommand(
-                            new VideoSettings({
-                                maxSize,
-                                bitrate,
-                                frameRate,
-                                iFrameInterval,
-                                lockedVideoOrientation: -1,
-                                sendFrameMeta: false,
-                            }),
-                        );
+                        const videoSettings = new VideoSettings({
+                            maxSize,
+                            bitrate,
+                            frameRate,
+                            iFrameInterval,
+                            lockedVideoOrientation: -1,
+                            sendFrameMeta: false,
+                        });
+                        connection.sendNewVideoSetting(videoSettings);
                     } else if (action === CommandControlEvent.TYPE_SET_CLIPBOARD) {
                         const text = input.value;
                         if (text) {
