@@ -22,6 +22,7 @@ export class DeviceController implements DeviceMessageListener {
     public readonly deviceView: HTMLDivElement;
     public readonly input: HTMLInputElement;
     private readonly controlButtons: HTMLElement;
+    private readonly deviceConnection: DeviceConnection;
 
     constructor(params: DeviceControllerParams) {
         const decoder = (this.decoder = params.decoder);
@@ -30,9 +31,8 @@ export class DeviceController implements DeviceMessageListener {
         const controlsWrapper = (this.controls = document.createElement('div'));
         const deviceView = (this.deviceView = document.createElement('div'));
         deviceView.className = 'device-view';
-        const connection = DeviceConnection.getInstance(udid, params.url);
+        const connection = this.deviceConnection = DeviceConnection.getInstance(udid, params.url);
         const videoSettings = decoder.getVideoSettings();
-        connection.addDecoder(this.decoder);
         connection.addEventListener(this);
         const wrapper = document.createElement('div');
         wrapper.className = 'decoder-controls-wrapper menu';
@@ -273,6 +273,27 @@ export class DeviceController implements DeviceMessageListener {
         if (temp) {
             temp.appendChild(this.controls);
         }
+        const decoder = this.decoder;
+        if (decoder.getPreferredVideoSetting().equals(decoder.getVideoSettings())) {
+            const maxSize = this.getMaxSize();
+            const {
+                bitrate,
+                frameRate,
+                iFrameInterval,
+                lockedVideoOrientation,
+                sendFrameMeta
+            } = decoder.getVideoSettings();
+            const newVideoSettings = new VideoSettings({
+                maxSize,
+                bitrate,
+                frameRate,
+                iFrameInterval,
+                lockedVideoOrientation,
+                sendFrameMeta
+            });
+            decoder.setVideoSettings(newVideoSettings, false);
+        }
+        this.deviceConnection.addDecoder(decoder);
     }
 
     public OnDeviceMessage(ev: DeviceMessage): void {

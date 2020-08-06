@@ -177,7 +177,7 @@ export class DeviceConnection implements KeyEventListener {
         });
         if (playing) {
             // Will trigger encoding restart
-            this.sendEvent(CommandControlEvent.createSetVideoSettingsCommand(videoSettings));
+            this.sendNewVideoSetting(videoSettings);
             // Decoder will wait for new screenInfo and then start to play
             decoder.pause();
         }
@@ -335,7 +335,7 @@ export class DeviceConnection implements KeyEventListener {
                             }
                         });
                         if (!min.equals(videoSettings) || !playing) {
-                            this.sendEvent(CommandControlEvent.createSetVideoSettingsCommand(min));
+                            this.sendNewVideoSetting(min);
                         }
                     } else {
                         const message = DeviceMessage.fromBuffer(e.data);
