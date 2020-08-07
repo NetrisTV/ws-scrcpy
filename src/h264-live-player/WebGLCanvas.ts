@@ -223,7 +223,9 @@ export default abstract class WebGLCanvas extends Canvas {
 
     protected onInitWebGL(): void {
         try {
-            this.gl = this.canvas.getContext('experimental-webgl') as WebGLRenderingContext;
+            this.gl = this.canvas.getContext('experimental-webgl', {
+                preserveDrawingBuffer: true
+            }) as WebGLRenderingContext;
         } catch (e) {
         }
 

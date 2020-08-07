@@ -1,19 +1,19 @@
 export default class ControlEvent {
-    public static TYPE_KEYCODE: number = 0;
-    public static TYPE_TEXT: number = 1;
-    public static TYPE_MOUSE: number = 2;
-    public static TYPE_SCROLL: number = 3;
-    public static TYPE_BACK_OR_SCREEN_ON: number = 4;
-    public static TYPE_EXPAND_NOTIFICATION_PANEL: number = 5;
-    public static TYPE_COLLAPSE_NOTIFICATION_PANEL: number = 6;
-    public static TYPE_GET_CLIPBOARD: number = 7;
-    public static TYPE_SET_CLIPBOARD: number = 8;
-    public static TYPE_SET_SCREEN_POWER_MODE: number = 9;
-    public static TYPE_ROTATE_DEVICE: number = 10;
-    public static TYPE_CHANGE_STREAM_PARAMETERS: number = 11;
+    public static TYPE_KEYCODE = 0;
+    public static TYPE_TEXT = 1;
+    public static TYPE_MOUSE = 2;
+    public static TYPE_SCROLL = 3;
+    public static TYPE_BACK_OR_SCREEN_ON = 4;
+    public static TYPE_EXPAND_NOTIFICATION_PANEL = 5;
+    public static TYPE_COLLAPSE_NOTIFICATION_PANEL = 6;
+    public static TYPE_GET_CLIPBOARD = 7;
+    public static TYPE_SET_CLIPBOARD = 8;
+    public static TYPE_SET_SCREEN_POWER_MODE = 9;
+    public static TYPE_ROTATE_DEVICE = 10;
+    public static TYPE_CHANGE_STREAM_PARAMETERS = 101;
+    public static TYPE_PUSH_FILE = 102;
 
-    constructor(readonly type: number) {
-    }
+    constructor(readonly type: number) {}
 
     public toBuffer(): Buffer {
         throw Error('Not implemented');

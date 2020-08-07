@@ -1,9 +1,9 @@
-import { AdbKitLogcatEntry, AdbKitLogcatReaderEvents } from './AdbKitLogcat';
-import { PriorityLevel } from '../server/LogsFilter';
+import { AdbKitLogcatEntry, AdbKitLogcatReaderEvents } from 'adbkit/AdbKitLogcat';
+import { PriorityLevel } from './PriorityLevel';
 
 export type FiltersMap = Map<string, PriorityLevel> | undefined;
 export interface TextFilter {
-    value: (string | RegExp);
+    value: string | RegExp;
     priority: PriorityLevel;
 }
 export type FiltersArray = TextFilter[] | undefined;
@@ -26,7 +26,7 @@ export interface LogcatServiceMessage {
 export enum LogcatServiceActions {
     start,
     stop,
-    filter
+    filter,
 }
 
 export interface LogcatClientMessage {

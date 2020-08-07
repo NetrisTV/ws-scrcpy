@@ -9,39 +9,56 @@ export default class NativeDecoder extends Decoder {
         frameRate: 60,
         iFrameInterval: 10,
         maxSize: 720,
-        sendFrameMeta: false
+        sendFrameMeta: false,
     });
-    private static DEFAULT_FRAMES_PER_FRAGMENT: number = 1;
-    private static DEFAULT_FRAMES_PER_SECOND: number = 60;
+    private static DEFAULT_FRAMES_PER_FRAGMENT = 1;
+    private static DEFAULT_FRAMES_PER_SECOND = 60;
     public static createElement(id?: string): HTMLVideoElement {
         const tag = document.createElement('video') as HTMLVideoElement;
         tag.muted = true;
+        tag.autoplay = true;
         tag.setAttribute('muted', 'muted');
+        tag.setAttribute('autoplay', 'autoplay');
         if (typeof id === 'string') {
             tag.id = id;
         }
         tag.className = 'video-layer';
         return tag;
     }
-    protected TAG: string = 'NativeDecoder';
     private converter?: VideoConverter;
+    public fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
+    public readonly supportsScreenshot: boolean = true;
 
-    constructor(protected tag: HTMLVideoElement, private fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT) {
-        super(tag);
-        tag.onerror = function(e: Event | string): void {
+    constructor(udid: string, protected tag: HTMLVideoElement = NativeDecoder.createElement()) {
+        super(udid, 'NativeDecoder', tag);
+        tag.onerror = function (e: Event | string): void {
             console.error(e);
         };
-        tag.oncontextmenu = function(e: MouseEvent): boolean {
+        tag.oncontextmenu = function (e: MouseEvent): boolean {
             e.preventDefault();
             return false;
         };
     }
 
-    private static createConverter(tag: HTMLVideoElement,
-                            fps: number = NativeDecoder.DEFAULT_FRAMES_PER_SECOND,
-                            fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT): VideoConverter {
+    private static createConverter(
+        tag: HTMLVideoElement,
+        fps: number = NativeDecoder.DEFAULT_FRAMES_PER_SECOND,
+        fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT,
+    ): VideoConverter {
         console.log(`Create new VideoConverter(fps=${fps}, fpf=${fpf})`);
         return new VideoConverter(tag, fps, fpf);
+    }
+
+    public getImageDataURL(): string {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.tag.clientWidth;
+        canvas.height = this.tag.clientHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.drawImage(this.tag, 0, 0, canvas.width, canvas.height);
+        }
+
+        return canvas.toDataURL();
     }
 
     public play(): void {
@@ -69,7 +86,7 @@ export default class NativeDecoder extends Decoder {
         this.stopConverter();
     }
 
-    public setVideoSettings(videoSettings: VideoSettings): void {
+    public setVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
         if (this.videoSettings && this.videoSettings.frameRate !== videoSettings.frameRate) {
             const state = this.getState();
             if (this.converter) {
@@ -80,7 +97,7 @@ export default class NativeDecoder extends Decoder {
                 this.play();
             }
         }
-        this.videoSettings = videoSettings;
+        super.setVideoSettings(videoSettings, saveToStorage);
     }
 
     public getPreferredVideoSetting(): VideoSettings {

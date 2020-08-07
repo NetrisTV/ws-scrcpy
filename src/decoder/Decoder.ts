@@ -1,25 +1,90 @@
 import VideoSettings from '../VideoSettings';
 import ScreenInfo from '../ScreenInfo';
+import Rect from '../Rect';
 
 export default abstract class Decoder {
     public static STATE: Record<string, number> = {
         PLAYING: 1,
         PAUSED: 2,
-        STOPPED: 3
+        STOPPED: 3,
     };
-    protected TAG: string = 'Decoder';
     protected screenInfo?: ScreenInfo;
-    protected videoSettings?: VideoSettings;
+    protected videoSettings: VideoSettings;
     protected parentElement?: HTMLElement;
     protected touchableCanvas: HTMLCanvasElement;
-    protected fpsCurrentValue: number = 0;
+    protected fpsCurrentValue = 0;
     protected fpsCounter: number[] = [];
     private state: number = Decoder.STATE.STOPPED;
-    public showFps: boolean = true;
+    public showFps = true;
+    public readonly supportsScreenshot: boolean = false;
 
-    protected constructor(protected tag: HTMLElement) {
+    constructor(
+        protected udid: string,
+        protected name: string = 'Decoder',
+        protected tag: HTMLElement = document.createElement('div'),
+    ) {
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
+        const preferred = this.getPreferredVideoSetting();
+        this.videoSettings = Decoder.getVideoSettingFromStorage(preferred, this.name, udid);
+    }
+
+    protected static isIFrame(frame: Uint8Array): boolean {
+        return frame && frame.length > 4 && frame[4] === 0x65;
+    }
+
+    private static getStorageKey(decoderName: string, udid: string): string {
+        const { innerHeight, innerWidth } = window;
+        return `${decoderName}:${udid}:${innerWidth}x${innerHeight}`;
+    }
+
+    private static getVideoSettingFromStorage(
+        preferred: VideoSettings,
+        decoderName: string,
+        deviceName: string,
+    ): VideoSettings {
+        if (!window.localStorage) {
+            return preferred;
+        }
+        const key = this.getStorageKey(decoderName, deviceName);
+        const saved = window.localStorage.getItem(key);
+        if (!saved) {
+            return preferred;
+        }
+        const parsed = JSON.parse(saved);
+        const { crop, bitrate, maxSize, frameRate, iFrameInterval, sendFrameMeta, lockedVideoOrientation } = parsed;
+        return new VideoSettings({
+            crop: crop ? new Rect(crop.left, crop.top, crop.right, crop.bottom) : preferred.crop,
+            bitrate: !isNaN(bitrate) ? bitrate : preferred.bitrate,
+            maxSize: !isNaN(maxSize) ? maxSize : preferred.maxSize,
+            frameRate: !isNaN(frameRate) ? frameRate : preferred.frameRate,
+            iFrameInterval: !isNaN(iFrameInterval) ? iFrameInterval : preferred.iFrameInterval,
+            sendFrameMeta: typeof sendFrameMeta === 'boolean' ? sendFrameMeta : preferred.sendFrameMeta,
+            lockedVideoOrientation: !isNaN(lockedVideoOrientation)
+                ? lockedVideoOrientation
+                : preferred.lockedVideoOrientation,
+        });
+    }
+
+    private static putVideoSettingsToStorage(
+        decoderName: string,
+        deviceName: string,
+        videoSettings: VideoSettings,
+    ): void {
+        if (!window.localStorage) {
+            return;
+        }
+        const key = this.getStorageKey(decoderName, deviceName);
+        window.localStorage.setItem(key, JSON.stringify(videoSettings));
+    }
+
+    public abstract getImageDataURL(): string;
+
+    public createScreenshot(deviceName: string): void {
+        const a = document.createElement('a');
+        a.href = this.getImageDataURL();
+        a.download = `${deviceName} ${new Date().toLocaleString()}.png`;
+        a.click();
     }
 
     public play(): void {
@@ -51,16 +116,19 @@ export default abstract class Decoder {
 
     public setParent(parent: HTMLElement): void {
         this.parentElement = parent;
-        parent.append(this.tag);
-        parent.append(this.touchableCanvas);
+        parent.appendChild(this.tag);
+        parent.appendChild(this.touchableCanvas);
     }
 
-    public getVideoSettings(): VideoSettings|undefined {
+    public getVideoSettings(): VideoSettings {
         return this.videoSettings;
     }
 
-    public setVideoSettings(videoSettings: VideoSettings): void {
+    public setVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
         this.videoSettings = videoSettings;
+        if (saveToStorage) {
+            Decoder.putVideoSettingsToStorage(this.name, this.udid, videoSettings);
+        }
     }
 
     public getScreenInfo(): ScreenInfo | undefined {
@@ -68,10 +136,9 @@ export default abstract class Decoder {
     }
 
     public setScreenInfo(screenInfo: ScreenInfo): void {
-        console.log(`${this.TAG}.setScreenInfo(${screenInfo})`);
         this.pause();
         this.screenInfo = screenInfo;
-        const {width, height} = screenInfo.videoSize;
+        const { width, height } = screenInfo.videoSize;
         this.touchableCanvas.width = width;
         this.touchableCanvas.height = height;
         if (this.parentElement) {
@@ -81,7 +148,7 @@ export default abstract class Decoder {
     }
 
     public getName(): string {
-        return this.TAG;
+        return this.name;
     }
 
     protected updateFps(pushNew: boolean): void {

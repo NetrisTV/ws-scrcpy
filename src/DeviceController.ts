@@ -8,12 +8,12 @@ import CommandControlEvent from './controlEvent/CommandControlEvent';
 import ControlEvent from './controlEvent/ControlEvent';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import DeviceMessage from './DeviceMessage';
+import SvgImage from './ui/SvgImage';
 
 export interface DeviceControllerParams {
     url: string;
-    name: string;
+    udid: string;
     decoder: Decoder;
-    videoSettings: VideoSettings;
 }
 
 export class DeviceController implements DeviceMessageListener {
@@ -21,38 +21,48 @@ export class DeviceController implements DeviceMessageListener {
     public readonly controls: HTMLDivElement;
     public readonly deviceView: HTMLDivElement;
     public readonly input: HTMLInputElement;
+    private readonly controlButtons: HTMLElement;
+    private readonly deviceConnection: DeviceConnection;
 
     constructor(params: DeviceControllerParams) {
-        const decoder = this.decoder = params.decoder;
-        const deviceName = params.name;
+        const decoder = (this.decoder = params.decoder);
+        const udid = params.udid;
         const decoderName = this.decoder.getName();
-        const controlsWrapper = this.controls = document.createElement('div');
-        const deviceView = this.deviceView = document.createElement('div');
+        const controlsWrapper = (this.controls = document.createElement('div'));
+        const deviceView = (this.deviceView = document.createElement('div'));
         deviceView.className = 'device-view';
-        const connection = DeviceConnection.getInstance(params.url);
-        const stream = params.videoSettings;
-        connection.addDecoder(this.decoder);
-        connection.setDeviceMessageListener(this);
+        const connection = this.deviceConnection = DeviceConnection.getInstance(udid, params.url);
+        const videoSettings = decoder.getVideoSettings();
+        connection.addEventListener(this);
         const wrapper = document.createElement('div');
-        wrapper.className = 'decoder-controls-wrapper';
-        const nameSpan = document.createElement('span');
-        nameSpan.innerText = `${deviceName} (${decoderName})`;
-        wrapper.appendChild(nameSpan);
+        wrapper.className = 'decoder-controls-wrapper menu';
+        const menuCheck = document.createElement('input');
+        menuCheck.type = 'checkbox';
+        menuCheck.checked = true;
+        const menuLabel = document.createElement('label');
+        menuLabel.htmlFor = menuCheck.id = `controls_${udid}_${decoderName}`;
+        // label.innerText = `${deviceName} (${decoderName})`;
+        wrapper.appendChild(menuCheck);
+        wrapper.appendChild(menuLabel);
+        const box = document.createElement('div');
+        box.className = 'box';
+        wrapper.appendChild(box);
         const textWrap = document.createElement('div');
-        const input = this.input = document.createElement('input');
+        const input = (this.input = document.createElement('input'));
         const sendButton = document.createElement('button');
         sendButton.innerText = 'Send as keys';
         textWrap.appendChild(input);
         textWrap.appendChild(sendButton);
 
-        wrapper.appendChild(textWrap);
+        box.appendChild(textWrap);
         sendButton.onclick = () => {
             if (input.value) {
                 connection.sendEvent(new TextControlEvent(input.value));
             }
         };
-        const deviceButtons = document.createElement('div');
-        deviceButtons.className = 'control-buttons-list';
+
+        this.controlButtons = document.createElement('div');
+        this.controlButtons.className = 'control-buttons-list';
         const cmdWrap = document.createElement('div');
         const codes = CommandControlEvent.CommandCodes;
         for (const command in codes) {
@@ -68,7 +78,7 @@ export class DeviceController implements DeviceMessageListener {
                     const spoilerCheck = document.createElement('input');
 
                     const innerDiv = document.createElement('div');
-                    const id = `spoiler_video_${deviceName}_${decoderName}_${action}`;
+                    const id = `spoiler_video_${udid}_${decoderName}_${action}`;
 
                     spoiler.className = 'spoiler';
                     spoilerCheck.type = 'checkbox';
@@ -84,8 +94,8 @@ export class DeviceController implements DeviceMessageListener {
                     const bitrateLabel = document.createElement('label');
                     bitrateLabel.innerText = 'Bitrate:';
                     bitrateInput = document.createElement('input');
-                    bitrateInput.placeholder = `bitrate (${stream.bitrate})`;
-                    bitrateInput.value = stream.bitrate.toString();
+                    bitrateInput.placeholder = `bitrate (${videoSettings.bitrate})`;
+                    bitrateInput.value = videoSettings.bitrate.toString();
                     bitrateWrap.appendChild(bitrateLabel);
                     bitrateWrap.appendChild(bitrateInput);
 
@@ -93,8 +103,8 @@ export class DeviceController implements DeviceMessageListener {
                     const framerateLabel = document.createElement('label');
                     framerateLabel.innerText = 'Framerate:';
                     frameRateInput = document.createElement('input');
-                    frameRateInput.placeholder = `framerate (${stream.frameRate})`;
-                    frameRateInput.value = stream.frameRate.toString();
+                    frameRateInput.placeholder = `framerate (${videoSettings.frameRate})`;
+                    frameRateInput.value = videoSettings.frameRate.toString();
                     framerateWrap.appendChild(framerateLabel);
                     framerateWrap.appendChild(frameRateInput);
 
@@ -102,8 +112,8 @@ export class DeviceController implements DeviceMessageListener {
                     const iFrameIntervalLabel = document.createElement('label');
                     iFrameIntervalLabel.innerText = 'I-Frame Interval:';
                     iFrameIntervalInput = document.createElement('input');
-                    iFrameIntervalInput.placeholder = `I-frame interval (${stream.iFrameInterval})`;
-                    iFrameIntervalInput.value = stream.iFrameInterval.toString();
+                    iFrameIntervalInput.placeholder = `I-frame interval (${videoSettings.iFrameInterval})`;
+                    iFrameIntervalInput.value = videoSettings.iFrameInterval.toString();
                     iFrameIntervalWrap.appendChild(iFrameIntervalLabel);
                     iFrameIntervalWrap.appendChild(iFrameIntervalInput);
 
@@ -117,7 +127,7 @@ export class DeviceController implements DeviceMessageListener {
                 }
                 btn.innerText = CommandControlEvent.CommandNames[action];
                 btn.onclick = () => {
-                    let event: CommandControlEvent|undefined;
+                    let event: CommandControlEvent | undefined;
                     if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
                         const bitrate = parseInt(bitrateInput.value, 10);
                         const frameRate = parseInt(frameRateInput.value, 10);
@@ -125,21 +135,20 @@ export class DeviceController implements DeviceMessageListener {
                         if (isNaN(bitrate) || isNaN(frameRate)) {
                             return;
                         }
-                        const width = document.body.clientWidth & ~15;
-                        const height = document.body.clientHeight & ~15;
-                        const maxSize = Math.min(width, height);
-                        event = CommandControlEvent.createSetVideoSettingsCommand(new VideoSettings({
+                        const maxSize = this.getMaxSize();
+                        const videoSettings = new VideoSettings({
                             maxSize,
                             bitrate,
                             frameRate,
                             iFrameInterval,
                             lockedVideoOrientation: -1,
-                            sendFrameMeta: false
-                        }));
+                            sendFrameMeta: false,
+                        });
+                        connection.sendNewVideoSetting(videoSettings);
                     } else if (action === CommandControlEvent.TYPE_SET_CLIPBOARD) {
                         const text = input.value;
                         if (text) {
-                            event = CommandControlEvent.createSetClipboard(text);
+                            event = CommandControlEvent.createSetClipboardCommand(text);
                         }
                     } else {
                         event = new CommandControlEvent(action);
@@ -150,40 +159,78 @@ export class DeviceController implements DeviceMessageListener {
                 };
             }
         }
-        const list = [{
-            code: KeyEvent.KEYCODE_POWER,
-            name: 'power'
-        },{
-            code: KeyEvent.KEYCODE_VOLUME_DOWN,
-            name: 'volume-down'
-        },{
-            code: KeyEvent.KEYCODE_VOLUME_UP,
-            name: 'volume-up'
-        },{
-            code: KeyEvent.KEYCODE_BACK,
-            name: 'back'
-        },{
-            code: KeyEvent.KEYCODE_HOME,
-            name: 'home'
-        }, {
-            code: KeyEvent.KEYCODE_APP_SWITCH,
-            name: 'app-switch'
-        }];
-        list.forEach(item => {
-            const {code, name} = item;
+        const list = [
+            {
+                title: 'Power',
+                code: KeyEvent.KEYCODE_POWER,
+                icon: SvgImage.Icon.POWER,
+            },
+            {
+                title: 'Volume up',
+                code: KeyEvent.KEYCODE_VOLUME_UP,
+                icon: SvgImage.Icon.VOLUME_UP,
+            },
+            {
+                title: 'Volume down',
+                code: KeyEvent.KEYCODE_VOLUME_DOWN,
+                icon: SvgImage.Icon.VOLUME_DOWN,
+            },
+            {
+                title: 'Back',
+                code: KeyEvent.KEYCODE_BACK,
+                icon: SvgImage.Icon.BACK,
+            },
+            {
+                title: 'Home',
+                code: KeyEvent.KEYCODE_HOME,
+                icon: SvgImage.Icon.HOME,
+            },
+            {
+                title: 'Overview',
+                code: KeyEvent.KEYCODE_APP_SWITCH,
+                icon: SvgImage.Icon.OVERVIEW,
+            },
+        ];
+        list.forEach((item) => {
+            const { code, icon, title } = item;
             const btn = document.createElement('button');
-            btn.classList.add('control-button', name);
+            btn.classList.add('control-button');
+            btn.title = title;
+            btn.appendChild(SvgImage.create(icon));
             btn.onmousedown = () => {
-                const event = new KeyCodeControlEvent(KeyEvent.ACTION_DOWN, code, 0);
+                const event = new KeyCodeControlEvent(KeyEvent.ACTION_DOWN, code, 0, 0);
                 connection.sendEvent(event);
             };
             btn.onmouseup = () => {
-                const event = new KeyCodeControlEvent(KeyEvent.ACTION_UP, code, 0);
+                const event = new KeyCodeControlEvent(KeyEvent.ACTION_UP, code, 0, 0);
                 connection.sendEvent(event);
             };
-            deviceButtons.appendChild(btn);
+            this.controlButtons.appendChild(btn);
         });
-        wrapper.appendChild(cmdWrap);
+        if (decoder.supportsScreenshot) {
+            const screenshotButton = document.createElement('button');
+            screenshotButton.classList.add('control-button');
+            screenshotButton.title = 'Take screenshot';
+            screenshotButton.appendChild(SvgImage.create(SvgImage.Icon.CAMERA));
+            screenshotButton.onclick = () => {
+                decoder.createScreenshot(connection.getDeviceName());
+            };
+            this.controlButtons.appendChild(screenshotButton);
+        }
+        const captureKeyboardInput = document.createElement('input');
+        captureKeyboardInput.type = 'checkbox';
+        const captureKeyboardLabel = document.createElement('label');
+        captureKeyboardLabel.title = 'Capture keyboard';
+        captureKeyboardLabel.classList.add('control-button');
+        captureKeyboardLabel.appendChild(SvgImage.create(SvgImage.Icon.KEYBOARD));
+        captureKeyboardLabel.htmlFor = captureKeyboardInput.id = `capture_keyboard_${udid}_${decoderName}`;
+        captureKeyboardInput.onclick = (e: MouseEvent) => {
+            const checkbox = e.target as HTMLInputElement;
+            connection.setHandleKeyboardEvents(checkbox.checked);
+        };
+        this.controlButtons.appendChild(captureKeyboardInput);
+        this.controlButtons.appendChild(captureKeyboardLabel);
+        box.appendChild(cmdWrap);
 
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
@@ -203,9 +250,9 @@ export class DeviceController implements DeviceMessageListener {
         const stopBtn = document.createElement('button') as HTMLButtonElement;
         stopBtn.innerText = `Disconnect`;
         stopBtn.onclick = stop;
-        wrapper.appendChild(stopBtn);
+        box.appendChild(stopBtn);
         controlsWrapper.appendChild(wrapper);
-        deviceView.appendChild(deviceButtons);
+        deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');
         video.className = 'video';
         deviceView.appendChild(video);
@@ -213,24 +260,48 @@ export class DeviceController implements DeviceMessageListener {
         connection.setErrorListener(new ErrorHandler(stop));
     }
 
+    private getMaxSize(): number {
+        const body = document.body;
+        const width = (body.clientWidth - this.controlButtons.clientWidth) & ~15;
+        const height = body.clientHeight & ~15;
+        return Math.min(width, height);
+    }
+
     public start(): void {
-        document.body.append(this.deviceView);
+        document.body.appendChild(this.deviceView);
         const temp = document.getElementById('controlsWrap');
         if (temp) {
             temp.appendChild(this.controls);
         }
+        const decoder = this.decoder;
+        if (decoder.getPreferredVideoSetting().equals(decoder.getVideoSettings())) {
+            const maxSize = this.getMaxSize();
+            const {
+                bitrate,
+                frameRate,
+                iFrameInterval,
+                lockedVideoOrientation,
+                sendFrameMeta
+            } = decoder.getVideoSettings();
+            const newVideoSettings = new VideoSettings({
+                maxSize,
+                bitrate,
+                frameRate,
+                iFrameInterval,
+                lockedVideoOrientation,
+                sendFrameMeta
+            });
+            decoder.setVideoSettings(newVideoSettings, false);
+        }
+        this.deviceConnection.addDecoder(decoder);
     }
 
     public OnDeviceMessage(ev: DeviceMessage): void {
-        switch (ev.type) {
-            case DeviceMessage.TYPE_CLIPBOARD:
-                this.input.value = ev.getText();
-                this.input.select();
-                document.execCommand('copy');
-                break;
-            default:
-                console.error(`Unknown message type: ${ev.type}`);
+        if (ev.type !== DeviceMessage.TYPE_CLIPBOARD) {
+            return;
         }
+        this.input.value = ev.getText();
+        this.input.select();
+        document.execCommand('copy');
     }
-
 }

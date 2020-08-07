@@ -8,6 +8,7 @@ interface Settings {
     iFrameInterval: number;
     sendFrameMeta: boolean;
     lockedVideoOrientation: number;
+    codecOptions?: string;
 }
 
 export default class VideoSettings {
@@ -19,6 +20,7 @@ export default class VideoSettings {
     public readonly iFrameInterval: number = 0;
     public readonly sendFrameMeta: boolean = false;
     public readonly lockedVideoOrientation: number = -1;
+    public readonly codecOptions: string = '-';
 
     constructor(data?: Settings) {
         if (data) {
@@ -47,6 +49,7 @@ export default class VideoSettings {
         if (left || top || right || bottom) {
             crop = new Rect(left, top, right, bottom);
         }
+        const codecOptions = '-';
         return new VideoSettings({
             crop,
             bitrate,
@@ -54,11 +57,12 @@ export default class VideoSettings {
             frameRate,
             iFrameInterval,
             lockedVideoOrientation,
-            sendFrameMeta
+            sendFrameMeta,
+            codecOptions
         });
     }
 
-    public static copy(a?: VideoSettings|null): VideoSettings|null {
+    public static copy(a?: VideoSettings | null): VideoSettings | null {
         if (!a) {
             return null;
         }
@@ -69,7 +73,8 @@ export default class VideoSettings {
             frameRate: a.frameRate,
             iFrameInterval: a.iFrameInterval,
             lockedVideoOrientation: a.lockedVideoOrientation,
-            sendFrameMeta: a.sendFrameMeta
+            sendFrameMeta: a.sendFrameMeta,
+            codecOptions: a.codecOptions,
         });
     }
 
@@ -77,17 +82,20 @@ export default class VideoSettings {
         if (!o) {
             return false;
         }
-        return Rect.equals(this.crop, o.crop) &&
+        return (
+            this.codecOptions === o.codecOptions &&
+            Rect.equals(this.crop, o.crop) &&
             this.lockedVideoOrientation === o.lockedVideoOrientation &&
             this.maxSize === o.maxSize &&
             this.bitrate === o.bitrate &&
             this.frameRate === o.frameRate &&
-            this.iFrameInterval === o.iFrameInterval;
+            this.iFrameInterval === o.iFrameInterval
+        );
     }
 
     public toBuffer(): Buffer {
         const buffer = new Buffer(VideoSettings.BUFFER_LENGTH);
-        const {left = 0, top = 0, right = 0, bottom = 0} = this.crop || {};
+        const { left = 0, top = 0, right = 0, bottom = 0 } = this.crop || {};
         let offset = 0;
         offset = buffer.writeUInt32BE(this.bitrate, offset);
         offset = buffer.writeUInt8(this.frameRate, offset);
@@ -98,11 +106,14 @@ export default class VideoSettings {
         offset = buffer.writeUInt16BE(right, offset);
         offset = buffer.writeUInt16BE(bottom, offset);
         offset = buffer.writeUInt8(this.sendFrameMeta ? 1 : 0, offset);
-        buffer.writeInt8(this.lockedVideoOrientation,offset);
+        buffer.writeInt8(this.lockedVideoOrientation, offset);
+        // FIXME: codec options are ignored
+        //  should be something like: "codecOptions=`i-frame-interval=${iFrameInterval}`";
         return buffer;
     }
 
     public toString(): string {
+        // prettier-ignore
         return `VideoSettings{bitrate=${
             this.bitrate}, frameRate=${
             this.frameRate}, iFrameInterval=${
@@ -111,5 +122,18 @@ export default class VideoSettings {
             this.crop}, metaFrame=${
             this.sendFrameMeta}, lockedVideoOrientation=${
             this.lockedVideoOrientation}}`;
+    }
+
+    public toJSON(): Settings {
+        return {
+            bitrate: this.bitrate,
+            frameRate: this.frameRate,
+            iFrameInterval: this.iFrameInterval,
+            maxSize: this.maxSize,
+            crop: this.crop,
+            sendFrameMeta: this.sendFrameMeta,
+            lockedVideoOrientation: this.lockedVideoOrientation,
+            codecOptions: this.codecOptions,
+        };
     }
 }

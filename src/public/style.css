@@ -1,5 +1,50 @@
+:root {
+    --main-bg-color: hsl(0, 0%, 100%);
+    --stream-bg-color: hsl(0, 0%, 85%);
+    --shell-bg-color: hsl(0, 0%, 0%);
+    --row-bg-color_hover: hsl(218, 67%, 95%);
+    --table-header-bg-color: hsl(0, 0%, 95%);
+    --controls-bg-color: hsla(210, 14%, 53%, 0.5);
+    --control-buttons-bg-color: hsl(0, 0%, 95%);
+    --text-color: hsl(0, 0%, 20%);
+    --link-color: hsl(240, 100%, 47%);
+    --link-color_visited: hsl(271, 68%, 32%);
+    --svg-checkbox-bg-color: hsl(172, 100%, 37%);
+    --svg-button-fill: hsl(199, 17%, 46%);
+    --table-border-color: hsl(0, 0%, 82%);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --main-bg-color: hsl(0, 0%, 14%);
+        --stream-bg-color: hsl(0, 0%, 20%);
+        --shell-bg-color: hsl(0, 0%, 0%);
+        --row-bg-color_hover: hsl(218, 17%, 18%);
+        --table-header-bg-color: hsl(0, 0%, 20%);
+        --controls-bg-color: hsla(210, 14%, 43%, 0.5);
+        --control-buttons-bg-color: hsl(201, 18%, 19%);
+        --text-color: hsl(0, 0%, 90%);
+        --link-color: hsl(210, 63%, 47%);
+        /*--link-color_visited: hsl(241, 31%, 47%);*/
+        --link-color_visited: hsl(267, 31%, 47%);
+        /*--link-color_visited: hsl(267, 95%, 76%);*/
+        --svg-checkbox-bg-color: hsl(172, 100%, 27%);
+        --svg-button-fill: hsl(0, 0%, 100%);
+        --table-border-color: hsl(0, 0%, 32%);
+    }
+}
+
+a {
+    color: var(--link-color);
+}
+
+a:visited {
+    color: var(--link-color_visited);
+}
+
 body {
-    background-color: #f0f0f0;
+    color: var(--text-color);
+    background-color: var(--main-bg-color);
     position: absolute;
     margin: 0;
     height: 100%;
@@ -7,13 +52,12 @@ body {
     overflow: hidden;
 }
 
-.body-logcat {
-    display: flex;
-    flex-flow: column;
+body.shell {
+    background-color: var(--shell-bg-color);
 }
 
-.body-shell {
-    background-color: black;
+body.stream {
+    background-color: var(--stream-bg-color);
 }
 
 .terminal-container {
@@ -31,66 +75,12 @@ body {
     margin: 20px;
 }
 
-.hidden {
-    display: none;
-}
-
-.visible {
-    display: initial;
-}
-
-.buttons-wrapper {
-    max-height: 5%;
-}
-
-.filter-button {
-    font-family: monospace;
-    border: solid 1px black;
-    width: auto;
-    display: inline-block;
-    border-radius: 1em;
-    margin: 2px;
-    padding: 2px 5px;
-}
-
-.filter-button:hover {
-    border-width: 2px;
-    border-style: dotted;
-    padding: 1px 4px;
-    cursor: pointer;
-}
-
-.client-filter {
-    border-color: hsl(120, 33%, 50%);
-}
-
-#filterInput {
-    margin: 0 5px;
-}
-
-pre.might-overflow {
-    text-overflow: ellipsis;
-    overflow : hidden;
-    white-space: nowrap;
-    margin: 0.5em 0;
-    padding: 0;
-}
-
-pre.might-overflow:hover {
-    text-overflow: clip;
-    word-break: break-all;
-    overflow-x: visible;
-    white-space: pre;
-    margin: 0;
-    padding: 0.5em 0;
-}
 
 .table-wrapper {
     position: relative;
     bottom: 0;
     left: 0;
     width: 100%;
-    overflow-y: scroll;
 }
 
 .table-wrapper table {
@@ -106,57 +96,33 @@ pre.might-overflow:hover {
 .table-wrapper table td, .table-wrapper table th {
     border-style: solid;
     border-width: 1px;
-    border-color: black;
+    border-color: var(--table-border-color);
 }
 
 .table-wrapper table tr:hover {
-    background-color: hsl(110, 14%, 53%);
+    background-color: var(--row-bg-color_hover)
 }
 
 .table-wrapper table th {
     position: sticky;
     top: -1px;
-    background-color: hsl(210, 14%, 53%);
-}
-
-.table-wrapper table .date {
-    white-space: nowrap;
-    width: 7%;
-}
-
-.table-wrapper table .pid, .table-wrapper table .tid  {
-    width: 5%;
-}
-
-.table-wrapper table .p {
-    width: 3%;
-}
-
-.table-wrapper table .tag {
-    max-width: 20em;
-    width: 10%;
-}
-
-.table-wrapper table .message {
-    width: 70%;
-    text-overflow: ellipsis;
-    white-space: pre;
-    max-width: 0;
-    overflow: hidden;
+    background-color: var(--table-header-bg-color);
 }
 
 #controlsWrap {
-    float: left;
-    position: relative;
+    position: fixed;
     top: 0;
+    left: 0;
+    z-index: 2;
+    background-color: var(--controls-bg-color)
 }
 
 .decoder-controls-wrapper {
-    padding: 10px;
-    border: solid 1px hsl(210, 14%, 53%);
+    padding: 5px;
 }
 
 .device-view {
+    z-index: 1;
     float: right;
 }
 
@@ -203,9 +169,36 @@ pre.might-overflow:hover {
     display: none;
 }
 
+.menu > input ~ .box {
+    display: none;
+}
+
+.menu > input:checked ~ .box {
+    display: block;
+}
+
+.menu > label::before {
+    content: '≡';
+    margin: 5px;
+}
+
+.menu > input:checked ~ label::before {
+    content: '◃';
+}
+
+.menu > input:checked ~ div {
+    display: block;
+    padding: 10px;
+}
+
+.menu > input {
+    display: none;
+}
+
 .control-buttons-list {
     float: right;
     width: 52px;
+    background-color: var(--control-buttons-bg-color);
 }
 
 .control-button {
@@ -214,54 +207,26 @@ pre.might-overflow:hover {
     width: 30px;
     height: 30px;
     border: none;
-    background-image: url('icons.png');
     opacity: 0.75;
+    background-color: var(--control-buttons-bg-color);
 }
 
 .control-button:hover {
     opacity: 1;
 }
 
-.control-button.menu {
-    background-position: 0 0;
+.control-buttons-list > input[type=checkbox] {
+    display: none;
 }
 
-.control-button.app-switch {
-    background-position: -30px 0;
+.control-buttons-list > label {
+    display: inline-block;
 }
 
-.control-button.home {
-    background-position: -60px 0;
+.control-button > svg {
+    fill: var(--svg-button-fill);
 }
 
-.control-button.back {
-    background-position: -90px 0;
-}
-
-.control-button.zoom {
-    background-position: 0 -30px;
-}
-
-.control-button.screen-shot {
-    background-position: -30px -30px;
-}
-
-.control-button.rotate-clockwise {
-    background-position: -60px -30px;
-}
-
-.control-button.rotate-counter-clockwise {
-    background-position: -90px -30px;
-}
-
-.control-button.volume-down {
-    background-position: 0 -60px;
-}
-
-.control-button.volume-up {
-    background-position: -30px -60px;
-}
-
-.control-button.power {
-    background-position: -60px -60px;
+.control-buttons-list > input[type=checkbox]:checked + label > svg {
+    fill: var(--svg-checkbox-bg-color);
 }

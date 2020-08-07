@@ -10,7 +10,8 @@ export class ServiceDeviceTracker extends ReleasableService {
     constructor(ws: WebSocket) {
         super(ws);
 
-        this.sdc.init()
+        this.sdc
+            .init()
             .then(() => {
                 this.sdc.addListener(ServerDeviceConnection.UPDATE_EVENT, this.buildAndSendMessage);
                 this.buildAndSendMessage(this.sdc.getDevices());
@@ -24,7 +25,7 @@ export class ServiceDeviceTracker extends ReleasableService {
         const msg: Message = {
             id: -1,
             type: 'devicelist',
-            data: list
+            data: list,
         };
         this.sendMessage(msg);
     };

@@ -7,7 +7,7 @@ export default class H264bsdWorker {
         return this.instance;
     }
 
-    private decoderReady: boolean = false;
+    private decoderReady = false;
     public readonly worker: Worker;
     private constructor() {
         this.worker = new Worker('h264bsd_worker.js');

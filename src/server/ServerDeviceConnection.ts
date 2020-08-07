@@ -1,32 +1,32 @@
-// @ts-ignore
 import ADB from 'adbkit';
-// @ts-ignore
 import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { Device } from '../common/Device';
-import { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from '../common/AdbKit';
-import { SERVER_PACKAGE, SERVER_PORT, SERVER_VERSION } from './Constants';
+import { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from 'adbkit';
+import { SERVER_PACKAGE, SERVER_VERSION, ARGS_STRING } from './Constants';
+import Timeout = NodeJS.Timeout;
 
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, '../public');
 const FILE_NAME = 'scrcpy-server.jar';
-const ARGS = `/ ${SERVER_PACKAGE} ${SERVER_VERSION} 0 8000000 60 -1 false - false false 0 web ${SERVER_PORT} 2>&1 > /dev/null`;
 
 const GET_SHELL_PROCESSES = 'for DIR in /proc/*; do [ -d "$DIR" ] && echo $DIR;  done';
-const CHECK_CMDLINE = `[ -f "$a/cmdline" ] && grep -av find "$a/cmdline" |grep -sae app_process.*${SERVER_PACKAGE} |grep ${SERVER_VERSION} 2>&1 > /dev/null && echo $a;`;
+const CHECK_CMDLINE = `[ -f "$a/cmdline" ] && grep -av find "$a/cmdline" |grep -sae '^app_process.*${SERVER_PACKAGE}' |grep ${SERVER_VERSION} 2>&1 > /dev/null && echo $a;`;
 const CMD = 'for a in `' + GET_SHELL_PROCESSES + '`; do ' + CHECK_CMDLINE + ' done; exit 0';
 
 export class ServerDeviceConnection extends EventEmitter {
     public static readonly UPDATE_EVENT: string = 'update';
     private static instance: ServerDeviceConnection;
-    private pendingUpdate: boolean = false;
+    private pendingUpdate = false;
     private cache: Device[] = [];
     private deviceMap: Map<string, Device> = new Map();
     private clientMap: Map<string, AdbKitClient> = new Map();
     private client: AdbKitClient = ADB.createClient();
     private tracker?: AdbKitTracker;
-    private initialized: boolean = false;
+    private initialized = false;
+    private restartTimeoutId?: Timeout;
+    private waitAfterError = 1000;
     public static getInstance(): ServerDeviceConnection {
         if (!this.instance) {
             this.instance = new ServerDeviceConnection();
@@ -49,7 +49,7 @@ export class ServerDeviceConnection extends EventEmitter {
         if (this.tracker) {
             return this.tracker;
         }
-        const tracker = this.tracker = await this.client.trackDevices();
+        const tracker = (this.tracker = await this.client.trackDevices());
         if (tracker.deviceList && tracker.deviceList.length) {
             this.cache = await this.mapDevicesToDescriptors(tracker.deviceList);
         }
@@ -84,12 +84,30 @@ export class ServerDeviceConnection extends EventEmitter {
             this.cache = Array.from(this.deviceMap.values());
             this.emit(ServerDeviceConnection.UPDATE_EVENT, this.cache);
         });
+        tracker.on('end', this.restartTracker);
+        tracker.on('error', this.restartTracker);
         return tracker;
     }
 
+    restartTracker = (): void => {
+        if (this.restartTimeoutId) {
+            return;
+        }
+        console.log(`Device tracker is down. Will try to restart in ${this.waitAfterError}ms`);
+        this.restartTimeoutId = setTimeout(() => {
+            delete this.restartTimeoutId;
+            delete this.tracker;
+            this.waitAfterError *= 1.2;
+            this.pendingUpdate = false;
+            this.updateDeviceList();
+        }, this.waitAfterError);
+    };
+
     private async mapDevicesToDescriptors(list: AdbKitDevice[]): Promise<Device[]> {
-        const all = await Promise.all(list.map(device => this.getDescriptor(device)));
-        list.forEach((device: AdbKitDevice, idx: number) => {this.deviceMap.set(device.id, all[idx]);});
+        const all = await Promise.all(list.map((device) => this.getDescriptor(device)));
+        list.forEach((device: AdbKitDevice, idx: number) => {
+            this.deviceMap.set(device.id, all[idx]);
+        });
         return all;
     }
 
@@ -106,7 +124,7 @@ export class ServerDeviceConnection extends EventEmitter {
     }
 
     private async getDescriptor(device: AdbKitDevice): Promise<Device> {
-        const {id: udid, type: state} = device;
+        const { id: udid, type: state } = device;
         if (state === 'offline') {
             return {
                 'build.version.release': '',
@@ -117,7 +135,7 @@ export class ServerDeviceConnection extends EventEmitter {
                 pid: -1,
                 ip: '0.0.0.0',
                 state,
-                udid
+                udid,
             };
         }
         const client = this.getOrCreateClient(udid);
@@ -133,12 +151,15 @@ export class ServerDeviceConnection extends EventEmitter {
             'build.version.release': props['ro.build.version.release'],
             'build.version.sdk': props['ro.build.version.sdk'],
             state,
-            udid
+            udid,
         };
         try {
             const stream = await client.shell(udid, `ip route |grep ${wifi} |grep -v default`);
             const buffer = await ADB.util.readAll(stream);
-            const temp = buffer.toString().split(' ').filter((i: string) => !!i);
+            const temp = buffer
+                .toString()
+                .split(' ')
+                .filter((i: string) => !!i);
             descriptor.ip = temp[8];
             let pid = await this.getPID(device);
             let count = 0;
@@ -163,12 +184,13 @@ export class ServerDeviceConnection extends EventEmitter {
     }
 
     private async getPID(device: AdbKitDevice): Promise<number> {
-        const {id: udid} = device;
+        const { id: udid } = device;
         const client = this.getOrCreateClient(udid);
         await client.waitBootComplete(udid);
         const stream = await client.shell(udid, CMD);
         const buffer = await ADB.util.readAll(stream);
-        const shellProcessesArray = buffer.toString()
+        const shellProcessesArray = buffer
+            .toString()
             .split('\n')
             .filter((str: string) => str.trim().length)
             .map((str: string) => {
@@ -185,27 +207,28 @@ export class ServerDeviceConnection extends EventEmitter {
     }
 
     private async copyServer(device: AdbKitDevice): Promise<PushTransfer> {
-        const {id: udid} = device;
+        const { id: udid } = device;
         const client = this.getOrCreateClient(udid);
-        await client.waitBootComplete(udid); const src = path.join(FILE_DIR, FILE_NAME);
+        await client.waitBootComplete(udid);
+        const src = path.join(FILE_DIR, FILE_NAME);
         const dst = TEMP_PATH + FILE_NAME; // don't use path.join(): will not work on win host
         return client.push(udid, src, dst);
     }
 
     private spawnServer(device: AdbKitDevice): void {
-        const {id: udid} = device;
-        const command = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS}`;
+        const { id: udid } = device;
+        const command = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS_STRING}`;
         const adb = spawn('adb', ['-s', `${udid}`, 'shell', command], { stdio: ['ignore', 'pipe', 'pipe'] });
 
-        adb.stdout.on('data', data => {
+        adb.stdout.on('data', (data) => {
             console.log(`[${udid}] stdout: ${data}`);
         });
 
-        adb.stderr.on('data', data => {
+        adb.stderr.on('data', (data) => {
             console.error(`[${udid}] stderr: ${data}`);
         });
 
-        adb.on('close', code => {
+        adb.on('close', (code) => {
             console.log(`[${udid}] adb process exited with code ${code}`);
         });
     }
@@ -219,13 +242,13 @@ export class ServerDeviceConnection extends EventEmitter {
             this.pendingUpdate = false;
         };
         this.initTracker()
-            .then(tracker => {
+            .then((tracker) => {
                 if (tracker && tracker.deviceList && tracker.deviceList.length) {
                     return this.mapDevicesToDescriptors(tracker.deviceList);
                 }
                 return [] as Device[];
             })
-            .then(list => {
+            .then((list) => {
                 this.cache = list;
                 this.emit(ServerDeviceConnection.UPDATE_EVENT, this.cache);
             })

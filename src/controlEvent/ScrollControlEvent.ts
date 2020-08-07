@@ -2,7 +2,7 @@ import ControlEvent from './ControlEvent';
 import Position from '../Position';
 
 export default class ScrollControlEvent extends ControlEvent {
-    public static PAYLOAD_LENGTH: number = 20;
+    public static PAYLOAD_LENGTH = 20;
 
     constructor(readonly position: Position, readonly hScroll: number, readonly vScroll: number) {
         super(ControlEvent.TYPE_SCROLL);

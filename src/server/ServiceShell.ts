@@ -12,13 +12,13 @@ const EVENT_TYPE_SHELL = 'shell';
 
 export class ServiceShell extends ReleasableService {
     private term?: IPty;
-    private initialized: boolean = false;
+    private initialized = false;
     constructor(ws: WebSocket) {
         super(ws);
     }
 
     public static createTerminal(ws: WebSocket, params: XtermServiceParameters): IPty {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const env = Object.assign({}, process.env) as any;
         env['COLORTERM'] = 'truecolor';
         const { cols = 80, rows = 24 } = params;
@@ -30,9 +30,10 @@ export class ServiceShell extends ReleasableService {
             rows,
             cwd,
             env,
-            encoding: null
+            encoding: null,
         });
         const send = USE_BINARY ? this.bufferUtf8(ws, 5) : this.buffer(ws, 5);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore Documentation is incorrect for `encoding: null`
         term.on('data', send);
         term.on('exit', () => {
@@ -55,10 +56,9 @@ export class ServiceShell extends ReleasableService {
             console.error(e.message);
             return;
         }
-        this.handleMessage(data as Message)
-            .catch((e: Error) => {
-                console.error(e.message);
-            });
+        this.handleMessage(data as Message).catch((e: Error) => {
+            console.error(e.message);
+        });
     }
 
     private handleMessage = async (message: Message): Promise<void> => {
@@ -66,7 +66,7 @@ export class ServiceShell extends ReleasableService {
             return;
         }
         const data: XtermClientMessage = message.data as XtermClientMessage;
-        const {type} = data;
+        const { type } = data;
         if (type === 'start') {
             this.term = ServiceShell.createTerminal(this.ws, data);
             this.initialized = true;

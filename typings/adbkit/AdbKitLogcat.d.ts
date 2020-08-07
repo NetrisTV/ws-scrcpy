@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { PriorityLevel } from '../server/LogsFilter';
+import { PriorityLevel } from './PriorityLevel';
 
 export interface AdbKitLogcatEntry {
     date: Date;
@@ -14,7 +14,7 @@ export enum AdbKitLogcatReaderEvents {
     'error',
     'end',
     'finish',
-    'entry'
+    'entry',
 }
 
 declare interface PriorityMethods {
