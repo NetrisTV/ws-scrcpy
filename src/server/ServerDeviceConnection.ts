@@ -4,13 +4,12 @@ import { spawn } from 'child_process';
 import * as path from 'path';
 import { Device } from '../common/Device';
 import { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from 'adbkit';
-import { SERVER_PACKAGE, SERVER_PORT, SERVER_VERSION } from './Constants';
+import { SERVER_PACKAGE, SERVER_VERSION, ARGS_STRING } from './Constants';
 import Timeout = NodeJS.Timeout;
 
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, '../public');
 const FILE_NAME = 'scrcpy-server.jar';
-const ARGS = `/ ${SERVER_PACKAGE} ${SERVER_VERSION} 0 8000000 60 -1 false - false false 0 web ${SERVER_PORT} 2>&1 > /dev/null`;
 
 const GET_SHELL_PROCESSES = 'for DIR in /proc/*; do [ -d "$DIR" ] && echo $DIR;  done';
 const CHECK_CMDLINE = `[ -f "$a/cmdline" ] && grep -av find "$a/cmdline" |grep -sae '^app_process.*${SERVER_PACKAGE}' |grep ${SERVER_VERSION} 2>&1 > /dev/null && echo $a;`;
@@ -218,7 +217,7 @@ export class ServerDeviceConnection extends EventEmitter {
 
     private spawnServer(device: AdbKitDevice): void {
         const { id: udid } = device;
-        const command = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS}`;
+        const command = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS_STRING}`;
         const adb = spawn('adb', ['-s', `${udid}`, 'shell', command], { stdio: ['ignore', 'pipe', 'pipe'] });
 
         adb.stdout.on('data', (data) => {

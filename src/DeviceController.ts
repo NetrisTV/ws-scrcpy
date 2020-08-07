@@ -198,11 +198,11 @@ export class DeviceController implements DeviceMessageListener {
             btn.title = title;
             btn.appendChild(SvgImage.create(icon));
             btn.onmousedown = () => {
-                const event = new KeyCodeControlEvent(KeyEvent.ACTION_DOWN, code, 0);
+                const event = new KeyCodeControlEvent(KeyEvent.ACTION_DOWN, code, 0, 0);
                 connection.sendEvent(event);
             };
             btn.onmouseup = () => {
-                const event = new KeyCodeControlEvent(KeyEvent.ACTION_UP, code, 0);
+                const event = new KeyCodeControlEvent(KeyEvent.ACTION_UP, code, 0, 0);
                 connection.sendEvent(event);
             };
             this.controlButtons.appendChild(btn);

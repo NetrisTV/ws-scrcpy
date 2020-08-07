@@ -52,17 +52,20 @@ export default class CommandControlEvent extends ControlEvent {
         return event;
     }
 
-    public static createSetClipboardCommand(text: string): CommandControlEvent {
+    public static createSetClipboardCommand(text: string, paste: boolean = false): CommandControlEvent {
         const event = new CommandControlEvent(ControlEvent.TYPE_SET_CLIPBOARD);
-        const temp = Util.stringToUtf8ByteArray(text);
-        let offset = CommandControlEvent.PAYLOAD_LENGTH + 1;
-        const buffer = new Buffer(offset + 2 + temp.length);
-        buffer.writeUInt8(event.type, 0);
-        buffer.writeUInt16BE(temp.length, offset);
-        offset += 2;
-        temp.forEach((byte, index) => {
-            buffer.writeUInt8(byte, index + offset);
-        });
+        const textBytes: Uint8Array | null = text ? Util.stringToUtf8ByteArray(text) : null;
+        const textLength = textBytes ? textBytes.length : 0;
+        let offset = 0;
+        const buffer = new Buffer(1 + 1 + 4 + textLength);
+        offset = buffer.writeInt8(event.type, offset);
+        offset = buffer.writeInt8(paste ? 1 : 0, offset);
+        offset = buffer.writeInt32BE(textLength, offset);
+        if (textBytes) {
+            textBytes.forEach((byte: number, index: number) => {
+                buffer.writeUInt8(byte, index + offset);
+            });
+        }
         event.buffer = buffer;
         return event;
     }

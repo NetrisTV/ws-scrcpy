@@ -8,6 +8,7 @@ interface Settings {
     iFrameInterval: number;
     sendFrameMeta: boolean;
     lockedVideoOrientation: number;
+    codecOptions?: string;
 }
 
 export default class VideoSettings {
@@ -19,6 +20,7 @@ export default class VideoSettings {
     public readonly iFrameInterval: number = 0;
     public readonly sendFrameMeta: boolean = false;
     public readonly lockedVideoOrientation: number = -1;
+    public readonly codecOptions: string = '-';
 
     constructor(data?: Settings) {
         if (data) {
@@ -47,6 +49,7 @@ export default class VideoSettings {
         if (left || top || right || bottom) {
             crop = new Rect(left, top, right, bottom);
         }
+        const codecOptions = '-';
         return new VideoSettings({
             crop,
             bitrate,
@@ -55,6 +58,7 @@ export default class VideoSettings {
             iFrameInterval,
             lockedVideoOrientation,
             sendFrameMeta,
+            codecOptions
         });
     }
 
@@ -70,6 +74,7 @@ export default class VideoSettings {
             iFrameInterval: a.iFrameInterval,
             lockedVideoOrientation: a.lockedVideoOrientation,
             sendFrameMeta: a.sendFrameMeta,
+            codecOptions: a.codecOptions,
         });
     }
 
@@ -78,6 +83,7 @@ export default class VideoSettings {
             return false;
         }
         return (
+            this.codecOptions === o.codecOptions &&
             Rect.equals(this.crop, o.crop) &&
             this.lockedVideoOrientation === o.lockedVideoOrientation &&
             this.maxSize === o.maxSize &&
@@ -101,6 +107,8 @@ export default class VideoSettings {
         offset = buffer.writeUInt16BE(bottom, offset);
         offset = buffer.writeUInt8(this.sendFrameMeta ? 1 : 0, offset);
         buffer.writeInt8(this.lockedVideoOrientation, offset);
+        // FIXME: codec options are ignored
+        //  should be something like: "codecOptions=`i-frame-interval=${iFrameInterval}`";
         return buffer;
     }
 
@@ -125,6 +133,7 @@ export default class VideoSettings {
             crop: this.crop,
             sendFrameMeta: this.sendFrameMeta,
             lockedVideoOrientation: this.lockedVideoOrientation,
+            codecOptions: this.codecOptions,
         };
     }
 }

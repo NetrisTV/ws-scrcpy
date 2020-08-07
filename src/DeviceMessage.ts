@@ -22,8 +22,8 @@ export default class DeviceMessage {
             throw Error('Empty buffer');
         }
         let offset = 1;
-        const length = this.buffer.readUInt16BE(offset);
-        offset += 2;
+        const length = this.buffer.readInt32BE(offset);
+        offset += 4;
         const textBytes = this.buffer.slice(offset, offset + length);
         return Util.utf8ByteArrayToString(textBytes);
     }
