@@ -20,18 +20,34 @@ npm start
 ```
 
 ## Supported features
-* Screen casting
+
+### Screen casting
+The modified [version](https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.15.x) of [Genymobile/scrcpy](https://github.com/Genymobile/scrcpy) used to stream H264 video, which then decoded by one of included decoders.
+
+### Remote control
 * Touch events (including multi-touch)
-* Input events
-* Clipboard events
+* Multi-touch emulation: <kbd>CTRL</kbd> to start with center at the center of the screen, <kbd>SHIFT</kbd> + <kbd>CTRL</kbd> to start with center at the current point
+* Capturing keyboard events
+* Injecting text (ASCII only)
+* Copy to/from device clipboard
 * Device "rotation"
-* Video settings changing
+
+### File push
+Drag & drop an APK file to push it to the `/data/local/tmp` directory. You can install it manually from the included [xterm.js](https://github.com/xtermjs/xterm.js) terminal emulator.
 
 ## Known issues
 
 * The server on the Android Emulator listens on the internal interface and not available from the outside (as workaround you can do `adb forward tcp:8886 tcp:8886` and use `127.0.0.1` instead of emulator IP address)
 * H264bsdDecoder may fail to start
 * Version `0.3.0` is incompatible with previous. Reboot device or manually kill `app_process`.
+
+## Security warning
+Be advised and keep in mind:
+* There is no encryption between browser and node.js server (plain HTTP).
+* There is no encryption between browser and WebSocket server (plain WS).
+* There is no authorization on any level.
+* The modified version of scrcpy with integrated WebSocket server is listening for connections on all network interfaces.
+* The modified version of scrcpy will keep running after the last client disconnected.
 
 ## Related projects
 * [Genymobile/scrcpy](https://github.com/Genymobile/scrcpy)
