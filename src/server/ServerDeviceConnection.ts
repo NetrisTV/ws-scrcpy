@@ -228,6 +228,11 @@ export class ServerDeviceConnection extends EventEmitter {
             console.error(`[${udid}] stderr: ${data}`);
         });
 
+        adb.on('error', (e: Error) => {
+            console.error(`[${udid}] failed to spawn adb process ${e.message}`);
+            console.error(e.stack);
+        });
+
         adb.on('close', (code) => {
             console.log(`[${udid}] adb process exited with code ${code}`);
         });
