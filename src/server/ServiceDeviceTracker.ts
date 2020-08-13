@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { ServerDeviceConnection } from './ServerDeviceConnection';
 import { ReleasableService } from './ReleasableService';
 import { Message } from '../common/Message';
-import { Device } from '../common/Device';
+import DescriptorFields from "../common/DescriptorFields";
 
 export class ServiceDeviceTracker extends ReleasableService {
     private sdc: ServerDeviceConnection = ServerDeviceConnection.getInstance();
@@ -21,7 +21,7 @@ export class ServiceDeviceTracker extends ReleasableService {
             });
     }
 
-    private buildAndSendMessage = (list: Device[]): void => {
+    private buildAndSendMessage = (list: DescriptorFields[]): void => {
         const msg: Message = {
             id: -1,
             type: 'devicelist',

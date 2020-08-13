@@ -1,13 +1,13 @@
 import * as querystring from 'querystring';
 import { NodeClient } from './NodeClient';
 import { Message } from '../common/Message';
-import { Device } from '../common/Device';
 import { StreamParams } from './ScrcpyClient';
 import { SERVER_PORT } from '../server/Constants';
 import { ShellParams } from './ClientShell';
+import DescriptorFields from "../common/DescriptorFields";
 
 type MapItem = {
-    field?: keyof Device;
+    field?: keyof DescriptorFields;
     title: string;
 };
 
@@ -35,6 +35,10 @@ const FIELDS_MAP: MapItem[] = [
     {
         field: 'state',
         title: 'State',
+    },
+    {
+        field: 'ip',
+        title: 'Wi-Fi IP',
     },
     {
         field: 'pid',
@@ -93,11 +97,11 @@ export class ClientDeviceTracker extends NodeClient {
             console.log(`Unknown message type: ${message.type}`);
             return;
         }
-        const list: Device[] = message.data as Device[];
+        const list: DescriptorFields[] = message.data as DescriptorFields[];
         this.buildDeviceTable(list);
     }
 
-    private buildDeviceTable(data: Device[]): void {
+    private buildDeviceTable(data: DescriptorFields[]): void {
         let devices = document.getElementById('devices');
         if (!devices) {
             devices = document.createElement('div');
@@ -133,19 +137,27 @@ export class ClientDeviceTracker extends NodeClient {
 
         data.forEach((device) => {
             const row = document.createElement('tr');
+            let hasPid = false;
+            let hasIp = false;
             FIELDS_MAP.forEach((item) => {
                 if (item.field) {
+                    const value = device[item.field].toString();
                     const td = document.createElement('td');
-                    td.innerText = device[item.field].toString();
+                    td.innerText = value;
                     row.appendChild(td);
+                    if (item.field === 'pid') {
+                        hasPid = (value !== '-1');
+                    } else if (item.field === 'ip') {
+                        hasIp = !value.includes('[');
+                    }
                 }
             });
             const isActive = device.state === 'device';
             DECODERS.forEach((decoderName) => {
                 const decoderTd = document.createElement('td');
                 if (isActive) {
-                    decoderTd.appendChild(
-                        ClientDeviceTracker.buildLink(
+                    if (hasIp && hasPid) {
+                        const link = ClientDeviceTracker.buildLink(
                             {
                                 showFps: true,
                                 action: 'stream',
@@ -155,8 +167,9 @@ export class ClientDeviceTracker extends NodeClient {
                                 port: SERVER_PORT.toString(10),
                             },
                             'stream',
-                        ),
-                    );
+                        );
+                        decoderTd.appendChild(link);
+                    }
                 }
                 row.appendChild(decoderTd);
             });
