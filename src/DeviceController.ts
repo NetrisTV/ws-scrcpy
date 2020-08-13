@@ -31,7 +31,7 @@ export class DeviceController implements DeviceMessageListener {
         const controlsWrapper = (this.controls = document.createElement('div'));
         const deviceView = (this.deviceView = document.createElement('div'));
         deviceView.className = 'device-view';
-        const connection = this.deviceConnection = DeviceConnection.getInstance(udid, params.url);
+        const connection = (this.deviceConnection = DeviceConnection.getInstance(udid, params.url));
         const videoSettings = decoder.getVideoSettings();
         connection.addEventListener(this);
         const wrapper = document.createElement('div');
@@ -281,7 +281,7 @@ export class DeviceController implements DeviceMessageListener {
                 frameRate,
                 iFrameInterval,
                 lockedVideoOrientation,
-                sendFrameMeta
+                sendFrameMeta,
             } = decoder.getVideoSettings();
             const newVideoSettings = new VideoSettings({
                 maxSize,
@@ -289,7 +289,7 @@ export class DeviceController implements DeviceMessageListener {
                 frameRate,
                 iFrameInterval,
                 lockedVideoOrientation,
-                sendFrameMeta
+                sendFrameMeta,
             });
             decoder.setVideoSettings(newVideoSettings, false);
         }

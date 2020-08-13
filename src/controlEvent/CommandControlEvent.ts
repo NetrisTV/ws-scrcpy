@@ -52,7 +52,7 @@ export default class CommandControlEvent extends ControlEvent {
         return event;
     }
 
-    public static createSetClipboardCommand(text: string, paste: boolean = false): CommandControlEvent {
+    public static createSetClipboardCommand(text: string, paste = false): CommandControlEvent {
         const event = new CommandControlEvent(ControlEvent.TYPE_SET_CLIPBOARD);
         const textBytes: Uint8Array | null = text ? Util.stringToUtf8ByteArray(text) : null;
         const textLength = textBytes ? textBytes.length : 0;

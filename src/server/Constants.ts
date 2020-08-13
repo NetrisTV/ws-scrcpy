@@ -33,7 +33,7 @@ const ARGUMENTS = [
     STAY_AWAKE,
     CODEC_OPTIONS,
     SERVER_TYPE,
-    SERVER_PORT
+    SERVER_PORT,
 ];
 
 export const ARGS_STRING = `/ ${SERVER_PACKAGE} ${ARGUMENTS.join(' ')} 2>&1 > /dev/null`;

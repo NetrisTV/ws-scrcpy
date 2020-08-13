@@ -58,7 +58,7 @@ export default class VideoSettings {
             iFrameInterval,
             lockedVideoOrientation,
             sendFrameMeta,
-            codecOptions
+            codecOptions,
         });
     }
 

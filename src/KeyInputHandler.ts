@@ -16,7 +16,7 @@ export class KeyInputHandler {
             return;
         }
         let action: typeof KeyEvent.ACTION_DOWN | typeof KeyEvent.ACTION_DOWN;
-        let repeatCount: number = 0;
+        let repeatCount = 0;
         if (event.type === 'keydown') {
             action = KeyEvent.ACTION_DOWN;
             if (event.repeat) {
@@ -24,7 +24,7 @@ export class KeyInputHandler {
                 if (typeof count !== 'number') {
                     count = 1;
                 } else {
-                    count ++;
+                    count++;
                 }
                 repeatCount = count;
                 KeyInputHandler.repeatCounter.set(keyCode, count);

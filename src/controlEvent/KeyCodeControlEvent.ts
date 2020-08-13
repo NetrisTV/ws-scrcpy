@@ -4,7 +4,12 @@ import ControlEvent from './ControlEvent';
 export default class KeyCodeControlEvent extends ControlEvent {
     public static PAYLOAD_LENGTH = 13;
 
-    constructor(readonly action: number, readonly keycode: number, readonly repeat: number, readonly metaState: number) {
+    constructor(
+        readonly action: number,
+        readonly keycode: number,
+        readonly repeat: number,
+        readonly metaState: number,
+    ) {
         super(ControlEvent.TYPE_KEYCODE);
     }
 
