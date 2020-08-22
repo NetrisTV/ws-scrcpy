@@ -1,6 +1,11 @@
 import VideoSettings from '../VideoSettings';
 import ScreenInfo from '../ScreenInfo';
 import Rect from '../Rect';
+import Size from "../Size";
+
+export interface VideoResizeListener {
+    onVideoResize(size: Size): void;
+}
 
 export default abstract class Decoder {
     public static STATE: Record<string, number> = {
@@ -15,6 +20,7 @@ export default abstract class Decoder {
     protected fpsCurrentValue = 0;
     protected fpsCounter: number[] = [];
     private state: number = Decoder.STATE.STOPPED;
+    private resizeListeners: Set<VideoResizeListener> = new Set();
     public showFps = true;
     public readonly supportsScreenshot: boolean = false;
 
@@ -148,10 +154,22 @@ export default abstract class Decoder {
             this.parentElement.style.height = `${height}px`;
             this.parentElement.style.width = `${width}px`;
         }
+        const size = new Size(width, height);
+        this.resizeListeners.forEach(listener => {
+            listener.onVideoResize(size);
+        })
     }
 
     public getName(): string {
         return this.name;
+    }
+
+    public addResizeListener(listener: VideoResizeListener) {
+        this.resizeListeners.add(listener);
+    }
+
+    public removeResizeListener(listener: VideoResizeListener) {
+        this.resizeListeners.delete(listener);
     }
 
     protected updateFps(pushNew: boolean): void {

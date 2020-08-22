@@ -22,7 +22,6 @@ export class ScrcpyClient extends BaseClient {
     public static ACTION = 'stream';
     private static instance?: ScrcpyClient;
     public static start(params: StreamParams): ScrcpyClient {
-        this.getOrCreateControlsWrapper();
         const client = this.getInstance();
         const decoder = client.startStream(params.udid, params.decoder, `ws://${params.ip}:${params.port}`);
         if (decoder) {
@@ -41,16 +40,6 @@ export class ScrcpyClient extends BaseClient {
 
     public static getInstance(): ScrcpyClient {
         return ScrcpyClient.instance || new ScrcpyClient();
-    }
-
-    public static getOrCreateControlsWrapper(): HTMLDivElement {
-        let controlsWrap = document.getElementById('controlsWrap') as HTMLDivElement;
-        if (!controlsWrap) {
-            controlsWrap = document.createElement('div');
-            controlsWrap.id = 'controlsWrap';
-            document.body.appendChild(controlsWrap);
-        }
-        return controlsWrap;
     }
 
     public startStream(udid: string, decoderName: string, url: string): Decoder | undefined {

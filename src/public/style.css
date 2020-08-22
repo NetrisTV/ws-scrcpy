@@ -25,9 +25,7 @@
         --control-buttons-bg-color: hsl(201, 18%, 19%);
         --text-color: hsl(0, 0%, 90%);
         --link-color: hsl(210, 63%, 47%);
-        /*--link-color_visited: hsl(241, 31%, 47%);*/
         --link-color_visited: hsl(267, 31%, 47%);
-        /*--link-color_visited: hsl(267, 95%, 76%);*/
         --svg-checkbox-bg-color: hsl(172, 100%, 27%);
         --svg-button-fill: hsl(0, 0%, 100%);
         --table-border-color: hsl(0, 0%, 32%);
@@ -109,14 +107,6 @@ body.stream {
     background-color: var(--table-header-bg-color);
 }
 
-#controlsWrap {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 2;
-    background-color: var(--controls-bg-color)
-}
-
 .decoder-controls-wrapper {
     padding: 5px;
 }
@@ -124,6 +114,7 @@ body.stream {
 .device-view {
     z-index: 1;
     float: right;
+    display: inline-block;
 }
 
 .video-layer {
@@ -169,31 +160,19 @@ body.stream {
     display: none;
 }
 
-.menu > input ~ .box {
+.more-box {
     display: none;
+    position: absolute;
+    background-color: var(--controls-bg-color);
+    z-index: 2;
+    padding: 0 10px 10px 10px;
 }
 
-.menu > input:checked ~ .box {
-    display: block;
+.text-with-shadow, .more-box label {
+    color: var(--text-color);
+    text-shadow: var(--row-bg-color_hover) 0 0 5px;
 }
 
-.menu > label::before {
-    content: '≡';
-    margin: 5px;
-}
-
-.menu > input:checked ~ label::before {
-    content: '◃';
-}
-
-.menu > input:checked ~ div {
-    display: block;
-    padding: 10px;
-}
-
-.menu > input {
-    display: none;
-}
 
 .control-buttons-list {
     float: right;

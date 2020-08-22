@@ -1,4 +1,4 @@
-import Decoder from './decoder/Decoder';
+import Decoder, { VideoResizeListener } from "./decoder/Decoder";
 import { DeviceConnection, DeviceMessageListener } from './DeviceConnection';
 import VideoSettings from './VideoSettings';
 import ErrorHandler from './ErrorHandler';
@@ -9,6 +9,7 @@ import ControlEvent from './controlEvent/ControlEvent';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import DeviceMessage from './DeviceMessage';
 import SvgImage from './ui/SvgImage';
+import Size from "./Size";
 
 export interface DeviceControllerParams {
     url: string;
@@ -16,11 +17,11 @@ export interface DeviceControllerParams {
     decoder: Decoder;
 }
 
-export class DeviceController implements DeviceMessageListener {
+export class DeviceController implements DeviceMessageListener, VideoResizeListener {
     public readonly decoder: Decoder;
-    public readonly controls: HTMLDivElement;
     public readonly deviceView: HTMLDivElement;
     public readonly input: HTMLInputElement;
+    private readonly moreBox: HTMLDivElement;
     private readonly controlButtons: HTMLElement;
     private readonly deviceConnection: DeviceConnection;
 
@@ -28,25 +29,17 @@ export class DeviceController implements DeviceMessageListener {
         const decoder = (this.decoder = params.decoder);
         const udid = params.udid;
         const decoderName = this.decoder.getName();
-        const controlsWrapper = (this.controls = document.createElement('div'));
         const deviceView = (this.deviceView = document.createElement('div'));
         deviceView.className = 'device-view';
         const connection = (this.deviceConnection = DeviceConnection.getInstance(udid, params.url));
         const videoSettings = decoder.getVideoSettings();
         connection.addEventListener(this);
-        const wrapper = document.createElement('div');
-        wrapper.className = 'decoder-controls-wrapper menu';
-        const menuCheck = document.createElement('input');
-        menuCheck.type = 'checkbox';
-        menuCheck.checked = true;
-        const menuLabel = document.createElement('label');
-        menuLabel.htmlFor = menuCheck.id = `controls_${udid}_${decoderName}`;
-        // label.innerText = `${deviceName} (${decoderName})`;
-        wrapper.appendChild(menuCheck);
-        wrapper.appendChild(menuLabel);
-        const box = document.createElement('div');
-        box.className = 'box';
-        wrapper.appendChild(box);
+        const moreBox = this.moreBox = document.createElement('div');
+        moreBox.className = 'more-box';
+        const nameBox = document.createElement('p');
+        nameBox.innerText = `${udid} (${decoderName})`;
+        nameBox.className = 'text-with-shadow';
+        moreBox.appendChild(nameBox);
         const textWrap = document.createElement('div');
         const input = (this.input = document.createElement('input'));
         const sendButton = document.createElement('button');
@@ -54,7 +47,7 @@ export class DeviceController implements DeviceMessageListener {
         textWrap.appendChild(input);
         textWrap.appendChild(sendButton);
 
-        box.appendChild(textWrap);
+        moreBox.appendChild(textWrap);
         sendButton.onclick = () => {
             if (input.value) {
                 connection.sendEvent(new TextControlEvent(input.value));
@@ -230,7 +223,21 @@ export class DeviceController implements DeviceMessageListener {
         };
         this.controlButtons.appendChild(captureKeyboardInput);
         this.controlButtons.appendChild(captureKeyboardLabel);
-        box.appendChild(cmdWrap);
+        moreBox.appendChild(cmdWrap);
+        const showMoreInput = document.createElement('input');
+        showMoreInput.type = 'checkbox';
+        const showMoreLabel = document.createElement('label');
+        showMoreLabel.title = 'More';
+        showMoreLabel.classList.add('control-button');
+        showMoreLabel.appendChild(SvgImage.create(SvgImage.Icon.MORE));
+        showMoreLabel.htmlFor = showMoreInput.id = `show_more_${udid}_${decoderName}`;
+        showMoreInput.onclick = (e: MouseEvent) => {
+            const checkbox = e.target as HTMLInputElement;
+            moreBox.style.display = checkbox.checked ? 'block' : 'none';
+        };
+        const firstChild = this.controlButtons.firstChild as ChildNode;
+        this.controlButtons.insertBefore(showMoreInput, firstChild);
+        this.controlButtons.insertBefore(showMoreLabel, firstChild);
 
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
@@ -242,21 +249,23 @@ export class DeviceController implements DeviceMessageListener {
             if (parent) {
                 parent.removeChild(deviceView);
             }
-            parent = controlsWrapper.parentElement;
+            parent = moreBox.parentElement;
             if (parent) {
-                parent.removeChild(controlsWrapper);
+                parent.removeChild(moreBox);
             }
+            decoder.removeResizeListener(this);
         };
         const stopBtn = document.createElement('button') as HTMLButtonElement;
         stopBtn.innerText = `Disconnect`;
         stopBtn.onclick = stop;
-        box.appendChild(stopBtn);
-        controlsWrapper.appendChild(wrapper);
+        moreBox.appendChild(stopBtn);
         deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');
         video.className = 'video';
         deviceView.appendChild(video);
+        deviceView.appendChild(moreBox);
         this.decoder.setParent(video);
+        this.decoder.addResizeListener(this);
         connection.setErrorListener(new ErrorHandler(stop));
     }
 
@@ -269,10 +278,6 @@ export class DeviceController implements DeviceMessageListener {
 
     public start(): void {
         document.body.appendChild(this.deviceView);
-        const temp = document.getElementById('controlsWrap');
-        if (temp) {
-            temp.appendChild(this.controls);
-        }
         const decoder = this.decoder;
         if (decoder.getPreferredVideoSetting().equals(decoder.getVideoSettings())) {
             const maxSize = this.getMaxSize();
@@ -303,5 +308,10 @@ export class DeviceController implements DeviceMessageListener {
         this.input.value = ev.getText();
         this.input.select();
         document.execCommand('copy');
+    }
+
+    public onVideoResize(size: Size): void {
+        // padding: 10px
+        this.moreBox.style.width = `${size.width - 2 * 10}px`;
     }
 }
