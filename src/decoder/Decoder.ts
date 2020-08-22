@@ -25,6 +25,9 @@ export default abstract class Decoder {
     ) {
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
+        this.touchableCanvas.oncontextmenu = function (e: MouseEvent): void {
+            e.preventDefault();
+        };
         const preferred = this.getPreferredVideoSetting();
         this.videoSettings = Decoder.getVideoSettingFromStorage(preferred, this.name, udid);
     }
