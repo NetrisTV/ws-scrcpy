@@ -63,7 +63,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                 const action: number = codes[command];
                 const btn = document.createElement('button');
                 let bitrateInput: HTMLInputElement;
-                let frameRateInput: HTMLInputElement;
+                let maxFpsInput: HTMLInputElement;
                 let iFrameIntervalInput: HTMLInputElement;
                 if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
                     const spoiler = document.createElement('div');
@@ -92,14 +92,14 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                     bitrateWrap.appendChild(bitrateLabel);
                     bitrateWrap.appendChild(bitrateInput);
 
-                    const framerateWrap = document.createElement('div');
-                    const framerateLabel = document.createElement('label');
-                    framerateLabel.innerText = 'Framerate:';
-                    frameRateInput = document.createElement('input');
-                    frameRateInput.placeholder = `framerate (${videoSettings.frameRate})`;
-                    frameRateInput.value = videoSettings.frameRate.toString();
-                    framerateWrap.appendChild(framerateLabel);
-                    framerateWrap.appendChild(frameRateInput);
+                    const maxFpsWrap = document.createElement('div');
+                    const maxFpsLabel = document.createElement('label');
+                    maxFpsLabel.innerText = 'Max fps:';
+                    maxFpsInput = document.createElement('input');
+                    maxFpsInput.placeholder = `max fps (${videoSettings.maxFps})`;
+                    maxFpsInput.value = videoSettings.maxFps.toString();
+                    maxFpsWrap.appendChild(maxFpsLabel);
+                    maxFpsWrap.appendChild(maxFpsInput);
 
                     const iFrameIntervalWrap = document.createElement('div');
                     const iFrameIntervalLabel = document.createElement('label');
@@ -111,7 +111,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                     iFrameIntervalWrap.appendChild(iFrameIntervalInput);
 
                     innerDiv.appendChild(bitrateWrap);
-                    innerDiv.appendChild(framerateWrap);
+                    innerDiv.appendChild(maxFpsWrap);
                     innerDiv.appendChild(iFrameIntervalWrap);
                     innerDiv.appendChild(btn);
                     cmdWrap.appendChild(spoiler);
@@ -123,16 +123,16 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                     let event: CommandControlEvent | undefined;
                     if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
                         const bitrate = parseInt(bitrateInput.value, 10);
-                        const frameRate = parseInt(frameRateInput.value, 10);
+                        const maxFps = parseInt(maxFpsInput.value, 10);
                         const iFrameInterval = parseInt(iFrameIntervalInput.value, 10);
-                        if (isNaN(bitrate) || isNaN(frameRate)) {
+                        if (isNaN(bitrate) || isNaN(maxFps)) {
                             return;
                         }
                         const maxSize = this.getMaxSize();
                         const videoSettings = new VideoSettings({
                             maxSize,
                             bitrate,
-                            frameRate,
+                            maxFps,
                             iFrameInterval,
                             lockedVideoOrientation: -1,
                             sendFrameMeta: false,
@@ -283,7 +283,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
             const maxSize = this.getMaxSize();
             const {
                 bitrate,
-                frameRate,
+                maxFps,
                 iFrameInterval,
                 lockedVideoOrientation,
                 sendFrameMeta,
@@ -291,7 +291,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
             const newVideoSettings = new VideoSettings({
                 maxSize,
                 bitrate,
-                frameRate,
+                maxFps,
                 iFrameInterval,
                 lockedVideoOrientation,
                 sendFrameMeta,

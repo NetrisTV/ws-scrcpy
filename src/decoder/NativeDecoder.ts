@@ -6,7 +6,7 @@ export default class NativeDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 8000000,
-        frameRate: 60,
+        maxFps: 60,
         iFrameInterval: 10,
         maxSize: 720,
         sendFrameMeta: false,
@@ -69,7 +69,7 @@ export default class NativeDecoder extends Decoder {
         if (!this.converter) {
             let fps = NativeDecoder.DEFAULT_FRAMES_PER_SECOND;
             if (this.videoSettings) {
-                fps = this.videoSettings.frameRate;
+                fps = this.videoSettings.maxFps;
             }
             this.converter = NativeDecoder.createConverter(this.tag, fps, this.fpf);
         }
@@ -87,11 +87,11 @@ export default class NativeDecoder extends Decoder {
     }
 
     public setVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
-        if (this.videoSettings && this.videoSettings.frameRate !== videoSettings.frameRate) {
+        if (this.videoSettings && this.videoSettings.maxFps !== videoSettings.maxFps) {
             const state = this.getState();
             if (this.converter) {
                 this.stop();
-                this.converter = NativeDecoder.createConverter(this.tag, videoSettings.frameRate, this.fpf);
+                this.converter = NativeDecoder.createConverter(this.tag, videoSettings.maxFps, this.fpf);
             }
             if (state === Decoder.STATE.PLAYING) {
                 this.play();

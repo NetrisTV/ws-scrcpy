@@ -108,8 +108,8 @@ export default abstract class CanvasCommon extends Decoder {
     public pushFrame(frame: Uint8Array): void {
         if (Decoder.isIFrame(frame)) {
             if (this.videoSettings) {
-                const { frameRate } = this.videoSettings;
-                if (this.framesList.length > frameRate / 2) {
+                const { maxFps } = this.videoSettings;
+                if (this.framesList.length > maxFps / 2) {
                     console.log(this.name, 'Dropping frames', this.framesList.length);
                     this.framesList = [];
                 }

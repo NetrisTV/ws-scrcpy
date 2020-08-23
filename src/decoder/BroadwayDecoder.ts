@@ -12,7 +12,7 @@ export default class BroadwayDecoder extends CanvasCommon {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 500000,
-        frameRate: 24,
+        maxFps: 24,
         iFrameInterval: 5,
         maxSize: 480,
         sendFrameMeta: false,

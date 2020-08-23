@@ -158,7 +158,7 @@ export class DeviceConnection implements KeyEventListener {
             const {
                 crop,
                 bitrate,
-                frameRate,
+                maxFps,
                 iFrameInterval,
                 sendFrameMeta,
                 lockedVideoOrientation,
@@ -168,7 +168,7 @@ export class DeviceConnection implements KeyEventListener {
                     maxSize: Math.max(videoSize.width, videoSize.height),
                     crop,
                     bitrate,
-                    frameRate,
+                    maxFps,
                     iFrameInterval,
                     sendFrameMeta,
                     lockedVideoOrientation,

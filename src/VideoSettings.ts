@@ -4,7 +4,7 @@ interface Settings {
     crop?: Rect | null;
     bitrate: number;
     maxSize: number;
-    frameRate: number;
+    maxFps: number;
     iFrameInterval: number;
     sendFrameMeta: boolean;
     lockedVideoOrientation: number;
@@ -12,11 +12,11 @@ interface Settings {
 }
 
 export default class VideoSettings {
-    public static readonly BUFFER_LENGTH: number = 20;
+    public static readonly BUFFER_LENGTH: number = 23;
     public readonly crop?: Rect | null = null;
     public readonly bitrate: number = 0;
     public readonly maxSize: number = 0;
-    public readonly frameRate: number = 0;
+    public readonly maxFps: number = 0;
     public readonly iFrameInterval: number = 0;
     public readonly sendFrameMeta: boolean = false;
     public readonly lockedVideoOrientation: number = -1;
@@ -27,7 +27,7 @@ export default class VideoSettings {
             this.crop = data.crop;
             this.bitrate = data.bitrate;
             this.maxSize = data.maxSize;
-            this.frameRate = data.frameRate;
+            this.maxFps = data.maxFps;
             this.iFrameInterval = data.iFrameInterval;
             this.sendFrameMeta = data.sendFrameMeta;
             this.lockedVideoOrientation = data.lockedVideoOrientation;
@@ -36,15 +36,15 @@ export default class VideoSettings {
 
     public static fromBuffer(buffer: Buffer): VideoSettings {
         const bitrate = buffer.readUInt32BE(0);
-        const frameRate = buffer.readUInt8(4);
-        const iFrameInterval = buffer.readUInt8(5);
-        const maxSize = buffer.readUInt32BE(6);
-        const left = buffer.readUInt16BE(10);
-        const top = buffer.readUInt16BE(12);
-        const right = buffer.readUInt16BE(14);
-        const bottom = buffer.readUInt16BE(16);
-        const sendFrameMeta = !!buffer.readUInt8(18);
-        const lockedVideoOrientation = buffer.readInt8(19);
+        const maxFps = buffer.readUInt32BE(4);
+        const iFrameInterval = buffer.readUInt8(8);
+        const maxSize = buffer.readUInt32BE(9);
+        const left = buffer.readUInt16BE(13);
+        const top = buffer.readUInt16BE(15);
+        const right = buffer.readUInt16BE(17);
+        const bottom = buffer.readUInt16BE(19);
+        const sendFrameMeta = !!buffer.readUInt8(21);
+        const lockedVideoOrientation = buffer.readInt8(22);
         let crop: Rect | null = null;
         if (left || top || right || bottom) {
             crop = new Rect(left, top, right, bottom);
@@ -54,7 +54,7 @@ export default class VideoSettings {
             crop,
             bitrate,
             maxSize,
-            frameRate,
+            maxFps,
             iFrameInterval,
             lockedVideoOrientation,
             sendFrameMeta,
@@ -70,7 +70,7 @@ export default class VideoSettings {
             bitrate: a.bitrate,
             crop: Rect.copy(a.crop),
             maxSize: a.maxSize,
-            frameRate: a.frameRate,
+            maxFps: a.maxFps,
             iFrameInterval: a.iFrameInterval,
             lockedVideoOrientation: a.lockedVideoOrientation,
             sendFrameMeta: a.sendFrameMeta,
@@ -88,7 +88,7 @@ export default class VideoSettings {
             this.lockedVideoOrientation === o.lockedVideoOrientation &&
             this.maxSize === o.maxSize &&
             this.bitrate === o.bitrate &&
-            this.frameRate === o.frameRate &&
+            this.maxFps === o.maxFps &&
             this.iFrameInterval === o.iFrameInterval
         );
     }
@@ -98,7 +98,7 @@ export default class VideoSettings {
         const { left = 0, top = 0, right = 0, bottom = 0 } = this.crop || {};
         let offset = 0;
         offset = buffer.writeUInt32BE(this.bitrate, offset);
-        offset = buffer.writeUInt8(this.frameRate, offset);
+        offset = buffer.writeUInt32BE(this.maxFps, offset);
         offset = buffer.writeUInt8(this.iFrameInterval, offset);
         offset = buffer.writeUInt32BE(this.maxSize, offset);
         offset = buffer.writeUInt16BE(left, offset);
@@ -115,8 +115,8 @@ export default class VideoSettings {
     public toString(): string {
         // prettier-ignore
         return `VideoSettings{bitrate=${
-            this.bitrate}, frameRate=${
-            this.frameRate}, iFrameInterval=${
+            this.bitrate}, maxFps=${
+            this.maxFps}, iFrameInterval=${
             this.iFrameInterval}, maxSize=${
             this.maxSize}, crop=${
             this.crop}, metaFrame=${
@@ -127,7 +127,7 @@ export default class VideoSettings {
     public toJSON(): Settings {
         return {
             bitrate: this.bitrate,
-            frameRate: this.frameRate,
+            maxFps: this.maxFps,
             iFrameInterval: this.iFrameInterval,
             maxSize: this.maxSize,
             crop: this.crop,

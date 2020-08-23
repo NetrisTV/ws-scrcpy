@@ -61,12 +61,15 @@ export default abstract class Decoder {
             return preferred;
         }
         const parsed = JSON.parse(saved);
-        const { crop, bitrate, maxSize, frameRate, iFrameInterval, sendFrameMeta, lockedVideoOrientation } = parsed;
+        const { crop, bitrate, maxSize, iFrameInterval, sendFrameMeta, lockedVideoOrientation } = parsed;
+
+        // REMOVE `frameRate`
+        const maxFps = isNaN(parsed.maxFps) ? parsed.frameRate : parsed.maxFps;
         return new VideoSettings({
             crop: crop ? new Rect(crop.left, crop.top, crop.right, crop.bottom) : preferred.crop,
             bitrate: !isNaN(bitrate) ? bitrate : preferred.bitrate,
             maxSize: !isNaN(maxSize) ? maxSize : preferred.maxSize,
-            frameRate: !isNaN(frameRate) ? frameRate : preferred.frameRate,
+            maxFps: !isNaN(maxFps) ? maxFps : preferred.maxFps,
             iFrameInterval: !isNaN(iFrameInterval) ? iFrameInterval : preferred.iFrameInterval,
             sendFrameMeta: typeof sendFrameMeta === 'boolean' ? sendFrameMeta : preferred.sendFrameMeta,
             lockedVideoOrientation: !isNaN(lockedVideoOrientation)
