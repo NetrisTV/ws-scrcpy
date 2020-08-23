@@ -1,7 +1,7 @@
 import VideoSettings from '../VideoSettings';
 import ScreenInfo from '../ScreenInfo';
 import Rect from '../Rect';
-import Size from "../Size";
+import Size from '../Size';
 
 export interface VideoResizeListener {
     onVideoResize(size: Size): void;
@@ -155,9 +155,9 @@ export default abstract class Decoder {
             this.parentElement.style.width = `${width}px`;
         }
         const size = new Size(width, height);
-        this.resizeListeners.forEach(listener => {
+        this.resizeListeners.forEach((listener) => {
             listener.onVideoResize(size);
-        })
+        });
     }
 
     public getName(): string {

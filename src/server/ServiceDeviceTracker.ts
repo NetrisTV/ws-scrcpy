@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { ServerDeviceConnection } from './ServerDeviceConnection';
 import { ReleasableService } from './ReleasableService';
 import { Message } from '../common/Message';
-import DescriptorFields from "../common/DescriptorFields";
+import DescriptorFields from '../common/DescriptorFields';
 
 export class ServiceDeviceTracker extends ReleasableService {
     private sdc: ServerDeviceConnection = ServerDeviceConnection.getInstance();

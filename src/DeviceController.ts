@@ -1,4 +1,4 @@
-import Decoder, { VideoResizeListener } from "./decoder/Decoder";
+import Decoder, { VideoResizeListener } from './decoder/Decoder';
 import { DeviceConnection, DeviceMessageListener } from './DeviceConnection';
 import VideoSettings from './VideoSettings';
 import ErrorHandler from './ErrorHandler';
@@ -9,7 +9,7 @@ import ControlEvent from './controlEvent/ControlEvent';
 import TextControlEvent from './controlEvent/TextControlEvent';
 import DeviceMessage from './DeviceMessage';
 import SvgImage from './ui/SvgImage';
-import Size from "./Size";
+import Size from './Size';
 
 export interface DeviceControllerParams {
     url: string;
@@ -34,7 +34,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         const connection = (this.deviceConnection = DeviceConnection.getInstance(udid, params.url));
         const videoSettings = decoder.getVideoSettings();
         connection.addEventListener(this);
-        const moreBox = this.moreBox = document.createElement('div');
+        const moreBox = (this.moreBox = document.createElement('div'));
         moreBox.className = 'more-box';
         const nameBox = document.createElement('p');
         nameBox.innerText = `${udid} (${decoderName})`;

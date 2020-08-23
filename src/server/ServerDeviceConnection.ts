@@ -1,10 +1,10 @@
-import ADB, { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from "adbkit";
-import { EventEmitter } from "events";
-import { spawn } from "child_process";
-import * as path from "path";
-import { DeviceDescriptor } from "./DeviceDescriptor";
-import { ARGS_STRING, SERVER_PACKAGE, SERVER_VERSION } from "./Constants";
-import DescriptorFields from "../common/DescriptorFields";
+import ADB, { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from 'adbkit';
+import { EventEmitter } from 'events';
+import { spawn } from 'child_process';
+import * as path from 'path';
+import { DeviceDescriptor } from './DeviceDescriptor';
+import { ARGS_STRING, SERVER_PACKAGE, SERVER_VERSION } from './Constants';
+import DescriptorFields from '../common/DescriptorFields';
 import Timeout = NodeJS.Timeout;
 
 const TEMP_PATH = '/data/local/tmp/';
@@ -19,8 +19,8 @@ const LABEL = {
     UNKNOWN: '[unknown]',
     DETECTION: '[detection...]',
     FAILED_TO_GET: '[failed to get]',
-    RUNNING: '[running]'
-}
+    RUNNING: '[running]',
+};
 
 export class ServerDeviceConnection extends EventEmitter {
     public static readonly UPDATE_EVENT: string = 'update';
@@ -121,13 +121,13 @@ export class ServerDeviceConnection extends EventEmitter {
         if (!this.throttleTimeoutId) {
             this.throttleTimeoutId = setTimeout(() => {
                 delete this.throttleTimeoutId;
-                this.emitUpdate()
+                this.emitUpdate();
             }, THROTTLE - time);
         }
     }
 
     private populateCache(): void {
-        this.cache = Array.from(this.deviceDescriptors.values()).map(d => {
+        this.cache = Array.from(this.deviceDescriptors.values()).map((d) => {
             return d.toJSON();
         });
     }

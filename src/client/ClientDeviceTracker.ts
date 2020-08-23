@@ -4,7 +4,7 @@ import { Message } from '../common/Message';
 import { StreamParams } from './ScrcpyClient';
 import { SERVER_PORT } from '../server/Constants';
 import { ShellParams } from './ClientShell';
-import DescriptorFields from "../common/DescriptorFields";
+import DescriptorFields from '../common/DescriptorFields';
 
 type MapItem = {
     field?: keyof DescriptorFields;
@@ -146,7 +146,7 @@ export class ClientDeviceTracker extends NodeClient {
                     td.innerText = value;
                     row.appendChild(td);
                     if (item.field === 'pid') {
-                        hasPid = (value !== '-1');
+                        hasPid = value !== '-1';
                     } else if (item.field === 'ip') {
                         hasIp = !value.includes('[');
                     }

@@ -1,5 +1,5 @@
 import { XtermClientMessage } from './XtermMessage';
-import DescriptorFields from "./DescriptorFields";
+import DescriptorFields from './DescriptorFields';
 
 export enum MessageTypes {
     'devicelist',
