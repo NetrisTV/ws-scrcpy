@@ -40,14 +40,11 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         nameBox.innerText = `${udid} (${decoderName})`;
         nameBox.className = 'text-with-shadow';
         moreBox.appendChild(nameBox);
-        const textWrap = document.createElement('div');
         const input = (this.input = document.createElement('input'));
         const sendButton = document.createElement('button');
         sendButton.innerText = 'Send as keys';
-        textWrap.appendChild(input);
-        textWrap.appendChild(sendButton);
 
-        moreBox.appendChild(textWrap);
+        this.wrap([input, sendButton], moreBox);
         sendButton.onclick = () => {
             if (input.value) {
                 connection.sendEvent(new TextControlEvent(input.value));
@@ -56,7 +53,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
 
         this.controlButtons = document.createElement('div');
         this.controlButtons.className = 'control-buttons-list';
-        const cmdWrap = document.createElement('div');
+        const commands: HTMLElement[] = [];
         const codes = CommandControlEvent.CommandCodes;
         for (const command in codes) {
             if (codes.hasOwnProperty(command)) {
@@ -114,9 +111,9 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                     innerDiv.appendChild(maxFpsWrap);
                     innerDiv.appendChild(iFrameIntervalWrap);
                     innerDiv.appendChild(btn);
-                    cmdWrap.appendChild(spoiler);
+                    commands.push(spoiler);
                 } else {
-                    cmdWrap.appendChild(btn);
+                    commands.push(btn);
                 }
                 btn.innerText = CommandControlEvent.CommandNames[action];
                 btn.onclick = () => {
@@ -223,7 +220,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         };
         this.controlButtons.appendChild(captureKeyboardInput);
         this.controlButtons.appendChild(captureKeyboardLabel);
-        moreBox.appendChild(cmdWrap);
+        this.wrap(commands, moreBox);
         const showMoreInput = document.createElement('input');
         showMoreInput.type = 'checkbox';
         const showMoreLabel = document.createElement('label');
@@ -255,10 +252,22 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
             }
             decoder.removeResizeListener(this);
         };
+        const qualityId = `show_video_quality_${udid}_${decoderName}`;
+        const qualityLabel = document.createElement('label');
+        const qualityCheck = document.createElement('input');
+        qualityCheck.type = 'checkbox';
+        qualityCheck.checked = Decoder.DEFAULT_SHOW_QUALITY_STATS;
+        qualityCheck.id = qualityId;
+        qualityLabel.htmlFor = qualityId;
+        qualityLabel.innerText = 'Show quality stats';
+        this.wrap([qualityCheck, qualityLabel], moreBox);
+        qualityCheck.onchange = () => {
+          decoder.setShowQualityStats(qualityCheck.checked);
+        };
         const stopBtn = document.createElement('button') as HTMLButtonElement;
         stopBtn.innerText = `Disconnect`;
         stopBtn.onclick = stop;
-        moreBox.appendChild(stopBtn);
+        this.wrap([stopBtn], moreBox);
         deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');
         video.className = 'video';
@@ -267,6 +276,14 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         this.decoder.setParent(video);
         this.decoder.addResizeListener(this);
         connection.setErrorListener(new ErrorHandler(stop));
+    }
+
+    private wrap(elements: HTMLElement[], parent: HTMLElement): void {
+        const wrap = document.createElement('p');
+        elements.forEach(e => {
+            wrap.appendChild(e);
+        });
+        parent.appendChild(wrap);
     }
 
     private getMaxSize(): Size {

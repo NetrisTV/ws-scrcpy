@@ -159,7 +159,6 @@ export class ClientDeviceTracker extends NodeClient {
                     if (hasIp && hasPid) {
                         const link = ClientDeviceTracker.buildLink(
                             {
-                                showFps: true,
                                 action: 'stream',
                                 udid: device.udid,
                                 decoder: decoderName,

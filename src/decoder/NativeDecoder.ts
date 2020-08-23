@@ -1,7 +1,13 @@
 import Decoder from './Decoder';
-import VideoConverter from 'h264-converter';
+import VideoConverter, { setLogger } from 'h264-converter';
 import VideoSettings from '../VideoSettings';
 import Size from '../Size';
+
+interface QualityStats {
+    timestamp: number,
+    decodedFrames: number,
+    droppedFrames: number
+}
 
 export default class NativeDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
@@ -27,6 +33,7 @@ export default class NativeDecoder extends Decoder {
         return tag;
     }
     private converter?: VideoConverter;
+    private videoStats: QualityStats[] = [];
     public fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
     public readonly supportsScreenshot: boolean = true;
 
@@ -39,6 +46,7 @@ export default class NativeDecoder extends Decoder {
             e.preventDefault();
             return false;
         };
+        setLogger(() => {}, console.error);
     }
 
     private static createConverter(
@@ -48,6 +56,69 @@ export default class NativeDecoder extends Decoder {
     ): VideoConverter {
         console.log(`Create new VideoConverter(fps=${fps}, fpf=${fpf})`);
         return new VideoConverter(tag, fps, fpf);
+    }
+
+    private getVideoPlaybackQuality(): QualityStats | null {
+        const now = Date.now();
+        if (typeof this.tag.getVideoPlaybackQuality == 'function') {
+            const temp = this.tag.getVideoPlaybackQuality();
+            return {
+                timestamp: now,
+                decodedFrames: temp.totalVideoFrames,
+                droppedFrames: temp.droppedVideoFrames,
+            };
+        }
+
+        // Webkit-specific properties
+        const video = this.tag as any;
+        if (typeof video.webkitDecodedFrameCount !== 'undefined') {
+            return {
+                timestamp: now,
+                decodedFrames: video.webkitDecodedFrameCount,
+                droppedFrames: video.webkitDroppedFrameCount,
+            };
+        }
+        return null;
+    }
+
+    protected calculateMomentumStats(): void {
+        const stat = this.getVideoPlaybackQuality();
+        if (!stat) {
+            return;
+        }
+
+        const timestamp = Date.now();
+        const oneSecondBefore = timestamp - 1000;
+        this.videoStats.push(stat);
+
+        while (this.videoStats.length && this.videoStats[0].timestamp < oneSecondBefore) {
+            this.videoStats.shift();
+        }  while (this.inputBytes.length && this.inputBytes[0].timestamp < oneSecondBefore) {
+            this.inputBytes.shift();
+        }
+        let inputBytes = 0;
+        this.inputBytes.forEach(item => {
+            inputBytes += item.bytes;
+        });
+        const inputFrames = this.inputBytes.length;
+        if (this.videoStats.length) {
+            const oldest = this.videoStats[0];
+            const decodedFrames = stat.decodedFrames - oldest.decodedFrames;
+            const droppedFrames = stat.droppedFrames - oldest.droppedFrames;
+            // const droppedFrames = inputFrames - decodedFrames;
+            this.momentumQualityStats = {
+                decodedFrames,
+                droppedFrames,
+                inputBytes,
+                inputFrames,
+                timestamp,
+            }
+        }
+    }
+
+    protected resetStats(): void {
+        super.resetStats();
+        this.videoStats = [];
     }
 
     public getImageDataURL(): string {
@@ -73,6 +144,7 @@ export default class NativeDecoder extends Decoder {
                 fps = this.videoSettings.maxFps;
             }
             this.converter = NativeDecoder.createConverter(this.tag, fps, this.fpf);
+            this.resetStats();
         }
         this.converter.play();
     }
@@ -106,6 +178,7 @@ export default class NativeDecoder extends Decoder {
     }
 
     public pushFrame(frame: Uint8Array): void {
+        super.pushFrame(frame);
         if (this.converter) {
             this.converter.appendRawData(frame);
         }

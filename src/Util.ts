@@ -1,9 +1,25 @@
 export default class Util {
+    private static SUFFIX: Record<number, string> = {
+        0: 'B',
+        1: 'KiB',
+        2: 'MiB',
+        3: 'GiB',
+        4: 'TiB'
+    }
     private static supportsPassiveValue: boolean | undefined;
 
     public static filterTrailingZeroes(bytes: Uint8Array): Uint8Array {
         let b = 0;
         return bytes.reverse().filter(i => b || (b = i)).reverse();
+    }
+
+    public static prettyBytes(value: number): string {
+        let suffix = 0;
+        while (value >= 512) {
+            suffix ++;
+            value /= 1024;
+        }
+        return `${value.toFixed(suffix ? 1 : 0)}${Util.SUFFIX[suffix]}`;
     }
 
     // https://github.com/google/closure-library/blob/51e5a5ac373aefa354a991816ec418d730e29a7e/closure/goog/crypt/crypt.js#L117

@@ -2,26 +2,62 @@ import VideoSettings from '../VideoSettings';
 import ScreenInfo from '../ScreenInfo';
 import Rect from '../Rect';
 import Size from '../Size';
+import Util from '../Util';
+
+interface BitrateStat {
+    timestamp: number;
+    bytes: number
+}
+
+interface FramesPerSecondStats {
+    avgInput: number;
+    avgDecoded: number;
+    avgDropped: number;
+    avgSize: number
+}
+
+export interface PlaybackQuality {
+    decodedFrames: number;
+    droppedFrames: number;
+    inputFrames: number;
+    inputBytes: number;
+    timestamp: number;
+}
 
 export interface VideoResizeListener {
     onVideoResize(size: Size): void;
 }
 
 export default abstract class Decoder {
+    private static readonly STAT_BACKGROUND: string = 'rgba(0, 0, 0, 0.5)';
+    private static readonly STAT_TEXT_COLOR: string = 'hsl(24, 85%, 50%)';
+    public static readonly DEFAULT_SHOW_QUALITY_STATS = false;
     public static STATE: Record<string, number> = {
         PLAYING: 1,
         PAUSED: 2,
         STOPPED: 3,
     };
+    private static STATS_HEIGHT = 12;
     protected screenInfo?: ScreenInfo;
     protected videoSettings: VideoSettings;
     protected parentElement?: HTMLElement;
     protected touchableCanvas: HTMLCanvasElement;
-    protected fpsCurrentValue = 0;
-    protected fpsCounter: number[] = [];
+    protected inputBytes: BitrateStat[] = [];
+    protected perSecondQualityStats?: FramesPerSecondStats;
+    protected momentumQualityStats?: PlaybackQuality;
+    private totalStats: PlaybackQuality = {
+        decodedFrames: 0,
+        droppedFrames: 0,
+        inputFrames: 0,
+        inputBytes: 0,
+        timestamp: 0,
+    };
+    private totalStatsCounter = 0;
+    private dirtyStatsWidth = 0;
     private state: number = Decoder.STATE.STOPPED;
     private resizeListeners: Set<VideoResizeListener> = new Set();
-    public showFps = true;
+    private showQualityStats = Decoder.DEFAULT_SHOW_QUALITY_STATS;
+    private statLines: string[] = [];
     public readonly supportsScreenshot: boolean = false;
 
     constructor(
@@ -113,6 +149,7 @@ export default abstract class Decoder {
             return;
         }
         this.state = Decoder.STATE.PLAYING;
+        requestAnimationFrame(this.updateQualityStats);
     }
 
     public pause(): void {
@@ -127,9 +164,15 @@ export default abstract class Decoder {
         return this.state;
     }
 
-    public abstract pushFrame(frame: Uint8Array): void;
+    public pushFrame(frame: Uint8Array): void {
+        this.inputBytes.push({
+            timestamp: Date.now(),
+            bytes: frame.byteLength
+        });
+    };
 
     public abstract getPreferredVideoSetting(): VideoSettings;
+    protected abstract calculateMomentumStats(): void;
 
     public getTouchableElement(): HTMLElement {
         return this.touchableCanvas;
@@ -150,6 +193,7 @@ export default abstract class Decoder {
         if (saveToStorage) {
             Decoder.putVideoSettingsToStorage(this.name, this.udid, videoSettings);
         }
+        this.resetStats();
     }
 
     public getScreenInfo(): ScreenInfo | undefined {
@@ -184,28 +228,139 @@ export default abstract class Decoder {
         this.resizeListeners.delete(listener);
     }
 
-    protected updateFps(pushNew: boolean): void {
+    protected resetStats(): void {
+        this.totalStatsCounter = 0;
+        this.totalStats = {
+            droppedFrames: 0,
+            decodedFrames: 0,
+            inputFrames: 0,
+            inputBytes: 0,
+            timestamp: 0,
+        };
+        this.perSecondQualityStats = {
+            avgDecoded: 0,
+            avgDropped: 0,
+            avgInput: 0,
+            avgSize: 0,
+        };
+    }
+
+    private updateQualityStats = (): void => {
         const now = Date.now();
         const oneSecondBefore = now - 1000;
-        if (pushNew) {
-            this.fpsCounter.push(now);
+        this.calculateMomentumStats();
+        if (!this.momentumQualityStats) {
+            return;
         }
-        while (this.fpsCounter.length && this.fpsCounter[0] < oneSecondBefore) {
-            this.fpsCounter.shift();
+        if (this.totalStats.timestamp < oneSecondBefore) {
+            this.totalStats = {
+                timestamp: now,
+                decodedFrames: this.totalStats.decodedFrames + this.momentumQualityStats.decodedFrames,
+                droppedFrames: this.totalStats.droppedFrames + this.momentumQualityStats.droppedFrames,
+                inputFrames: this.totalStats.inputFrames + this.momentumQualityStats.inputFrames,
+                inputBytes: this.totalStats.inputBytes + this.momentumQualityStats.inputBytes,
+            };
+
+            if (this.totalStatsCounter !== 0) {
+                this.perSecondQualityStats = {
+                    avgDecoded: this.totalStats.decodedFrames / this.totalStatsCounter,
+                    avgDropped: this.totalStats.droppedFrames / this.totalStatsCounter,
+                    avgInput: this.totalStats.inputFrames / this.totalStatsCounter,
+                    avgSize: this.totalStats.inputBytes / this.totalStatsCounter,
+                };
+            }
+            this.totalStatsCounter++;
         }
-        if (this.fpsCounter.length !== this.fpsCurrentValue) {
-            this.fpsCurrentValue = this.fpsCounter.length;
-            if (this.showFps) {
-                const ctx = this.touchableCanvas.getContext('2d');
-                if (ctx) {
-                    const height = 12;
-                    const y = this.touchableCanvas.height;
-                    ctx.clearRect(0, y - height, 40, height);
-                    ctx.font = `${height}px monospace`;
-                    ctx.fillStyle = 'orange';
-                    ctx.fillText(this.fpsCurrentValue.toString(), 0, y);
+        this.drawStats();
+        requestAnimationFrame(this.updateQualityStats);
+    };
+
+    private drawStats(): void {
+        if (!this.showQualityStats) {
+            return;
+        }
+        const ctx = this.touchableCanvas.getContext('2d');
+        if (!ctx) {
+            return;
+        }
+        if (this.perSecondQualityStats && this.momentumQualityStats) {
+            const { decodedFrames, droppedFrames, inputBytes, inputFrames } = this.momentumQualityStats;
+            const { avgDecoded, avgDropped, avgSize, avgInput } = this.perSecondQualityStats;
+            const padInput = inputFrames.toString().padStart(3, ' ');
+            const padDecoded = decodedFrames.toString().padStart(3, ' ');
+            const padDropped = droppedFrames.toString().padStart(3, ' ');
+            const padAvgDecoded = avgDecoded.toFixed(1).padStart(5, ' ');
+            const padAvgDropped = avgDropped.toFixed(1).padStart(5, ' ');
+            const padAvgInput = avgInput.toFixed(1).padStart(5, ' ');
+            const prettyBytes = Util.prettyBytes(inputBytes).padStart(8, ' ');
+            const prettyAvgBytes = Util.prettyBytes(avgSize).padStart(8, ' ');
+
+            const newStats = [];
+            newStats.push(`Input bytes: ${prettyBytes} (avg: ${prettyAvgBytes}/s)`);
+            newStats.push(`Input   FPS: ${padInput} (avg: ${padAvgInput})`);
+            newStats.push(`Dropped FPS: ${padDropped} (avg: ${padAvgDropped})`);
+            newStats.push(`Decoded FPS: ${padDecoded} (avg: ${padAvgDecoded})`);
+
+            let changed = false;
+            newStats.forEach((statLine, id) => {
+                if (statLine !== this.statLines[id]) {
+                    changed = true;
                 }
+            })
+
+            if (changed) {
+                this.statLines = newStats;
+                this.updateCanvas(false);
             }
         }
+    }
+
+    private updateCanvas(onlyClear: boolean): void {
+        const ctx = this.touchableCanvas.getContext('2d');
+        if (!ctx) {
+            return;
+        }
+
+        const y = this.touchableCanvas.height;
+        const height = Decoder.STATS_HEIGHT;
+        const lines = this.statLines.length;
+        const spaces = lines + 1;
+        const p = height / 2;
+        const d = p * 2;
+        const totalHeight = height * lines + p * spaces;
+
+        ctx.clearRect(0, y - totalHeight, this.dirtyStatsWidth + d, totalHeight);
+        this.dirtyStatsWidth = 0;
+
+        if (onlyClear) {
+            return;
+        }
+        ctx.save();
+        ctx.font = `${height}px monospace`;
+        this.statLines.forEach(text => {
+            const textMetrics = ctx.measureText(text);
+            const dirty = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+            this.dirtyStatsWidth = Math.max(dirty, this.dirtyStatsWidth);
+        })
+        ctx.fillStyle = Decoder.STAT_BACKGROUND;
+        ctx.fillRect(0, y - totalHeight, this.dirtyStatsWidth + d, totalHeight);
+        ctx.fillStyle = Decoder.STAT_TEXT_COLOR;
+        this.statLines.forEach((text, line) => {
+            ctx.fillText(text, p, y - p - line * (height + p));
+        });
+        ctx.restore();
+    }
+
+    public setShowQualityStats(value: boolean) {
+        this.showQualityStats = value;
+        if (!value) {
+            this.updateCanvas(true);
+        } else {
+            this.drawStats();
+        }
+    }
+
+    public getShowQualityStats(): boolean {
+        return this.showQualityStats;
     }
 }

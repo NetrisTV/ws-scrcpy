@@ -1,9 +1,10 @@
-import Decoder from './Decoder';
+import Decoder, { PlaybackQuality }  from './Decoder';
 import ScreenInfo from '../ScreenInfo';
 import VideoSettings from '../VideoSettings';
 
 export default abstract class CanvasCommon extends Decoder {
     protected framesList: Uint8Array[] = [];
+    protected videoStats: PlaybackQuality[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected canvas?: any;
 
@@ -41,8 +42,17 @@ export default abstract class CanvasCommon extends Decoder {
     protected abstract decode(data: Uint8Array): void;
     public abstract getPreferredVideoSetting(): VideoSettings;
 
+    protected onFrameDecoded(): void {
+        this.videoStats.push({
+            decodedFrames: 1,
+            droppedFrames: 0,
+            inputBytes: 0,
+            inputFrames: 0,
+            timestamp: Date.now(),
+        });
+    }
+
     private shiftFrame = (): void => {
-        this.updateFps(false);
         if (this.getState() !== Decoder.STATE.PLAYING) {
             return;
         }
@@ -51,10 +61,44 @@ export default abstract class CanvasCommon extends Decoder {
 
         if (frame) {
             this.decode(frame);
-            this.updateFps(true);
         }
         requestAnimationFrame(this.shiftFrame);
     };
+
+    protected calculateMomentumStats(): void {
+        const timestamp = Date.now();
+        const oneSecondBefore = timestamp - 1000;
+
+        while (this.videoStats.length && this.videoStats[0].timestamp < oneSecondBefore) {
+            this.videoStats.shift();
+        }
+        while (this.inputBytes.length && this.inputBytes[0].timestamp < oneSecondBefore) {
+            this.inputBytes.shift();
+        }
+        let decodedFrames = 0;
+        let droppedFrames = 0;
+        let inputBytes = 0;
+        this.videoStats.forEach(item => {
+            decodedFrames += item.decodedFrames;
+            droppedFrames += item.droppedFrames;
+        });
+        this.inputBytes.forEach(item => {
+            inputBytes += item.bytes;
+        });
+        this.momentumQualityStats = {
+            decodedFrames,
+            droppedFrames,
+            inputFrames: this.inputBytes.length,
+            inputBytes,
+            timestamp,
+        }
+    }
+
+
+    protected resetStats(): void {
+        super.resetStats();
+        this.videoStats = [];
+    }
 
     public getImageDataURL(): string {
         return this.tag.toDataURL();
@@ -89,6 +133,7 @@ export default abstract class CanvasCommon extends Decoder {
         if (!this.canvas) {
             const { width, height } = this.screenInfo.videoSize;
             this.initCanvas(width, height);
+            this.resetStats();
         }
         requestAnimationFrame(this.shiftFrame);
     }
@@ -103,15 +148,24 @@ export default abstract class CanvasCommon extends Decoder {
         this.clearState();
         const { width, height } = screenInfo.videoSize;
         this.initCanvas(width, height);
+        this.framesList = [];
     }
 
     public pushFrame(frame: Uint8Array): void {
+        super.pushFrame(frame);
         if (Decoder.isIFrame(frame)) {
             if (this.videoSettings) {
                 const { maxFps } = this.videoSettings;
                 if (this.framesList.length > maxFps / 2) {
-                    console.log(this.name, 'Dropping frames', this.framesList.length);
+                    const dropped = this.framesList.length;
                     this.framesList = [];
+                    this.videoStats.push({
+                        decodedFrames: 0,
+                        droppedFrames: dropped,
+                        inputBytes: 0,
+                        inputFrames: 0,
+                        timestamp: Date.now(),
+                    });
                 }
             }
         }

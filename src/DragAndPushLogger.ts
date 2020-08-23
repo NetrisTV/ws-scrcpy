@@ -52,7 +52,6 @@ export default class DragAndPushLogger implements DragAndPushListener {
         this.ctx.font = `${HEIGHT}px monospace`;
         const textMetrics = this.ctx.measureText(text);
         const width = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
-        this.ctx.canvas.width;
         this.dirtyMap.set(line, width);
         this.ctx.fillStyle = DragAndPushLogger.LOG_BACKGROUND;
         const p = DragAndPushLogger.HEIGHT / 2 - 1;

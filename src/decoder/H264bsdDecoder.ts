@@ -43,6 +43,7 @@ export default class H264bsdDecoder extends CanvasCommon {
 
             // Posted when onPictureReady is called on the worker
             case 'pictureReady':
+                this.onFrameDecoded();
                 this.canvas.drawNextOutputPicture(
                     message.width,
                     message.height,

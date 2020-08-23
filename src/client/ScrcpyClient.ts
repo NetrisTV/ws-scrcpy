@@ -15,7 +15,6 @@ export interface StreamParams extends ParsedUrlQueryInput {
     decoder: Decoders;
     ip: string;
     port: string;
-    showFps?: boolean;
 }
 
 export class ScrcpyClient extends BaseClient {
@@ -23,10 +22,7 @@ export class ScrcpyClient extends BaseClient {
     private static instance?: ScrcpyClient;
     public static start(params: StreamParams): ScrcpyClient {
         const client = this.getInstance();
-        const decoder = client.startStream(params.udid, params.decoder, `ws://${params.ip}:${params.port}`);
-        if (decoder) {
-            decoder.showFps = !!params.showFps;
-        }
+        client.startStream(params.udid, params.decoder, `ws://${params.ip}:${params.port}`);
         client.setBodyClass('stream');
         client.setTitle(`${params.udid} stream`);
 
