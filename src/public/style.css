@@ -4,7 +4,7 @@
     --shell-bg-color: hsl(0, 0%, 0%);
     --row-bg-color_hover: hsl(218, 67%, 95%);
     --table-header-bg-color: hsl(0, 0%, 95%);
-    --controls-bg-color: hsla(210, 14%, 53%, 0.5);
+    --controls-bg-color: hsla(0, 0%, 95%, 0.8);
     --control-buttons-bg-color: hsl(0, 0%, 95%);
     --text-color: hsl(0, 0%, 20%);
     --link-color: hsl(240, 100%, 47%);
@@ -21,7 +21,7 @@
         --shell-bg-color: hsl(0, 0%, 0%);
         --row-bg-color_hover: hsl(218, 17%, 18%);
         --table-header-bg-color: hsl(0, 0%, 20%);
-        --controls-bg-color: hsla(210, 14%, 43%, 0.5);
+        --controls-bg-color: hsla(201, 18%, 19%, 0.8);
         --control-buttons-bg-color: hsl(201, 18%, 19%);
         --text-color: hsl(0, 0%, 90%);
         --link-color: hsl(210, 63%, 47%);
