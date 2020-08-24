@@ -14,7 +14,7 @@ export default class BroadwayDecoder extends CanvasCommon {
         bitrate: 500000,
         maxFps: 24,
         iFrameInterval: 5,
-        maxSize: 480,
+        bounds: new Size(480, 480),
         sendFrameMeta: false,
     });
 

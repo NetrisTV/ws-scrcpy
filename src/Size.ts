@@ -1,3 +1,8 @@
+interface SizeInterface {
+    width: number;
+    height: number;
+}
+
 export default class Size {
     public readonly w: number;
     public readonly h: number;
@@ -41,5 +46,12 @@ export default class Size {
 
     public toString(): string {
         return `Size{width=${this.width}, height=${this.height}}`;
+    }
+
+    public toJSON(): SizeInterface {
+        return {
+            width: this.width,
+            height: this.height,
+        };
     }
 }

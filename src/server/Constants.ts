@@ -1,6 +1,6 @@
 export const SERVER_PACKAGE = 'com.genymobile.scrcpy.Server';
 export const SERVER_PORT = 8886;
-export const SERVER_VERSION = '1.15.1-ws2';
+export const SERVER_VERSION = '1.16-ws';
 
 const LOG_LEVEL = 'ERROR';
 const MAX_SIZE = 0;

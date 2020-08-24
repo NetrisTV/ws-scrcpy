@@ -1,9 +1,10 @@
 import Rect from './Rect';
+import Size from './Size';
 
 interface Settings {
     crop?: Rect | null;
     bitrate: number;
-    maxSize: number;
+    bounds?: Size | null;
     maxFps: number;
     iFrameInterval: number;
     sendFrameMeta: boolean;
@@ -15,7 +16,7 @@ export default class VideoSettings {
     public static readonly BUFFER_LENGTH: number = 23;
     public readonly crop?: Rect | null = null;
     public readonly bitrate: number = 0;
-    public readonly maxSize: number = 0;
+    public readonly bounds?: Size | null = null;
     public readonly maxFps: number = 0;
     public readonly iFrameInterval: number = 0;
     public readonly sendFrameMeta: boolean = false;
@@ -26,7 +27,7 @@ export default class VideoSettings {
         if (data) {
             this.crop = data.crop;
             this.bitrate = data.bitrate;
-            this.maxSize = data.maxSize;
+            this.bounds = data.bounds;
             this.maxFps = data.maxFps;
             this.iFrameInterval = data.iFrameInterval;
             this.sendFrameMeta = data.sendFrameMeta;
@@ -38,14 +39,19 @@ export default class VideoSettings {
         const bitrate = buffer.readUInt32BE(0);
         const maxFps = buffer.readUInt32BE(4);
         const iFrameInterval = buffer.readUInt8(8);
-        const maxSize = buffer.readUInt32BE(9);
+        const width = buffer.readUInt16BE(9);
+        const height = buffer.readUInt16BE(11);
         const left = buffer.readUInt16BE(13);
         const top = buffer.readUInt16BE(15);
         const right = buffer.readUInt16BE(17);
         const bottom = buffer.readUInt16BE(19);
         const sendFrameMeta = !!buffer.readUInt8(21);
         const lockedVideoOrientation = buffer.readInt8(22);
+        let bounds: Size | null = null;
         let crop: Rect | null = null;
+        if (width !== 0 && height !== 0) {
+            bounds = new Size(width, height);
+        }
         if (left || top || right || bottom) {
             crop = new Rect(left, top, right, bottom);
         }
@@ -53,7 +59,7 @@ export default class VideoSettings {
         return new VideoSettings({
             crop,
             bitrate,
-            maxSize,
+            bounds,
             maxFps,
             iFrameInterval,
             lockedVideoOrientation,
@@ -69,7 +75,7 @@ export default class VideoSettings {
         return new VideoSettings({
             bitrate: a.bitrate,
             crop: Rect.copy(a.crop),
-            maxSize: a.maxSize,
+            bounds: Size.copy(a.bounds),
             maxFps: a.maxFps,
             iFrameInterval: a.iFrameInterval,
             lockedVideoOrientation: a.lockedVideoOrientation,
@@ -86,7 +92,7 @@ export default class VideoSettings {
             this.codecOptions === o.codecOptions &&
             Rect.equals(this.crop, o.crop) &&
             this.lockedVideoOrientation === o.lockedVideoOrientation &&
-            this.maxSize === o.maxSize &&
+            Size.equals(this.bounds, o.bounds) &&
             this.bitrate === o.bitrate &&
             this.maxFps === o.maxFps &&
             this.iFrameInterval === o.iFrameInterval
@@ -95,12 +101,14 @@ export default class VideoSettings {
 
     public toBuffer(): Buffer {
         const buffer = new Buffer(VideoSettings.BUFFER_LENGTH);
+        const { width = 0, height = 0 } = this.bounds || {};
         const { left = 0, top = 0, right = 0, bottom = 0 } = this.crop || {};
         let offset = 0;
         offset = buffer.writeUInt32BE(this.bitrate, offset);
         offset = buffer.writeUInt32BE(this.maxFps, offset);
         offset = buffer.writeUInt8(this.iFrameInterval, offset);
-        offset = buffer.writeUInt32BE(this.maxSize, offset);
+        offset = buffer.writeUInt16BE(width, offset);
+        offset = buffer.writeUInt16BE(height, offset);
         offset = buffer.writeUInt16BE(left, offset);
         offset = buffer.writeUInt16BE(top, offset);
         offset = buffer.writeUInt16BE(right, offset);
@@ -117,8 +125,8 @@ export default class VideoSettings {
         return `VideoSettings{bitrate=${
             this.bitrate}, maxFps=${
             this.maxFps}, iFrameInterval=${
-            this.iFrameInterval}, maxSize=${
-            this.maxSize}, crop=${
+            this.iFrameInterval}, bounds=${
+            this.bounds}, crop=${
             this.crop}, metaFrame=${
             this.sendFrameMeta}, lockedVideoOrientation=${
             this.lockedVideoOrientation}}`;
@@ -129,7 +137,7 @@ export default class VideoSettings {
             bitrate: this.bitrate,
             maxFps: this.maxFps,
             iFrameInterval: this.iFrameInterval,
-            maxSize: this.maxSize,
+            bounds: this.bounds,
             crop: this.crop,
             sendFrameMeta: this.sendFrameMeta,
             lockedVideoOrientation: this.lockedVideoOrientation,

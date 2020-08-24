@@ -1,6 +1,7 @@
 import Decoder from './Decoder';
 import VideoConverter from 'h264-converter';
 import VideoSettings from '../VideoSettings';
+import Size from '../Size';
 
 export default class NativeDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
@@ -8,7 +9,7 @@ export default class NativeDecoder extends Decoder {
         bitrate: 8000000,
         maxFps: 60,
         iFrameInterval: 10,
-        maxSize: 720,
+        bounds: new Size(720, 720),
         sendFrameMeta: false,
     });
     private static DEFAULT_FRAMES_PER_FRAGMENT = 1;

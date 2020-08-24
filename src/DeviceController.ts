@@ -128,9 +128,9 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                         if (isNaN(bitrate) || isNaN(maxFps)) {
                             return;
                         }
-                        const maxSize = this.getMaxSize();
+                        const bounds = this.getMaxSize();
                         const videoSettings = new VideoSettings({
-                            maxSize,
+                            bounds,
                             bitrate,
                             maxFps,
                             iFrameInterval,
@@ -269,18 +269,18 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         connection.setErrorListener(new ErrorHandler(stop));
     }
 
-    private getMaxSize(): number {
+    private getMaxSize(): Size {
         const body = document.body;
         const width = (body.clientWidth - this.controlButtons.clientWidth) & ~15;
         const height = body.clientHeight & ~15;
-        return Math.min(width, height);
+        return new Size(width, height);
     }
 
     public start(): void {
         document.body.appendChild(this.deviceView);
         const decoder = this.decoder;
         if (decoder.getPreferredVideoSetting().equals(decoder.getVideoSettings())) {
-            const maxSize = this.getMaxSize();
+            const bounds = this.getMaxSize();
             const {
                 bitrate,
                 maxFps,
@@ -289,7 +289,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                 sendFrameMeta,
             } = decoder.getVideoSettings();
             const newVideoSettings = new VideoSettings({
-                maxSize,
+                bounds,
                 bitrate,
                 maxFps,
                 iFrameInterval,

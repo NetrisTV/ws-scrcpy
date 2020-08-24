@@ -61,14 +61,23 @@ export default abstract class Decoder {
             return preferred;
         }
         const parsed = JSON.parse(saved);
-        const { crop, bitrate, maxSize, iFrameInterval, sendFrameMeta, lockedVideoOrientation } = parsed;
+        const { crop, bitrate, iFrameInterval, sendFrameMeta, lockedVideoOrientation } = parsed;
 
         // REMOVE `frameRate`
         const maxFps = isNaN(parsed.maxFps) ? parsed.frameRate : parsed.maxFps;
+        // REMOVE `maxSize`
+        let bounds: Size | null = null;
+        if (typeof parsed.bounds !== 'object' || isNaN(parsed.bounds.width) || isNaN(parsed.bounds.height)) {
+            if (!isNaN(parsed.maxSize)) {
+                bounds = new Size(parsed.maxSize, parsed.maxSize);
+            }
+        } else {
+            bounds = new Size(parsed.bounds.width, parsed.bounds.height);
+        }
         return new VideoSettings({
             crop: crop ? new Rect(crop.left, crop.top, crop.right, crop.bottom) : preferred.crop,
             bitrate: !isNaN(bitrate) ? bitrate : preferred.bitrate,
-            maxSize: !isNaN(maxSize) ? maxSize : preferred.maxSize,
+            bounds: bounds !== null ? bounds : preferred.bounds,
             maxFps: !isNaN(maxFps) ? maxFps : preferred.maxFps,
             iFrameInterval: !isNaN(iFrameInterval) ? iFrameInterval : preferred.iFrameInterval,
             sendFrameMeta: typeof sendFrameMeta === 'boolean' ? sendFrameMeta : preferred.sendFrameMeta,

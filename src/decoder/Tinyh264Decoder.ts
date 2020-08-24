@@ -5,6 +5,7 @@ import VideoSettings from '../VideoSettings';
 import YUVWebGLCanvas from '../tinyh264/YUVWebGLCanvas';
 import YUVCanvas from '../tinyh264/YUVCanvas';
 import CanvasCommon from './CanvasCommon';
+import Size from '../Size';
 
 type WorkerMessage = {
     type: string;
@@ -21,7 +22,7 @@ export default class Tinyh264Decoder extends CanvasCommon {
         bitrate: 500000,
         maxFps: 24,
         iFrameInterval: 5,
-        maxSize: 480,
+        bounds: new Size(480, 480),
         sendFrameMeta: false,
     });
 

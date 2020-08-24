@@ -4,6 +4,7 @@ import VideoSettings from '../VideoSettings';
 import { H264bsdCanvas } from '../h264bsd_canvas.js';
 import H264bsdWorker from '../h264bsd/H264bsdWorker';
 import CanvasCommon from './CanvasCommon';
+import Size from '../Size';
 
 export default class H264bsdDecoder extends CanvasCommon {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
@@ -11,7 +12,7 @@ export default class H264bsdDecoder extends CanvasCommon {
         bitrate: 500000,
         maxFps: 24,
         iFrameInterval: 5,
-        maxSize: 480,
+        bounds: new Size(480, 480),
         sendFrameMeta: false,
     });
     protected canvas?: H264bsdCanvas;

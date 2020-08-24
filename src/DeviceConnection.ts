@@ -146,7 +146,7 @@ export class DeviceConnection implements KeyEventListener {
 
     public addDecoder(decoder: Decoder): void {
         let videoSettings: VideoSettings = decoder.getVideoSettings();
-        const { maxSize } = videoSettings;
+        const { bounds } = videoSettings;
         let playing = false;
         this.decoders.forEach((d) => {
             const state = d.getState();
@@ -163,9 +163,9 @@ export class DeviceConnection implements KeyEventListener {
                 sendFrameMeta,
                 lockedVideoOrientation,
             } = d.getVideoSettings() as VideoSettings;
-            if (videoSize.width < maxSize && videoSize.height < maxSize) {
+            if (bounds && videoSize.width < bounds.width && videoSize.height < bounds.height) {
                 videoSettings = new VideoSettings({
-                    maxSize: Math.max(videoSize.width, videoSize.height),
+                    bounds: new Size(videoSize.width, videoSize.height),
                     crop,
                     bitrate,
                     maxFps,
@@ -323,13 +323,12 @@ export class DeviceConnection implements KeyEventListener {
                                 );
                             }
                             if (!oldInfo) {
-                                const maxSize: number = oldSettings.maxSize;
+                                const bounds = oldSettings.bounds;
                                 const videoSize: Size = screenInfo.videoSize;
-                                if (
-                                    maxSize < videoSize.width ||
-                                    maxSize < videoSize.height ||
-                                    this.clientsCount === 0
-                                ) {
+                                const onlyOneClient = this.clientsCount === 0;
+                                const smallerThenCurrent =
+                                    bounds && (bounds.width < videoSize.width || bounds.height < videoSize.height);
+                                if (onlyOneClient || smallerThenCurrent) {
                                     min = oldSettings;
                                 }
                             }
