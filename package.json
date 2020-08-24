@@ -45,7 +45,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-progress": "0.0.1",
     "file-loader": "^6.0.0",
-    "h264-converter": "^0.1.1",
+    "h264-converter": "^0.1.2",
     "mkdirp": "^0.5.1",
     "prettier": "^2.0.5",
     "recursive-copy": "^2.0.10",
