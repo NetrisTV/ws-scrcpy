@@ -1,4 +1,4 @@
-import NativeDecoder from '../decoder/NativeDecoder';
+import MseDecoder from '../decoder/MseDecoder';
 import { DeviceController } from '../DeviceController';
 import BroadwayDecoder from '../decoder/BroadwayDecoder';
 import H264bsdDecoder from '../decoder/H264bsdDecoder';
@@ -7,7 +7,7 @@ import { BaseClient } from './BaseClient';
 import Decoder from '../decoder/Decoder';
 import Tinyh264Decoder from '../decoder/Tinyh264Decoder';
 
-export type Decoders = 'broadway' | 'h264bsd' | 'native' | 'tinyh264';
+export type Decoders = 'broadway' | 'h264bsd' | 'mse' | 'tinyh264';
 
 export interface StreamParams extends ParsedUrlQueryInput {
     action: 'stream';
@@ -38,14 +38,14 @@ export class ScrcpyClient extends BaseClient {
         return ScrcpyClient.instance || new ScrcpyClient();
     }
 
-    public startStream(udid: string, decoderName: string, url: string): Decoder | undefined {
+    public startStream(udid: string, decoderName: Decoders, url: string): Decoder | undefined {
         if (!url || !udid) {
             return;
         }
         let decoderClass: new (udid: string) => Decoder;
         switch (decoderName) {
-            case 'native':
-                decoderClass = NativeDecoder;
+            case 'mse':
+                decoderClass = MseDecoder;
                 break;
             case 'broadway':
                 decoderClass = BroadwayDecoder;

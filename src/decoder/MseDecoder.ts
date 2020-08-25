@@ -9,7 +9,7 @@ interface QualityStats {
     droppedFrames: number
 }
 
-export default class NativeDecoder extends Decoder {
+export default class MseDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 8000000,
@@ -34,11 +34,11 @@ export default class NativeDecoder extends Decoder {
     }
     private converter?: VideoConverter;
     private videoStats: QualityStats[] = [];
-    public fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
+    public fpf: number = MseDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
     public readonly supportsScreenshot: boolean = true;
 
-    constructor(udid: string, protected tag: HTMLVideoElement = NativeDecoder.createElement()) {
-        super(udid, 'NativeDecoder', tag);
+    constructor(udid: string, protected tag: HTMLVideoElement = MseDecoder.createElement()) {
+        super(udid, 'MseDecoder', tag);
         tag.onerror = function (e: Event | string): void {
             console.error(e);
         };
@@ -51,8 +51,8 @@ export default class NativeDecoder extends Decoder {
 
     private static createConverter(
         tag: HTMLVideoElement,
-        fps: number = NativeDecoder.DEFAULT_FRAMES_PER_SECOND,
-        fpf: number = NativeDecoder.DEFAULT_FRAMES_PER_FRAGMENT,
+        fps: number = MseDecoder.DEFAULT_FRAMES_PER_SECOND,
+        fpf: number = MseDecoder.DEFAULT_FRAMES_PER_FRAGMENT,
     ): VideoConverter {
         console.log(`Create new VideoConverter(fps=${fps}, fpf=${fpf})`);
         return new VideoConverter(tag, fps, fpf);
@@ -139,11 +139,11 @@ export default class NativeDecoder extends Decoder {
             return;
         }
         if (!this.converter) {
-            let fps = NativeDecoder.DEFAULT_FRAMES_PER_SECOND;
+            let fps = MseDecoder.DEFAULT_FRAMES_PER_SECOND;
             if (this.videoSettings) {
                 fps = this.videoSettings.maxFps;
             }
-            this.converter = NativeDecoder.createConverter(this.tag, fps, this.fpf);
+            this.converter = MseDecoder.createConverter(this.tag, fps, this.fpf);
             this.resetStats();
         }
         this.converter.play();
@@ -164,7 +164,7 @@ export default class NativeDecoder extends Decoder {
             const state = this.getState();
             if (this.converter) {
                 this.stop();
-                this.converter = NativeDecoder.createConverter(this.tag, videoSettings.maxFps, this.fpf);
+                this.converter = MseDecoder.createConverter(this.tag, videoSettings.maxFps, this.fpf);
             }
             if (state === Decoder.STATE.PLAYING) {
                 this.play();
@@ -174,7 +174,7 @@ export default class NativeDecoder extends Decoder {
     }
 
     public getPreferredVideoSetting(): VideoSettings {
-        return NativeDecoder.preferredVideoSettings;
+        return MseDecoder.preferredVideoSettings;
     }
 
     public pushFrame(frame: Uint8Array): void {

@@ -48,7 +48,7 @@ const FIELDS_MAP: MapItem[] = [
         title: 'Broadway',
     },
     {
-        title: 'Native',
+        title: 'MSE',
     },
     {
         title: 'h264bsd',
@@ -61,9 +61,9 @@ const FIELDS_MAP: MapItem[] = [
     },
 ];
 
-type Decoders = 'broadway' | 'native' | 'h264bsd' | 'tinyh264';
+type Decoders = 'broadway' | 'mse' | 'h264bsd' | 'tinyh264';
 
-const DECODERS: Decoders[] = ['broadway', 'native', 'h264bsd', 'tinyh264'];
+const DECODERS: Decoders[] = ['broadway', 'mse', 'h264bsd', 'tinyh264'];
 
 export class ClientDeviceTracker extends NodeClient {
     public static ACTION = 'devicelist';

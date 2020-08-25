@@ -6,7 +6,7 @@ Web client prototype for [scrcpy](https://github.com/Genymobile/scrcpy).
 
 You'll need a web browser that supports the following technologies:
 * WebSockets
-* Media Source Extensions and h264 decoding ([NativeDecoder](/src/decoder/NativeDecoder.ts))
+* Media Source Extensions and h264 decoding ([MseDecoder](/src/decoder/MseDecoder.ts))
 * WebWorkers ([h264bsd](/src/decoder/H264bsdDecoder.ts), [tinyh264](/src/decoder/Tinyh264Decoder.ts))
 * WebAssembly  ([Broadway.js](/src/decoder/BroadwayDecoder.ts) and [h264bsd](/src/decoder/H264bsdDecoder.ts), [tinyh264](/src/decoder/Tinyh264Decoder.ts))
 
@@ -40,7 +40,7 @@ Drag & drop an APK file to push it to the `/data/local/tmp` directory. You can i
 * The server on the Android Emulator listens on the internal interface and not available from the outside (as workaround you can do `adb forward tcp:8886 tcp:8886` and use `127.0.0.1` instead of emulator IP address)
 * H264bsdDecoder may fail to start
 * Version `0.3.0` is incompatible with previous. Reboot device or manually kill `app_process`.
-* NativeDecoder reports too many dropped frames in quality statistics: needs further investigation.
+* MseDecoder reports too many dropped frames in quality statistics: needs further investigation.
 
 ## Security warning
 Be advised and keep in mind:
