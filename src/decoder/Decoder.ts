@@ -6,14 +6,14 @@ import Util from '../Util';
 
 interface BitrateStat {
     timestamp: number;
-    bytes: number
+    bytes: number;
 }
 
 interface FramesPerSecondStats {
     avgInput: number;
     avgDecoded: number;
     avgDropped: number;
-    avgSize: number
+    avgSize: number;
 }
 
 export interface PlaybackQuality {
@@ -167,9 +167,9 @@ export default abstract class Decoder {
     public pushFrame(frame: Uint8Array): void {
         this.inputBytes.push({
             timestamp: Date.now(),
-            bytes: frame.byteLength
+            bytes: frame.byteLength,
         });
-    };
+    }
 
     public abstract getPreferredVideoSetting(): VideoSettings;
     protected abstract calculateMomentumStats(): void;
@@ -220,11 +220,11 @@ export default abstract class Decoder {
         return this.name;
     }
 
-    public addResizeListener(listener: VideoResizeListener) {
+    public addResizeListener(listener: VideoResizeListener): void {
         this.resizeListeners.add(listener);
     }
 
-    public removeResizeListener(listener: VideoResizeListener) {
+    public removeResizeListener(listener: VideoResizeListener): void {
         this.resizeListeners.delete(listener);
     }
 
@@ -306,7 +306,7 @@ export default abstract class Decoder {
                 if (statLine !== this.statLines[id]) {
                     changed = true;
                 }
-            })
+            });
 
             if (changed) {
                 this.statLines = newStats;
@@ -337,11 +337,11 @@ export default abstract class Decoder {
         }
         ctx.save();
         ctx.font = `${height}px monospace`;
-        this.statLines.forEach(text => {
+        this.statLines.forEach((text) => {
             const textMetrics = ctx.measureText(text);
             const dirty = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
             this.dirtyStatsWidth = Math.max(dirty, this.dirtyStatsWidth);
-        })
+        });
         ctx.fillStyle = Decoder.STAT_BACKGROUND;
         ctx.fillRect(0, y - totalHeight, this.dirtyStatsWidth + d, totalHeight);
         ctx.fillStyle = Decoder.STAT_TEXT_COLOR;
@@ -351,7 +351,7 @@ export default abstract class Decoder {
         ctx.restore();
     }
 
-    public setShowQualityStats(value: boolean) {
+    public setShowQualityStats(value: boolean): void {
         this.showQualityStats = value;
         if (!value) {
             this.updateCanvas(true);

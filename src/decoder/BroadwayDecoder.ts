@@ -40,7 +40,7 @@ export default class BroadwayDecoder extends CanvasCommon {
             if (this.canvas) {
                 this.canvas.decode(buffer, width, height);
             }
-        }
+        };
     }
 
     protected decode(data: Uint8Array): void {

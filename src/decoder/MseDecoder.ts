@@ -4,9 +4,9 @@ import VideoSettings from '../VideoSettings';
 import Size from '../Size';
 
 interface QualityStats {
-    timestamp: number,
-    decodedFrames: number,
-    droppedFrames: number
+    timestamp: number;
+    decodedFrames: number;
+    droppedFrames: number;
 }
 
 export default class MseDecoder extends Decoder {
@@ -46,6 +46,7 @@ export default class MseDecoder extends Decoder {
             e.preventDefault();
             return false;
         };
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         setLogger(() => {}, console.error);
     }
 
@@ -70,6 +71,7 @@ export default class MseDecoder extends Decoder {
         }
 
         // Webkit-specific properties
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const video = this.tag as any;
         if (typeof video.webkitDecodedFrameCount !== 'undefined') {
             return {
@@ -93,11 +95,12 @@ export default class MseDecoder extends Decoder {
 
         while (this.videoStats.length && this.videoStats[0].timestamp < oneSecondBefore) {
             this.videoStats.shift();
-        }  while (this.inputBytes.length && this.inputBytes[0].timestamp < oneSecondBefore) {
+        }
+        while (this.inputBytes.length && this.inputBytes[0].timestamp < oneSecondBefore) {
             this.inputBytes.shift();
         }
         let inputBytes = 0;
-        this.inputBytes.forEach(item => {
+        this.inputBytes.forEach((item) => {
             inputBytes += item.bytes;
         });
         const inputFrames = this.inputBytes.length;
@@ -112,7 +115,7 @@ export default class MseDecoder extends Decoder {
                 inputBytes,
                 inputFrames,
                 timestamp,
-            }
+            };
         }
     }
 

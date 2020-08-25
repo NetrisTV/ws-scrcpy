@@ -40,7 +40,7 @@ export class DeviceDescriptor {
         };
     }
 
-    public equals(fields: DescriptorFields) {
+    public equals(fields: DescriptorFields): boolean {
         return !(
             this.udid !== fields['udid'] ||
             this.state !== fields['state'] ||

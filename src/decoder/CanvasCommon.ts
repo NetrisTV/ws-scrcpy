@@ -1,4 +1,4 @@
-import Decoder, { PlaybackQuality }  from './Decoder';
+import Decoder, { PlaybackQuality } from './Decoder';
 import ScreenInfo from '../ScreenInfo';
 import VideoSettings from '../VideoSettings';
 
@@ -78,11 +78,11 @@ export default abstract class CanvasCommon extends Decoder {
         let decodedFrames = 0;
         let droppedFrames = 0;
         let inputBytes = 0;
-        this.videoStats.forEach(item => {
+        this.videoStats.forEach((item) => {
             decodedFrames += item.decodedFrames;
             droppedFrames += item.droppedFrames;
         });
-        this.inputBytes.forEach(item => {
+        this.inputBytes.forEach((item) => {
             inputBytes += item.bytes;
         });
         this.momentumQualityStats = {
@@ -91,9 +91,8 @@ export default abstract class CanvasCommon extends Decoder {
             inputFrames: this.inputBytes.length,
             inputBytes,
             timestamp,
-        }
+        };
     }
-
 
     protected resetStats(): void {
         super.resetStats();

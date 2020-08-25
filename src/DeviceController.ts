@@ -262,7 +262,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         qualityLabel.innerText = 'Show quality stats';
         this.wrap([qualityCheck, qualityLabel], moreBox);
         qualityCheck.onchange = () => {
-          decoder.setShowQualityStats(qualityCheck.checked);
+            decoder.setShowQualityStats(qualityCheck.checked);
         };
         const stopBtn = document.createElement('button') as HTMLButtonElement;
         stopBtn.innerText = `Disconnect`;
@@ -280,7 +280,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
 
     private wrap(elements: HTMLElement[], parent: HTMLElement): void {
         const wrap = document.createElement('p');
-        elements.forEach(e => {
+        elements.forEach((e) => {
             wrap.appendChild(e);
         });
         parent.appendChild(wrap);
