@@ -37,9 +37,9 @@ Drag & drop an APK file to push it to the `/data/local/tmp` directory. You can i
 
 ## Known issues
 
+* New versions are most likely not incompatible with previous ones. If you do upgrade, then manually stop `app_process` or just reboot the device.
 * The server on the Android Emulator listens on the internal interface and not available from the outside (as workaround you can do `adb forward tcp:8886 tcp:8886` and use `127.0.0.1` instead of emulator IP address)
-* H264bsdDecoder may fail to start
-* Version `0.3.0` is incompatible with previous. Reboot device or manually kill `app_process`.
+* H264bsdDecoder and Tinyh264Decoder may fail to start, try to reload the page.
 * MseDecoder reports too many dropped frames in quality statistics: needs further investigation.
 
 ## Security warning
