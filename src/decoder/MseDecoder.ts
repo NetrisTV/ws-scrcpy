@@ -36,6 +36,8 @@ export default class MseDecoder extends Decoder {
 
     private converter?: VideoConverter;
     private videoStats: QualityStats[] = [];
+    private stalledCounter = 0;
+    private isSeeking = false;
     public fpf: number = MseDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
     public readonly supportsScreenshot: boolean = true;
 
@@ -57,7 +59,6 @@ export default class MseDecoder extends Decoder {
         fps: number = MseDecoder.DEFAULT_FRAMES_PER_SECOND,
         fpf: number = MseDecoder.DEFAULT_FRAMES_PER_FRAGMENT,
     ): VideoConverter {
-        console.log(`Create new VideoConverter(fps=${fps}, fpf=${fpf})`);
         return new VideoConverter(tag, fps, fpf);
     }
 
@@ -193,10 +194,31 @@ export default class MseDecoder extends Decoder {
                     end = this.tag.buffered.end(0) | 0;
                 }
                 if (end !== 0 && start < end) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.converter as any).sourceBuffer.remove(start, end);
                 }
             }
             this.converter.appendRawData(frame);
+        }
+
+        // Workaround for stalled playback (`stalled` event is not fired, but the image freezes)
+        if (this.momentumQualityStats && !this.isSeeking) {
+            if (this.momentumQualityStats.decodedFrames === 0 && this.momentumQualityStats.inputFrames > 0) {
+                this.stalledCounter++;
+            } else {
+                this.stalledCounter = 0;
+            }
+        }
+        if (this.stalledCounter > 5 && this.tag.buffered.length) {
+            console.warn(this.name, 'Stalled! Jumping to the end');
+            const onSeekEnd = () => {
+                this.isSeeking = false;
+                this.tag.removeEventListener('seeked', onSeekEnd);
+            };
+            this.isSeeking = true;
+            this.tag.addEventListener('seeked', onSeekEnd);
+            this.tag.currentTime = this.tag.buffered.end(0);
+            this.stalledCounter = 0;
         }
     }
 
