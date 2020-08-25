@@ -20,6 +20,7 @@ export default class MseDecoder extends Decoder {
     });
     private static DEFAULT_FRAMES_PER_FRAGMENT = 1;
     private static DEFAULT_FRAMES_PER_SECOND = 60;
+
     public static createElement(id?: string): HTMLVideoElement {
         const tag = document.createElement('video') as HTMLVideoElement;
         tag.muted = true;
@@ -32,6 +33,7 @@ export default class MseDecoder extends Decoder {
         tag.className = 'video-layer';
         return tag;
     }
+
     private converter?: VideoConverter;
     private videoStats: QualityStats[] = [];
     public fpf: number = MseDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
@@ -183,6 +185,17 @@ export default class MseDecoder extends Decoder {
     public pushFrame(frame: Uint8Array): void {
         super.pushFrame(frame);
         if (this.converter) {
+            if (Decoder.isIFrame(frame)) {
+                let start = 0;
+                let end = 0;
+                if (this.tag.buffered && this.tag.buffered.length) {
+                    start = this.tag.buffered.start(0);
+                    end = this.tag.buffered.end(0) | 0;
+                }
+                if (end !== 0 && start < end) {
+                    (this.converter as any).sourceBuffer.remove(start, end);
+                }
+            }
             this.converter.appendRawData(frame);
         }
     }
