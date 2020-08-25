@@ -283,6 +283,7 @@ export default abstract class Decoder {
         if (!ctx) {
             return;
         }
+        const newStats = [];
         if (this.perSecondQualityStats && this.momentumQualityStats) {
             const { decodedFrames, droppedFrames, inputBytes, inputFrames } = this.momentumQualityStats;
             const { avgDecoded, avgDropped, avgSize, avgInput } = this.perSecondQualityStats;
@@ -295,23 +296,24 @@ export default abstract class Decoder {
             const prettyBytes = Util.prettyBytes(inputBytes).padStart(8, ' ');
             const prettyAvgBytes = Util.prettyBytes(avgSize).padStart(8, ' ');
 
-            const newStats = [];
             newStats.push(`Input bytes: ${prettyBytes} (avg: ${prettyAvgBytes}/s)`);
             newStats.push(`Input   FPS: ${padInput} (avg: ${padAvgInput})`);
             newStats.push(`Dropped FPS: ${padDropped} (avg: ${padAvgDropped})`);
             newStats.push(`Decoded FPS: ${padDecoded} (avg: ${padAvgDecoded})`);
-
-            let changed = false;
-            newStats.forEach((statLine, id) => {
-                if (statLine !== this.statLines[id]) {
-                    changed = true;
-                }
-            });
-
-            if (changed) {
-                this.statLines = newStats;
-                this.updateCanvas(false);
+        } else {
+            newStats.push(`Not supported`);
+        }
+        let changed = this.statLines.length !== newStats.length;
+        let i = 0;
+        while (!changed && i++ < newStats.length) {
+            if (newStats[i] !== this.statLines[i]) {
+                changed = true;
             }
+        }
+
+        if (changed) {
+            this.statLines = newStats;
+            this.updateCanvas(false);
         }
     }
 

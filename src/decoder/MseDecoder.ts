@@ -63,6 +63,11 @@ export default class MseDecoder extends Decoder {
     }
 
     private getVideoPlaybackQuality(): QualityStats | null {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const video = this.tag as any;
+        if (typeof video.mozDecodedFrames !== 'undefined') {
+            return null;
+        }
         const now = Date.now();
         if (typeof this.tag.getVideoPlaybackQuality == 'function') {
             const temp = this.tag.getVideoPlaybackQuality();
@@ -74,8 +79,6 @@ export default class MseDecoder extends Decoder {
         }
 
         // Webkit-specific properties
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const video = this.tag as any;
         if (typeof video.webkitDecodedFrameCount !== 'undefined') {
             return {
                 timestamp: now,
