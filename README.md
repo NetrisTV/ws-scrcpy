@@ -57,7 +57,6 @@ Be advised and keep in mind:
 * [oneam/h264bsd](https://github.com/oneam/h264bsd)
 * [mbebenita/Broadway](https://github.com/mbebenita/Broadway)
 * [openstf/adbkit](https://github.com/openstf/adbkit)
-* [openstf/adbkit-logcat](https://github.com/openstf/adbkit-logcat)
 * [xtermjs/xterm.js](https://github.com/xtermjs/xterm.js)
 * [udevbe/tinyh264](https://github.com/udevbe/tinyh264)
 
