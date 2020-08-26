@@ -44,7 +44,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         const sendButton = document.createElement('button');
         sendButton.innerText = 'Send as keys';
 
-        this.wrap([input, sendButton], moreBox);
+        this.wrap('p', [input, sendButton], moreBox);
         sendButton.onclick = () => {
             if (input.value) {
                 connection.sendEvent(new TextControlEvent(input.value));
@@ -62,6 +62,8 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                 let bitrateInput: HTMLInputElement;
                 let maxFpsInput: HTMLInputElement;
                 let iFrameIntervalInput: HTMLInputElement;
+                let maxWidthInput: HTMLInputElement;
+                let maxHeightInput: HTMLInputElement;
                 if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
                     const spoiler = document.createElement('div');
                     const spoilerLabel = document.createElement('label');
@@ -80,36 +82,43 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                     spoiler.appendChild(spoilerLabel);
                     spoiler.appendChild(innerDiv);
 
-                    const bitrateWrap = document.createElement('div');
                     const bitrateLabel = document.createElement('label');
                     bitrateLabel.innerText = 'Bitrate:';
                     bitrateInput = document.createElement('input');
                     bitrateInput.placeholder = `bitrate (${videoSettings.bitrate})`;
                     bitrateInput.value = videoSettings.bitrate.toString();
-                    bitrateWrap.appendChild(bitrateLabel);
-                    bitrateWrap.appendChild(bitrateInput);
+                    this.wrap('div', [bitrateLabel, bitrateInput], innerDiv);
 
-                    const maxFpsWrap = document.createElement('div');
                     const maxFpsLabel = document.createElement('label');
                     maxFpsLabel.innerText = 'Max fps:';
                     maxFpsInput = document.createElement('input');
                     maxFpsInput.placeholder = `max fps (${videoSettings.maxFps})`;
                     maxFpsInput.value = videoSettings.maxFps.toString();
-                    maxFpsWrap.appendChild(maxFpsLabel);
-                    maxFpsWrap.appendChild(maxFpsInput);
+                    this.wrap('div', [maxFpsLabel, maxFpsInput], innerDiv);
 
-                    const iFrameIntervalWrap = document.createElement('div');
                     const iFrameIntervalLabel = document.createElement('label');
                     iFrameIntervalLabel.innerText = 'I-Frame Interval:';
                     iFrameIntervalInput = document.createElement('input');
                     iFrameIntervalInput.placeholder = `I-frame interval (${videoSettings.iFrameInterval})`;
                     iFrameIntervalInput.value = videoSettings.iFrameInterval.toString();
-                    iFrameIntervalWrap.appendChild(iFrameIntervalLabel);
-                    iFrameIntervalWrap.appendChild(iFrameIntervalInput);
+                    this.wrap('div', [iFrameIntervalLabel, iFrameIntervalInput], innerDiv);
 
-                    innerDiv.appendChild(bitrateWrap);
-                    innerDiv.appendChild(maxFpsWrap);
-                    innerDiv.appendChild(iFrameIntervalWrap);
+                    const { width, height } = videoSettings.bounds || this.getMaxSize();
+
+                    const maxWidthLabel = document.createElement('label');
+                    maxWidthLabel.innerText = 'Max width:';
+                    maxWidthInput = document.createElement('input');
+                    maxWidthInput.placeholder = `max width (${width})`;
+                    maxWidthInput.value = width.toString();
+                    this.wrap('div', [maxWidthLabel, maxWidthInput], innerDiv);
+
+                    const maxHeightLabel = document.createElement('label');
+                    maxHeightLabel.innerText = 'Max height:';
+                    maxHeightInput = document.createElement('input');
+                    maxHeightInput.placeholder = `max height (${height})`;
+                    maxHeightInput.value = height.toString();
+                    this.wrap('div', [maxHeightLabel, maxHeightInput], innerDiv);
+
                     innerDiv.appendChild(btn);
                     commands.push(spoiler);
                 } else {
@@ -125,7 +134,9 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                         if (isNaN(bitrate) || isNaN(maxFps)) {
                             return;
                         }
-                        const bounds = this.getMaxSize();
+                        const width = parseInt(maxWidthInput.value, 10) & ~15;
+                        const height = parseInt(maxHeightInput.value, 10) & ~15;
+                        const bounds = new Size(width, height);
                         const videoSettings = new VideoSettings({
                             bounds,
                             bitrate,
@@ -220,7 +231,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         };
         this.controlButtons.appendChild(captureKeyboardInput);
         this.controlButtons.appendChild(captureKeyboardLabel);
-        this.wrap(commands, moreBox);
+        this.wrap('p', commands, moreBox);
         const showMoreInput = document.createElement('input');
         showMoreInput.type = 'checkbox';
         const showMoreLabel = document.createElement('label');
@@ -260,14 +271,14 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         qualityCheck.id = qualityId;
         qualityLabel.htmlFor = qualityId;
         qualityLabel.innerText = 'Show quality stats';
-        this.wrap([qualityCheck, qualityLabel], moreBox);
+        this.wrap('p', [qualityCheck, qualityLabel], moreBox);
         qualityCheck.onchange = () => {
             decoder.setShowQualityStats(qualityCheck.checked);
         };
         const stopBtn = document.createElement('button') as HTMLButtonElement;
         stopBtn.innerText = `Disconnect`;
         stopBtn.onclick = stop;
-        this.wrap([stopBtn], moreBox);
+        this.wrap('p', [stopBtn], moreBox);
         deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');
         video.className = 'video';
@@ -278,8 +289,8 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         connection.setErrorListener(new ErrorHandler(stop));
     }
 
-    private wrap(elements: HTMLElement[], parent: HTMLElement): void {
-        const wrap = document.createElement('p');
+    private wrap(tagName: string, elements: HTMLElement[], parent: HTMLElement): void {
+        const wrap = document.createElement(tagName);
         elements.forEach((e) => {
             wrap.appendChild(e);
         });
