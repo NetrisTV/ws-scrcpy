@@ -89,24 +89,21 @@ export default class TouchHandler {
     }
 
     private static getPointerId(type: string, identifier: number): number {
-        // I'm not sure that we can directly use touch identifier as pointerId
-        let pointerId: number;
         if (this.idToPointerMap.has(identifier)) {
-            pointerId = this.idToPointerMap.get(identifier) as number;
+            const pointerId = this.idToPointerMap.get(identifier) as number;
             if (type === 'touchend' || type === 'touchcancel') {
                 this.idToPointerMap.delete(identifier);
                 this.pointerToIdMap.delete(pointerId);
             }
             return pointerId;
-        } else {
-            pointerId = 0;
-            while (this.idToPointerMap.has(pointerId)) {
-                pointerId++;
-            }
-            this.idToPointerMap.set(identifier, pointerId);
-            this.pointerToIdMap.set(pointerId, identifier);
-            return pointerId;
         }
+        let pointerId = 0;
+        while (this.pointerToIdMap.has(pointerId)) {
+            pointerId++;
+        }
+        this.idToPointerMap.set(identifier, pointerId);
+        this.pointerToIdMap.set(pointerId, identifier);
+        return pointerId;
     }
 
     private static calculateCoordinates(e: CommonTouchAndMouse, screenInfo: ScreenInfo): TouchOnClient | null {
