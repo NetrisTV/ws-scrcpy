@@ -1,15 +1,15 @@
 import VideoSettings from './VideoSettings';
-import ControlMessage from './controlMessage/ControlMessage';
+import { ControlMessage } from './controlMessage/ControlMessage';
 import Size from './Size';
 import Decoder from './decoder/Decoder';
 import Util from './Util';
-import TouchControlMessage from './controlMessage/TouchControlMessage';
-import CommandControlMessage from './controlMessage/CommandControlMessage';
+import { TouchControlMessage } from './controlMessage/TouchControlMessage';
+import { CommandControlMessage } from './controlMessage/CommandControlMessage';
 import ScreenInfo from './ScreenInfo';
 import DeviceMessage from './DeviceMessage';
 import TouchHandler from './TouchHandler';
 import { KeyEventListener, KeyInputHandler } from './KeyInputHandler';
-import KeyCodeControlMessage from './controlMessage/KeyCodeControlMessage';
+import { KeyCodeControlMessage } from './controlMessage/KeyCodeControlMessage';
 import FilePushHandler from './FilePushHandler';
 import DragAndPushLogger from './DragAndPushLogger';
 

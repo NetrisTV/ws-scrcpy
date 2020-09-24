@@ -1,4 +1,4 @@
-interface SizeInterface {
+export interface SizeInterface {
     width: number;
     height: number;
 }

@@ -1,4 +1,8 @@
-export default class ControlMessage {
+export interface ControlMessageInterface {
+    type: number;
+}
+
+export class ControlMessage {
     public static TYPE_KEYCODE = 0;
     public static TYPE_TEXT = 1;
     public static TYPE_MOUSE = 2;
@@ -21,5 +25,11 @@ export default class ControlMessage {
 
     public toString(): string {
         return 'ControlMessage';
+    }
+
+    public toJSON(): ControlMessageInterface {
+        return {
+            type: this.type,
+        };
     }
 }

@@ -1,7 +1,14 @@
 import { Buffer } from 'buffer';
-import ControlMessage from './ControlMessage';
+import { ControlMessage, ControlMessageInterface } from './ControlMessage';
 
-export default class KeyCodeControlMessage extends ControlMessage {
+export interface KeyCodeControlMessageInterface extends ControlMessageInterface {
+    action: number;
+    keycode: number;
+    repeat: number;
+    metaState: number;
+}
+
+export class KeyCodeControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 13;
 
     constructor(
@@ -29,5 +36,15 @@ export default class KeyCodeControlMessage extends ControlMessage {
 
     public toString(): string {
         return `KeyCodeControlMessage{action=${this.action}, keycode=${this.keycode}, metaState=${this.metaState}}`;
+    }
+
+    public toJSON(): KeyCodeControlMessageInterface {
+        return {
+            type: this.type,
+            action: this.action,
+            keycode: this.keycode,
+            metaState: this.metaState,
+            repeat: this.repeat,
+        };
     }
 }

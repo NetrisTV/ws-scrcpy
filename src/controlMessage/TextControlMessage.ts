@@ -1,7 +1,11 @@
 import { Buffer } from 'buffer';
-import ControlMessage from './ControlMessage';
+import { ControlMessage, ControlMessageInterface } from './ControlMessage';
 
-export default class TextControlMessage extends ControlMessage {
+export interface TextControlMessageInterface extends ControlMessageInterface {
+    text: string;
+}
+
+export class TextControlMessage extends ControlMessage {
     private static TEXT_SIZE_FIELD_LENGTH = 4;
     constructor(readonly text: string) {
         super(ControlMessage.TYPE_TEXT);
@@ -26,5 +30,12 @@ export default class TextControlMessage extends ControlMessage {
 
     public toString(): string {
         return `TextControlMessage{text=${this.text}}`;
+    }
+
+    public toJSON(): TextControlMessageInterface {
+        return {
+            type: this.type,
+            text: this.text,
+        };
     }
 }

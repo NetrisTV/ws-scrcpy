@@ -1,7 +1,13 @@
-import ControlMessage from './ControlMessage';
-import Position from '../Position';
+import { ControlMessage, ControlMessageInterface } from './ControlMessage';
+import Position, { PositionInterface } from '../Position';
 
-export default class ScrollControlMessage extends ControlMessage {
+export interface ScrollControlMessageInterface extends ControlMessageInterface {
+    position: PositionInterface;
+    hScroll: number;
+    vScroll: number;
+}
+
+export class ScrollControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 20;
 
     constructor(readonly position: Position, readonly hScroll: number, readonly vScroll: number) {
@@ -25,5 +31,14 @@ export default class ScrollControlMessage extends ControlMessage {
 
     public toString(): string {
         return `ScrollControlMessage{hScroll=${this.hScroll}, vScroll=${this.vScroll}, position=${this.position}}`;
+    }
+
+    public toJSON(): ScrollControlMessageInterface {
+        return {
+            type: this.type,
+            position: this.position.toJSON(),
+            hScroll: this.hScroll,
+            vScroll: this.vScroll,
+        };
     }
 }

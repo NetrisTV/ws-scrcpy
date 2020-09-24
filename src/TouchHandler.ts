@@ -1,6 +1,6 @@
 import MotionEvent from './MotionEvent';
 import ScreenInfo from './ScreenInfo';
-import TouchControlMessage from './controlMessage/TouchControlMessage';
+import { TouchControlMessage } from './controlMessage/TouchControlMessage';
 import Size from './Size';
 import Point from './Point';
 import Position from './Position';

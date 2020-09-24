@@ -1,4 +1,4 @@
-import ControlMessage from './ControlMessage';
+import { ControlMessage } from './ControlMessage';
 import VideoSettings from '../VideoSettings';
 import Util from '../Util';
 
@@ -18,7 +18,7 @@ type FilePushParams = {
     fileSize?: number;
 };
 
-export default class CommandControlMessage extends ControlMessage {
+export class CommandControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 0;
 
     public static CommandCodes: Record<string, number> = {

@@ -1,7 +1,16 @@
-import ControlMessage from './ControlMessage';
-import Position from '../Position';
+import { ControlMessage, ControlMessageInterface } from './ControlMessage';
+import Position, { PositionInterface } from '../Position';
 
-export default class TouchControlMessage extends ControlMessage {
+export interface TouchControlMessageInterface extends ControlMessageInterface {
+    type: number;
+    action: number;
+    pointerId: number;
+    position: PositionInterface;
+    pressure: number;
+    buttons: number;
+}
+
+export class TouchControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 28;
 
     constructor(
@@ -35,5 +44,16 @@ export default class TouchControlMessage extends ControlMessage {
 
     public toString(): string {
         return `TouchControlMessage{action=${this.action}, pointerId=${this.pointerId}, position=${this.position}, pressure=${this.pressure}, buttons=${this.buttons}}`;
+    }
+
+    public toJSON(): TouchControlMessageInterface {
+        return {
+            type: this.type,
+            action: this.action,
+            pointerId: this.pointerId,
+            position: this.position.toJSON(),
+            pressure: this.pressure,
+            buttons: this.buttons,
+        };
     }
 }

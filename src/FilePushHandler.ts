@@ -1,7 +1,7 @@
 import { DragAndDropHandler, DragEventListener } from './DragAndDropHandler';
 import { DeviceConnection, DeviceMessageListener } from './DeviceConnection';
 import DeviceMessage from './DeviceMessage';
-import CommandControlMessage, { FilePushState } from './controlMessage/CommandControlMessage';
+import { CommandControlMessage, FilePushState } from './controlMessage/CommandControlMessage';
 
 const ALLOWED_TYPES = ['application/vnd.android.package-archive'];
 

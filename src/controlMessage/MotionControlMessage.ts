@@ -1,7 +1,13 @@
-import ControlMessage from './ControlMessage';
-import Position from '../Position';
+import { ControlMessage, ControlMessageInterface } from './ControlMessage';
+import Position, { PositionInterface } from '../Position';
 
-export default class MotionControlMessage extends ControlMessage {
+export interface MotionControlMessageInterface extends ControlMessageInterface {
+    action: number;
+    buttons: number;
+    position: PositionInterface;
+}
+
+export class MotionControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 17;
 
     constructor(readonly action: number, readonly buttons: number, readonly position: Position) {
@@ -25,5 +31,14 @@ export default class MotionControlMessage extends ControlMessage {
 
     public toString(): string {
         return `MotionControlMessage{action=${this.action}, buttons=${this.buttons}, position=${this.position}}`;
+    }
+
+    public toJSON(): MotionControlMessageInterface {
+        return {
+            type: this.type,
+            action: this.action,
+            buttons: this.buttons,
+            position: this.position.toJSON(),
+        };
     }
 }
