@@ -1,4 +1,4 @@
-import { NodeClient } from './NodeClient';
+import { ManagerClient } from './ManagerClient';
 import { Terminal } from 'xterm';
 import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
@@ -10,10 +10,10 @@ export interface ShellParams extends ParsedUrlQueryInput {
     udid: string;
 }
 
-export class ClientShell extends NodeClient {
+export class ShellClient extends ManagerClient {
     public static ACTION = 'shell';
-    public static start(params: ShellParams): ClientShell {
-        return new ClientShell(params.action, params.udid);
+    public static start(params: ShellParams): ShellClient {
+        return new ShellClient(params.action, params.udid);
     }
     private readonly term: Terminal;
     private readonly fitAddon: FitAddon;
@@ -29,7 +29,7 @@ export class ClientShell extends NodeClient {
         this.fitAddon = new FitAddon();
         this.term.loadAddon(this.fitAddon);
         this.escapedUdid = this.escapeUdid(udid);
-        this.term.open(ClientShell.getOrCreateContainer(this.escapedUdid));
+        this.term.open(ShellClient.getOrCreateContainer(this.escapedUdid));
         this.updateTerminalSize();
     }
 
@@ -83,7 +83,7 @@ export class ClientShell extends NodeClient {
     private updateTerminalSize(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const term: any = this.term;
-        const terminalContainer: HTMLElement = ClientShell.getOrCreateContainer(this.escapedUdid);
+        const terminalContainer: HTMLElement = ShellClient.getOrCreateContainer(this.escapedUdid);
         const { rows, cols } = this.fitAddon.proposeDimensions();
         const width =
             (cols * term._core._renderService.dimensions.actualCellWidth + term._core.viewport.scrollBarWidth).toFixed(

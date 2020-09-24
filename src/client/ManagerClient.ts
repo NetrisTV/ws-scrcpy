@@ -1,6 +1,6 @@
 import { BaseClient } from './BaseClient';
 
-export abstract class NodeClient extends BaseClient {
+export abstract class ManagerClient extends BaseClient {
     public static ACTION = 'unknown';
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars

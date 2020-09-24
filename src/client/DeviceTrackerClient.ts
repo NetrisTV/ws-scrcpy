@@ -1,9 +1,9 @@
 import * as querystring from 'querystring';
-import { NodeClient } from './NodeClient';
+import { ManagerClient } from './ManagerClient';
 import { Message } from '../common/Message';
 import { StreamParams } from './ScrcpyClient';
 import { SERVER_PORT } from '../server/Constants';
-import { ShellParams } from './ClientShell';
+import { ShellParams } from './ShellClient';
 import DescriptorFields from '../common/DescriptorFields';
 
 type MapItem = {
@@ -65,10 +65,10 @@ type Decoders = 'broadway' | 'mse' | 'h264bsd' | 'tinyh264';
 
 const DECODERS: Decoders[] = ['broadway', 'mse', 'h264bsd', 'tinyh264'];
 
-export class ClientDeviceTracker extends NodeClient {
+export class DeviceTrackerClient extends ManagerClient {
     public static ACTION = 'devicelist';
-    public static start(): ClientDeviceTracker {
-        return new ClientDeviceTracker(ClientDeviceTracker.ACTION);
+    public static start(): DeviceTrackerClient {
+        return new DeviceTrackerClient(DeviceTrackerClient.ACTION);
     }
 
     constructor(action: string) {
@@ -93,7 +93,7 @@ export class ClientDeviceTracker extends NodeClient {
             console.log(e.data);
             return;
         }
-        if (message.type !== ClientDeviceTracker.ACTION) {
+        if (message.type !== DeviceTrackerClient.ACTION) {
             console.log(`Unknown message type: ${message.type}`);
             return;
         }
@@ -157,7 +157,7 @@ export class ClientDeviceTracker extends NodeClient {
                 const decoderTd = document.createElement('td');
                 if (isActive) {
                     if (hasIp && hasPid) {
-                        const link = ClientDeviceTracker.buildLink(
+                        const link = DeviceTrackerClient.buildLink(
                             {
                                 action: 'stream',
                                 udid: device.udid,
@@ -176,7 +176,7 @@ export class ClientDeviceTracker extends NodeClient {
             const shellTd = document.createElement('td');
             if (isActive) {
                 shellTd.appendChild(
-                    ClientDeviceTracker.buildLink(
+                    DeviceTrackerClient.buildLink(
                         {
                             action: 'shell',
                             udid: device.udid,
