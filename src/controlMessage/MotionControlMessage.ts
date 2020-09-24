@@ -1,18 +1,18 @@
-import ControlEvent from './ControlEvent';
+import ControlMessage from './ControlMessage';
 import Position from '../Position';
 
-export default class MotionControlEvent extends ControlEvent {
+export default class MotionControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 17;
 
     constructor(readonly action: number, readonly buttons: number, readonly position: Position) {
-        super(ControlEvent.TYPE_MOUSE);
+        super(ControlMessage.TYPE_MOUSE);
     }
 
     /**
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer: Buffer = new Buffer(MotionControlEvent.PAYLOAD_LENGTH + 1);
+        const buffer: Buffer = new Buffer(MotionControlMessage.PAYLOAD_LENGTH + 1);
         buffer.writeUInt8(this.type, 0);
         buffer.writeUInt8(this.action, 1);
         buffer.writeUInt32BE(this.buttons, 2);
@@ -24,6 +24,6 @@ export default class MotionControlEvent extends ControlEvent {
     }
 
     public toString(): string {
-        return `MotionControlEvent{action=${this.action}, buttons=${this.buttons}, position=${this.position}}`;
+        return `MotionControlMessage{action=${this.action}, buttons=${this.buttons}, position=${this.position}}`;
     }
 }

@@ -1,6 +1,6 @@
 import MotionEvent from './MotionEvent';
 import ScreenInfo from './ScreenInfo';
-import TouchControlEvent from './controlEvent/TouchControlEvent';
+import TouchControlMessage from './controlMessage/TouchControlMessage';
 import Size from './Size';
 import Point from './Point';
 import Position from './Position';
@@ -273,8 +273,8 @@ export default class TouchHandler {
         e: TouchEvent,
         screenInfo: ScreenInfo,
         tag: HTMLElement,
-    ): TouchControlEvent[] | null {
-        const events: TouchControlEvent[] = [];
+    ): TouchControlMessage[] | null {
+        const events: TouchControlMessage[] = [];
         const touches = e.changedTouches;
         if (touches && touches.length) {
             for (let i = 0, l = touches.length; i < l; i++) {
@@ -294,7 +294,7 @@ export default class TouchHandler {
                 if (event) {
                     const { action, buttons, position } = event.touch;
                     const pressure = touch.force * 255;
-                    events.push(new TouchControlEvent(action, pointerId, position, pressure, buttons));
+                    events.push(new TouchControlMessage(action, pointerId, position, pressure, buttons));
                 } else {
                     console.error(`Failed to format touch`, touch);
                 }
@@ -308,7 +308,7 @@ export default class TouchHandler {
         return null;
     }
 
-    public static buildTouchEvent(e: MouseEvent, screenInfo: ScreenInfo): TouchControlEvent[] | null {
+    public static buildTouchEvent(e: MouseEvent, screenInfo: ScreenInfo): TouchControlMessage[] | null {
         const touches = this.getTouch(e, screenInfo);
         if (!touches) {
             return null;
@@ -333,7 +333,7 @@ export default class TouchHandler {
         }
         return touches.map((touch: Touch, pointerId: number) => {
             const { action, buttons, position } = touch;
-            return new TouchControlEvent(action, pointerId, position, 255, buttons);
+            return new TouchControlMessage(action, pointerId, position, 255, buttons);
         });
     }
 }

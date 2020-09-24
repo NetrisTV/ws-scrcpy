@@ -1,10 +1,10 @@
 import { Buffer } from 'buffer';
-import ControlEvent from './ControlEvent';
+import ControlMessage from './ControlMessage';
 
-export default class TextControlEvent extends ControlEvent {
+export default class TextControlMessage extends ControlMessage {
     private static TEXT_SIZE_FIELD_LENGTH = 4;
     constructor(readonly text: string) {
-        super(ControlEvent.TYPE_TEXT);
+        super(ControlMessage.TYPE_TEXT);
     }
 
     public getText(): string {
@@ -16,7 +16,7 @@ export default class TextControlEvent extends ControlEvent {
      */
     public toBuffer(): Buffer {
         const length = this.text.length;
-        const buffer = new Buffer(length + 1 + TextControlEvent.TEXT_SIZE_FIELD_LENGTH);
+        const buffer = new Buffer(length + 1 + TextControlMessage.TEXT_SIZE_FIELD_LENGTH);
         let offset = 0;
         offset = buffer.writeUInt8(this.type, offset);
         offset = buffer.writeUInt32BE(length, offset);
@@ -25,6 +25,6 @@ export default class TextControlEvent extends ControlEvent {
     }
 
     public toString(): string {
-        return `TextControlEvent{text=${this.text}}`;
+        return `TextControlMessage{text=${this.text}}`;
     }
 }

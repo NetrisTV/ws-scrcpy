@@ -1,7 +1,7 @@
-import ControlEvent from './ControlEvent';
+import ControlMessage from './ControlMessage';
 import Position from '../Position';
 
-export default class TouchControlEvent extends ControlEvent {
+export default class TouchControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 28;
 
     constructor(
@@ -11,14 +11,14 @@ export default class TouchControlEvent extends ControlEvent {
         readonly pressure: number,
         readonly buttons: number,
     ) {
-        super(ControlEvent.TYPE_MOUSE);
+        super(ControlMessage.TYPE_MOUSE);
     }
 
     /**
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer: Buffer = new Buffer(TouchControlEvent.PAYLOAD_LENGTH + 1);
+        const buffer: Buffer = new Buffer(TouchControlMessage.PAYLOAD_LENGTH + 1);
         let offset = 0;
         offset = buffer.writeUInt8(this.type, offset);
         offset = buffer.writeUInt8(this.action, offset);
@@ -34,6 +34,6 @@ export default class TouchControlEvent extends ControlEvent {
     }
 
     public toString(): string {
-        return `TouchControlEvent{action=${this.action}, pointerId=${this.pointerId}, position=${this.position}, pressure=${this.pressure}, buttons=${this.buttons}}`;
+        return `TouchControlMessage{action=${this.action}, pointerId=${this.pointerId}, position=${this.position}, pressure=${this.pressure}, buttons=${this.buttons}}`;
     }
 }

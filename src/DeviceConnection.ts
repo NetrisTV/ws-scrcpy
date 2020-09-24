@@ -1,15 +1,15 @@
 import VideoSettings from './VideoSettings';
-import ControlEvent from './controlEvent/ControlEvent';
+import ControlMessage from './controlMessage/ControlMessage';
 import Size from './Size';
 import Decoder from './decoder/Decoder';
 import Util from './Util';
-import TouchControlEvent from './controlEvent/TouchControlEvent';
-import CommandControlEvent from './controlEvent/CommandControlEvent';
+import TouchControlMessage from './controlMessage/TouchControlMessage';
+import CommandControlMessage from './controlMessage/CommandControlMessage';
 import ScreenInfo from './ScreenInfo';
 import DeviceMessage from './DeviceMessage';
 import TouchHandler from './TouchHandler';
 import { KeyEventListener, KeyInputHandler } from './KeyInputHandler';
-import KeyCodeControlEvent from './controlEvent/KeyCodeControlEvent';
+import KeyCodeControlMessage from './controlMessage/KeyCodeControlMessage';
 import FilePushHandler from './FilePushHandler';
 import DragAndPushLogger from './DragAndPushLogger';
 
@@ -37,7 +37,7 @@ export class DeviceConnection implements KeyEventListener {
     private static hasTouchListeners = false;
     private static instances: Record<string, DeviceConnection> = {};
     public readonly ws: WebSocket;
-    private events: ControlEvent[] = [];
+    private events: ControlMessage[] = [];
     private decoders: Set<Decoder> = new Set<Decoder>();
     private filePushHandlers: Map<Decoder, FilePushHandler> = new Map();
     private errorListener?: ErrorListener;
@@ -77,7 +77,7 @@ export class DeviceConnection implements KeyEventListener {
                                 if (!screenInfo) {
                                     return;
                                 }
-                                let events: TouchControlEvent[] | null = null;
+                                let events: TouchControlMessage[] | null = null;
                                 let condition = true;
                                 if (e instanceof MouseEvent) {
                                     condition = down > 0;
@@ -213,7 +213,7 @@ export class DeviceConnection implements KeyEventListener {
         this.events.length = 0;
     }
 
-    public sendEvent(event: ControlEvent): void {
+    public sendEvent(event: ControlMessage): void {
         if (this.hasConnection()) {
             this.ws.send(event.toBuffer());
         } else {
@@ -223,7 +223,7 @@ export class DeviceConnection implements KeyEventListener {
 
     public sendNewVideoSetting(videoSettings: VideoSettings): void {
         this.requestedVideoSettings = videoSettings;
-        this.sendEvent(CommandControlEvent.createSetVideoSettingsCommand(videoSettings));
+        this.sendEvent(CommandControlMessage.createSetVideoSettingsCommand(videoSettings));
     }
 
     public setErrorListener(listener: ErrorListener): void {
@@ -258,7 +258,7 @@ export class DeviceConnection implements KeyEventListener {
         }
     }
 
-    public onKeyEvent(event: KeyCodeControlEvent): void {
+    public onKeyEvent(event: KeyCodeControlMessage): void {
         this.sendEvent(event);
     }
 

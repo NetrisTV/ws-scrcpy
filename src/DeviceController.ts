@@ -2,11 +2,11 @@ import Decoder, { VideoResizeListener } from './decoder/Decoder';
 import { DeviceConnection, DeviceMessageListener } from './DeviceConnection';
 import VideoSettings from './VideoSettings';
 import ErrorHandler from './ErrorHandler';
-import KeyCodeControlEvent from './controlEvent/KeyCodeControlEvent';
+import KeyCodeControlMessage from './controlMessage/KeyCodeControlMessage';
 import KeyEvent from './android/KeyEvent';
-import CommandControlEvent from './controlEvent/CommandControlEvent';
-import ControlEvent from './controlEvent/ControlEvent';
-import TextControlEvent from './controlEvent/TextControlEvent';
+import CommandControlMessage from './controlMessage/CommandControlMessage';
+import ControlMessage from './controlMessage/ControlMessage';
+import TextControlMessage from './controlMessage/TextControlMessage';
 import DeviceMessage from './DeviceMessage';
 import SvgImage from './ui/SvgImage';
 import Size from './Size';
@@ -47,14 +47,14 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         this.wrap('p', [input, sendButton], moreBox);
         sendButton.onclick = () => {
             if (input.value) {
-                connection.sendEvent(new TextControlEvent(input.value));
+                connection.sendEvent(new TextControlMessage(input.value));
             }
         };
 
         this.controlButtons = document.createElement('div');
         this.controlButtons.className = 'control-buttons-list';
         const commands: HTMLElement[] = [];
-        const codes = CommandControlEvent.CommandCodes;
+        const codes = CommandControlMessage.CommandCodes;
         for (const command in codes) {
             if (codes.hasOwnProperty(command)) {
                 const action: number = codes[command];
@@ -64,7 +64,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                 let iFrameIntervalInput: HTMLInputElement;
                 let maxWidthInput: HTMLInputElement;
                 let maxHeightInput: HTMLInputElement;
-                if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
+                if (action === ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS) {
                     const spoiler = document.createElement('div');
                     const spoilerLabel = document.createElement('label');
                     const spoilerCheck = document.createElement('input');
@@ -76,7 +76,7 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                     spoilerCheck.type = 'checkbox';
                     spoilerCheck.id = id;
                     spoilerLabel.htmlFor = id;
-                    spoilerLabel.innerText = CommandControlEvent.CommandNames[action];
+                    spoilerLabel.innerText = CommandControlMessage.CommandNames[action];
                     innerDiv.className = 'box';
                     spoiler.appendChild(spoilerCheck);
                     spoiler.appendChild(spoilerLabel);
@@ -124,10 +124,10 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                 } else {
                     commands.push(btn);
                 }
-                btn.innerText = CommandControlEvent.CommandNames[action];
+                btn.innerText = CommandControlMessage.CommandNames[action];
                 btn.onclick = () => {
-                    let event: CommandControlEvent | undefined;
-                    if (action === ControlEvent.TYPE_CHANGE_STREAM_PARAMETERS) {
+                    let event: CommandControlMessage | undefined;
+                    if (action === ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS) {
                         const bitrate = parseInt(bitrateInput.value, 10);
                         const maxFps = parseInt(maxFpsInput.value, 10);
                         const iFrameInterval = parseInt(iFrameIntervalInput.value, 10);
@@ -146,13 +146,13 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
                             sendFrameMeta: false,
                         });
                         connection.sendNewVideoSetting(videoSettings);
-                    } else if (action === CommandControlEvent.TYPE_SET_CLIPBOARD) {
+                    } else if (action === CommandControlMessage.TYPE_SET_CLIPBOARD) {
                         const text = input.value;
                         if (text) {
-                            event = CommandControlEvent.createSetClipboardCommand(text);
+                            event = CommandControlMessage.createSetClipboardCommand(text);
                         }
                     } else {
-                        event = new CommandControlEvent(action);
+                        event = new CommandControlMessage(action);
                     }
                     if (event) {
                         connection.sendEvent(event);
@@ -199,11 +199,11 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
             btn.title = title;
             btn.appendChild(SvgImage.create(icon));
             btn.onmousedown = () => {
-                const event = new KeyCodeControlEvent(KeyEvent.ACTION_DOWN, code, 0, 0);
+                const event = new KeyCodeControlMessage(KeyEvent.ACTION_DOWN, code, 0, 0);
                 connection.sendEvent(event);
             };
             btn.onmouseup = () => {
-                const event = new KeyCodeControlEvent(KeyEvent.ACTION_UP, code, 0, 0);
+                const event = new KeyCodeControlMessage(KeyEvent.ACTION_UP, code, 0, 0);
                 connection.sendEvent(event);
             };
             this.controlButtons.appendChild(btn);

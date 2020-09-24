@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
-import ControlEvent from './ControlEvent';
+import ControlMessage from './ControlMessage';
 
-export default class KeyCodeControlEvent extends ControlEvent {
+export default class KeyCodeControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 13;
 
     constructor(
@@ -10,14 +10,14 @@ export default class KeyCodeControlEvent extends ControlEvent {
         readonly repeat: number,
         readonly metaState: number,
     ) {
-        super(ControlEvent.TYPE_KEYCODE);
+        super(ControlMessage.TYPE_KEYCODE);
     }
 
     /**
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer = new Buffer(KeyCodeControlEvent.PAYLOAD_LENGTH + 1);
+        const buffer = new Buffer(KeyCodeControlMessage.PAYLOAD_LENGTH + 1);
         let offset = 0;
         offset = buffer.writeInt8(this.type, offset);
         offset = buffer.writeInt8(this.action, offset);
@@ -28,6 +28,6 @@ export default class KeyCodeControlEvent extends ControlEvent {
     }
 
     public toString(): string {
-        return `KeyCodeControlEvent{action=${this.action}, keycode=${this.keycode}, metaState=${this.metaState}}`;
+        return `KeyCodeControlMessage{action=${this.action}, keycode=${this.keycode}, metaState=${this.metaState}}`;
     }
 }

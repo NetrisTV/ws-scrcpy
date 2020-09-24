@@ -1,7 +1,7 @@
 import { DragAndDropHandler, DragEventListener } from './DragAndDropHandler';
 import { DeviceConnection, DeviceMessageListener } from './DeviceConnection';
 import DeviceMessage from './DeviceMessage';
-import CommandControlEvent, { FilePushState } from './controlEvent/CommandControlEvent';
+import CommandControlMessage, { FilePushState } from './controlMessage/CommandControlMessage';
 
 const ALLOWED_TYPES = ['application/vnd.android.package-archive'];
 
@@ -64,14 +64,14 @@ export default class FilePushHandler implements DragEventListener, DeviceMessage
         const id = FilePushHandler.REQUEST_NEW_PUSH_ID;
         this.sendUpdate({ pushId: id, fileName, logString: 'begin...', error: false });
         const newParams = { id, state: FilePushState.NEW };
-        this.connection.sendEvent(CommandControlEvent.createPushFileCommand(newParams));
+        this.connection.sendEvent(CommandControlMessage.createPushFileCommand(newParams));
         const pushId: number = await this.waitForResponse(id);
         if (pushId <= 0) {
             this.logError(pushId, fileName, pushId);
         }
 
         const startParams = { id: pushId, fileName, fileSize, state: FilePushState.START };
-        this.connection.sendEvent(CommandControlEvent.createPushFileCommand(startParams));
+        this.connection.sendEvent(CommandControlMessage.createPushFileCommand(startParams));
         const stream = file.stream();
         const reader = stream.getReader();
         const [startResponseCode, result] = await Promise.all([this.waitForResponse(pushId), reader.read()]);
@@ -85,7 +85,7 @@ export default class FilePushHandler implements DragEventListener, DeviceMessage
         const processData = async ({ done, value }: { done: boolean; value?: any }): Promise<void> => {
             if (done) {
                 const finishParams = { id: pushId, state: FilePushState.FINISH };
-                this.connection.sendEvent(CommandControlEvent.createPushFileCommand(finishParams));
+                this.connection.sendEvent(CommandControlMessage.createPushFileCommand(finishParams));
                 const finishResponseCode = await this.waitForResponse(pushId);
                 if (finishResponseCode !== 0) {
                     this.logError(pushId, fileName, finishResponseCode);
@@ -98,7 +98,7 @@ export default class FilePushHandler implements DragEventListener, DeviceMessage
 
             receivedBytes += value.length;
             const appendParams = { id: pushId, chunk: value, state: FilePushState.APPEND };
-            this.connection.sendEvent(CommandControlEvent.createPushFileCommand(appendParams));
+            this.connection.sendEvent(CommandControlMessage.createPushFileCommand(appendParams));
 
             const [appendResponseCode, result] = await Promise.all([this.waitForResponse(pushId), reader.read()]);
             if (appendResponseCode !== 0) {

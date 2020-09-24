@@ -1,9 +1,9 @@
-import KeyCodeControlEvent from './controlEvent/KeyCodeControlEvent';
+import KeyCodeControlMessage from './controlMessage/KeyCodeControlMessage';
 import KeyEvent from './android/KeyEvent';
 import { KeyToCodeMap } from './KeyToCodeMap';
 
 export interface KeyEventListener {
-    onKeyEvent: (event: KeyCodeControlEvent) => void;
+    onKeyEvent: (event: KeyCodeControlMessage) => void;
 }
 
 export class KeyInputHandler {
@@ -44,9 +44,14 @@ export class KeyInputHandler {
             (event.getModifierState('ScrollLock') ? KeyEvent.META_SCROLL_LOCK_ON : 0) |
             (event.getModifierState('NumLock') ? KeyEvent.META_NUM_LOCK_ON : 0);
 
-        const controlEvent: KeyCodeControlEvent = new KeyCodeControlEvent(action, keyCode, repeatCount, metaState);
+        const controlMessage: KeyCodeControlMessage = new KeyCodeControlMessage(
+            action,
+            keyCode,
+            repeatCount,
+            metaState,
+        );
         KeyInputHandler.listeners.forEach((listener) => {
-            listener.onKeyEvent(controlEvent);
+            listener.onKeyEvent(controlMessage);
         });
         e.preventDefault();
     };

@@ -1,4 +1,4 @@
-export default class ControlEvent {
+export default class ControlMessage {
     public static TYPE_KEYCODE = 0;
     public static TYPE_TEXT = 1;
     public static TYPE_MOUSE = 2;
@@ -20,6 +20,6 @@ export default class ControlEvent {
     }
 
     public toString(): string {
-        return 'ControlEvent';
+        return 'ControlMessage';
     }
 }

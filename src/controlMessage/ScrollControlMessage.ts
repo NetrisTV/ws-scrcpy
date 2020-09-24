@@ -1,18 +1,18 @@
-import ControlEvent from './ControlEvent';
+import ControlMessage from './ControlMessage';
 import Position from '../Position';
 
-export default class ScrollControlEvent extends ControlEvent {
+export default class ScrollControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 20;
 
     constructor(readonly position: Position, readonly hScroll: number, readonly vScroll: number) {
-        super(ControlEvent.TYPE_SCROLL);
+        super(ControlMessage.TYPE_SCROLL);
     }
 
     /**
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer = new Buffer(ScrollControlEvent.PAYLOAD_LENGTH + 1);
+        const buffer = new Buffer(ScrollControlMessage.PAYLOAD_LENGTH + 1);
         buffer.writeUInt8(this.type, 0);
         buffer.writeUInt32BE(this.position.point.x, 1);
         buffer.writeUInt32BE(this.position.point.y, 5);
@@ -24,6 +24,6 @@ export default class ScrollControlEvent extends ControlEvent {
     }
 
     public toString(): string {
-        return `ScrollControlEvent{hScroll=${this.hScroll}, vScroll=${this.vScroll}, position=${this.position}}`;
+        return `ScrollControlMessage{hScroll=${this.hScroll}, vScroll=${this.vScroll}, position=${this.position}}`;
     }
 }
