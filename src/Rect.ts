@@ -33,6 +33,15 @@ export default class Rect {
         }
         return this.left === o.left && this.top === o.top && this.right === o.right && this.bottom === o.bottom;
     }
+
+    public getWidth(): number {
+        return this.right - this.left;
+    }
+
+    public getHeight(): number {
+        return this.bottom - this.top;
+    }
+
     public toString(): string {
         // prettier-ignore
         return `Rect{left=${

@@ -3,7 +3,7 @@ import Size from './Size';
 
 export default class ScreenInfo {
     public static readonly BUFFER_LENGTH: number = 13;
-    constructor(readonly contentRect: Rect, readonly videoSize: Size, readonly rotated: boolean) {}
+    constructor(readonly contentRect: Rect, readonly videoSize: Size, readonly deviceRotation: number) {}
 
     public static fromBuffer(buffer: Buffer): ScreenInfo {
         const left = buffer.readUInt16BE(0);
@@ -12,8 +12,8 @@ export default class ScreenInfo {
         const bottom = buffer.readUInt16BE(6);
         const width = buffer.readUInt16BE(8);
         const height = buffer.readUInt16BE(10);
-        const rotated = !!buffer.readUInt8(12);
-        return new ScreenInfo(new Rect(left, top, right, bottom), new Size(width, height), rotated);
+        const deviceRotation = buffer.readUInt8(12);
+        return new ScreenInfo(new Rect(left, top, right, bottom), new Size(width, height), deviceRotation);
     }
 
     public equals(o?: ScreenInfo | null): boolean {
@@ -21,11 +21,13 @@ export default class ScreenInfo {
             return false;
         }
         return (
-            this.contentRect.equals(o.contentRect) && this.videoSize.equals(o.videoSize) && this.rotated === o.rotated
+            this.contentRect.equals(o.contentRect) &&
+            this.videoSize.equals(o.videoSize) &&
+            this.deviceRotation === o.deviceRotation
         );
     }
 
     public toString(): string {
-        return `ScreenInfo{contentRect=${this.contentRect}, videoSize=${this.videoSize}, rotated=${this.rotated}}`;
+        return `ScreenInfo{contentRect=${this.contentRect}, videoSize=${this.videoSize}, deviceRotation=${this.deviceRotation}}`;
     }
 }
