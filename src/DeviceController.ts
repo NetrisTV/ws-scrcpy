@@ -338,8 +338,12 @@ export class DeviceController implements DeviceMessageListener, VideoResizeListe
         document.execCommand('copy');
     }
 
-    public onVideoResize(size: Size): void {
+    public onViewVideoResize(size: Size): void {
         // padding: 10px
         this.moreBox.style.width = `${size.width - 2 * 10}px`;
+    }
+
+    public onInputVideoResize(/*screenInfo: ScreenInfo*/): void {
+        //this.deviceConnection.setScreenInfo(screenInfo);
     }
 }

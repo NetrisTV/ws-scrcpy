@@ -25,7 +25,8 @@ export interface PlaybackQuality {
 }
 
 export interface VideoResizeListener {
-    onVideoResize(size: Size): void;
+    onViewVideoResize(size: Size): void;
+    onInputVideoResize(screenInfo: ScreenInfo): void;
 }
 
 export default abstract class Decoder {
@@ -45,6 +46,7 @@ export default abstract class Decoder {
     protected inputBytes: BitrateStat[] = [];
     protected perSecondQualityStats?: FramesPerSecondStats;
     protected momentumQualityStats?: PlaybackQuality;
+    protected bounds: Size | null = null;
     private totalStats: PlaybackQuality = {
         decodedFrames: 0,
         droppedFrames: 0,
@@ -55,8 +57,10 @@ export default abstract class Decoder {
     private totalStatsCounter = 0;
     private dirtyStatsWidth = 0;
     private state: number = Decoder.STATE.STOPPED;
-    private resizeListeners: Set<VideoResizeListener> = new Set();
+    protected resizeListeners: Set<VideoResizeListener> = new Set();
+    private qualityAnimationId?: number;
     private showQualityStats = Decoder.DEFAULT_SHOW_QUALITY_STATS;
+    private receivedFirstFrame = false;
     private statLines: string[] = [];
     public readonly supportsScreenshot: boolean = false;
 
@@ -151,11 +155,10 @@ export default abstract class Decoder {
     }
 
     public play(): void {
-        if (!this.screenInfo) {
+        if (this.needScreenInfoBeforePlay() && !this.screenInfo) {
             return;
         }
         this.state = Decoder.STATE.PLAYING;
-        requestAnimationFrame(this.updateQualityStats);
     }
 
     public pause(): void {
@@ -171,6 +174,12 @@ export default abstract class Decoder {
     }
 
     public pushFrame(frame: Uint8Array): void {
+        if (!this.receivedFirstFrame) {
+            this.receivedFirstFrame = true;
+            if (typeof this.qualityAnimationId !== 'number') {
+                this.qualityAnimationId = requestAnimationFrame(this.updateQualityStats);
+            }
+        }
         this.inputBytes.push({
             timestamp: Date.now(),
             bytes: frame.byteLength,
@@ -190,6 +199,10 @@ export default abstract class Decoder {
         parent.appendChild(this.touchableCanvas);
     }
 
+    protected needScreenInfoBeforePlay(): boolean {
+        return true;
+    }
+
     public getVideoSettings(): VideoSettings {
         return this.videoSettings;
     }
@@ -207,7 +220,9 @@ export default abstract class Decoder {
     }
 
     public setScreenInfo(screenInfo: ScreenInfo): void {
-        this.pause();
+        if (this.needScreenInfoBeforePlay()) {
+            this.pause();
+        }
         this.screenInfo = screenInfo;
         const { width, height } = screenInfo.videoSize;
         this.touchableCanvas.width = width;
@@ -218,7 +233,7 @@ export default abstract class Decoder {
         }
         const size = new Size(width, height);
         this.resizeListeners.forEach((listener) => {
-            listener.onVideoResize(size);
+            listener.onViewVideoResize(size);
         });
     }
 
@@ -235,6 +250,7 @@ export default abstract class Decoder {
     }
 
     protected resetStats(): void {
+        this.receivedFirstFrame = false;
         this.totalStatsCounter = 0;
         this.totalStats = {
             droppedFrames: 0,
@@ -278,7 +294,9 @@ export default abstract class Decoder {
             this.totalStatsCounter++;
         }
         this.drawStats();
-        requestAnimationFrame(this.updateQualityStats);
+        if (this.state !== Decoder.STATE.STOPPED) {
+            this.qualityAnimationId = requestAnimationFrame(this.updateQualityStats);
+        }
     };
 
     private drawStats(): void {
@@ -370,5 +388,9 @@ export default abstract class Decoder {
 
     public getShowQualityStats(): boolean {
         return this.showQualityStats;
+    }
+
+    public setBounds(bounds: Size): void {
+        this.bounds = Size.copy(bounds);
     }
 }
