@@ -12,7 +12,7 @@ export type MapItem<T> = {
 
 export abstract class DeviceTrackerClient<T extends DroidDeviceDescriptor> extends ManagerClient {
     public static ACTION = 'devicelist';
-    protected tableId = 'devicesList';
+    protected tableId = 'droid_device_list';
 
     protected constructor(action: string, protected rows: MapItem<T>[]) {
         super(action);
@@ -44,6 +44,17 @@ export abstract class DeviceTrackerClient<T extends DroidDeviceDescriptor> exten
         }
         const list: T[] = message.data as T[];
         this.buildDeviceTable(list);
+    }
+
+    protected getOrCreateTableHolder(): HTMLElement {
+        let devices = document.getElementById('devices');
+        if (!devices) {
+            devices = document.createElement('div');
+            devices.id = 'devices';
+            devices.className = 'table-wrapper';
+            document.body.appendChild(devices);
+        }
+        return devices;
     }
 
     protected getOrBuildTableBody(parent: HTMLElement): Element {

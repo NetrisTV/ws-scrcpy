@@ -71,13 +71,7 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
     }
 
     protected buildDeviceTable(data: DroidDeviceDescriptor[]): void {
-        let devices = document.getElementById('devices');
-        if (!devices) {
-            devices = document.createElement('div');
-            devices.id = 'devices';
-            devices.className = 'table-wrapper';
-            document.body.appendChild(devices);
-        }
+        const devices = this.getOrCreateTableHolder();
         const tbody = this.getOrBuildTableBody(devices);
 
         data.forEach((device) => {
