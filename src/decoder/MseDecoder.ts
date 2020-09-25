@@ -11,8 +11,8 @@ interface QualityStats {
 
 // sourceBuffer is private in h264-converter
 type ConverterFake = {
-    sourceBuffer: SourceBuffer
-}
+    sourceBuffer: SourceBuffer;
+};
 
 export default class MseDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
@@ -41,26 +41,45 @@ export default class MseDecoder extends Decoder {
 
     private converter?: VideoConverter;
     private videoStats: QualityStats[] = [];
-    private stalledCounter = 0;
-    private isSeeking = false;
+    private noDecodedFramesSince = -1;
+    private currentTimeNotChangedSince = -1;
+    private bigBufferSince = -1;
+    private aheadOfBufferSince = -1;
     public fpf: number = MseDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
     public readonly supportsScreenshot: boolean = true;
     private sourceBuffer?: SourceBuffer;
     private removeStart = -1;
     private removeEnd = -1;
+    private jumpEnd = -1;
+    private lastTime = -1;
+    protected canPlay = false;
+    private seekingSince = -1;
+    protected readonly isSafari = !!((window as unknown) as any)['safari'];
+    protected readonly isChrome = navigator.userAgent.includes('Chrome');
+    protected readonly isMac = navigator.platform.startsWith('Mac');
+    private MAX_TIME_TO_RECOVER = 200; // ms
+    private MAX_BUFFER = this.isSafari ? 2 : this.isChrome && this.isMac ? 0.9 : 0.2;
+    private MAX_AHEAD = -0.2;
 
     constructor(udid: string, protected tag: HTMLVideoElement = MseDecoder.createElement()) {
         super(udid, 'MseDecoder', tag);
-        tag.onerror = function (e: Event | string): void {
-            console.error(e);
-        };
         tag.oncontextmenu = function (e: MouseEvent): boolean {
             e.preventDefault();
             return false;
         };
+        tag.addEventListener('error', this.onVideoError);
+        tag.addEventListener('canplay', this.onVideoCanPlay);
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         setLogger(() => {}, console.error);
     }
+
+    onVideoError = (e: Event): void => {
+        console.error(e);
+    };
+
+    onVideoCanPlay = (): void => {
+        this.onCanPlayHandler();
+    };
 
     private static createConverter(
         tag: HTMLVideoElement,
@@ -95,6 +114,12 @@ export default class MseDecoder extends Decoder {
             };
         }
         return null;
+    }
+
+    protected onCanPlayHandler(): void {
+        this.canPlay = true;
+        this.tag.play();
+        this.tag.removeEventListener('canplay', this.onVideoCanPlay);
     }
 
     protected calculateMomentumStats(): void {
@@ -152,7 +177,7 @@ export default class MseDecoder extends Decoder {
 
     public play(): void {
         super.play();
-        if (this.getState() !== Decoder.STATE.PLAYING || !this.screenInfo) {
+        if (this.getState() !== Decoder.STATE.PLAYING) {
             return;
         }
         if (!this.converter) {
@@ -161,6 +186,7 @@ export default class MseDecoder extends Decoder {
                 fps = this.videoSettings.maxFps;
             }
             this.converter = MseDecoder.createConverter(this.tag, fps, this.fpf);
+            this.canPlay = false;
             this.resetStats();
         }
         this.converter.play();
@@ -182,6 +208,7 @@ export default class MseDecoder extends Decoder {
             if (this.converter) {
                 this.stop();
                 this.converter = MseDecoder.createConverter(this.tag, videoSettings.maxFps, this.fpf);
+                this.canPlay = false;
             }
             if (state === Decoder.STATE.PLAYING) {
                 this.play();
@@ -202,6 +229,8 @@ export default class MseDecoder extends Decoder {
             return;
         }
         try {
+            // console.log(this.name, `sourceBuffer.remove(${this.removeStart}, ${this.removeEnd})`);
+            // FIXME: will kill playback in Safari
             this.sourceBuffer.remove(this.removeStart, this.removeEnd);
             this.sourceBuffer.removeEventListener('updateend', this.cleanSourceBuffer);
             this.removeStart = this.removeEnd = -1;
@@ -210,72 +239,146 @@ export default class MseDecoder extends Decoder {
         }
     };
 
+    jumpToEnd = (): void => {
+        if (!this.sourceBuffer) {
+            return;
+        }
+        if (this.sourceBuffer.updating) {
+            return;
+        }
+        if (!this.tag.buffered.length) {
+            return;
+        }
+        const end = this.tag.buffered.end(this.tag.seekable.length - 1);
+        console.log(`${this.name}. Jumping to the end (${this.jumpEnd}, ${end - this.jumpEnd}).`);
+        this.tag.currentTime = end;
+        this.jumpEnd = -1;
+        this.sourceBuffer.removeEventListener('updateend', this.jumpToEnd);
+    };
+
     public pushFrame(frame: Uint8Array): void {
         super.pushFrame(frame);
         if (this.converter) {
-            if (Decoder.isIFrame(frame)) {
-                let start = 0;
-                let end = 0;
-                if (this.tag.buffered && this.tag.buffered.length) {
-                    start = this.tag.buffered.start(0);
-                    end = this.tag.buffered.end(0) | 0;
-                }
-                if (end !== 0 && start < end) {
-                    const sourceBuffer: SourceBuffer = (this.converter as unknown as ConverterFake).sourceBuffer;
-                    if (!sourceBuffer.updating) {
-                        sourceBuffer.remove(start, end);
-                    } else {
-                        this.sourceBuffer = sourceBuffer;
-                        if (this.removeEnd !== -1 || this.removeEnd !== -1) {
-                            this.removeEnd = end;
-                        } else {
-                            this.removeStart = start;
-                            this.removeEnd = end;
-                        }
-                        sourceBuffer.addEventListener('updateend', this.cleanSourceBuffer);
+            this.converter.appendRawData(frame);
+            this.checkForIFrame(frame);
+        }
+        this.checkForBadState();
+    }
+
+    protected checkForBadState(): void {
+        // Workaround for stalled playback (`stalled` event is not fired, but the image freezes)
+        const { currentTime } = this.tag;
+        const now = Date.now();
+        // let reasonToJump = '';
+        let hasReasonToJump = false;
+        if (this.momentumQualityStats) {
+            if (this.momentumQualityStats.decodedFrames === 0 && this.momentumQualityStats.inputFrames > 0) {
+                if (this.noDecodedFramesSince === -1) {
+                    this.noDecodedFramesSince = now;
+                } else {
+                    const time = now - this.noDecodedFramesSince;
+                    if (time > this.MAX_TIME_TO_RECOVER) {
+                        // reasonToJump = `No frames decoded for ${time} ms.`;
+                        hasReasonToJump = true;
                     }
                 }
-            }
-            this.converter.appendRawData(frame);
-        }
-
-        // Workaround for stalled playback (`stalled` event is not fired, but the image freezes)
-        if (this.momentumQualityStats && !this.isSeeking) {
-            if (this.momentumQualityStats.decodedFrames === 0 && this.momentumQualityStats.inputFrames > 0) {
-                this.stalledCounter++;
             } else {
-                this.stalledCounter = 0;
+                this.noDecodedFramesSince = -1;
             }
         }
+        if (currentTime === this.lastTime && this.currentTimeNotChangedSince === -1) {
+            this.currentTimeNotChangedSince = now;
+        } else {
+            this.currentTimeNotChangedSince = -1;
+        }
+        this.lastTime = currentTime;
         if (this.tag.buffered.length) {
             const end = this.tag.buffered.end(0);
-            const buffered = end - this.tag.currentTime;
-            const MAX_BUFFER = 0.2;
-            const MAX_AHEAD = 0.2;
-            let hasReasonToJump = false;
-            if (this.stalledCounter > 5) {
-                // `Stalled (for ${this.stalledCounter} frames).`;
-                hasReasonToJump = true
+            const buffered = end - currentTime;
+
+            if ((end | 0) - currentTime > this.MAX_BUFFER) {
+                if (this.bigBufferSince === -1) {
+                    this.bigBufferSince = now;
+                } else {
+                    const time = now - this.bigBufferSince;
+                    if (time > this.MAX_TIME_TO_RECOVER) {
+                        // reasonToJump = `Buffer is bigger then ${this.MAX_BUFFER} (${buffered.toFixed(
+                        //     3,
+                        // )}) for ${time} ms.`;
+                        hasReasonToJump = true;
+                    }
+                }
+            } else {
+                this.bigBufferSince = -1;
             }
-            if (buffered > MAX_BUFFER) {
-                // `Buffer is bigger then ${MAX_BUFFER} seconds (=${buffered.toFixed(3)}).`;
-                hasReasonToJump = true;
+            if (buffered < this.MAX_AHEAD) {
+                if (this.aheadOfBufferSince === -1) {
+                    this.aheadOfBufferSince = now;
+                } else {
+                    const time = now - this.aheadOfBufferSince;
+                    if (time > this.MAX_TIME_TO_RECOVER) {
+                        // reasonToJump = `Current time is ahead of end (${buffered}) for ${time} ms.`;
+                        hasReasonToJump = true;
+                    }
+                }
+            } else {
+                this.aheadOfBufferSince = -1;
             }
-            if (buffered < -MAX_AHEAD) {
-                // `Current time is more then ${MAX_AHEAD} seconds ahead of end (HOW?!) (=${-buffered.toFixed(3)}).`;
-                hasReasonToJump = true;
+            if (this.currentTimeNotChangedSince !== -1) {
+                const time = now - this.currentTimeNotChangedSince;
+                if (time > this.MAX_TIME_TO_RECOVER) {
+                    // reasonToJump = `Current time not changed for ${time} ms.`;
+                    hasReasonToJump = true;
+                }
             }
             if (!hasReasonToJump) {
                 return;
             }
-            if (this.tag.seeking && this.stalledCounter < 10) {
-                // console.info(`${this.name}. ${reasonToJump} But already seeking. Do nothing.`);
-                return;
+            let waitingForSeekEnd = 0;
+            if (this.seekingSince !== -1) {
+                waitingForSeekEnd = now - this.seekingSince;
+                if (waitingForSeekEnd < 1500) {
+                    return;
+                }
             }
-            // console.info(`${this.name}. ${reasonToJump} Jumping to the end. ${this.stalledCounter}`);
+            // console.info(`${reasonToJump} Jumping to the end. ${waitingForSeekEnd}`);
 
+            const onSeekEnd = () => {
+                this.seekingSince = -1;
+                this.tag.removeEventListener('seeked', onSeekEnd);
+                this.tag.play();
+            };
+            if (this.seekingSince !== -1) {
+                console.warn(this.name, `Attempt to seek while already seeking! ${waitingForSeekEnd}`);
+            }
+            this.seekingSince = now;
+            this.tag.addEventListener('seeked', onSeekEnd);
             this.tag.currentTime = this.tag.buffered.end(0);
-            this.stalledCounter = 0;
+        }
+    }
+
+    protected checkForIFrame(frame: Uint8Array): void {
+        if (this.isSafari) {
+            return;
+        }
+        if (Decoder.isIFrame(frame)) {
+            let start = 0;
+            let end = 0;
+            if (this.tag.buffered && this.tag.buffered.length) {
+                start = this.tag.buffered.start(0);
+                end = this.tag.buffered.end(0) | 0;
+            }
+            if (end !== 0 && start < end) {
+                const sourceBuffer: SourceBuffer = ((this.converter as unknown) as ConverterFake).sourceBuffer;
+                this.sourceBuffer = sourceBuffer;
+                if (this.removeEnd !== -1) {
+                    this.removeEnd = end;
+                } else {
+                    this.removeStart = start;
+                    this.removeEnd = end;
+                }
+                sourceBuffer.addEventListener('updateend', this.cleanSourceBuffer);
+            }
         }
     }
 
