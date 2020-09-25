@@ -211,11 +211,14 @@ export default class TouchHandler {
         ctx.stroke();
     }
 
-    private static drawLine(ctx: CanvasRenderingContext2D, point1: Point, point2: Point): void {
+    public static drawLine(ctx: CanvasRenderingContext2D, point1: Point, point2: Point): void {
+        ctx.save();
+        ctx.strokeStyle = this.STROKE_STYLE;
         ctx.beginPath();
         ctx.moveTo(point1.x, point1.y);
         ctx.lineTo(point2.x, point2.y);
         ctx.stroke();
+        ctx.restore();
     }
 
     private static drawPoint(
@@ -238,6 +241,14 @@ export default class TouchHandler {
         this.updateDirty(topLeft, bottomRight);
     }
 
+    public static drawPointer(ctx: CanvasRenderingContext2D, point: Point) {
+        this.drawPoint(ctx, point, this.touchPointRadius, this.touchPointImage);
+    }
+
+    public static drawCenter(ctx: CanvasRenderingContext2D, point: Point) {
+        this.drawPoint(ctx, point, this.centerPointRadius, this.centerPointImage);
+    }
+
     private static updateDirty(topLeft: Point, bottomRight: Point): void {
         if (!this.dirtyPlace.length) {
             this.dirtyPlace.push(topLeft, bottomRight);
@@ -254,7 +265,7 @@ export default class TouchHandler {
         this.dirtyPlace.push(newTopLeft, newBottomRight);
     }
 
-    private static clearCanvas(target: HTMLCanvasElement): void {
+    public static clearCanvas(target: HTMLCanvasElement): void {
         const { clientWidth, clientHeight } = target;
         const ctx = target.getContext('2d');
         if (ctx && this.dirtyPlace.length) {
@@ -321,13 +332,13 @@ export default class TouchHandler {
                 ctx.strokeStyle = TouchHandler.STROKE_STYLE;
                 touches.forEach((touch) => {
                     const { point } = touch.position;
-                    this.drawPoint(ctx, point, this.touchPointRadius, this.touchPointImage);
+                    this.drawPointer(ctx, point);
                     if (this.multiTouchCenter) {
                         this.drawLine(ctx, this.multiTouchCenter, point);
                     }
                 });
                 if (this.multiTouchCenter) {
-                    this.drawPoint(ctx, this.multiTouchCenter, this.centerPointRadius, this.centerPointImage);
+                    this.drawCenter(ctx, this.multiTouchCenter);
                 }
             }
         }

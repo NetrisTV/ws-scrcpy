@@ -68,6 +68,10 @@ body.stream {
     outline: none;
 }
 
+.wait {
+    cursor: wait;
+}
+
 #controls {
     width: 100%;
     margin: 20px;

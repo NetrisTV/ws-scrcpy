@@ -21,6 +21,12 @@ export default class Point {
         return this.x === o.x && this.y === o.y;
     }
 
+    public distance(to: Point): number {
+        const x = (this.x - to.x);
+        const y = (this.y - to.y);
+        return Math.sqrt(x * x + y * y);
+    }
+
     public toString(): string {
         return `Point{x=${this.x}, y=${this.y}}`;
     }

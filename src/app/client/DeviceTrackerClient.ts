@@ -4,13 +4,18 @@ import { Message } from '../../common/Message';
 import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
 import { ShellParams } from '../../common/ShellParams';
 import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
+import QVHackDeviceDescriptor from '../../common/QVHackDeviceDescriptor';
+import { QVHackStreamParams } from '../../common/QVHackStreamParams';
 
 export type MapItem<T> = {
     field?: keyof T;
     title: string;
 };
 
-export abstract class DeviceTrackerClient<T extends DroidDeviceDescriptor, K> extends ManagerClient<K> {
+export abstract class DeviceTrackerClient<
+    T extends DroidDeviceDescriptor | QVHackDeviceDescriptor,
+    K
+> extends ManagerClient<K> {
     public static ACTION = 'devicelist';
     protected tableId = 'droid_device_list';
 
@@ -87,7 +92,7 @@ export abstract class DeviceTrackerClient<T extends DroidDeviceDescriptor, K> ex
     }
 
     protected static buildLink(
-        q: ScrcpyStreamParams | ShellParams,
+        q: ScrcpyStreamParams | ShellParams | QVHackStreamParams,
         text: string,
     ): HTMLAnchorElement {
         const hash = `#!${querystring.encode(q)}`;
