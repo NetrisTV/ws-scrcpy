@@ -1,9 +1,8 @@
+import '../../../vendor/Broadway/avc.wasm.asset';
 import Size from '../Size';
 import YUVCanvas from '../h264-live-player/YUVCanvas';
 import YUVWebGLCanvas from '../h264-live-player/YUVWebGLCanvas';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import Avc from '../Decoder';
+import Avc from '../../../vendor/Broadway/Decoder';
 import VideoSettings from '../VideoSettings';
 import Canvas from '../h264-live-player/Canvas';
 import CanvasCommon from './CanvasCommon';
@@ -24,7 +23,6 @@ export default class BroadwayDecoder extends CanvasCommon {
 
     constructor(udid: string) {
         super(udid, 'BroadwayDecoder');
-        this.avc = new Avc();
     }
 
     protected initCanvas(width: number, height: number): void {
@@ -34,7 +32,9 @@ export default class BroadwayDecoder extends CanvasCommon {
         } else {
             this.canvas = new YUVCanvas(this.tag, new Size(width, height));
         }
-        this.avc = new Avc();
+        if (!this.avc) {
+            this.avc = new Avc();
+        }
         this.avc.onPictureDecoded = (buffer: Uint8Array, width: number, height: number) => {
             this.onFrameDecoded();
             if (this.canvas) {
@@ -44,6 +44,9 @@ export default class BroadwayDecoder extends CanvasCommon {
     }
 
     protected decode(data: Uint8Array): void {
+        if (!this.avc) {
+            return;
+        }
         this.avc.decode(data);
     }
 

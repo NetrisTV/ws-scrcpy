@@ -1,4 +1,4 @@
-import DescriptorFields from '../common/DescriptorFields';
+import DroidDeviceDescriptor from '../common/DroidDeviceDescriptor';
 
 export class DeviceDescriptor {
     public releaseVersion: string;
@@ -12,7 +12,7 @@ export class DeviceDescriptor {
     public ip: string;
     public pid: number;
 
-    constructor(fields: DescriptorFields) {
+    constructor(fields: DroidDeviceDescriptor) {
         this.releaseVersion = fields['build.version.release'];
         this.sdkVersion = fields['build.version.sdk'];
         this.cpuAbi = fields['ro.product.cpu.abi'];
@@ -25,7 +25,7 @@ export class DeviceDescriptor {
         this.pid = fields['pid'];
     }
 
-    public toJSON(): DescriptorFields {
+    public toJSON(): DroidDeviceDescriptor {
         return {
             'build.version.release': this.releaseVersion,
             'build.version.sdk': this.sdkVersion,
@@ -40,7 +40,7 @@ export class DeviceDescriptor {
         };
     }
 
-    public equals(fields: DescriptorFields): boolean {
+    public equals(fields: DroidDeviceDescriptor): boolean {
         return !(
             this.udid !== fields['udid'] ||
             this.state !== fields['state'] ||

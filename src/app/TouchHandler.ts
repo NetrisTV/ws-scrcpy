@@ -4,8 +4,8 @@ import { TouchControlMessage } from './controlMessage/TouchControlMessage';
 import Size from './Size';
 import Point from './Point';
 import Position from './Position';
-import TouchPointPNG from '../images/multitouch/touch_point.png';
-import CenterPointPNG from '../images/multitouch/center_point.png';
+import TouchPointPNG from '../public/images/multitouch/touch_point.png';
+import CenterPointPNG from '../public/images/multitouch/center_point.png';
 
 interface Touch {
     action: number;

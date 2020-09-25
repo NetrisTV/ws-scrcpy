@@ -1,7 +1,8 @@
+import '../style/app.css';
 import * as querystring from 'querystring';
-import { DeviceTrackerClient } from './client/DeviceTrackerClient';
 import { ScrcpyClient, StreamParams } from './client/ScrcpyClient';
 import { ShellParams, ShellClient } from './client/ShellClient';
+import { DroidDeviceTrackerClient } from './client/DroidDeviceTrackerClient';
 
 window.onload = function (): void {
     const hash = location.hash.replace(/^#!/, '');
@@ -12,6 +13,6 @@ window.onload = function (): void {
     } else if (action === ShellClient.ACTION && typeof parsedQuery.udid === 'string') {
         ShellClient.start(parsedQuery as ShellParams);
     } else {
-        DeviceTrackerClient.start();
+        DroidDeviceTrackerClient.start();
     }
 };

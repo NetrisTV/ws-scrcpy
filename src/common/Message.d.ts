@@ -1,5 +1,5 @@
 import { XtermClientMessage } from './XtermMessage';
-import DescriptorFields from './DescriptorFields';
+import DroidDeviceDescriptor from './DroidDeviceDescriptor';
 
 export enum MessageTypes {
     'devicelist',
@@ -9,5 +9,5 @@ export enum MessageTypes {
 export interface Message {
     id: number;
     type: keyof typeof MessageTypes;
-    data: DescriptorFields[] | XtermClientMessage;
+    data: DroidDeviceDescriptor[] | XtermClientMessage;
 }

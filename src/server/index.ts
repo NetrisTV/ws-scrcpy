@@ -9,6 +9,7 @@ import * as readline from 'readline';
 import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http';
 import { ServiceDeviceTracker } from './ServiceDeviceTracker';
 import { ServiceShell } from './ServiceShell';
+import { ACTION } from './Constants';
 
 const port = parseInt(process.argv[2], 10) || 8000;
 const map: Record<string, string> = {
@@ -72,10 +73,10 @@ wss.on('connection', async (ws: WebSocket, req) => {
         ws.close(4002, `Missing required parameter "action"`);
     }
     switch (parsedQuery.action) {
-        case 'devicelist':
+        case ACTION.DEVICE_LIST:
             ServiceDeviceTracker.createService(ws);
             break;
-        case 'shell':
+        case ACTION.SHELL:
             ServiceShell.createService(ws);
             break;
         default:

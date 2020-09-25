@@ -1,9 +1,11 @@
+import 'xterm/css/xterm.css';
 import { ManagerClient } from './ManagerClient';
 import { Terminal } from 'xterm';
 import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
 import { ParsedUrlQueryInput } from 'querystring';
-import { Message } from '../common/Message';
+import { Message } from '../../common/Message';
+import { ACTION } from '../../server/Constants';
 
 export interface ShellParams extends ParsedUrlQueryInput {
     action: 'shell';
@@ -11,7 +13,7 @@ export interface ShellParams extends ParsedUrlQueryInput {
 }
 
 export class ShellClient extends ManagerClient {
-    public static ACTION = 'shell';
+    public static ACTION = ACTION.SHELL;
     public static start(params: ShellParams): ShellClient {
         return new ShellClient(params.action, params.udid);
     }

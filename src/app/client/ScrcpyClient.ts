@@ -1,13 +1,12 @@
 import MseDecoder from '../decoder/MseDecoder';
 import { DeviceController } from '../DeviceController';
 import BroadwayDecoder from '../decoder/BroadwayDecoder';
-import H264bsdDecoder from '../decoder/H264bsdDecoder';
 import { ParsedUrlQueryInput } from 'querystring';
 import { BaseClient } from './BaseClient';
 import Decoder from '../decoder/Decoder';
 import Tinyh264Decoder from '../decoder/Tinyh264Decoder';
 
-export type Decoders = 'broadway' | 'h264bsd' | 'mse' | 'tinyh264';
+export type Decoders = 'broadway' | 'mse' | 'tinyh264';
 
 export interface StreamParams extends ParsedUrlQueryInput {
     action: 'stream';
@@ -49,9 +48,6 @@ export class ScrcpyClient extends BaseClient {
                 break;
             case 'broadway':
                 decoderClass = BroadwayDecoder;
-                break;
-            case 'h264bsd':
-                decoderClass = H264bsdDecoder;
                 break;
             case 'tinyh264':
                 decoderClass = Tinyh264Decoder;

@@ -1,6 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import Worker from '../tinyh264/H264NALDecoder.worker';
+import TinyH264Worker from 'worker-loader!../tinyh264/H264NALDecoder.worker';
 import VideoSettings from '../VideoSettings';
 import YUVWebGLCanvas from '../tinyh264/YUVWebGLCanvas';
 import YUVCanvas from '../tinyh264/YUVCanvas';
@@ -26,7 +24,7 @@ export default class Tinyh264Decoder extends CanvasCommon {
         sendFrameMeta: false,
     });
 
-    private worker?: Worker;
+    private worker?: TinyH264Worker;
     private isDecoderReady = false;
     protected canvas?: YUVWebGLCanvas | YUVCanvas;
     public readonly supportsScreenshot: boolean = true;
@@ -54,7 +52,7 @@ export default class Tinyh264Decoder extends CanvasCommon {
     };
 
     private initWorker(): void {
-        this.worker = new Worker();
+        this.worker = new TinyH264Worker();
         this.worker.addEventListener('message', this.onWorkerMessage);
     }
 
@@ -95,7 +93,7 @@ export default class Tinyh264Decoder extends CanvasCommon {
     public stop(): void {
         super.stop();
         if (this.worker) {
-            this.worker.worker.removeEventListener('message', this.onWorkerMessage);
+            this.worker.removeEventListener('message', this.onWorkerMessage);
             this.worker.postMessage({ type: 'release', renderStateId: Tinyh264Decoder.videoStreamId });
             delete this.worker;
         }

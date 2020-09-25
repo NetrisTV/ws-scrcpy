@@ -15,11 +15,16 @@ export abstract class ManagerClient extends BaseClient {
         this.ws = this.openNewWebSocket();
     }
 
+    protected hasConnection(): boolean {
+        return this.ws && this.ws.readyState === this.ws.OPEN;
+    }
+
     protected openNewWebSocket(): WebSocket {
-        if (this.ws && this.ws.readyState === this.ws.OPEN) {
+        if (this.hasConnection()) {
             this.ws.close();
         }
         this.ws = new WebSocket(this.buildWebSocketUrl());
+        this.ws.onopen = this.onSocketOpen.bind(this);
         this.ws.onmessage = this.onSocketMessage.bind(this);
         this.ws.onclose = this.onSocketClose.bind(this);
         return this.ws;
@@ -30,6 +35,7 @@ export abstract class ManagerClient extends BaseClient {
         return `${proto}://${location.host}/?action=${this.action}`;
     }
 
+    protected abstract onSocketOpen(e: Event): void;
     protected abstract onSocketMessage(e: MessageEvent): void;
     protected abstract onSocketClose(e: CloseEvent): void;
 }

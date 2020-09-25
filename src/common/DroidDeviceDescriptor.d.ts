@@ -1,4 +1,4 @@
-export default interface DescriptorFields {
+export default interface DroidDeviceDescriptor {
     'build.version.release': string;
     'build.version.sdk': string;
     'ro.product.cpu.abi': string;
