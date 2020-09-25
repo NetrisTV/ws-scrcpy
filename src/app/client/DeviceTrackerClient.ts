@@ -1,9 +1,9 @@
 import * as querystring from 'querystring';
 import { ManagerClient } from './ManagerClient';
 import { Message } from '../../common/Message';
-import { StreamParams } from './ScrcpyClient';
-import { ShellParams } from './ShellClient';
-import DroidDeviceDescriptor from '../common/DroidDeviceDescriptor';
+import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import { ShellParams } from '../../common/ShellParams';
+import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
 
 export type MapItem<T> = {
     field?: keyof T;
@@ -74,7 +74,10 @@ export abstract class DeviceTrackerClient<T extends DroidDeviceDescriptor> exten
         return tbody;
     }
 
-    protected static buildLink(q: StreamParams | ShellParams, text: string): HTMLAnchorElement {
+    protected static buildLink(
+        q: ScrcpyStreamParams | ShellParams,
+        text: string,
+    ): HTMLAnchorElement {
         const hash = `#!${querystring.encode(q)}`;
         const a = document.createElement('a');
         a.setAttribute('href', `${location.origin}${location.pathname}${hash}`);

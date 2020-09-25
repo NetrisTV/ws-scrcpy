@@ -3,14 +3,9 @@ import { ManagerClient } from './ManagerClient';
 import { Terminal } from 'xterm';
 import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
-import { ParsedUrlQueryInput } from 'querystring';
 import { Message } from '../../common/Message';
 import { ACTION } from '../../server/Constants';
-
-export interface ShellParams extends ParsedUrlQueryInput {
-    action: 'shell';
-    udid: string;
-}
+import { ShellParams } from '../../common/ShellParams';
 
 export class ShellClient extends ManagerClient {
     public static ACTION = ACTION.SHELL;
