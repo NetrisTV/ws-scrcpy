@@ -11,7 +11,7 @@ window.onload = function (): void {
     const parsedQuery = querystring.parse(hash);
     const action = parsedQuery.action;
     if (action === ScrcpyClient.ACTION && typeof parsedQuery.udid === 'string') {
-        ScrcpyClient.start(parsedQuery as ScrcpyStreamParams);
+        new ScrcpyClient(parsedQuery as ScrcpyStreamParams);
     } else if (action === ShellClient.ACTION && typeof parsedQuery.udid === 'string') {
         ShellClient.start(parsedQuery as ShellParams);
     } else {

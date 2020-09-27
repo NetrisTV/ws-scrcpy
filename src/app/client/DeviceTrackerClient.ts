@@ -10,7 +10,7 @@ export type MapItem<T> = {
     title: string;
 };
 
-export abstract class DeviceTrackerClient<T extends DroidDeviceDescriptor> extends ManagerClient {
+export abstract class DeviceTrackerClient<T extends DroidDeviceDescriptor, K> extends ManagerClient<K> {
     public static ACTION = 'devicelist';
     protected tableId = 'droid_device_list';
 
@@ -18,6 +18,7 @@ export abstract class DeviceTrackerClient<T extends DroidDeviceDescriptor> exten
         super(action);
         this.setBodyClass('list');
         this.setTitle('Device list');
+        this.openNewWebSocket();
     }
 
     protected abstract buildDeviceTable(data: T[]): void;

@@ -53,7 +53,7 @@ type Decoders = 'broadway' | 'mse' | 'tinyh264';
 
 const DECODERS: Decoders[] = ['broadway', 'mse', 'tinyh264'];
 
-export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDescriptor> {
+export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDescriptor, never> {
     public static ACTION = ACTION.DEVICE_LIST;
 
     public static start(): DroidDeviceTrackerClient {

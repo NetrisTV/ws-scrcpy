@@ -8,7 +8,7 @@ import BackSVG from '../../public/images/skin-light/System_Back_678.svg';
 import HomeSVG from '../../public/images/skin-light/System_Home_678.svg';
 import OverviewSVG from '../../public/images/skin-light/System_Overview_678.svg';
 
-enum Icon {
+export enum Icon {
     BACK,
     HOME,
     OVERVIEW,

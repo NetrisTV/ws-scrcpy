@@ -1,4 +1,6 @@
-export class BaseClient {
+import { TypedEmitter } from '../TypedEmitter';
+
+export class BaseClient<T> extends TypedEmitter<T> {
     public setTitle(text: string): void {
         let titleTag: HTMLTitleElement | null = document.querySelector('head > title');
         if (!titleTag) {

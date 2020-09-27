@@ -1,6 +1,6 @@
 import { BaseClient } from './BaseClient';
 
-export abstract class ManagerClient extends BaseClient {
+export abstract class ManagerClient<T> extends BaseClient<T> {
     public static ACTION = 'unknown';
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
@@ -8,20 +8,19 @@ export abstract class ManagerClient extends BaseClient {
         throw Error('Not implemented');
     }
 
-    protected ws: WebSocket;
+    protected ws?: WebSocket;
 
-    protected constructor(protected readonly action: string) {
+    protected constructor(protected readonly action?: string) {
         super();
-        this.ws = this.openNewWebSocket();
     }
 
-    protected hasConnection(): boolean {
-        return this.ws && this.ws.readyState === this.ws.OPEN;
+    public hasConnection(): boolean {
+        return !!(this.ws && this.ws.readyState === this.ws.OPEN);
     }
 
     protected openNewWebSocket(): WebSocket {
         if (this.hasConnection()) {
-            this.ws.close();
+            (this.ws as WebSocket).close();
         }
         this.ws = new WebSocket(this.buildWebSocketUrl());
         this.ws.onopen = this.onSocketOpen.bind(this);
@@ -32,7 +31,8 @@ export abstract class ManagerClient extends BaseClient {
 
     protected buildWebSocketUrl(): string {
         const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        return `${proto}://${location.host}/?action=${this.action}`;
+        const query = this.action ? `/?action=${this.action}` : '';
+        return `${proto}://${location.host}${query}`;
     }
 
     protected abstract onSocketOpen(e: Event): void;

@@ -11,7 +11,7 @@ import TouchHandler from './TouchHandler';
 import { KeyEventListener, KeyInputHandler } from './KeyInputHandler';
 import { KeyCodeControlMessage } from './controlMessage/KeyCodeControlMessage';
 import FilePushHandler from './FilePushHandler';
-import DragAndPushLogger from './DragAndPushLogger';
+// import DragAndPushLogger from './DragAndPushLogger';
 
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC = 'scrcpy';
@@ -182,13 +182,13 @@ export class DeviceConnection implements KeyEventListener {
             decoder.pause();
         }
         this.decoders.add(decoder);
-        if (!this.filePushHandlers.has(decoder)) {
-            const element = decoder.getTouchableElement();
-            const handler = new FilePushHandler(element, this);
-            const logger = new DragAndPushLogger(element);
-            handler.addEventListener(logger);
-            this.filePushHandlers.set(decoder, handler);
-        }
+        // if (!this.filePushHandlers.has(decoder)) {
+        //     const element = decoder.getTouchableElement();
+        //     const handler = new FilePushHandler(element, this);
+        //     const logger = new DragAndPushLogger(element);
+        //     handler.addEventListener(logger);
+        //     this.filePushHandlers.set(decoder, handler);
+        // }
         DeviceConnection.setTouchListeners();
     }
 

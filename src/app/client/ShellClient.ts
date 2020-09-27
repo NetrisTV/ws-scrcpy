@@ -3,11 +3,11 @@ import { ManagerClient } from './ManagerClient';
 import { Terminal } from 'xterm';
 import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
-import { Message } from '../../common/Message';
+import { MessageXtermClient } from '../../common/MessageXtermClient';
 import { ACTION } from '../../server/Constants';
 import { ShellParams } from '../../common/ShellParams';
 
-export class ShellClient extends ManagerClient {
+export class ShellClient extends ManagerClient<never> {
     public static ACTION = ACTION.SHELL;
     public static start(params: ShellParams): ShellClient {
         return new ShellClient(params.action, params.udid);
@@ -18,11 +18,12 @@ export class ShellClient extends ManagerClient {
 
     constructor(action: string, private readonly udid: string) {
         super(action);
-        this.ws.onopen = this.onSocketOpen.bind(this);
+        this.openNewWebSocket();
+        const ws = this.ws as WebSocket;
         this.setTitle(`Shell ${udid}`);
         this.setBodyClass('shell');
         this.term = new Terminal();
-        this.term.loadAddon(new AttachAddon(this.ws));
+        this.term.loadAddon(new AttachAddon(ws));
         this.fitAddon = new FitAddon();
         this.term.loadAddon(this.fitAddon);
         this.escapedUdid = this.escapeUdid(udid);
@@ -48,7 +49,7 @@ export class ShellClient extends ManagerClient {
             return;
         }
         const { rows, cols } = this.fitAddon.proposeDimensions();
-        const message: Message = {
+        const message: MessageXtermClient = {
             id: 1,
             type: 'shell',
             data: {
