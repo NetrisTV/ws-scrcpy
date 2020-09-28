@@ -9,6 +9,11 @@ interface QualityStats {
     droppedFrames: number;
 }
 
+// sourceBuffer is private in h264-converter
+type ConverterFake = {
+    sourceBuffer: SourceBuffer
+}
+
 export default class MseDecoder extends Decoder {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
@@ -40,6 +45,9 @@ export default class MseDecoder extends Decoder {
     private isSeeking = false;
     public fpf: number = MseDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
     public readonly supportsScreenshot: boolean = true;
+    private sourceBuffer?: SourceBuffer;
+    private removeStart = -1;
+    private removeEnd = -1;
 
     constructor(udid: string, protected tag: HTMLVideoElement = MseDecoder.createElement()) {
         super(udid, 'MseDecoder', tag);
@@ -186,6 +194,22 @@ export default class MseDecoder extends Decoder {
         return MseDecoder.preferredVideoSettings;
     }
 
+    cleanSourceBuffer = (): void => {
+        if (!this.sourceBuffer) {
+            return;
+        }
+        if (this.sourceBuffer.updating) {
+            return;
+        }
+        try {
+            this.sourceBuffer.remove(this.removeStart, this.removeEnd);
+            this.sourceBuffer.removeEventListener('updateend', this.cleanSourceBuffer);
+            this.removeStart = this.removeEnd = -1;
+        } catch (e) {
+            console.error(this.name, 'Failed to clean source buffer');
+        }
+    };
+
     public pushFrame(frame: Uint8Array): void {
         super.pushFrame(frame);
         if (this.converter) {
@@ -197,8 +221,19 @@ export default class MseDecoder extends Decoder {
                     end = this.tag.buffered.end(0) | 0;
                 }
                 if (end !== 0 && start < end) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this.converter as any).sourceBuffer.remove(start, end);
+                    const sourceBuffer: SourceBuffer = (this.converter as unknown as ConverterFake).sourceBuffer;
+                    if (!sourceBuffer.updating) {
+                        sourceBuffer.remove(start, end);
+                    } else {
+                        this.sourceBuffer = sourceBuffer;
+                        if (this.removeEnd !== -1 || this.removeEnd !== -1) {
+                            this.removeEnd = end;
+                        } else {
+                            this.removeStart = start;
+                            this.removeEnd = end;
+                        }
+                        sourceBuffer.addEventListener('updateend', this.cleanSourceBuffer);
+                    }
                 }
             }
             this.converter.appendRawData(frame);
@@ -212,14 +247,33 @@ export default class MseDecoder extends Decoder {
                 this.stalledCounter = 0;
             }
         }
-        if (this.stalledCounter > 5 && this.tag.buffered.length) {
-            console.warn(this.name, 'Stalled! Jumping to the end');
-            const onSeekEnd = () => {
-                this.isSeeking = false;
-                this.tag.removeEventListener('seeked', onSeekEnd);
-            };
-            this.isSeeking = true;
-            this.tag.addEventListener('seeked', onSeekEnd);
+        if (this.tag.buffered.length) {
+            const end = this.tag.buffered.end(0);
+            const buffered = end - this.tag.currentTime;
+            const MAX_BUFFER = 0.2;
+            const MAX_AHEAD = 0.2;
+            let hasReasonToJump = false;
+            if (this.stalledCounter > 5) {
+                // `Stalled (for ${this.stalledCounter} frames).`;
+                hasReasonToJump = true
+            }
+            if (buffered > MAX_BUFFER) {
+                // `Buffer is bigger then ${MAX_BUFFER} seconds (=${buffered.toFixed(3)}).`;
+                hasReasonToJump = true;
+            }
+            if (buffered < -MAX_AHEAD) {
+                // `Current time is more then ${MAX_AHEAD} seconds ahead of end (HOW?!) (=${-buffered.toFixed(3)}).`;
+                hasReasonToJump = true;
+            }
+            if (!hasReasonToJump) {
+                return;
+            }
+            if (this.tag.seeking && this.stalledCounter < 10) {
+                // console.info(`${this.name}. ${reasonToJump} But already seeking. Do nothing.`);
+                return;
+            }
+            // console.info(`${this.name}. ${reasonToJump} Jumping to the end. ${this.stalledCounter}`);
+
             this.tag.currentTime = this.tag.buffered.end(0);
             this.stalledCounter = 0;
         }
