@@ -75,7 +75,13 @@ export default abstract class Decoder {
     }
 
     protected static isIFrame(frame: Uint8Array): boolean {
-        return frame && frame.length > 4 && frame[4] === 0x65;
+        // last 5 bits === 5: Coded slice of an IDR picture
+
+        // https://www.ietf.org/rfc/rfc3984.txt
+        // 1.3.  Network Abstraction Layer Unit Types
+        // https://www.itu.int/rec/T-REC-H.264-201906-I/en
+        // Table 7-1 – NAL unit type codes, syntax element categories, and NAL unit type classes
+        return frame && frame.length > 4 && (frame[4] & 31) === 5;
     }
 
     private static getStorageKey(decoderName: string, udid: string): string {
