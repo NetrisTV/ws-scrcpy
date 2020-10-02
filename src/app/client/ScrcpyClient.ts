@@ -263,17 +263,17 @@ export class ScrcpyClient extends BaseClient<never> {
                 },
                 options,
             );
-            document.body.onmousedown = function (e: MouseEvent): void {
+            document.body.addEventListener('mousedown', (e: MouseEvent): void => {
                 down++;
                 onMouseEvent(e);
-            };
-            document.body.onmouseup = function (e: MouseEvent): void {
+            });
+            document.body.addEventListener('mouseup', (e: MouseEvent): void => {
                 onMouseEvent(e);
                 down--;
-            };
-            document.body.onmousemove = function (e: MouseEvent): void {
+            });
+            document.body.addEventListener('mousemove', (e: MouseEvent): void => {
                 onMouseEvent(e);
-            };
+            });
             this.hasTouchListeners = true;
         }
     }
