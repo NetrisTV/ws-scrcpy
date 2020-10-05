@@ -50,6 +50,14 @@ Be advised and keep in mind:
 * The modified version of scrcpy with integrated WebSocket server is listening for connections on all network interfaces.
 * The modified version of scrcpy will keep running after the last client disconnected.
 
+## WS QVH
+This project also contains frontend for [NetrisTV/ws-qvh](https://github.com/NetrisTV/ws-qvh). Run this to build it:
+
+```shell script
+npm install
+npm run dist:qvhack:frontend
+```
+
 ## Related projects
 * [Genymobile/scrcpy](https://github.com/Genymobile/scrcpy)
 * [xevokk/h264-converter](https://github.com/xevokk/h264-converter)
