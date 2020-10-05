@@ -5,9 +5,10 @@
   "scripts": {
     "clean": "npx rimraf dist",
     "build:webpack": "webpack --config webpack.ws-scrcpy.config.js",
-    "copy:server": "node -e \"require('recursive-copy')('build/server','dist/server', {overwrite: true, debug: true} ,function(e){if(e)process.exit(1);process.exit(0);})\"",
-    "dist": "npm run build:webpack && npm run copy:package.json",
-    "dist:qvhack:frontend": "webpack --config webpack.qvhack.config.js",
+    "copy:license": "node -e \"require('fs').copyFileSync('LICENSE', 'dist/LICENSE')\"",
+    "dist": "npm run build:webpack && npm run copy:package.json && npm run copy:license",
+    "build:qvhack:frontend": "webpack --config webpack.qvhack.config.js",
+    "dist:qvhack:frontend": "npm run build:qvhack:frontend && npm run copy:license",
     "copy:package.json": "node -e \"const j=require('./package.json');const {name,version,description,author,license,dependencies,scripts}=j; const p={name, version, description,author,license,dependencies}; p.scripts={start: scripts['dist:start']};fs.writeFileSync('./dist/package.json', JSON.stringify(p, null, '  '))\"",
     "start": "npm run dist && npm run start:dist",
     "start:dist": "cd dist && npm start",
