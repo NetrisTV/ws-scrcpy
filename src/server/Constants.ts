@@ -37,3 +37,8 @@ const ARGUMENTS = [
 ];
 
 export const ARGS_STRING = `/ ${SERVER_PACKAGE} ${ARGUMENTS.join(' ')} 2>&1 > /dev/null`;
+
+export enum ACTION {
+    DEVICE_LIST = 'droid-device-list',
+    SHELL = 'shell',
+}

@@ -1,14 +1,17 @@
+import '../../vendor/Genymobile/scrcpy/scrcpy-server.jar';
+import '../../vendor/Genymobile/scrcpy/LICENSE.txt';
+
 import ADB, { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from 'adbkit';
 import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { DeviceDescriptor } from './DeviceDescriptor';
 import { ARGS_STRING, SERVER_PACKAGE, SERVER_VERSION } from './Constants';
-import DescriptorFields from '../common/DescriptorFields';
+import DroidDeviceDescriptor from '../common/DroidDeviceDescriptor';
 import Timeout = NodeJS.Timeout;
 
 const TEMP_PATH = '/data/local/tmp/';
-const FILE_DIR = path.join(__dirname, '../public');
+const FILE_DIR = path.join(__dirname, 'vendor/Genymobile/scrcpy');
 const FILE_NAME = 'scrcpy-server.jar';
 
 const GET_SHELL_PROCESSES = 'for DIR in /proc/*; do [ -d "$DIR" ] && echo $DIR;  done';
@@ -26,7 +29,7 @@ export class ServerDeviceConnection extends EventEmitter {
     public static readonly UPDATE_EVENT: string = 'update';
     private static instance: ServerDeviceConnection;
     private pendingUpdate = false;
-    private cache: DescriptorFields[] = [];
+    private cache: DroidDeviceDescriptor[] = [];
     private deviceDescriptors: Map<string, DeviceDescriptor> = new Map();
     private clientMap: Map<string, AdbKitClient> = new Map();
     private client: AdbKitClient = ADB.createClient();
@@ -132,7 +135,7 @@ export class ServerDeviceConnection extends EventEmitter {
         });
     }
 
-    private updateDescriptor(fields: DescriptorFields): DeviceDescriptor {
+    private updateDescriptor(fields: DroidDeviceDescriptor): DeviceDescriptor {
         const { udid } = fields;
         let descriptor = this.deviceDescriptors.get(udid);
         if (!descriptor || !descriptor.equals(fields)) {
@@ -187,7 +190,7 @@ export class ServerDeviceConnection extends EventEmitter {
         const props = await client.getProperties(udid);
         const wifi = props['wifi.interface'];
         const stored = this.deviceDescriptors.get(udid);
-        const fields: DescriptorFields = {
+        const fields: DroidDeviceDescriptor = {
             pid: stored ? stored.pid : -1,
             ip: stored ? stored.ip : LABEL.DETECTION,
             'ro.product.cpu.abi': props['ro.product.cpu.abi'],
@@ -315,7 +318,7 @@ export class ServerDeviceConnection extends EventEmitter {
             .then(anyway, anyway);
     }
 
-    public getDevices(): DescriptorFields[] {
+    public getDevices(): DroidDeviceDescriptor[] {
         this.updateDeviceList();
         return this.cache;
     }

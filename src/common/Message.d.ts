@@ -1,13 +1,11 @@
-import { XtermClientMessage } from './XtermMessage';
-import DescriptorFields from './DescriptorFields';
-
-export enum MessageTypes {
-    'devicelist',
-    'shell',
+export enum MessageType {
+    'devicelist' = 'devicelist',
+    'shell' = 'shell',
+    'run-wda' = 'run-wda',
 }
 
 export interface Message {
     id: number;
-    type: keyof typeof MessageTypes;
-    data: DescriptorFields[] | XtermClientMessage;
+    type: string;
+    data: any;
 }

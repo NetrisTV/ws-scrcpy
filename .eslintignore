@@ -1,4 +1,4 @@
 src/public/**/*.js
-src/vendor/**/*.js
-src/Util.ts
-src/h264-live-player/**/*.ts
+vendor/**/*.js
+src/app/Util.ts
+src/app/h264-live-player/**/*.ts
