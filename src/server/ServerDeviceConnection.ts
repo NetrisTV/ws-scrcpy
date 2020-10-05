@@ -1,4 +1,5 @@
-import '../public/scrcpy-server.jar.asset';
+import '../../vendor/Genymobile/scrcpy/scrcpy-server.jar';
+import '../../vendor/Genymobile/scrcpy/LICENSE.txt';
 
 import ADB, { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from 'adbkit';
 import { EventEmitter } from 'events';
@@ -10,7 +11,7 @@ import DroidDeviceDescriptor from '../common/DroidDeviceDescriptor';
 import Timeout = NodeJS.Timeout;
 
 const TEMP_PATH = '/data/local/tmp/';
-const FILE_DIR = __dirname;
+const FILE_DIR = path.join(__dirname, 'vendor/Genymobile/scrcpy');
 const FILE_NAME = 'scrcpy-server.jar';
 
 const GET_SHELL_PROCESSES = 'for DIR in /proc/*; do [ -d "$DIR" ] && echo $DIR;  done';
