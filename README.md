@@ -6,9 +6,9 @@ Web client prototype for [scrcpy](https://github.com/Genymobile/scrcpy).
 
 You'll need a web browser that supports the following technologies:
 * WebSockets
-* Media Source Extensions and h264 decoding ([MseDecoder](/src/decoder/MseDecoder.ts))
-* WebWorkers [tinyh264](/src/decoder/Tinyh264Decoder.ts))
-* WebAssembly  ([Broadway.js](/src/decoder/BroadwayDecoder.ts) and [tinyh264](/src/decoder/Tinyh264Decoder.ts))
+* Media Source Extensions and h264 decoding ([MseDecoder](/src/app/decoder/MseDecoder.ts))
+* WebWorkers [tinyh264](/src/app/decoder/Tinyh264Decoder.ts))
+* WebAssembly  ([Broadway.js](/src/app/decoder/BroadwayDecoder.ts) and [tinyh264](/src/app/decoder/Tinyh264Decoder.ts))
 
 ## Build and Start
 
@@ -62,5 +62,5 @@ Be advised and keep in mind:
 ## scrcpy websocket fork
 
 Currently, support of WebSocket protocol added to v1.16 of scrcpy
-* [Prebuilt package](/src/public/scrcpy-server.jar.asset)
+* [Prebuilt package](/vendor/Genymobile/scrcpy/scrcpy-server.jar)
 * [Source code](https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.16.x)
