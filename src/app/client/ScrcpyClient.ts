@@ -18,8 +18,10 @@ import ScreenInfo from '../ScreenInfo';
 import { TouchControlMessage } from '../controlMessage/TouchControlMessage';
 import FilePushHandler from '../FilePushHandler';
 import DragAndPushLogger from '../DragAndPushLogger';
+import { KeyEventListener, KeyInputHandler } from '../KeyInputHandler';
+import { KeyCodeControlMessage } from '../controlMessage/KeyCodeControlMessage';
 
-export class ScrcpyClient extends BaseClient<never> {
+export class ScrcpyClient extends BaseClient<never> implements KeyEventListener {
     public static ACTION = 'stream';
     private hasTouchListeners = false;
 
@@ -176,7 +178,15 @@ export class ScrcpyClient extends BaseClient<never> {
     }
 
     public setHandleKeyboardEvents(enabled: boolean): void {
-        console.log(enabled);
+        if (enabled) {
+            KeyInputHandler.addEventListener(this);
+        } else {
+            KeyInputHandler.removeEventListener(this);
+        }
+    }
+
+    public onKeyEvent(event: KeyCodeControlMessage): void {
+        this.sendEvent(event);
     }
 
     public sendNewVideoSetting(videoSettings: VideoSettings): void {
