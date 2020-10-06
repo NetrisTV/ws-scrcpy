@@ -9,6 +9,7 @@ import { DeviceDescriptor } from './DeviceDescriptor';
 import { ARGS_STRING, SERVER_PACKAGE, SERVER_VERSION } from './Constants';
 import DroidDeviceDescriptor from '../common/DroidDeviceDescriptor';
 import Timeout = NodeJS.Timeout;
+import { NetInterface } from '../common/NetInterface';
 
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, 'vendor/Genymobile/scrcpy');
@@ -17,13 +18,6 @@ const FILE_NAME = 'scrcpy-server.jar';
 const GET_SHELL_PROCESSES = 'for DIR in /proc/*; do [ -d "$DIR" ] && echo $DIR;  done';
 const CHECK_CMDLINE = `[ -f "$a/cmdline" ] && grep -av find "$a/cmdline" |grep -sae '^app_process.*${SERVER_PACKAGE}' |grep ${SERVER_VERSION} 2>&1 > /dev/null && echo $a;`;
 const CMD = 'for a in `' + GET_SHELL_PROCESSES + '`; do ' + CHECK_CMDLINE + ' done; exit 0';
-
-const LABEL = {
-    UNKNOWN: '[unknown]',
-    DETECTION: '[detection...]',
-    FAILED_TO_GET: '[failed to get]',
-    RUNNING: '[running]',
-};
 
 export class ServerDeviceConnection extends EventEmitter {
     public static readonly UPDATE_EVENT: string = 'update';
@@ -167,18 +161,38 @@ export class ServerDeviceConnection extends EventEmitter {
         return client;
     }
 
+    private async getNetInterfaces(device: AdbKitDevice): Promise<NetInterface[]> {
+        const { id: udid } = device;
+        const client = this.getOrCreateClient(udid);
+        const list: NetInterface[] = [];
+        const stream = await client.shell(udid, `ip -4 -f inet -o a | grep 'scope global'`);
+        const buffer = await ADB.util.readAll(stream);
+        const lines = buffer
+            .toString()
+            .split('\n')
+            .filter((i: string) => !!i);
+        lines.forEach(value => {
+            const temp = value.split(' ').filter((i: string) => !!i);
+            const name = temp[1];
+            const ipAndMask = temp[3];
+            const ipv4 = ipAndMask.split('/')[0];
+            list.push({ name, ipv4 });
+        });
+        return list;
+    }
+
     private async getDescriptor(device: AdbKitDevice): Promise<DeviceDescriptor> {
         const { id: udid, type: state } = device;
         if (state === 'offline') {
-            const dummy = {
+            const dummy: DroidDeviceDescriptor = {
                 'build.version.release': '',
                 'build.version.sdk': '',
                 'ro.product.cpu.abi': '',
                 'product.manufacturer': '',
                 'product.model': '',
                 'wifi.interface': '',
+                interfaces: [],
                 pid: -1,
-                ip: LABEL.UNKNOWN,
                 state,
                 udid,
             };
@@ -188,11 +202,10 @@ export class ServerDeviceConnection extends EventEmitter {
         const client = this.getOrCreateClient(udid);
         await client.waitBootComplete(udid);
         const props = await client.getProperties(udid);
-        const wifi = props['wifi.interface'];
         const stored = this.deviceDescriptors.get(udid);
         const fields: DroidDeviceDescriptor = {
             pid: stored ? stored.pid : -1,
-            ip: stored ? stored.ip : LABEL.DETECTION,
+            interfaces: stored ? stored.interfaces : [],
             'ro.product.cpu.abi': props['ro.product.cpu.abi'],
             'product.manufacturer': props['ro.product.manufacturer'],
             'product.model': props['ro.product.model'],
@@ -225,22 +238,7 @@ export class ServerDeviceConnection extends EventEmitter {
         }
 
         this.updateDescriptor(fields);
-        try {
-            const stream = await client.shell(udid, `ip route |grep ${wifi} |grep -v default`);
-            const buffer = await ADB.util.readAll(stream);
-            const temp = buffer
-                .toString()
-                .split(' ')
-                .filter((i: string) => !!i);
-            if (temp.length >= 9) {
-                fields.ip = temp[8];
-            } else {
-                fields.ip = LABEL.FAILED_TO_GET;
-            }
-        } catch (e) {
-            console.error(`[${udid}] error: ${e.message}`);
-            fields.ip = LABEL.FAILED_TO_GET;
-        }
+        fields.interfaces = await this.getNetInterfaces(device);
         return this.updateDescriptor(fields);
     }
 

@@ -1,3 +1,5 @@
+import { NetInterface } from './NetInterface';
+
 export default interface DroidDeviceDescriptor {
     'build.version.release': string;
     'build.version.sdk': string;
@@ -5,8 +7,8 @@ export default interface DroidDeviceDescriptor {
     'product.manufacturer': string;
     'product.model': string;
     'wifi.interface': string;
+    interfaces: NetInterface[];
     udid: string;
     state: string;
-    ip: string;
     pid: number;
 }
