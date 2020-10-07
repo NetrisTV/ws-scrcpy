@@ -111,6 +111,15 @@ body.stream {
     background-color: var(--table-header-bg-color);
 }
 
+.table-wrapper table select {
+    color: var(--text-color);
+    background-color: var(--main-bg-color);
+}
+
+.table-wrapper table tr:hover select {
+    background-color: var(--row-bg-color_hover);;
+}
+
 .decoder-controls-wrapper {
     padding: 5px;
 }
