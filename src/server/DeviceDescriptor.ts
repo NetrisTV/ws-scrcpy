@@ -52,14 +52,14 @@ export class DeviceDescriptor {
 
     public equals(fields: DroidDeviceDescriptor): boolean {
         const simpleFieldsAreEqual = (
-            this.udid === fields['udid'] ||
-            this.state === fields['state'] ||
-            this.pid === fields.pid ||
-            this.releaseVersion === fields['build.version.release'] ||
-            this.sdkVersion === fields['build.version.sdk'] ||
-            this.cpuAbi === fields['ro.product.cpu.abi'] ||
-            this.productManufacturer === fields['product.manufacturer'] ||
-            this.productModel === fields['product.model'] ||
+            this.udid === fields['udid'] &&
+            this.state === fields['state'] &&
+            this.pid === fields.pid &&
+            this.releaseVersion === fields['build.version.release'] &&
+            this.sdkVersion === fields['build.version.sdk'] &&
+            this.cpuAbi === fields['ro.product.cpu.abi'] &&
+            this.productManufacturer === fields['product.manufacturer'] &&
+            this.productModel === fields['product.model'] &&
             this.wifiInterface === fields['wifi.interface']
         );
         if (!simpleFieldsAreEqual) {

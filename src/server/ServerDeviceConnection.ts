@@ -33,6 +33,7 @@ export class ServerDeviceConnection extends EventEmitter {
     private throttleTimeoutId?: Timeout;
     private lastEmit = 0;
     private waitAfterError = 1000;
+    private ignoredDevices: Set<string> = new Set();
     public static getInstance(): ServerDeviceConnection {
         if (!this.instance) {
             this.instance = new ServerDeviceConnection();
@@ -132,7 +133,7 @@ export class ServerDeviceConnection extends EventEmitter {
     private updateDescriptor(fields: DroidDeviceDescriptor): DeviceDescriptor {
         const { udid } = fields;
         let descriptor = this.deviceDescriptors.get(udid);
-        if (!descriptor || !descriptor.equals(fields)) {
+        if (!descriptor || (descriptor && !descriptor.equals(fields))) {
             descriptor = new DeviceDescriptor(fields);
             this.deviceDescriptors.set(udid, descriptor);
             this.populateCache();
@@ -171,7 +172,7 @@ export class ServerDeviceConnection extends EventEmitter {
             .toString()
             .split('\n')
             .filter((i: string) => !!i);
-        lines.forEach(value => {
+        lines.forEach((value) => {
             const temp = value.split(' ').filter((i: string) => !!i);
             const name = temp[1];
             const ipAndMask = temp[3];
@@ -217,18 +218,23 @@ export class ServerDeviceConnection extends EventEmitter {
         };
         this.updateDescriptor(fields);
         try {
-            let pid = await this.getPID(device);
-            let count = 0;
-            if (isNaN(pid)) {
-                await this.copyServer(device);
+            let pid = await this.getPID(udid);
+            const isIgnored = this.ignoredDevices.has(udid);
+            if (!isIgnored) {
+                let count = 0;
+                if (isNaN(pid)) {
+                    await this.copyServer(device);
+                }
+                while (isNaN(pid) && count < 5) {
+                    this.spawnServer(udid);
+                    pid = await this.getPID(udid);
+                    count++;
+                }
             }
-            while (isNaN(pid) && count < 5) {
-                this.spawnServer(device);
-                pid = await this.getPID(device);
-                count++;
-            }
             if (isNaN(pid)) {
-                console.error(`[${udid}] error: failed to start server`);
+                if (!isIgnored) {
+                    console.error(`[${udid}] error: failed to start server`);
+                }
                 fields.pid = -1;
             } else {
                 fields.pid = pid;
@@ -242,8 +248,7 @@ export class ServerDeviceConnection extends EventEmitter {
         return this.updateDescriptor(fields);
     }
 
-    private async getPID(device: AdbKitDevice): Promise<number> {
-        const { id: udid } = device;
+    private async getPID(udid: string): Promise<number> {
         const client = this.getOrCreateClient(udid);
         await client.waitBootComplete(udid);
         const stream = await client.shell(udid, CMD);
@@ -274,9 +279,7 @@ export class ServerDeviceConnection extends EventEmitter {
         return client.push(udid, src, dst);
     }
 
-    private spawnServer(device: AdbKitDevice): void {
-        const { id: udid } = device;
-        const command = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS_STRING}`;
+    private runShellCommandAndUpdateList(udid: string, command: string): void {
         const adb = spawn('adb', ['-s', `${udid}`, 'shell', command], { stdio: ['ignore', 'pipe', 'pipe'] });
 
         adb.stdout.on('data', (data) => {
@@ -296,6 +299,11 @@ export class ServerDeviceConnection extends EventEmitter {
             console.log(`[${udid}] adb process exited with code ${code}`);
             this.updateDeviceList();
         });
+    }
+
+    private spawnServer(udid: string): void {
+        const command = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS_STRING}`;
+        this.runShellCommandAndUpdateList(udid, command);
     }
 
     private updateDeviceList(): void {
@@ -319,5 +327,26 @@ export class ServerDeviceConnection extends EventEmitter {
     public getDevices(): DroidDeviceDescriptor[] {
         this.updateDeviceList();
         return this.cache;
+    }
+
+    public killProcess({ udid, pid }: { udid: string; pid: number }): void {
+        const command = `kill ${pid}`;
+        this.runShellCommandAndUpdateList(udid, command);
+    }
+
+    public async killServer(udid: string): Promise<void> {
+        const pid = await this.getPID(udid);
+        if (!isNaN(pid) && pid > 0) {
+            this.ignoredDevices.add(udid);
+            this.killProcess({ udid, pid });
+        }
+    }
+
+    public async startServer(udid: string): Promise<void> {
+        const pid = await this.getPID(udid);
+        if (isNaN(pid) || pid <= 0) {
+            this.ignoredDevices.delete(udid);
+            this.spawnServer(udid);
+        }
     }
 }

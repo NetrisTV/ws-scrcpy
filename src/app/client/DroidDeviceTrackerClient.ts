@@ -70,7 +70,7 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
         // }
     }
 
-    private onInterfaceSelected(e: Event): void {
+    onInterfaceSelected = (e: Event): void => {
         const selectElement = e.target as HTMLSelectElement;
         const option = selectElement.selectedOptions[0];
         const ip = option.value;
@@ -80,7 +80,7 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
         if (typeof udid !== 'string') {
             return;
         }
-        decoderTds.forEach(item => {
+        decoderTds.forEach((item) => {
             item.innerHTML = '';
             const decoderName = item.getAttribute('data-decoder-name') as Decoders;
             const link = DeviceTrackerClient.buildLink(
@@ -94,7 +94,16 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                 'stream',
             );
             item.appendChild(link);
-        })
+        });
+    }
+
+    onActionButtonClick = (e: MouseEvent): void => {
+        const button = e.target as HTMLButtonElement;
+        const udid = button.getAttribute('data-udid');
+        const command = button.getAttribute('data-command') as string;
+        if (this.hasConnection()) {
+            (this.ws as WebSocket).send(JSON.stringify({ command, udid }));
+        }
     }
 
     protected buildDeviceTable(data: DroidDeviceDescriptor[]): void {
@@ -116,12 +125,28 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                     row.appendChild(td);
                     if (fieldName === 'pid') {
                         hasPid = value !== '-1';
+                        const actionButton = document.createElement('button');
+                        actionButton.onclick = this.onActionButtonClick;
+                        actionButton.className = 'kill-server-button';
+                        actionButton.setAttribute('data-udid', device.udid);
+                        let command = '';
+                        if (hasPid) {
+                            command = 'kill_server';
+                            actionButton.title = 'Kill server';
+                            actionButton.innerText = '🗙';
+                        } else {
+                            command = 'start_server';
+                            actionButton.title = 'Start server';
+                            actionButton.innerText = '↺';
+                        }
+                        actionButton.setAttribute('data-command', command);
+                        td.appendChild(actionButton);
                     } else if (fieldName === 'interfaces') {
                         td.innerText = '';
                         const selectElement = document.createElement('select');
                         selectElement.setAttribute('data-udid', device.udid);
                         selectElement.setAttribute('data-escaped-udid', escapedUdid);
-                        device[fieldName].forEach(value => {
+                        device[fieldName].forEach((value) => {
                             const optionElement = document.createElement('option');
                             optionElement.setAttribute('data-name', value.name);
                             optionElement.setAttribute('value', value.ipv4);
