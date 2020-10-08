@@ -41,4 +41,5 @@ export const ARGS_STRING = `/ ${SERVER_PACKAGE} ${ARGUMENTS.join(' ')} 2>&1 > /d
 export enum ACTION {
     DEVICE_LIST = 'droid-device-list',
     SHELL = 'shell',
+    PROXY = 'proxy',
 }

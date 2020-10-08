@@ -1,6 +1,8 @@
 import { DeviceTrackerClient, MapItem } from './DeviceTrackerClient';
 import { ACTION, SERVER_PORT } from '../../server/Constants';
 import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import querystring from 'querystring';
+import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
 
 const FIELDS_MAP: MapItem<DroidDeviceDescriptor>[] = [
     {
@@ -72,27 +74,40 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
 
     onInterfaceSelected = (e: Event): void => {
         const selectElement = e.target as HTMLSelectElement;
+        this.updateLink(selectElement);
+    };
+
+    private updateLink(selectElement: HTMLSelectElement): void {
         const option = selectElement.selectedOptions[0];
+        const port = option.getAttribute('data-port') || SERVER_PORT.toString(10);
+        const query = option.getAttribute('data-query') || undefined;
+        const name = option.getAttribute('data-name');
         const ip = option.value;
         const escapedUdid = selectElement.getAttribute('data-escaped-udid');
         const udid = selectElement.getAttribute('data-udid');
         const decoderTds = document.getElementsByName(`decoder_${escapedUdid}`);
+        const localStorageKey = DroidDeviceTrackerClient.getLocalStorageKey(escapedUdid || '');
         if (typeof udid !== 'string') {
             return;
         }
+        if (localStorage && name) {
+            localStorage.setItem(localStorageKey, name);
+        }
+        const action = 'stream';
         decoderTds.forEach((item) => {
             item.innerHTML = '';
-            const decoderName = item.getAttribute('data-decoder-name') as Decoders;
-            const link = DeviceTrackerClient.buildLink(
-                {
-                    action: 'stream',
-                    udid: udid,
-                    decoder: decoderName,
-                    ip: ip,
-                    port: SERVER_PORT.toString(10),
-                },
-                'stream',
-            );
+            const decoder = item.getAttribute('data-decoder-name') as Decoders;
+            const q: ScrcpyStreamParams = {
+                action,
+                udid,
+                decoder,
+                ip,
+                port,
+            };
+            if (query) {
+                q.query = query;
+            }
+            const link = DeviceTrackerClient.buildLink(q, 'stream');
             item.appendChild(link);
         });
     }
@@ -104,6 +119,25 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
         if (this.hasConnection()) {
             (this.ws as WebSocket).send(JSON.stringify({ command, udid }));
         }
+    };
+
+    private static getLocalStorageKey(udid: string): string {
+        return `device_list::${udid}::interface`;
+    }
+
+    private static createProxyOption(udid: string): HTMLOptionElement {
+        const optionElement = document.createElement('option');
+        const query = querystring.encode({
+            action: 'proxy',
+            remote: `tcp:${SERVER_PORT.toString(10)}`,
+            udid: udid,
+        });
+        optionElement.setAttribute('data-query', `?${query}`);
+        optionElement.setAttribute('data-port', location.port);
+        optionElement.setAttribute('data-name', 'proxy');
+        optionElement.setAttribute('value', location.hostname);
+        optionElement.innerText = `proxy over adb`;
+        return optionElement;
     }
 
     protected buildDeviceTable(data: DroidDeviceDescriptor[]): void {
@@ -113,9 +147,11 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
         data.forEach((device) => {
             const row = document.createElement('tr');
             const escapedUdid = this.escapeUdid(device.udid);
+            const localStorageKey = DroidDeviceTrackerClient.getLocalStorageKey(escapedUdid);
+            const lastSelected = localStorage && localStorage.getItem(localStorageKey);
             row.id = `device_row_${escapedUdid}`;
             let hasPid = false;
-            let ip = '';
+            let selectInterface: HTMLSelectElement | undefined;
             this.rows.forEach((item) => {
                 if (item.field) {
                     const fieldName = item.field;
@@ -129,7 +165,7 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                         actionButton.onclick = this.onActionButtonClick;
                         actionButton.className = 'kill-server-button';
                         actionButton.setAttribute('data-udid', device.udid);
-                        let command = '';
+                        let command: string;
                         if (hasPid) {
                             command = 'kill_server';
                             actionButton.title = 'Kill server';
@@ -148,20 +184,27 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                         selectElement.setAttribute('data-escaped-udid', escapedUdid);
                         device[fieldName].forEach((value) => {
                             const optionElement = document.createElement('option');
+                            optionElement.setAttribute('data-port', SERVER_PORT.toString(10));
                             optionElement.setAttribute('data-name', value.name);
                             optionElement.setAttribute('value', value.ipv4);
                             optionElement.innerText = `${value.name}: ${value.ipv4}`;
                             selectElement.appendChild(optionElement);
-                            if (device['wifi.interface'] === value.name) {
+                            if (lastSelected) {
+                                if (lastSelected === value.name) {
+                                    optionElement.selected = true;
+                                }
+                            } else if (device['wifi.interface'] === value.name) {
                                 optionElement.selected = true;
-                                ip = value.ipv4;
-                            }
-                            if (!ip) {
-                                ip = value.ipv4;
                             }
                         });
+                        const adbProxyOption = DroidDeviceTrackerClient.createProxyOption(device.udid);
+                        if (lastSelected === 'proxy') {
+                            adbProxyOption.selected = true;
+                        }
+                        selectElement.appendChild(adbProxyOption);
                         selectElement.onchange = this.onInterfaceSelected;
                         td.appendChild(selectElement);
+                        selectInterface = selectElement;
                     }
                 }
             });
@@ -171,21 +214,6 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                 const decoderTd = document.createElement('td');
                 decoderTd.setAttribute('name', name);
                 decoderTd.setAttribute('data-decoder-name', decoderName);
-                if (isActive) {
-                    if (ip && hasPid) {
-                        const link = DeviceTrackerClient.buildLink(
-                            {
-                                action: 'stream',
-                                udid: device.udid,
-                                decoder: decoderName,
-                                ip: ip,
-                                port: SERVER_PORT.toString(10),
-                            },
-                            'stream',
-                        );
-                        decoderTd.appendChild(link);
-                    }
-                }
                 row.appendChild(decoderTd);
             });
 
@@ -203,6 +231,9 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
             }
             row.appendChild(shellTd);
             tbody.appendChild(row);
+            if (isActive && hasPid && selectInterface) {
+                this.updateLink(selectInterface);
+            }
         });
     }
 }

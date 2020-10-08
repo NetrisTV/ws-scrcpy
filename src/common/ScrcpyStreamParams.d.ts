@@ -7,4 +7,5 @@ export interface ScrcpyStreamParams extends ParsedUrlQueryInput {
     decoder: Decoders;
     ip: string;
     port: string;
+    query?: string;
 }

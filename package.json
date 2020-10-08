@@ -22,6 +22,7 @@
   "dependencies": {
     "adbkit": "^2.11.1",
     "node-pty": "^0.9.0",
+    "portfinder": "^1.0.28",
     "tslib": "^1.9.3",
     "ws": "^7.2.3"
   },

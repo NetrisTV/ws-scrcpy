@@ -7,6 +7,12 @@ type Callback<T> = (err: Error | null, result?: T) => void;
 
 type PushTransfer = EventEmitter;
 
+type Forward = {
+    serial: string;
+    local: string;
+    remote: string;
+}
+
 export interface AdbKitTracker extends EventEmitter {
     deviceList: AdbKitDevice[];
     deviceMap: Record<string, AdbKitDevice>;
@@ -35,6 +41,8 @@ export interface AdbKitClient {
     ): Promise<PushTransfer>;
     shell(serial: string, command: string, callback?: Callback<Socket>): Promise<Socket>;
     waitBootComplete(serial: string): Promise<string>;
+    listForwards(serial: string, callback?: Callback<Forward[]>): Promise<Forward[]>;
+    forward(serial: string, local: string, remote: string, callback?: Callback<true>): Promise<true>;
 }
 
 export interface AdbKitChangesSet {

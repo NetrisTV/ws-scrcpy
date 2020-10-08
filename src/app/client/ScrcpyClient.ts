@@ -35,14 +35,14 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
     constructor(params: ScrcpyStreamParams) {
         super();
 
-        this.streamReceiver = new StreamReceiver(params.ip, params.port);
-        this.startStream(params.udid, params.decoder, `ws://${params.ip}:${params.port}`);
+        this.streamReceiver = new StreamReceiver(params.ip, params.port, params.query);
+        this.startStream(params.udid, params.decoder);
         this.setBodyClass('stream');
         this.setTitle(`${params.udid} stream`);
     }
 
-    public startStream(udid: string, decoderName: Decoders, url: string): void {
-        if (!url || !udid) {
+    public startStream(udid: string, decoderName: Decoders): void {
+        if (!udid) {
             return;
         }
         let decoderClass: new (udid: string) => Decoder;
@@ -166,7 +166,7 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
                 this.sendNewVideoSetting(min);
             }
         });
-        console.log(decoder.getName(), udid, url);
+        console.log(decoder.getName(), udid);
     }
 
     public sendEvent(e: ControlMessage): void {
