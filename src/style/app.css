@@ -122,6 +122,10 @@ body.stream {
     background-color: var(--row-bg-color_hover);;
 }
 
+.table-wrapper table td.pid {
+    white-space: nowrap;
+}
+
 .decoder-controls-wrapper {
     padding: 5px;
 }

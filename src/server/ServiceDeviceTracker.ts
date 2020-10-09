@@ -6,7 +6,7 @@ import DroidDeviceDescriptor from '../common/DroidDeviceDescriptor';
 
 enum Command {
     KILL_SERVER = 'kill_server',
-    START_SERVER = 'start_server'
+    START_SERVER = 'start_server',
 }
 
 export class ServiceDeviceTracker extends ReleasableService {
@@ -51,22 +51,31 @@ export class ServiceDeviceTracker extends ReleasableService {
             console.log(`Received message: ${event.data}`);
             return;
         }
-        switch (data.command) {
+        const command = data.command;
+        switch (command) {
             case Command.KILL_SERVER: {
                 const { udid } = data;
                 if (typeof udid === 'string' && udid) {
-                    this.sdc.killServer(udid);
+                    this.sdc.killServer(udid).catch((e) => {
+                        const { message } = e;
+                        console.error(`Command: "${command}", error: ${message}`);
+                        this.ws.send({ command, error: message });
+                    });
                 } else {
-                    console.error(`Incorrect parameters for ${data.command} command: udid:"${udid}"`)
+                    console.error(`Incorrect parameters for ${data.command} command: udid:"${udid}"`);
                 }
                 break;
             }
             case Command.START_SERVER: {
                 const { udid } = data;
                 if (typeof udid === 'string' && udid) {
-                    this.sdc.startServer(udid);
+                    this.sdc.startServer(udid).catch((e) => {
+                        const { message } = e;
+                        console.error(`Command: "${command}", error: ${message}`);
+                        this.ws.send({ command, error: message });
+                    });
                 } else {
-                    console.error(`Incorrect parameters for ${data.command} command: udid:"${udid}"`)
+                    console.error(`Incorrect parameters for ${data.command} command: udid:"${udid}"`);
                 }
                 break;
             }

@@ -154,10 +154,12 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
             let selectInterface: HTMLSelectElement | undefined;
             this.rows.forEach((item) => {
                 if (item.field) {
+                    const { title } = item;
                     const fieldName = item.field;
                     const value = '' + device[fieldName];
                     const td = document.createElement('td');
                     td.innerText = value;
+                    td.className = title.toLowerCase();
                     row.appendChild(td);
                     if (fieldName === 'pid') {
                         hasPid = value !== '-1';
@@ -169,7 +171,7 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                         if (hasPid) {
                             command = 'kill_server';
                             actionButton.title = 'Kill server';
-                            actionButton.innerText = '🗙';
+                            actionButton.innerText = '☠';
                         } else {
                             command = 'start_server';
                             actionButton.title = 'Start server';
