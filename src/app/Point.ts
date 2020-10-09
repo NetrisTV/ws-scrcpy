@@ -22,8 +22,8 @@ export default class Point {
     }
 
     public distance(to: Point): number {
-        const x = (this.x - to.x);
-        const y = (this.y - to.y);
+        const x = this.x - to.x;
+        const y = this.y - to.y;
         return Math.sqrt(x * x + y * y);
     }
 

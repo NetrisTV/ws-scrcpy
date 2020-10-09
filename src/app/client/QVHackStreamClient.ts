@@ -57,18 +57,21 @@ export class QVHackStreamClient extends BaseClient<never> implements VideoResize
         }
 
         this.wdaUrl = '';
-        this.managerClient.runWebDriverAgent(this.udid).then((response) => {
-            const data = response.data;
-            if (data.code === 0) {
-                const url = data.text;
-                this.wdaUrl = url;
-                this.wdaConnection.setUrl(url);
-            } else {
-                console.error(`Failed to run WebDriverAgent. Reason: ${data.text}, code: ${data.code}`);
-            }
-        }).finally(() => {
-            this.videoWrapper?.classList.remove(WAIT_CLASS);
-        })
+        this.managerClient
+            .runWebDriverAgent(this.udid)
+            .then((response) => {
+                const data = response.data;
+                if (data.code === 0) {
+                    const url = data.text;
+                    this.wdaUrl = url;
+                    this.wdaConnection.setUrl(url);
+                } else {
+                    console.error(`Failed to run WebDriverAgent. Reason: ${data.text}, code: ${data.code}`);
+                }
+            })
+            .finally(() => {
+                this.videoWrapper?.classList.remove(WAIT_CLASS);
+            });
     }
 
     private startStream(udid: string, url: string) {

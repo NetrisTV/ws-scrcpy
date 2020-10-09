@@ -51,7 +51,7 @@ export class DeviceDescriptor {
     }
 
     public equals(fields: DroidDeviceDescriptor): boolean {
-        const simpleFieldsAreEqual = (
+        const simpleFieldsAreEqual =
             this.udid === fields['udid'] &&
             this.state === fields['state'] &&
             this.pid === fields.pid &&
@@ -60,8 +60,7 @@ export class DeviceDescriptor {
             this.cpuAbi === fields['ro.product.cpu.abi'] &&
             this.productManufacturer === fields['product.manufacturer'] &&
             this.productModel === fields['product.model'] &&
-            this.wifiInterface === fields['wifi.interface']
-        );
+            this.wifiInterface === fields['wifi.interface'];
         if (!simpleFieldsAreEqual) {
             return simpleFieldsAreEqual;
         }
@@ -71,7 +70,7 @@ export class DeviceDescriptor {
         const sortedInterfaces = fields.interfaces.sort(DeviceDescriptor.sortInterfaces);
         for (let i = 0, l = this.interfaces.length; i < l; i++) {
             const a = this.interfaces[i];
-            const b = sortedInterfaces[i]
+            const b = sortedInterfaces[i];
             if (a.name !== b.name || a.ipv4 !== b.ipv4) {
                 return false;
             }
