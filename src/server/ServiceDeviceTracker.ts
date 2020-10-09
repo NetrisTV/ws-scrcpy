@@ -54,9 +54,9 @@ export class ServiceDeviceTracker extends ReleasableService {
         const command = data.command;
         switch (command) {
             case Command.KILL_SERVER: {
-                const { udid } = data;
-                if (typeof udid === 'string' && udid) {
-                    this.sdc.killServer(udid).catch((e) => {
+                const { udid, pid } = data;
+                if (typeof udid === 'string' && udid && typeof pid === 'number' && pid > 0) {
+                    this.sdc.killServer(udid, pid).catch((e) => {
                         const { message } = e;
                         console.error(`Command: "${command}", error: ${message}`);
                         this.ws.send({ command, error: message });

@@ -115,9 +115,12 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
     onActionButtonClick = (e: MouseEvent): void => {
         const button = e.target as HTMLButtonElement;
         const udid = button.getAttribute('data-udid');
+        const pidString = button.getAttribute('data-pid') || '';
         const command = button.getAttribute('data-command') as string;
+        const pid = parseInt(pidString, 10);
+
         if (this.hasConnection()) {
-            (this.ws as WebSocket).send(JSON.stringify({ command, udid }));
+            (this.ws as WebSocket).send(JSON.stringify({ command, udid, pid }));
         }
     };
 
@@ -158,7 +161,6 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                     const fieldName = item.field;
                     const value = '' + device[fieldName];
                     const td = document.createElement('td');
-                    td.innerText = value;
                     td.className = title.toLowerCase();
                     row.appendChild(td);
                     if (fieldName === 'pid') {
@@ -167,20 +169,20 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                         actionButton.onclick = this.onActionButtonClick;
                         actionButton.className = 'kill-server-button';
                         actionButton.setAttribute('data-udid', device.udid);
+                        actionButton.setAttribute('data-pid', value);
                         let command: string;
                         if (hasPid) {
                             command = 'kill_server';
                             actionButton.title = 'Kill server';
-                            actionButton.innerText = '☠';
+                            actionButton.innerText = `☠ ${value}`;
                         } else {
                             command = 'start_server';
                             actionButton.title = 'Start server';
-                            actionButton.innerText = '↺';
+                            actionButton.innerText = `↺ ${value}`;
                         }
                         actionButton.setAttribute('data-command', command);
                         td.appendChild(actionButton);
                     } else if (fieldName === 'interfaces') {
-                        td.innerText = '';
                         const selectElement = document.createElement('select');
                         selectElement.setAttribute('data-udid', device.udid);
                         selectElement.setAttribute('data-escaped-udid', escapedUdid);
@@ -207,6 +209,8 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                         selectElement.onchange = this.onInterfaceSelected;
                         td.appendChild(selectElement);
                         selectInterface = selectElement;
+                    } else {
+                        td.innerText = value;
                     }
                 }
             });

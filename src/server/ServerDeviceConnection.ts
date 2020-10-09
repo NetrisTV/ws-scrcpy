@@ -1,7 +1,7 @@
 import '../../vendor/Genymobile/scrcpy/scrcpy-server.jar';
 import '../../vendor/Genymobile/scrcpy/LICENSE.txt';
 
-import ADB, { AdbKitChangesSet, AdbKitClient, AdbKitDevice, AdbKitTracker, PushTransfer } from 'adbkit';
+import ADB, { AdbKitChangesSet, AdbKitClient, AdbKitTracker, PushTransfer } from 'adbkit';
 import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
 import * as path from 'path';
@@ -34,6 +34,7 @@ export class ServerDeviceConnection extends EventEmitter {
     private lastEmit = 0;
     private waitAfterError = 1000;
     private ignoredDevices: Set<string> = new Set();
+    private pendingInfoUpdate: Set<string> = new Set();
     public static getInstance(): ServerDeviceConnection {
         if (!this.instance) {
             this.instance = new ServerDeviceConnection();
@@ -60,8 +61,8 @@ export class ServerDeviceConnection extends EventEmitter {
         tracker.on('changeSet', async (changes: AdbKitChangesSet) => {
             if (changes.added.length) {
                 for (const device of changes.added) {
-                    const descriptor = await this.getDescriptor(device);
-                    this.deviceDescriptors.set(device.id, descriptor);
+                    const { id: udid, type: state } = device;
+                    this.updateDeviceInfo(udid, state);
                 }
             }
             if (changes.removed.length) {
@@ -77,9 +78,8 @@ export class ServerDeviceConnection extends EventEmitter {
             }
             if (changes.changed.length) {
                 for (const device of changes.changed) {
-                    const udid = device.id;
-                    const descriptor = await this.getDescriptor(device);
-                    this.deviceDescriptors.set(udid, descriptor);
+                    const { id: udid, type: state } = device;
+                    this.updateDeviceInfo(udid, state);
                     if (this.clientMap.has(udid)) {
                         this.clientMap.delete(udid);
                     }
@@ -142,29 +142,20 @@ export class ServerDeviceConnection extends EventEmitter {
         return descriptor;
     }
 
-    private async mapDevicesToDescriptors(list: AdbKitDevice[]): Promise<DeviceDescriptor[]> {
-        const all = await Promise.all(list.map((device) => this.getDescriptor(device)));
-        list.forEach((device: AdbKitDevice, idx: number) => {
-            this.deviceDescriptors.set(device.id, all[idx]);
-        });
-        return all;
-    }
-
     private getOrCreateClient(udid: string): AdbKitClient {
         let client: AdbKitClient | undefined;
         if (this.clientMap.has(udid)) {
             client = this.clientMap.get(udid);
         }
         if (!client) {
-            client = ADB.createClient() as AdbKitClient;
+            client = ADB.createClient();
             this.clientMap.set(udid, client);
         }
         return client;
     }
 
-    private async getNetInterfaces(device: AdbKitDevice): Promise<NetInterface[]> {
-        const { id: udid } = device;
-        const client = this.getOrCreateClient(udid);
+    private async setNetInterfaces(udid: string, fields: DroidDeviceDescriptor): Promise<void> {
+        const client = ADB.createClient();
         const list: NetInterface[] = [];
         const stream = await client.shell(udid, `ip -4 -f inet -o a | grep 'scope global'`);
         const buffer = await ADB.util.readAll(stream);
@@ -179,55 +170,34 @@ export class ServerDeviceConnection extends EventEmitter {
             const ipv4 = ipAndMask.split('/')[0];
             list.push({ name, ipv4 });
         });
-        return list;
+        fields.interfaces = list;
+        this.updateDescriptor(fields);
     }
 
-    private async getDescriptor(device: AdbKitDevice): Promise<DeviceDescriptor> {
-        const { id: udid, type: state } = device;
-        if (state === 'offline') {
-            const dummy: DroidDeviceDescriptor = {
-                'build.version.release': '',
-                'build.version.sdk': '',
-                'ro.product.cpu.abi': '',
-                'product.manufacturer': '',
-                'product.model': '',
-                'wifi.interface': '',
-                interfaces: [],
-                pid: -1,
-                state,
-                udid,
-            };
-            this.updateDescriptor(dummy);
-            return new DeviceDescriptor(dummy);
-        }
-        const client = this.getOrCreateClient(udid);
-        await client.waitBootComplete(udid);
+    private async setProps(udid: string, fields: DroidDeviceDescriptor): Promise<void> {
+        const client = ADB.createClient();
         const props = await client.getProperties(udid);
-        const stored = this.deviceDescriptors.get(udid);
-        const fields: DroidDeviceDescriptor = {
-            pid: stored ? stored.pid : -1,
-            interfaces: stored ? stored.interfaces : [],
-            'ro.product.cpu.abi': props['ro.product.cpu.abi'],
-            'product.manufacturer': props['ro.product.manufacturer'],
-            'product.model': props['ro.product.model'],
-            'build.version.release': props['ro.build.version.release'],
-            'build.version.sdk': props['ro.build.version.sdk'],
-            'wifi.interface': props['wifi.interface'],
-            state,
-            udid,
-        };
+        fields['ro.product.cpu.abi'] = props['ro.product.cpu.abi'];
+        fields['product.manufacturer'] = props['ro.product.manufacturer'];
+        fields['product.model'] = props['ro.product.model'];
+        fields['build.version.release'] = props['ro.build.version.release'];
+        fields['build.version.sdk'] = props['ro.build.version.sdk'];
+        fields['wifi.interface'] = props['wifi.interface'];
         this.updateDescriptor(fields);
+    }
+
+    private async pushAndSpawnServer(udid: string, fields: DroidDeviceDescriptor): Promise<void> {
         try {
-            let pid = await this.getPID(udid);
+            let pid = await this.getPid(udid);
             const isIgnored = this.ignoredDevices.has(udid);
             if (!isIgnored) {
                 let count = 0;
                 if (isNaN(pid)) {
-                    await this.copyServer(device);
+                    await this.copyServer(udid);
                 }
                 while (isNaN(pid) && count < 5) {
                     this.spawnServer(udid);
-                    pid = await this.getPID(udid);
+                    pid = await this.getPid(udid);
                     count++;
                 }
             }
@@ -242,16 +212,63 @@ export class ServerDeviceConnection extends EventEmitter {
         } catch (e) {
             console.error(`[${udid}] error: ${e.message}`);
         }
-
         this.updateDescriptor(fields);
-        fields.interfaces = await this.getNetInterfaces(device);
-        return this.updateDescriptor(fields);
     }
 
-    private async getPID(udid: string): Promise<number> {
+    private async getDescriptor(udid: string, state: string): Promise<void> {
+        const fields: DroidDeviceDescriptor = {
+            'build.version.release': '',
+            'build.version.sdk': '',
+            'ro.product.cpu.abi': '',
+            'product.manufacturer': '',
+            'product.model': '',
+            'wifi.interface': '',
+            interfaces: [],
+            pid: -1,
+            state,
+            udid,
+        };
+        if (state === 'offline') {
+            this.updateDescriptor(fields);
+            return;
+        }
+        const steps: Promise<void>[] = [];
+        const stored = this.deviceDescriptors.get(udid);
+        if (stored && stored.sdkVersion) { // check only one field, because it is all on nothing
+            fields.pid = stored.pid;
+            fields.interfaces = stored.interfaces;
+            fields['ro.product.cpu.abi'] = stored.cpuAbi;
+            fields['product.manufacturer'] = stored.productManufacturer;
+            fields['product.model'] = stored.productModel;
+            fields['build.version.release'] = stored.releaseVersion;
+            fields['build.version.sdk'] = stored.sdkVersion;
+            fields['wifi.interface'] = stored.wifiInterface;
+        } else {
+            steps.push(this.setProps(udid, fields));
+        }
         const client = this.getOrCreateClient(udid);
         await client.waitBootComplete(udid);
-        const stream = await client.shell(udid, CMD);
+        steps.push(this.setNetInterfaces(udid, fields));
+        steps.push(this.pushAndSpawnServer(udid, fields));
+        await Promise.all(steps);
+    }
+
+    private async checkPid(udid: string, pid: number): Promise<number> {
+        const current = await this.getPidWithCommand(udid, `a='/proc/${pid}'; ${CHECK_CMDLINE}`);
+        if (pid === current) {
+            return pid;
+        }
+        return NaN;
+    }
+
+    private async getPid(udid: string): Promise<number> {
+        return this.getPidWithCommand(udid, CMD);
+    }
+
+    private async getPidWithCommand(udid: string, command: string): Promise<number> {
+        const client = this.getOrCreateClient(udid);
+        await client.waitBootComplete(udid);
+        const stream = await client.shell(udid, command);
         const buffer = await ADB.util.readAll(stream);
         const shellProcessesArray = buffer
             .toString()
@@ -270,8 +287,7 @@ export class ServerDeviceConnection extends EventEmitter {
         return parseInt(shellProcessesArray[0], 10);
     }
 
-    private async copyServer(device: AdbKitDevice): Promise<PushTransfer> {
-        const { id: udid } = device;
+    private async copyServer(udid: string): Promise<PushTransfer> {
         const client = this.getOrCreateClient(udid);
         await client.waitBootComplete(udid);
         const src = path.join(FILE_DIR, FILE_NAME);
@@ -279,8 +295,10 @@ export class ServerDeviceConnection extends EventEmitter {
         return client.push(udid, src, dst);
     }
 
-    private runShellCommandAndUpdateList(udid: string, command: string): void {
-        const adb = spawn('adb', ['-s', `${udid}`, 'shell', command], { stdio: ['ignore', 'pipe', 'pipe'] });
+    private runShellCommand(udid: string, command: string, updateInfoAfterExit: boolean): void {
+        const cmd = 'adb';
+        const args = ['-s', `${udid}`, 'shell', command];
+        const adb = spawn(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'] });
 
         adb.stdout.on('data', (data) => {
             console.log(`[${udid}] stdout: ${data.toString().replace(/\n$/, '')}`);
@@ -296,14 +314,16 @@ export class ServerDeviceConnection extends EventEmitter {
         });
 
         adb.on('close', (code) => {
-            console.log(`[${udid}] adb process exited with code ${code}`);
-            this.updateDeviceList();
+            console.log(`[${udid}] adb process (${args.join(' ')}) exited with code ${code}`);
+            if (updateInfoAfterExit) {
+                this.updateDeviceInfo(udid);
+            }
         });
     }
 
     private spawnServer(udid: string): void {
         const command = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS_STRING}`;
-        this.runShellCommandAndUpdateList(udid, command);
+        this.runShellCommand(udid, command, true);
     }
 
     private updateDeviceList(): void {
@@ -317,11 +337,31 @@ export class ServerDeviceConnection extends EventEmitter {
         this.initTracker()
             .then((tracker) => {
                 if (tracker && tracker.deviceList && tracker.deviceList.length) {
-                    return this.mapDevicesToDescriptors(tracker.deviceList);
+                    tracker.deviceList.forEach(device => {
+                        const { id: udid, type: state } = device;
+                        return this.updateDeviceInfo(udid, state);
+                    });
                 }
                 return [] as DeviceDescriptor[];
             })
             .then(anyway, anyway);
+    }
+
+    private updateDeviceInfo(udid: string, maybeState?: string): void {
+        if (this.pendingInfoUpdate.has(udid)) {
+            return;
+        }
+        this.pendingInfoUpdate.add(udid);
+        let state = maybeState;
+        if (!state) {
+            const current = this.deviceDescriptors.get(udid);
+            state = current ? current.state : '?';
+        }
+        this.getDescriptor(udid, state).catch(e => {
+            console.error(`[${udid}] error: ${e.message}`);
+        }).finally(() => {
+            this.pendingInfoUpdate.delete(udid);
+        })
     }
 
     public getDevices(): DroidDeviceDescriptor[] {
@@ -331,22 +371,34 @@ export class ServerDeviceConnection extends EventEmitter {
 
     public killProcess({ udid, pid }: { udid: string; pid: number }): void {
         const command = `kill ${pid}`;
-        this.runShellCommandAndUpdateList(udid, command);
+        this.runShellCommand(udid, command, true);
     }
 
-    public async killServer(udid: string): Promise<void> {
-        const pid = await this.getPID(udid);
-        if (!isNaN(pid) && pid > 0) {
-            this.ignoredDevices.add(udid);
-            this.killProcess({ udid, pid });
+    public async killServer(udid: string, pid: number): Promise<void> {
+        let realPid = await this.checkPid(udid, pid);
+        if (isNaN(realPid) || realPid < 0) {
+            realPid = await this.getPid(udid);
         }
+        if (isNaN(realPid) || realPid < 0) {
+            console.error(`[${udid}] Can't find server PID`);
+            return;
+        }
+        this.ignoredDevices.add(udid);
+        this.killProcess({ udid, pid: realPid });
     }
 
     public async startServer(udid: string): Promise<void> {
-        const pid = await this.getPID(udid);
-        if (isNaN(pid) || pid <= 0) {
-            this.ignoredDevices.delete(udid);
-            this.spawnServer(udid);
+        const descriptor = this.deviceDescriptors.get(udid);
+        if (descriptor && !isNaN(descriptor.pid) && descriptor.pid !== -1) {
+            const pid = await this.checkPid(udid, descriptor.pid);
+            if (!isNaN(pid)) {
+                console.error(`[${udid}] Server already running: PID:${descriptor.pid}`);
+                return;
+            }
         }
+        this.ignoredDevices.delete(udid);
+        await this.copyServer(udid);
+        this.spawnServer(udid);
+        this.updateDeviceInfo(udid, descriptor?.state);
     }
 }
