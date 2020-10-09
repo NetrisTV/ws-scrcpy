@@ -74,10 +74,10 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
 
     onInterfaceSelected = (e: Event): void => {
         const selectElement = e.target as HTMLSelectElement;
-        this.updateLink(selectElement);
+        this.updateLink(selectElement, true);
     };
 
-    private updateLink(selectElement: HTMLSelectElement): void {
+    private updateLink(selectElement: HTMLSelectElement, store: boolean): void {
         const option = selectElement.selectedOptions[0];
         const port = option.getAttribute('data-port') || SERVER_PORT.toString(10);
         const query = option.getAttribute('data-query') || undefined;
@@ -86,12 +86,14 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
         const escapedUdid = selectElement.getAttribute('data-escaped-udid');
         const udid = selectElement.getAttribute('data-udid');
         const decoderTds = document.getElementsByName(`decoder_${escapedUdid}`);
-        const localStorageKey = DroidDeviceTrackerClient.getLocalStorageKey(escapedUdid || '');
         if (typeof udid !== 'string') {
             return;
         }
-        if (localStorage && name) {
-            localStorage.setItem(localStorageKey, name);
+        if (store) {
+            const localStorageKey = DroidDeviceTrackerClient.getLocalStorageKey(escapedUdid || '');
+            if (localStorage && name) {
+                localStorage.setItem(localStorageKey, name);
+            }
         }
         const action = 'stream';
         decoderTds.forEach((item) => {
@@ -238,7 +240,7 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
             row.appendChild(shellTd);
             tbody.appendChild(row);
             if (isActive && hasPid && selectInterface) {
-                this.updateLink(selectInterface);
+                this.updateLink(selectInterface, false);
             }
         });
     }
