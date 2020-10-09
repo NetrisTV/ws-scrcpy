@@ -57,7 +57,6 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
         const screenInfo = ScreenInfo.fromBuffer(temp);
         temp = new Buffer(new Uint8Array(data, offset, VideoSettings.BUFFER_LENGTH));
         const videoSettings = VideoSettings.fromBuffer(temp);
-        this.emit('videoParameters', { videoSettings, screenInfo });
         offset += VideoSettings.BUFFER_LENGTH;
         temp = new Buffer(new Uint8Array(data, offset, CLIENT_ID_LENGTH + CLIENTS_COUNT_LENGTH));
         const clientId = temp.readInt16BE(0);
@@ -67,6 +66,7 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
             clientsCount: clientsCount,
             deviceName: deviceName,
         });
+        this.emit('videoParameters', { videoSettings, screenInfo });
     }
 
     private static EqualArrays(a: ArrayLike<number>, b: ArrayLike<number>): boolean {
