@@ -3,6 +3,9 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const nodeExternals = require('webpack-node-externals');
 const path = require('path');
 
+const Genymobile = path.join(__dirname, 'vendor/Genymobile');
+const GenymobileRE = new RegExp(`^${Genymobile}`);
+
 const common = {
   mode: 'development',
   devtool: 'inline-source-map',
@@ -45,7 +48,7 @@ const common = {
         ],
       },
       {
-        test: /vendor\/Genymobile/,
+        test: GenymobileRE,
         use: [
           {
             loader: 'file-loader',
