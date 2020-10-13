@@ -4,11 +4,21 @@ Web client prototype for [scrcpy](https://github.com/Genymobile/scrcpy).
 
 ## Requirements
 
-You'll need a web browser that supports the following technologies:
+Browser must support the following technologies:
 * WebSockets
 * Media Source Extensions and h264 decoding ([MseDecoder](/src/app/decoder/MseDecoder.ts))
 * WebWorkers [tinyh264](/src/app/decoder/Tinyh264Decoder.ts))
 * WebAssembly  ([Broadway.js](/src/app/decoder/BroadwayDecoder.ts) and [tinyh264](/src/app/decoder/Tinyh264Decoder.ts))
+
+Server:
+* Node.js v10+
+* node-gyp (on Window: `npm install --global windows-build-tools node-gyp`)
+* `adb` executable must be available in the PATH environment variable
+
+Device:
+* Android 5.0+ (API 21+)
+* Enabled [debugging](https://developer.android.com/studio/command-line/adb.html#Enabling)
+* On some devices, you also need to enable [an additional option](https://github.com/Genymobile/scrcpy/issues/70#issuecomment-373286323) to control it using keyboard and mouse.
 
 ## Build and Start
 
@@ -51,7 +61,9 @@ Be advised and keep in mind:
 * The modified version of scrcpy will keep running after the last client disconnected.
 
 ## WS QVH
-This project also contains frontend for [NetrisTV/ws-qvh](https://github.com/NetrisTV/ws-qvh). Run this to build it:
+This project also contains front-end for [NetrisTV/ws-qvh](https://github.com/NetrisTV/ws-qvh) - application for screen streaming and control of iOS devices in a browser.
+
+Run this to build it:
 
 ```shell script
 npm install
