@@ -3,3 +3,4 @@ vendor/**/*.js
 src/app/Util.ts
 src/app/h264-live-player/**/*.ts
 *.js
+typings/**/*.d.ts

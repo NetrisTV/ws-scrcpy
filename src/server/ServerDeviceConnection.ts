@@ -1,7 +1,10 @@
 import '../../vendor/Genymobile/scrcpy/scrcpy-server.jar';
 import '../../vendor/Genymobile/scrcpy/LICENSE.txt';
 
-import ADB, { AdbKitChangesSet, AdbKitClient, AdbKitTracker, PushTransfer } from '@devicefarmer/adbkit';
+import ADB from '@devicefarmer/adbkit';
+import AdbKitClient from '@devicefarmer/adbkit/lib/adb/client';
+import AdbKitTracker from '@devicefarmer/adbkit/lib/adb/tracker';
+import { TrackerChangeSet as AdbKitChangesSet } from '@devicefarmer/adbkit/lib/TrackerChangeSet';
 import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
 import * as path from 'path';
@@ -10,6 +13,7 @@ import { ARGS_STRING, SERVER_PACKAGE, SERVER_VERSION } from './Constants';
 import DroidDeviceDescriptor from '../common/DroidDeviceDescriptor';
 import Timeout = NodeJS.Timeout;
 import { NetInterface } from '../common/NetInterface';
+import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
 
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, 'vendor/Genymobile/scrcpy');
@@ -56,6 +60,13 @@ export class ServerDeviceConnection extends EventEmitter {
     private async initTracker(): Promise<AdbKitTracker> {
         if (this.tracker) {
             return this.tracker;
+        }
+        const deviceList = await this.client.listDevices();
+        if (deviceList && deviceList.length) {
+            deviceList.forEach((device) => {
+                const { id: udid, type: state } = device;
+                return this.updateDeviceInfo(udid, state);
+            });
         }
         const tracker = (this.tracker = await this.client.trackDevices());
         tracker.on('changeSet', async (changes: AdbKitChangesSet) => {
@@ -163,7 +174,7 @@ export class ServerDeviceConnection extends EventEmitter {
             .toString()
             .split('\n')
             .filter((i: string) => !!i);
-        lines.forEach((value) => {
+        lines.forEach((value: string) => {
             const temp = value.split(' ').filter((i: string) => !!i);
             const name = temp[1];
             const ipAndMask = temp[3];
@@ -235,7 +246,7 @@ export class ServerDeviceConnection extends EventEmitter {
         const steps: Promise<void>[] = [];
         const stored = this.deviceDescriptors.get(udid);
         if (stored && stored.sdkVersion) {
-            // check only one field, because it is all or nothing
+            // check only one field, because it is all on nothing
             fields.pid = stored.pid;
             fields.interfaces = stored.interfaces;
             fields['ro.product.cpu.abi'] = stored.cpuAbi;
@@ -335,17 +346,7 @@ export class ServerDeviceConnection extends EventEmitter {
         const anyway = () => {
             this.pendingUpdate = false;
         };
-        this.initTracker()
-            .then((tracker) => {
-                if (tracker && tracker.deviceList && tracker.deviceList.length) {
-                    tracker.deviceList.forEach((device) => {
-                        const { id: udid, type: state } = device;
-                        return this.updateDeviceInfo(udid, state);
-                    });
-                }
-                return [] as DeviceDescriptor[];
-            })
-            .then(anyway, anyway);
+        this.initTracker().then(anyway, anyway);
     }
 
     private updateDeviceInfo(udid: string, maybeState?: string): void {

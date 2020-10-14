@@ -1,7 +1,19 @@
 import { EventEmitter } from 'events';
-import { PriorityLevel } from './PriorityLevel';
 
-export interface AdbKitLogcatEntry {
+declare enum PriorityLevel {
+    UNKNOWN = 0,
+    DEFAULT = 1,
+    VERBOSE = 2,
+    DEBUG = 3,
+    INFO = 4,
+    WARN = 5,
+    ERROR = 6,
+    FATAL = 7,
+    SILENT = 8,
+}
+
+
+declare interface AdbKitLogcatEntry {
     date: Date;
     pid: number;
     tid: number;
@@ -10,7 +22,7 @@ export interface AdbKitLogcatEntry {
     message: string;
 }
 
-export enum AdbKitLogcatReaderEvents {
+declare enum AdbKitLogcatReaderEvents {
     'error',
     'end',
     'finish',
@@ -24,9 +36,9 @@ declare interface PriorityMethods {
     toName(priority: PriorityLevel): string;
 }
 
-export type AdbKitLogcatPriority = PriorityLevel & PriorityMethods;
+type AdbKitLogcatPriority = PriorityLevel & PriorityMethods;
 
-export interface AdbKitLogcatReader extends EventEmitter {
+interface AdbKitLogcatReader extends EventEmitter {
     end(): AdbKitLogcatReader;
     exclude(tag: string): AdbKitLogcatReader;
     excludeAll(): AdbKitLogcatReader;
@@ -34,3 +46,5 @@ export interface AdbKitLogcatReader extends EventEmitter {
     includeAll(priority?: number | string): AdbKitLogcatReader;
     resetFilters(): AdbKitLogcatReader;
 }
+
+export = AdbKitLogcatReader;
