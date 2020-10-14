@@ -1,6 +1,6 @@
 {
   "name": "ws-scrcpy",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "ws client for scrcpy",
   "scripts": {
     "clean": "npx rimraf dist",
