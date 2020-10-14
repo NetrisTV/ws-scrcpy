@@ -10,6 +10,7 @@ import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http';
 import { ServiceDeviceTracker } from './ServiceDeviceTracker';
 import { ServiceShell } from './ServiceShell';
 import { ACTION } from './Constants';
+import { ServiceWebsocketProxy } from './ServiceWebsocketProxy';
 
 const port = parseInt(process.argv[2], 10) || 8000;
 const map: Record<string, string> = {
@@ -79,6 +80,25 @@ wss.on('connection', async (ws: WebSocket, req) => {
         case ACTION.SHELL:
             ServiceShell.createService(ws);
             break;
+        case ACTION.PROXY: {
+            const remote = parsedQuery.remote;
+            if (typeof remote !== 'string' || !remote) {
+                ws.close(4003, `Invalid value "${remote}" for "remote" parameter`);
+                break;
+            }
+            const udid = parsedQuery.udid;
+            if (typeof udid !== 'string' || !udid) {
+                ws.close(4003, `Invalid value "${udid}" for "udid" parameter`);
+                break;
+            }
+            const service = ServiceWebsocketProxy.createService(ws, udid, remote);
+            service.init().catch((e) => {
+                const msg = `Failed to start service: ${e.message}`;
+                console.error(msg);
+                ws.close(4005, msg);
+            });
+            break;
+        }
         default:
             ws.close(4003, `Invalid value "${parsedQuery.action}" for "action" parameter`);
             return;

@@ -12,6 +12,7 @@
     --svg-checkbox-bg-color: hsl(172, 100%, 37%);
     --svg-button-fill: hsl(199, 17%, 46%);
     --table-border-color: hsl(0, 0%, 82%);
+    --kill-button-hover-color: hsl(342, 100%, 37%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,6 +30,7 @@
         --svg-checkbox-bg-color: hsl(172, 100%, 27%);
         --svg-button-fill: hsl(0, 0%, 100%);
         --table-border-color: hsl(0, 0%, 32%);
+        --kill-button-hover-color: hsl(342, 100%, 27%);
     }
 }
 
@@ -109,6 +111,19 @@ body.stream {
     position: sticky;
     top: -1px;
     background-color: var(--table-header-bg-color);
+}
+
+.table-wrapper table select {
+    color: var(--text-color);
+    background-color: var(--main-bg-color);
+}
+
+.table-wrapper table tr:hover select {
+    background-color: var(--row-bg-color_hover);;
+}
+
+.table-wrapper table td.pid {
+    white-space: nowrap;
 }
 
 .decoder-controls-wrapper {
@@ -212,4 +227,14 @@ body.stream {
 
 .control-buttons-list > input[type=checkbox]:checked + label > svg {
     fill: var(--svg-checkbox-bg-color);
+}
+
+.kill-server-button {
+    border: none;
+    background: none;
+    color: var(--text-color);
+}
+
+.kill-server-button:hover {
+    color: var(--kill-button-hover-color);
 }

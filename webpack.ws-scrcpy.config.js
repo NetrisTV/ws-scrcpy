@@ -45,7 +45,7 @@ const common = {
         ],
       },
       {
-        test: /vendor\/Genymobile/,
+        include: path.resolve(__dirname, 'vendor/Genymobile'),
         use: [
           {
             loader: 'file-loader',

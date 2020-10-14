@@ -71,10 +71,10 @@ export abstract class DeviceTrackerClient<
             const headRow = document.createElement('tr');
             this.rows.forEach((item) => {
                 const { title } = item;
-                const td = document.createElement('th');
-                td.innerText = title;
-                td.className = title.toLowerCase();
-                headRow.appendChild(td);
+                const th = document.createElement('th');
+                th.innerText = title;
+                th.className = title.toLowerCase();
+                headRow.appendChild(th);
             });
             thead.appendChild(headRow);
             table.appendChild(thead);
