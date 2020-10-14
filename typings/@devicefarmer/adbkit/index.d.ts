@@ -51,7 +51,7 @@ export interface AdbKitChangesSet {
     changed: AdbKitDevice[];
 }
 
-declare module 'adbkit' {
+declare module '@devicefarmer/adbkit' {
     const createClient: () => AdbKitClient;
     const util: {
         readAll: (stream: any, callback?: (err: Error | null, output?: Buffer) => any) => Promise<Buffer>;

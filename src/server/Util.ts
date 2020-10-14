@@ -1,4 +1,4 @@
-import ADB from 'adbkit';
+import ADB from '@devicefarmer/adbkit';
 import * as portfinder from 'portfinder';
 
 export class Util {

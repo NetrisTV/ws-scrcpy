@@ -20,7 +20,7 @@
   "author": "Sergey Volkov <s.volkov@netris.ru>",
   "license": "MIT",
   "dependencies": {
-    "adbkit": "^2.11.1",
+    "@devicefarmer/adbkit": "^2.11.3",
     "node-pty": "^0.9.0",
     "portfinder": "^1.0.28",
     "tslib": "^1.9.3",

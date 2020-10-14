@@ -1,7 +1,7 @@
 import '../../vendor/Genymobile/scrcpy/scrcpy-server.jar';
 import '../../vendor/Genymobile/scrcpy/LICENSE.txt';
 
-import ADB, { AdbKitChangesSet, AdbKitClient, AdbKitTracker, PushTransfer } from 'adbkit';
+import ADB, { AdbKitChangesSet, AdbKitClient, AdbKitTracker, PushTransfer } from '@devicefarmer/adbkit';
 import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
 import * as path from 'path';
