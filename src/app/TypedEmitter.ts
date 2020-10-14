@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type EventMap = Record<string, any>;
 type EventKey<T extends EventMap> = string & keyof T;
 type EventReceiver<T> = (params: T) => void;
@@ -12,19 +13,19 @@ interface Emitter<T extends EventMap> {
 
 export class TypedEmitter<T extends EventMap> implements Emitter<T> {
     private emitter = new EventEmitter();
-    on<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>) {
+    on<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void {
         this.emitter.on(eventName, fn);
     }
 
-    once<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>) {
+    once<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void {
         this.emitter.once(eventName, fn);
     }
 
-    off<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>) {
+    off<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void {
         this.emitter.off(eventName, fn);
     }
 
-    emit<K extends EventKey<T>>(eventName: K, params: T[K]) {
+    emit<K extends EventKey<T>>(eventName: K, params: T[K]): void {
         this.emitter.emit(eventName, params);
     }
 }

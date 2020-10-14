@@ -180,7 +180,7 @@ export default class WdaConnection {
         return new Point(scaledX, scaledY);
     }
 
-    public setUrl(url: string) {
+    public setUrl(url: string): void {
         this.wdaUrl = url;
     }
 }

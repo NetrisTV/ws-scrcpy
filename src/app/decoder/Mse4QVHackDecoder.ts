@@ -18,7 +18,7 @@ export class Mse4QVHackDecoder extends MseDecoder {
         super(udid, tag);
     }
 
-    protected onCanPlayHandler() {
+    protected onCanPlayHandler(): void {
         super.onCanPlayHandler();
         const tag = this.tag;
         const { videoWidth, videoHeight } = tag;
@@ -73,7 +73,7 @@ export class Mse4QVHackDecoder extends MseDecoder {
         return;
     }
 
-    public play() {
+    public play(): void {
         super.play();
         this.tag.oncanplay = this.onVideoCanPlay;
     }

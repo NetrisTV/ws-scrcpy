@@ -234,7 +234,8 @@ export class ServerDeviceConnection extends EventEmitter {
         }
         const steps: Promise<void>[] = [];
         const stored = this.deviceDescriptors.get(udid);
-        if (stored && stored.sdkVersion) { // check only one field, because it is all on nothing
+        if (stored && stored.sdkVersion) {
+            // check only one field, because it is all or nothing
             fields.pid = stored.pid;
             fields.interfaces = stored.interfaces;
             fields['ro.product.cpu.abi'] = stored.cpuAbi;
@@ -337,7 +338,7 @@ export class ServerDeviceConnection extends EventEmitter {
         this.initTracker()
             .then((tracker) => {
                 if (tracker && tracker.deviceList && tracker.deviceList.length) {
-                    tracker.deviceList.forEach(device => {
+                    tracker.deviceList.forEach((device) => {
                         const { id: udid, type: state } = device;
                         return this.updateDeviceInfo(udid, state);
                     });
@@ -357,11 +358,13 @@ export class ServerDeviceConnection extends EventEmitter {
             const current = this.deviceDescriptors.get(udid);
             state = current ? current.state : '?';
         }
-        this.getDescriptor(udid, state).catch(e => {
-            console.error(`[${udid}] error: ${e.message}`);
-        }).finally(() => {
-            this.pendingInfoUpdate.delete(udid);
-        })
+        this.getDescriptor(udid, state)
+            .catch((e) => {
+                console.error(`[${udid}] error: ${e.message}`);
+            })
+            .finally(() => {
+                this.pendingInfoUpdate.delete(udid);
+            });
     }
 
     public getDevices(): DroidDeviceDescriptor[] {

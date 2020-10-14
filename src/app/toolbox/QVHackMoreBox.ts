@@ -71,7 +71,7 @@ export class QVHackMoreBox implements VideoResizeListener {
         return this.holder;
     }
 
-    public setOnStop(listener: () => void) {
+    public setOnStop(listener: () => void): void {
         this.onStop = listener;
     }
 }
