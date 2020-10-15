@@ -1,23 +1,28 @@
 import { ReleasableService } from './ReleasableService';
 import WebSocket from 'ws';
-import { Util } from './Util';
+import { AdbUtils } from './AdbUtils';
 
 export class ServiceWebsocketProxy extends ReleasableService {
     private remoteSocket?: WebSocket;
     private released = false;
     private storage: WebSocket.MessageEvent[] = [];
 
-    public static createService(ws: WebSocket, udid: string, remote: string): ServiceWebsocketProxy {
-        return new ServiceWebsocketProxy(ws, udid, remote);
+    public static createService(ws: WebSocket, udid: string, remote: string, path?: string): ServiceWebsocketProxy {
+        return new ServiceWebsocketProxy(ws, udid, remote, path);
     }
 
-    constructor(ws: WebSocket, private readonly udid: string, private readonly remote: string) {
+    constructor(
+        ws: WebSocket,
+        private readonly udid: string,
+        private readonly remote: string,
+        private readonly path?: string,
+    ) {
         super(ws);
     }
 
     public async init(): Promise<void> {
-        const port = await Util.forward(this.udid, this.remote);
-        const remoteSocket = new WebSocket(`ws://127.0.0.1:${port}`);
+        const port = await AdbUtils.forward(this.udid, this.remote);
+        const remoteSocket = new WebSocket(`ws://127.0.0.1:${port}${this.path ? this.path : ''}`);
 
         remoteSocket.onopen = () => {
             this.remoteSocket = remoteSocket;
@@ -63,7 +68,7 @@ export class ServiceWebsocketProxy extends ReleasableService {
         }
     }
 
-    public release() {
+    public release(): void {
         super.release();
         this.released = true;
         this.flush();
