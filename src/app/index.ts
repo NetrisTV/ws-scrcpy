@@ -5,6 +5,8 @@ import { ShellClient } from './client/ShellClient';
 import { DroidDeviceTrackerClient } from './client/DroidDeviceTrackerClient';
 import { ScrcpyStreamParams } from '../common/ScrcpyStreamParams';
 import { ShellParams } from '../common/ShellParams';
+import { DevtoolsClient } from './client/DevtoolsClient';
+import { DevtoolsParams } from '../common/DevtoolsParams';
 
 window.onload = function (): void {
     const hash = location.hash.replace(/^#!/, '');
@@ -14,6 +16,8 @@ window.onload = function (): void {
         new ScrcpyClient(parsedQuery as ScrcpyStreamParams);
     } else if (action === ShellClient.ACTION && typeof parsedQuery.udid === 'string') {
         ShellClient.start(parsedQuery as ShellParams);
+    } else if (action === DevtoolsClient.ACTION) {
+        DevtoolsClient.start(parsedQuery as DevtoolsParams);
     } else {
         DroidDeviceTrackerClient.start();
     }

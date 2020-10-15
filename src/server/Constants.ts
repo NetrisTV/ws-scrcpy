@@ -42,4 +42,5 @@ export enum ACTION {
     DEVICE_LIST = 'droid-device-list',
     SHELL = 'shell',
     PROXY = 'proxy',
+    DEVTOOLS = 'devtools',
 }

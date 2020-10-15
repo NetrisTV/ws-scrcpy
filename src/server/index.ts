@@ -11,6 +11,7 @@ import { ServiceDeviceTracker } from './ServiceDeviceTracker';
 import { ServiceShell } from './ServiceShell';
 import { ACTION } from './Constants';
 import { ServiceWebsocketProxy } from './ServiceWebsocketProxy';
+import { ServiceRemoteDevtools } from './ServiceRemoteDevtools';
 
 const port = parseInt(process.argv[2], 10) || 8000;
 const map: Record<string, string> = {
@@ -68,7 +69,32 @@ wss.on('connection', async (ws: WebSocket, req) => {
         ws.close(4001, 'Invalid url');
         return;
     }
+    const host = req.headers['host'];
     const parsed = url.parse(req.url);
+    if (parsed && parsed.path) {
+        const temp = parsed.path.split('/');
+        // Shortcut for action=proxy, without query string
+        if (temp.length >= 4 && temp[0] === '' && temp[1] === ACTION.PROXY) {
+            temp.splice(0, 2);
+            const udid = temp.shift();
+            const remote = temp.shift();
+            const path = temp.join('/') || '/';
+            if (udid && remote && path) {
+                const service = ServiceWebsocketProxy.createService(
+                    ws,
+                    decodeURIComponent(udid),
+                    decodeURIComponent(remote),
+                    path,
+                );
+                service.init().catch((e) => {
+                    const msg = `Failed to start service: ${e.message}`;
+                    console.error(msg);
+                    ws.close(4005, msg);
+                });
+                return;
+            }
+        }
+    }
     const parsedQuery = querystring.parse(parsed.query || '');
     if (typeof parsedQuery.action === 'undefined') {
         ws.close(4002, `Missing required parameter "action"`);
@@ -91,12 +117,31 @@ wss.on('connection', async (ws: WebSocket, req) => {
                 ws.close(4003, `Invalid value "${udid}" for "udid" parameter`);
                 break;
             }
-            const service = ServiceWebsocketProxy.createService(ws, udid, remote);
+            const path = parsedQuery.path;
+            if (path && typeof path !== 'string') {
+                ws.close(4003, `Invalid value "${path}" for "path" parameter`);
+                break;
+            }
+
+            const service = ServiceWebsocketProxy.createService(ws, udid, remote, path);
             service.init().catch((e) => {
                 const msg = `Failed to start service: ${e.message}`;
                 console.error(msg);
                 ws.close(4005, msg);
             });
+            break;
+        }
+        case ACTION.DEVTOOLS: {
+            const udid = parsedQuery.udid;
+            if (typeof udid !== 'string' || !udid) {
+                ws.close(4003, `Invalid value "${udid}" for "udid" parameter`);
+                break;
+            }
+            if (typeof host !== 'string' || !host) {
+                ws.close(4003, `Invalid value "${host}" in "Host" header`);
+                break;
+            }
+            ServiceRemoteDevtools.createService(ws, host, udid);
             break;
         }
         default:

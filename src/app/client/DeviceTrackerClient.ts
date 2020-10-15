@@ -6,6 +6,7 @@ import { ShellParams } from '../../common/ShellParams';
 import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
 import QVHackDeviceDescriptor from '../../common/QVHackDeviceDescriptor';
 import { QVHackStreamParams } from '../../common/QVHackStreamParams';
+import { DevtoolsParams } from '../../common/DevtoolsParams';
 
 export type MapItem<T> = {
     field?: keyof T;
@@ -92,7 +93,7 @@ export abstract class DeviceTrackerClient<
     }
 
     protected static buildLink(
-        q: ScrcpyStreamParams | ShellParams | QVHackStreamParams,
+        q: ScrcpyStreamParams | DevtoolsParams | ShellParams | QVHackStreamParams,
         text: string,
     ): HTMLAnchorElement {
         const hash = `#!${querystring.encode(q)}`;

@@ -3,9 +3,9 @@ export interface VersionMetadata {
     Browser: string;
     'Protocol-Version': string;
     'User-Agent': string;
-    'V8-Version': string;
+    'V8-Version'?: string;
     'WebKit-Version': string;
-    webSocketDebuggerUrl: string;
+    webSocketDebuggerUrl?: string;
 }
 
 export interface TargetDescription {
@@ -19,7 +19,7 @@ export interface TargetDescription {
 }
 
 export interface RemoteTarget {
-    description: TargetDescription;
+    description: string; // JSON.stringify(TargetDescription)
     devtoolsFrontendUrl: string;
     faviconUrl: string;
     id: string;
@@ -29,8 +29,14 @@ export interface RemoteTarget {
     webSocketDebuggerUrl: string;
 }
 
-export type DevtoolsInfo = {
+export type RemoteBrowserInfo = {
     socket: string;
     version: VersionMetadata;
     targets: RemoteTarget[];
+};
+
+export type DevtoolsInfo = {
+    deviceName: string;
+    deviceSerial: string;
+    browsers: RemoteBrowserInfo[];
 };

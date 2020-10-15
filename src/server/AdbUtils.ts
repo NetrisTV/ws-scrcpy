@@ -1,7 +1,18 @@
 import * as portfinder from 'portfinder';
 import * as http from 'http';
 import { Adb } from './adbkit/lib/adb/Adb';
-import { DevtoolsInfo, RemoteTarget, VersionMetadata } from '../common/RemoteDevtools';
+import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, VersionMetadata } from '../common/RemoteDevtools';
+import { URL } from 'url';
+
+type IncomingMessage = {
+    statusCode?: number;
+    contentType?: string;
+    body: string;
+};
+
+const proto = 'http://';
+const fakeHost = '127.0.0.1:6666';
+const fakeHostRe = /127\.0\.0\.1:6666/;
 
 export class AdbUtils {
     public static async forward(serial: string, remote: string): Promise<number> {
@@ -39,13 +50,19 @@ export class AdbUtils {
             if (temp.length !== 8) {
                 return;
             }
-            const name = temp[7].substr(1);
-            names.push(name);
+            if (temp[5] === '01') {
+                const name = temp[7].substr(1);
+                names.push(name);
+            }
         });
         return names;
     }
 
-    private static async createHttpRequest(serial: string, unixSocketName: string, url: string): Promise<string> {
+    private static async createHttpRequest(
+        serial: string,
+        unixSocketName: string,
+        url: string,
+    ): Promise<IncomingMessage> {
         const client = Adb.createClient();
         const socket = await client.openLocalAbstract(serial, unixSocketName);
         const request = new (http.ClientRequest as any)(url, {
@@ -70,7 +87,12 @@ export class AdbUtils {
                 data += d;
             });
             message.on('end', () => {
-                resolve(data);
+                const { statusCode } = message;
+                resolve({
+                    statusCode,
+                    contentType: message.headers['content-type'],
+                    body: data,
+                });
             });
             message.on('error', (e) => {
                 reject(e);
@@ -78,34 +100,123 @@ export class AdbUtils {
         });
     }
 
-    public static async getRemoteDevtoolsVersion(serial: string, unixSocketName: string): Promise<VersionMetadata> {
-        const data = await this.createHttpRequest(serial, unixSocketName, 'http://127.0.0.1/json/version');
-        const json = JSON.parse(data);
-        return json as VersionMetadata;
-    }
-
-    public static async getRemoteDevtoolsTargets(serial: string, unixSocketName: string): Promise<RemoteTarget[]> {
-        const data = await this.createHttpRequest(serial, unixSocketName, 'http://127.0.0.1/json/list');
-        const json = JSON.parse(data);
-        if (Array.isArray(json)) {
-            return json;
+    private static parseResponse<T>(message: IncomingMessage): T {
+        if (!message) {
+            throw Error('empty response');
         }
-        return [];
+        const { contentType, statusCode } = message;
+        if (typeof statusCode !== 'number' || statusCode !== 200) {
+            throw Error(`wrong status code: ${statusCode}`);
+        }
+        if (!contentType?.startsWith('application/json')) {
+            throw Error(`wrong content type: ${contentType}`);
+        }
+        const json = JSON.parse(message.body);
+        return json as T;
     }
 
-    public static async getRemoteDevtoolsInfo(serial: string): Promise<DevtoolsInfo[]> {
-        const list = await this.getDevtoolsRemoteList(serial);
+    private static patchWebSocketDebuggerUrl(host: string, serial: string, socket: string, url: string): string {
+        if (url) {
+            const remote = `localabstract:${socket}`;
+            const path = url.replace(/ws:\/\//, '').replace(fakeHostRe, '');
+            return `${host}/proxy/${serial}/${remote}/${path}`;
+        }
+        return url;
+    }
+
+    public static async getRemoteDevtoolsVersion(
+        host: string,
+        serial: string,
+        socket: string,
+    ): Promise<VersionMetadata> {
+        const data = await this.createHttpRequest(serial, socket, `${proto}${fakeHost}/json/version`);
+        if (!data) {
+            throw Error('Empty response');
+        }
+        const metadata = this.parseResponse<VersionMetadata>(data);
+        if (metadata.webSocketDebuggerUrl) {
+            metadata.webSocketDebuggerUrl = this.patchWebSocketDebuggerUrl(
+                host,
+                serial,
+                socket,
+                metadata.webSocketDebuggerUrl,
+            );
+        }
+        return metadata;
+    }
+
+    public static async getRemoteDevtoolsTargets(
+        host: string,
+        serial: string,
+        socket: string,
+    ): Promise<RemoteTarget[]> {
+        const data = await this.createHttpRequest(serial, socket, `${proto}${fakeHost}/json`);
+        const list = this.parseResponse<RemoteTarget[]>(data);
         if (!list || !list.length) {
             return [];
         }
+        return list.map((target) => {
+            const { devtoolsFrontendUrl, webSocketDebuggerUrl } = target;
+            if (devtoolsFrontendUrl) {
+                let temp = devtoolsFrontendUrl;
+                let bundledOnDevice = false;
+                const ws = this.patchWebSocketDebuggerUrl(host, serial, socket, webSocketDebuggerUrl);
 
-        const all: Promise<DevtoolsInfo>[] = [];
+                if (!temp.startsWith('http')) {
+                    bundledOnDevice = true;
+                    temp = `${proto}${fakeHost}${temp}`;
+                }
+                const url = new URL(temp);
+                // don't use `url.searchParams.set` here, argument will be url-encoded
+                // chrome-devtools.fronted will now work with url-encoded value
+                url.searchParams.delete('ws');
+                let urlString = url.toString();
+                if (urlString.includes('?')) {
+                    urlString += '&';
+                } else {
+                    urlString += '?';
+                }
+                urlString += `ws=${ws}`;
+
+                if (bundledOnDevice) {
+                    urlString = urlString.substr(`${proto}${fakeHost}`.length);
+                }
+                target.devtoolsFrontendUrl = urlString;
+                target.webSocketDebuggerUrl = ws;
+            }
+            return target;
+        });
+    }
+
+    public static async getRemoteDevtoolsInfo(host: string, serial: string): Promise<DevtoolsInfo> {
+        const list = await this.getDevtoolsRemoteList(serial);
+        if (!list || !list.length) {
+            const deviceName = await this.getDeviceName(serial);
+            return {
+                deviceName,
+                deviceSerial: serial,
+                browsers: [],
+            };
+        }
+
+        const all: Promise<string | RemoteBrowserInfo>[] = [];
         list.forEach((socket) => {
-            const v = this.getRemoteDevtoolsVersion(serial, socket).catch((e) => {
-                return e;
+            const v = this.getRemoteDevtoolsVersion(host, serial, socket).catch((e: Error) => {
+                console.error('getRemoteDevtoolsVersion failed:', e.message);
+                return {
+                    'Android-Package': 'string',
+                    Browser: 'string',
+                    'Protocol-Version': 'string',
+                    'User-Agent': 'string',
+                    'V8-Version': 'string',
+                    'WebKit-Version': 'string',
+                    webSocketDebuggerUrl: 'string',
+                };
             });
-            const t = this.getRemoteDevtoolsTargets(serial, socket).catch((e) => {
-                return e;
+            const t = this.getRemoteDevtoolsTargets(host, serial, socket).catch((e: Error) => {
+                console.error('getRemoteDevtoolsTargets failed:', e.message);
+                console.error('getRemoteDevtoolsTargets failed:', e.message);
+                return [];
             });
             const p = Promise.all([v, t]).then((result) => {
                 const [version, targets] = result;
@@ -117,6 +228,20 @@ export class AdbUtils {
             });
             all.push(p);
         });
-        return Promise.all(all);
+        all.unshift(this.getDeviceName(serial));
+        const result = await Promise.all(all);
+        const deviceName: string = result.shift() as string;
+        const browsers: RemoteBrowserInfo[] = result as RemoteBrowserInfo[];
+        return {
+            deviceName,
+            deviceSerial: serial,
+            browsers,
+        };
+    }
+
+    public static async getDeviceName(serial: string): Promise<string> {
+        const client = Adb.createClient();
+        const props = await client.getProperties(serial);
+        return props['ro.product.model'] || 'Unknown device';
     }
 }
