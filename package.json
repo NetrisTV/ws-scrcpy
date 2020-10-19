@@ -1,7 +1,7 @@
 {
   "name": "ws-scrcpy",
   "version": "0.6.1",
-  "description": "ws client for scrcpy",
+  "description": "Web client for scrcpy and more",
   "scripts": {
     "clean": "npx rimraf dist",
     "build:webpack": "webpack --config webpack.ws-scrcpy.config.js",
