@@ -38,7 +38,7 @@ export class ServiceRemoteDevtools extends ReleasableService {
                     .catch((e) => {
                         const { message } = e;
                         console.error(`Command: "${command}", error: ${message}`);
-                        this.ws.send({ command, error: message });
+                        this.ws.send(JSON.stringify({ command, error: message }));
                     });
                 break;
             }
