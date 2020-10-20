@@ -1,4 +1,4 @@
-import Decoder, { VideoResizeListener } from '../decoder/Decoder';
+import Decoder from '../decoder/Decoder';
 import { TextControlMessage } from '../controlMessage/TextControlMessage';
 import { CommandControlMessage } from '../controlMessage/CommandControlMessage';
 import { ControlMessage } from '../controlMessage/ControlMessage';
@@ -7,7 +7,7 @@ import DeviceMessage from '../DeviceMessage';
 import VideoSettings from '../VideoSettings';
 import { ScrcpyClient } from '../client/ScrcpyClient';
 
-export class DroidMoreBox implements VideoResizeListener {
+export class DroidMoreBox {
     private onStop?: () => void;
     private readonly holder: HTMLElement;
     private readonly input: HTMLInputElement;
@@ -164,7 +164,7 @@ export class DroidMoreBox implements VideoResizeListener {
             if (parent) {
                 parent.removeChild(moreBox);
             }
-            decoder.removeResizeListener(this);
+            decoder.off('video-view-resize', this.onViewVideoResize);
             if (this.onStop) {
                 this.onStop();
                 delete this.onStop;
@@ -176,17 +176,14 @@ export class DroidMoreBox implements VideoResizeListener {
         stopBtn.onclick = stop;
 
         DroidMoreBox.wrap('p', [stopBtn], moreBox);
-        decoder.addResizeListener(this);
+        decoder.on('video-view-resize', this.onViewVideoResize);
         this.holder = moreBox;
     }
 
-    public onViewVideoResize(size: Size): void {
+    private onViewVideoResize = (size: Size): void => {
         // padding: 10px
         this.holder.style.width = `${size.width - 2 * 10}px`;
-    }
-    public onInputVideoResize(/*screenInfo: ScreenInfo*/): void {
-        // this.connection.setScreenInfo(screenInfo);
-    }
+    };
 
     public OnDeviceMessage(ev: DeviceMessage): void {
         if (ev.type !== DeviceMessage.TYPE_CLIPBOARD) {

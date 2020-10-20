@@ -55,9 +55,7 @@ export class Mse4QVHackDecoder extends MseDecoder {
             }
         }
         const realScreen = new ScreenInfo(new Rect(0, 0, videoWidth, videoHeight), new Size(w, h), 0);
-        this.resizeListeners.forEach((listener) => {
-            listener.onInputVideoResize(realScreen);
-        });
+        this.emit('input-video-resize', realScreen);
         this.setScreenInfo(new ScreenInfo(new Rect(0, 0, w, h), new Size(w, h), 0));
     }
 

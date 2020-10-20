@@ -3,6 +3,7 @@ import ScreenInfo from '../ScreenInfo';
 import Rect from '../Rect';
 import Size from '../Size';
 import Util from '../Util';
+import { TypedEmitter } from '../TypedEmitter';
 
 interface BitrateStat {
     timestamp: number;
@@ -24,12 +25,13 @@ export interface PlaybackQuality {
     timestamp: number;
 }
 
-export interface VideoResizeListener {
-    onViewVideoResize(size: Size): void;
-    onInputVideoResize(screenInfo: ScreenInfo): void;
+export interface DecoderEvents {
+    'video-view-resize': Size;
+    'input-video-resize': ScreenInfo;
+    'video-settings': VideoSettings;
 }
 
-export default abstract class Decoder {
+export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
     private static readonly STAT_BACKGROUND: string = 'rgba(0, 0, 0, 0.5)';
     private static readonly STAT_TEXT_COLOR: string = 'hsl(24, 85%, 50%)';
     public static readonly DEFAULT_SHOW_QUALITY_STATS = false;
@@ -57,7 +59,6 @@ export default abstract class Decoder {
     private totalStatsCounter = 0;
     private dirtyStatsWidth = 0;
     private state: number = Decoder.STATE.STOPPED;
-    protected resizeListeners: Set<VideoResizeListener> = new Set();
     private qualityAnimationId?: number;
     private showQualityStats = Decoder.DEFAULT_SHOW_QUALITY_STATS;
     private receivedFirstFrame = false;
@@ -69,6 +70,7 @@ export default abstract class Decoder {
         protected name: string = 'Decoder',
         protected tag: HTMLElement = document.createElement('div'),
     ) {
+        super();
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
         this.touchableCanvas.oncontextmenu = function (e: MouseEvent): void {
@@ -213,6 +215,7 @@ export default abstract class Decoder {
             Decoder.putVideoSettingsToStorage(this.name, this.udid, videoSettings);
         }
         this.resetStats();
+        this.emit('video-settings', VideoSettings.copy(videoSettings));
     }
 
     public getScreenInfo(): ScreenInfo | undefined {
@@ -232,21 +235,11 @@ export default abstract class Decoder {
             this.parentElement.style.width = `${width}px`;
         }
         const size = new Size(width, height);
-        this.resizeListeners.forEach((listener) => {
-            listener.onViewVideoResize(size);
-        });
+        this.emit('video-view-resize', size);
     }
 
     public getName(): string {
         return this.name;
-    }
-
-    public addResizeListener(listener: VideoResizeListener): void {
-        this.resizeListeners.add(listener);
-    }
-
-    public removeResizeListener(listener: VideoResizeListener): void {
-        this.resizeListeners.delete(listener);
     }
 
     protected resetStats(): void {
