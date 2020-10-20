@@ -98,6 +98,10 @@ a.action {
     text-decoration: none;
 }
 
+a.action.copy {
+    cursor: copy;
+}
+
 .browser-header .action {
     margin-left: 10px;
 }
@@ -108,4 +112,12 @@ a.action {
     line-height: 17px;
     margin-left: 20px;
     padding: 0 2px;
+}
+
+.tooltip {
+    z-index: 1;
+    position: absolute;
+    padding: 2px;
+    color: var(--controls-bg-color);
+    background-color: var(--text-color);
 }

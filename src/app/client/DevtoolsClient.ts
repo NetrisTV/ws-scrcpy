@@ -18,11 +18,23 @@ export class DevtoolsClient extends ManagerClient<never> {
     }
 
     private timeout?: number;
+    private readonly hiddenInput: HTMLInputElement;
+    private readonly tooltip: HTMLSpanElement;
+    private hideTimeout?: number;
     constructor(action: string, private readonly udid: string) {
         super(action);
         this.openNewWebSocket();
         this.setTitle(`Devtools ${udid}`);
         this.setBodyClass('devtools');
+        this.hiddenInput = document.createElement('input');
+        this.hiddenInput.className = 'hidden';
+        this.hiddenInput.setAttribute('hidden', 'hidden');
+        document.body.appendChild(this.hiddenInput);
+        this.tooltip = document.createElement('span');
+        this.tooltip.innerText = 'Copied!';
+        this.tooltip.className = 'tooltip';
+        this.tooltip.style.display = 'none';
+        document.body.appendChild(this.tooltip);
     }
 
     private static compareBrowsers = (a: RemoteBrowserInfo, b: RemoteBrowserInfo): number => {
@@ -200,7 +212,8 @@ export class DevtoolsClient extends ManagerClient<never> {
                 sub2.appendChild(size);
             } catch (e) {}
         }
-        const absoluteAddress = page.devtoolsFrontendUrl.startsWith('http');
+        const absoluteAddress = page.devtoolsFrontendUrl && page.devtoolsFrontendUrl.startsWith('http');
+
         const actions = document.createElement('div');
         actions.className = 'actions';
         subrow.appendChild(actions);
@@ -225,7 +238,7 @@ export class DevtoolsClient extends ManagerClient<never> {
         if (page.webSocketDebuggerUrl) {
             const bundled = document.createElement('a');
             bundled.setAttribute('tabIndex', '1');
-            bundled.className = 'action';
+            bundled.className = 'action copy';
             bundled.innerText = 'bundled';
             bundled.title = 'Copy link and open manually';
             actions.appendChild(bundled);
@@ -234,6 +247,7 @@ export class DevtoolsClient extends ManagerClient<never> {
             bundled.setAttribute('href', `${base}${page.webSocketDebuggerUrl}`);
             bundled.setAttribute('rel', 'noopener noreferrer');
             bundled.setAttribute('target', '_blank');
+            bundled.onclick = this.onDevtoolsLinkClick;
         }
 
         if (page.devtoolsFrontendUrl && page.webSocketDebuggerUrl && absoluteAddress) {
@@ -253,7 +267,7 @@ export class DevtoolsClient extends ManagerClient<never> {
 
                 const remote = document.createElement('a');
                 remote.setAttribute('tabIndex', '1');
-                remote.className = 'action';
+                remote.className = 'action copy';
                 remote.innerText = 'remote';
                 remote.title = 'Copy link and open manually';
                 actions.appendChild(remote);
@@ -261,6 +275,7 @@ export class DevtoolsClient extends ManagerClient<never> {
                 remote.setAttribute('href', url);
                 remote.setAttribute('rel', 'noopener noreferrer');
                 remote.setAttribute('target', '_blank');
+                remote.onclick = this.onDevtoolsLinkClick;
             }
         }
 
@@ -271,6 +286,35 @@ export class DevtoolsClient extends ManagerClient<never> {
         pause.innerText = 'pause';
         actions.appendChild(pause);
         return row;
+    }
+
+    private onDevtoolsLinkClick = (e: MouseEvent): void => {
+        const a = e.target as HTMLAnchorElement;
+        const url = a.getAttribute('href');
+        if (!url) {
+            return;
+        }
+        this.hiddenInput.value = url;
+        this.hiddenInput.removeAttribute('hidden');
+        this.hiddenInput.select();
+        this.hiddenInput.setSelectionRange(0, url.length);
+        document.execCommand('copy');
+        this.hiddenInput.setAttribute('hidden', 'hidden');
+        this.tooltip.style.left = `${e.clientX}px`;
+        this.tooltip.style.top = `${e.clientY}px`;
+        this.tooltip.style.display = 'block';
+        this.hideTooltip();
+        e.preventDefault();
+    };
+
+    private hideTooltip() {
+        if (this.hideTimeout) {
+            clearTimeout(this.hideTimeout);
+        }
+        this.hideTimeout = window.setTimeout(() => {
+            this.hideTimeout = undefined;
+            this.tooltip.style.display = 'none';
+        }, 1000);
     }
 
     public buildList(info: DevtoolsInfo): void {
