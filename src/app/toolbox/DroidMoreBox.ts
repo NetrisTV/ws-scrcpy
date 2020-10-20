@@ -11,10 +11,17 @@ export class DroidMoreBox {
     private onStop?: () => void;
     private readonly holder: HTMLElement;
     private readonly input: HTMLInputElement;
+    private readonly controlButtons: HTMLDivElement;
+    private readonly bitrateInput?: HTMLInputElement;
+    private readonly maxFpsInput?: HTMLInputElement;
+    private readonly iFrameIntervalInput?: HTMLInputElement;
+    private readonly maxWidthInput?: HTMLInputElement;
+    private readonly maxHeightInput?: HTMLInputElement;
 
-    constructor(udid: string, decoder: Decoder, client: ScrcpyClient) {
+    constructor(udid: string, private decoder: Decoder, client: ScrcpyClient) {
         const decoderName = decoder.getName();
         const videoSettings = decoder.getVideoSettings();
+        const preferredSettings = decoder.getPreferredVideoSetting();
         const moreBox = document.createElement('div');
         moreBox.className = 'more-box';
         const nameBox = document.createElement('p');
@@ -32,7 +39,7 @@ export class DroidMoreBox {
             }
         };
 
-        const controlButtons = document.createElement('div');
+        const controlButtons = (this.controlButtons = document.createElement('div'));
         controlButtons.className = 'control-buttons-list';
         const commands: HTMLElement[] = [];
         const codes = CommandControlMessage.CommandCodes;
@@ -66,41 +73,56 @@ export class DroidMoreBox {
                     const bitrateLabel = document.createElement('label');
                     bitrateLabel.innerText = 'Bitrate:';
                     bitrateInput = document.createElement('input');
-                    bitrateInput.placeholder = `bitrate (${videoSettings.bitrate})`;
+                    bitrateInput.placeholder = `${preferredSettings.bitrate} bps`;
                     bitrateInput.value = videoSettings.bitrate.toString();
                     DroidMoreBox.wrap('div', [bitrateLabel, bitrateInput], innerDiv);
+                    this.bitrateInput = bitrateInput;
 
                     const maxFpsLabel = document.createElement('label');
                     maxFpsLabel.innerText = 'Max fps:';
                     maxFpsInput = document.createElement('input');
-                    maxFpsInput.placeholder = `max fps (${videoSettings.maxFps})`;
+                    maxFpsInput.placeholder = `${preferredSettings.maxFps} fps`;
                     maxFpsInput.value = videoSettings.maxFps.toString();
                     DroidMoreBox.wrap('div', [maxFpsLabel, maxFpsInput], innerDiv);
+                    this.maxFpsInput = maxFpsInput;
 
                     const iFrameIntervalLabel = document.createElement('label');
                     iFrameIntervalLabel.innerText = 'I-Frame Interval:';
                     iFrameIntervalInput = document.createElement('input');
-                    iFrameIntervalInput.placeholder = `I-frame interval (${videoSettings.iFrameInterval})`;
+                    iFrameIntervalInput.placeholder = `${preferredSettings.iFrameInterval} seconds`;
                     iFrameIntervalInput.value = videoSettings.iFrameInterval.toString();
                     DroidMoreBox.wrap('div', [iFrameIntervalLabel, iFrameIntervalInput], innerDiv);
+                    this.iFrameIntervalInput = iFrameIntervalInput;
 
                     const { width, height } = videoSettings.bounds || DroidMoreBox.getMaxSize(controlButtons);
+                    const pWidth = preferredSettings.bounds?.width || width;
+                    const pHeight = preferredSettings.bounds?.height || height;
 
                     const maxWidthLabel = document.createElement('label');
                     maxWidthLabel.innerText = 'Max width:';
                     maxWidthInput = document.createElement('input');
-                    maxWidthInput.placeholder = `max width (${width})`;
+                    maxWidthInput.placeholder = `${pWidth} px`;
                     maxWidthInput.value = width.toString();
                     DroidMoreBox.wrap('div', [maxWidthLabel, maxWidthInput], innerDiv);
+                    this.maxWidthInput = maxWidthInput;
 
                     const maxHeightLabel = document.createElement('label');
                     maxHeightLabel.innerText = 'Max height:';
                     maxHeightInput = document.createElement('input');
-                    maxHeightInput.placeholder = `max height (${height})`;
+                    maxHeightInput.placeholder = `${pHeight} px`;
                     maxHeightInput.value = height.toString();
                     DroidMoreBox.wrap('div', [maxHeightLabel, maxHeightInput], innerDiv);
+                    this.maxHeightInput = maxHeightInput;
 
                     innerDiv.appendChild(btn);
+                    const fitButton = document.createElement('button');
+                    fitButton.innerText = 'Fit';
+                    fitButton.onclick = this.fit;
+                    innerDiv.insertBefore(fitButton, innerDiv.firstChild);
+                    const resetButton = document.createElement('button');
+                    resetButton.innerText = 'Reset';
+                    resetButton.onclick = this.reset;
+                    innerDiv.insertBefore(resetButton, innerDiv.firstChild);
                     commands.push(spoiler);
                 } else {
                     commands.push(btn);
@@ -177,12 +199,49 @@ export class DroidMoreBox {
 
         DroidMoreBox.wrap('p', [stopBtn], moreBox);
         decoder.on('video-view-resize', this.onViewVideoResize);
+        decoder.on('video-settings', this.onVideoSettings);
         this.holder = moreBox;
     }
 
     private onViewVideoResize = (size: Size): void => {
         // padding: 10px
         this.holder.style.width = `${size.width - 2 * 10}px`;
+    };
+
+    private onVideoSettings = (videoSettings: VideoSettings): void => {
+        if (this.bitrateInput) {
+            this.bitrateInput.value = videoSettings.bitrate.toString();
+        }
+        if (this.maxFpsInput) {
+            this.maxFpsInput.value = videoSettings.maxFps.toString();
+        }
+        if (this.iFrameIntervalInput) {
+            this.iFrameIntervalInput.value = videoSettings.iFrameInterval.toString();
+        }
+        if (videoSettings.bounds) {
+            const { width, height } = videoSettings.bounds;
+            if (this.maxWidthInput) {
+                this.maxWidthInput.value = width.toString();
+            }
+            if (this.maxHeightInput) {
+                this.maxHeightInput.value = height.toString();
+            }
+        }
+    };
+
+    private fit = (): void => {
+        const { width, height } = DroidMoreBox.getMaxSize(this.controlButtons);
+        if (this.maxWidthInput) {
+            this.maxWidthInput.value = width.toString();
+        }
+        if (this.maxHeightInput) {
+            this.maxHeightInput.value = height.toString();
+        }
+    };
+
+    private reset = (): void => {
+        const preferredSettings = this.decoder.getPreferredVideoSetting();
+        this.onVideoSettings(preferredSettings);
     };
 
     public OnDeviceMessage(ev: DeviceMessage): void {
