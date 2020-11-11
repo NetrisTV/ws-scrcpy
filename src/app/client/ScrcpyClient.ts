@@ -202,7 +202,7 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
         return this.clientsCount;
     }
 
-    private getMaxSize(): Size | undefined {
+    public getMaxSize(): Size | undefined {
         if (!this.controlButtons) {
             return;
         }

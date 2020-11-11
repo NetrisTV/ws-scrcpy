@@ -8,17 +8,17 @@ import VideoSettings from '../VideoSettings';
 import { ScrcpyClient } from '../client/ScrcpyClient';
 
 export class DroidMoreBox {
+    private static defaultSize = new Size(480, 480);
     private onStop?: () => void;
     private readonly holder: HTMLElement;
     private readonly input: HTMLInputElement;
-    private readonly controlButtons: HTMLDivElement;
     private readonly bitrateInput?: HTMLInputElement;
     private readonly maxFpsInput?: HTMLInputElement;
     private readonly iFrameIntervalInput?: HTMLInputElement;
     private readonly maxWidthInput?: HTMLInputElement;
     private readonly maxHeightInput?: HTMLInputElement;
 
-    constructor(udid: string, private decoder: Decoder, client: ScrcpyClient) {
+    constructor(udid: string, private decoder: Decoder, private client: ScrcpyClient) {
         const decoderName = decoder.getName();
         const videoSettings = decoder.getVideoSettings();
         const preferredSettings = decoder.getPreferredVideoSetting();
@@ -39,8 +39,6 @@ export class DroidMoreBox {
             }
         };
 
-        const controlButtons = (this.controlButtons = document.createElement('div'));
-        controlButtons.className = 'control-buttons-list';
         const commands: HTMLElement[] = [];
         const codes = CommandControlMessage.CommandCodes;
         for (const command in codes) {
@@ -94,7 +92,7 @@ export class DroidMoreBox {
                     DroidMoreBox.wrap('div', [iFrameIntervalLabel, iFrameIntervalInput], innerDiv);
                     this.iFrameIntervalInput = iFrameIntervalInput;
 
-                    const { width, height } = videoSettings.bounds || DroidMoreBox.getMaxSize(controlButtons);
+                    const { width, height } = videoSettings.bounds || client.getMaxSize() || DroidMoreBox.defaultSize;
                     const pWidth = preferredSettings.bounds?.width || width;
                     const pHeight = preferredSettings.bounds?.height || height;
 
@@ -230,7 +228,7 @@ export class DroidMoreBox {
     };
 
     private fit = (): void => {
-        const { width, height } = DroidMoreBox.getMaxSize(this.controlButtons);
+        const { width, height } = this.client.getMaxSize() || DroidMoreBox.defaultSize;
         if (this.maxWidthInput) {
             this.maxWidthInput.value = width.toString();
         }
@@ -259,13 +257,6 @@ export class DroidMoreBox {
             wrap.appendChild(e);
         });
         parent.appendChild(wrap);
-    }
-
-    private static getMaxSize(controlButtons: HTMLElement): Size {
-        const body = document.body;
-        const width = (body.clientWidth - controlButtons.clientWidth) & ~15;
-        const height = body.clientHeight & ~15;
-        return new Size(width, height);
     }
 
     public getHolderElement(): HTMLElement {
