@@ -1,4 +1,4 @@
-import { DeviceTrackerClient, MapItem } from './DeviceTrackerClient';
+import { BaseDeviceTracker, MapItem } from './BaseDeviceTracker';
 import { ACTION, SERVER_PORT } from '../../server/Constants';
 import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
 import querystring from 'querystring';
@@ -55,15 +55,18 @@ const FIELDS_MAP: MapItem<DroidDeviceDescriptor>[] = [
     },
 ];
 
-type Decoders = 'broadway' | 'mse' | 'tinyh264';
+type Players = 'broadway' | 'mse' | 'tinyh264';
 
-const DECODERS: Decoders[] = ['broadway', 'mse', 'tinyh264'];
+const PLAYERS: Players[] = ['broadway', 'mse', 'tinyh264'];
 
-export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDescriptor, never> {
+const AttributePlayerName = 'data-player-name';
+const AttributePrefixPlayerFor = 'player_for_';
+
+export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor, never> {
     public static ACTION = ACTION.DEVICE_LIST;
 
-    public static start(): DroidDeviceTrackerClient {
-        return new DroidDeviceTrackerClient(this.ACTION);
+    public static start(): DeviceTrackerDroid {
+        return new DeviceTrackerDroid(this.ACTION);
     }
 
     constructor(action: string) {
@@ -89,31 +92,31 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
         const ip = option.value;
         const escapedUdid = selectElement.getAttribute('data-escaped-udid');
         const udid = selectElement.getAttribute('data-udid');
-        const decoderTds = document.getElementsByName(`decoder_${escapedUdid}`);
+        const playerTds = document.getElementsByName(`${AttributePrefixPlayerFor}${escapedUdid}`);
         if (typeof udid !== 'string') {
             return;
         }
         if (store) {
-            const localStorageKey = DroidDeviceTrackerClient.getLocalStorageKey(escapedUdid || '');
+            const localStorageKey = DeviceTrackerDroid.getLocalStorageKey(escapedUdid || '');
             if (localStorage && name) {
                 localStorage.setItem(localStorageKey, name);
             }
         }
         const action = 'stream';
-        decoderTds.forEach((item) => {
+        playerTds.forEach((item) => {
             item.innerHTML = '';
-            const decoder = item.getAttribute('data-decoder-name') as Decoders;
+            const player = item.getAttribute(AttributePlayerName) as Players;
             const q: ScrcpyStreamParams = {
                 action,
                 udid,
-                decoder,
+                player,
                 ip,
                 port,
             };
             if (query) {
                 q.query = query;
             }
-            const link = DeviceTrackerClient.buildLink(q, 'stream');
+            const link = BaseDeviceTracker.buildLink(q, 'stream');
             item.appendChild(link);
         });
     }
@@ -156,7 +159,7 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
         data.forEach((device) => {
             const row = document.createElement('tr');
             const escapedUdid = this.escapeUdid(device.udid);
-            const localStorageKey = DroidDeviceTrackerClient.getLocalStorageKey(escapedUdid);
+            const localStorageKey = DeviceTrackerDroid.getLocalStorageKey(escapedUdid);
             const lastSelected = localStorage && localStorage.getItem(localStorageKey);
             row.id = `device_row_${escapedUdid}`;
             let hasPid = false;
@@ -207,7 +210,7 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                                 optionElement.selected = true;
                             }
                         });
-                        const adbProxyOption = DroidDeviceTrackerClient.createProxyOption(device.udid);
+                        const adbProxyOption = DeviceTrackerDroid.createProxyOption(device.udid);
                         if (lastSelected === 'proxy') {
                             adbProxyOption.selected = true;
                         }
@@ -221,18 +224,18 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                 }
             });
             const isActive = device.state === 'device';
-            const name = `decoder_${escapedUdid}`;
-            DECODERS.forEach((decoderName) => {
-                const decoderTd = document.createElement('td');
-                decoderTd.setAttribute('name', name);
-                decoderTd.setAttribute('data-decoder-name', decoderName);
-                row.appendChild(decoderTd);
+            const name = `${AttributePrefixPlayerFor}${escapedUdid}`;
+            PLAYERS.forEach((playerName) => {
+                const playerTd = document.createElement('td');
+                playerTd.setAttribute('name', name);
+                playerTd.setAttribute(AttributePlayerName, playerName);
+                row.appendChild(playerTd);
             });
 
             const devtoolsTd = document.createElement('td');
             if (isActive) {
                 devtoolsTd.appendChild(
-                    DeviceTrackerClient.buildLink(
+                    BaseDeviceTracker.buildLink(
                         {
                             action: ACTION.DEVTOOLS,
                             udid: device.udid,
@@ -246,7 +249,7 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
             const shellTd = document.createElement('td');
             if (isActive) {
                 shellTd.appendChild(
-                    DeviceTrackerClient.buildLink(
+                    BaseDeviceTracker.buildLink(
                         {
                             action: ACTION.SHELL,
                             udid: device.udid,

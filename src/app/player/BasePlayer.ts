@@ -25,13 +25,13 @@ export interface PlaybackQuality {
     timestamp: number;
 }
 
-export interface DecoderEvents {
+export interface PlayerEvents {
     'video-view-resize': Size;
     'input-video-resize': ScreenInfo;
     'video-settings': VideoSettings;
 }
 
-export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
+export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     private static readonly STAT_BACKGROUND: string = 'rgba(0, 0, 0, 0.5)';
     private static readonly STAT_TEXT_COLOR: string = 'hsl(24, 85%, 50%)';
     public static readonly DEFAULT_SHOW_QUALITY_STATS = false;
@@ -58,16 +58,16 @@ export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
     };
     private totalStatsCounter = 0;
     private dirtyStatsWidth = 0;
-    private state: number = Decoder.STATE.STOPPED;
+    private state: number = BasePlayer.STATE.STOPPED;
     private qualityAnimationId?: number;
-    private showQualityStats = Decoder.DEFAULT_SHOW_QUALITY_STATS;
+    private showQualityStats = BasePlayer.DEFAULT_SHOW_QUALITY_STATS;
     private receivedFirstFrame = false;
     private statLines: string[] = [];
     public readonly supportsScreenshot: boolean = false;
 
     constructor(
         protected udid: string,
-        protected name: string = 'Decoder',
+        protected name: string = 'BasePlayer',
         protected tag: HTMLElement = document.createElement('div'),
     ) {
         super();
@@ -77,7 +77,7 @@ export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
             e.preventDefault();
         };
         const preferred = this.getPreferredVideoSetting();
-        this.videoSettings = Decoder.getVideoSettingFromStorage(preferred, this.name, udid);
+        this.videoSettings = BasePlayer.getVideoSettingFromStorage(preferred, this.name, udid);
     }
 
     protected static isIFrame(frame: Uint8Array): boolean {
@@ -90,20 +90,20 @@ export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
         return frame && frame.length > 4 && (frame[4] & 31) === 5;
     }
 
-    private static getStorageKey(decoderName: string, udid: string): string {
+    private static getStorageKey(playerName: string, udid: string): string {
         const { innerHeight, innerWidth } = window;
-        return `${decoderName}:${udid}:${innerWidth}x${innerHeight}`;
+        return `${playerName}:${udid}:${innerWidth}x${innerHeight}`;
     }
 
     private static getVideoSettingFromStorage(
         preferred: VideoSettings,
-        decoderName: string,
+        playerName: string,
         deviceName: string,
     ): VideoSettings {
         if (!window.localStorage) {
             return preferred;
         }
-        const key = this.getStorageKey(decoderName, deviceName);
+        const key = this.getStorageKey(playerName, deviceName);
         const saved = window.localStorage.getItem(key);
         if (!saved) {
             return preferred;
@@ -136,14 +136,14 @@ export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
     }
 
     private static putVideoSettingsToStorage(
-        decoderName: string,
+        playerName: string,
         deviceName: string,
         videoSettings: VideoSettings,
     ): void {
         if (!window.localStorage) {
             return;
         }
-        const key = this.getStorageKey(decoderName, deviceName);
+        const key = this.getStorageKey(playerName, deviceName);
         window.localStorage.setItem(key, JSON.stringify(videoSettings));
     }
 
@@ -160,15 +160,15 @@ export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
         if (this.needScreenInfoBeforePlay() && !this.screenInfo) {
             return;
         }
-        this.state = Decoder.STATE.PLAYING;
+        this.state = BasePlayer.STATE.PLAYING;
     }
 
     public pause(): void {
-        this.state = Decoder.STATE.PAUSED;
+        this.state = BasePlayer.STATE.PAUSED;
     }
 
     public stop(): void {
-        this.state = Decoder.STATE.STOPPED;
+        this.state = BasePlayer.STATE.STOPPED;
     }
 
     public getState(): number {
@@ -212,7 +212,7 @@ export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
     public setVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
         this.videoSettings = videoSettings;
         if (saveToStorage) {
-            Decoder.putVideoSettingsToStorage(this.name, this.udid, videoSettings);
+            BasePlayer.putVideoSettingsToStorage(this.name, this.udid, videoSettings);
         }
         this.resetStats();
         this.emit('video-settings', VideoSettings.copy(videoSettings));
@@ -287,7 +287,7 @@ export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
             this.totalStatsCounter++;
         }
         this.drawStats();
-        if (this.state !== Decoder.STATE.STOPPED) {
+        if (this.state !== BasePlayer.STATE.STOPPED) {
             this.qualityAnimationId = requestAnimationFrame(this.updateQualityStats);
         }
     };
@@ -341,7 +341,7 @@ export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
         }
 
         const y = this.touchableCanvas.height;
-        const height = Decoder.STATS_HEIGHT;
+        const height = BasePlayer.STATS_HEIGHT;
         const lines = this.statLines.length;
         const spaces = lines + 1;
         const p = height / 2;
@@ -361,9 +361,9 @@ export default abstract class Decoder extends TypedEmitter<DecoderEvents> {
             const dirty = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
             this.dirtyStatsWidth = Math.max(dirty, this.dirtyStatsWidth);
         });
-        ctx.fillStyle = Decoder.STAT_BACKGROUND;
+        ctx.fillStyle = BasePlayer.STAT_BACKGROUND;
         ctx.fillRect(0, y - totalHeight, this.dirtyStatsWidth + d, totalHeight);
-        ctx.fillStyle = Decoder.STAT_TEXT_COLOR;
+        ctx.fillStyle = BasePlayer.STAT_TEXT_COLOR;
         this.statLines.forEach((text, line) => {
             ctx.fillText(text, p, y - p - line * (height + p));
         });

@@ -1,10 +1,10 @@
-import MseDecoder from './MseDecoder';
+import { MsePlayer } from './MsePlayer';
 import ScreenInfo from '../ScreenInfo';
 import Rect from '../Rect';
 import Size from '../Size';
 import VideoSettings from '../VideoSettings';
 
-export class Mse4QVHackDecoder extends MseDecoder {
+export class MsePlayerForQVHack extends MsePlayer {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 8000000,
@@ -15,7 +15,7 @@ export class Mse4QVHackDecoder extends MseDecoder {
     });
 
     constructor(udid: string, tag: HTMLVideoElement) {
-        super(udid, tag);
+        super(udid, 'MSE_Player_For_QVHack', tag);
     }
 
     protected onCanPlayHandler(): void {
@@ -64,7 +64,7 @@ export class Mse4QVHackDecoder extends MseDecoder {
     }
 
     public getPreferredVideoSetting(): VideoSettings {
-        return Mse4QVHackDecoder.preferredVideoSettings;
+        return MsePlayerForQVHack.preferredVideoSettings;
     }
 
     public setVideoSettings(): void {

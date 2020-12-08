@@ -1,11 +1,11 @@
 import { ToolBox } from './ToolBox';
 import SvgImage from '../ui/SvgImage';
-import Decoder from '../decoder/Decoder';
+import { BasePlayer } from '../player/BasePlayer';
 import { ToolBoxButton } from './ToolBoxButton';
 import { ToolBoxElement } from './ToolBoxElement';
 import { ToolBoxCheckbox } from './ToolBoxCheckbox';
 import WdaConnection from '../WdaConnection';
-import { QVHackStreamClient } from '../client/QVHackStreamClient';
+import { StreamClientQVHack } from '../client/StreamClientQVHack';
 
 const BUTTONS = [
     {
@@ -22,12 +22,12 @@ export class QVHackToolBox extends ToolBox {
 
     public static createToolBox(
         udid: string,
-        decoder: Decoder,
-        client: QVHackStreamClient,
+        player: BasePlayer,
+        client: StreamClientQVHack,
         wdaConnection: WdaConnection,
         moreBox?: HTMLElement,
     ): QVHackToolBox {
-        const decoderName = decoder.getName();
+        const playerName = player.getName();
         const list = BUTTONS.slice();
         const handler = <K extends keyof HTMLElementEventMap, T extends HTMLElement>(
             _: K,
@@ -46,16 +46,16 @@ export class QVHackToolBox extends ToolBox {
             button.addEventListener('click', handler);
             return button;
         });
-        if (decoder.supportsScreenshot) {
+        if (player.supportsScreenshot) {
             const screenshot = new ToolBoxButton('Take screenshot', SvgImage.Icon.CAMERA);
             screenshot.addEventListener('click', () => {
-                decoder.createScreenshot(client.getDeviceName());
+                player.createScreenshot(client.getDeviceName());
             });
             elements.push(screenshot);
         }
 
         if (moreBox) {
-            const more = new ToolBoxCheckbox('More', SvgImage.Icon.MORE, `show_more_${udid}_${decoderName}`);
+            const more = new ToolBoxCheckbox('More', SvgImage.Icon.MORE, `show_more_${udid}_${playerName}`);
             more.addEventListener('click', (_, el) => {
                 const element = el.getElement();
                 moreBox.style.display = element.checked ? 'block' : 'none';

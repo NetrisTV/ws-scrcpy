@@ -1,22 +1,22 @@
 import { BaseClient } from './BaseClient';
 import { QVHackStreamParams } from '../../common/QVHackStreamParams';
-import { Mse4QVHackDecoder } from '../decoder/Mse4QVHackDecoder';
 import { QVHackMoreBox } from '../toolbox/QVHackMoreBox';
 import { QVHackToolBox } from '../toolbox/QVHackToolBox';
 import WdaConnection from '../WdaConnection';
 import { WsQVHackClient } from './WsQVHackClient';
-import Decoder from '../decoder/Decoder';
 import Size from '../Size';
 import ScreenInfo from '../ScreenInfo';
 import { StreamReceiver } from './StreamReceiver';
 import TouchHandler from '../TouchHandler';
 import Position from '../Position';
+import { MsePlayerForQVHack } from '../player/MsePlayerForQVHack';
+import { BasePlayer } from '../player/BasePlayer';
 
 const ACTION = 'stream-qvh';
 const PORT = 8080;
 const WAIT_CLASS = 'wait';
 
-export class QVHackStreamClient extends BaseClient<never> {
+export class StreamClientQVHack extends BaseClient<never> {
     public static ACTION: QVHackStreamParams['action'] = ACTION;
     private hasTouchListeners = false;
     private deviceName = '';
@@ -75,9 +75,9 @@ export class QVHackStreamClient extends BaseClient<never> {
     }
 
     private startStream(udid: string, url: string) {
-        const decoder = new Mse4QVHackDecoder(udid, Mse4QVHackDecoder.createElement(`qvh_video`));
-        this.setTouchListeners(decoder);
-        decoder.pause();
+        const player = new MsePlayerForQVHack(udid, MsePlayerForQVHack.createElement(`qvh_video`));
+        this.setTouchListeners(player);
+        player.pause();
 
         const deviceView = document.createElement('div');
         deviceView.className = 'device-view';
@@ -96,39 +96,39 @@ export class QVHackStreamClient extends BaseClient<never> {
             }
             this.streamReceiver.stop();
             this.managerClient.stop();
-            decoder.stop();
+            player.stop();
         };
 
-        const qvhackMoreBox = new QVHackMoreBox(udid, decoder);
+        const qvhackMoreBox = new QVHackMoreBox(udid, player);
         qvhackMoreBox.setOnStop(stop);
         const moreBox = qvhackMoreBox.getHolderElement();
-        const qvhackToolBox = QVHackToolBox.createToolBox(udid, decoder, this, this.wdaConnection, moreBox);
+        const qvhackToolBox = QVHackToolBox.createToolBox(udid, player, this, this.wdaConnection, moreBox);
         const controlButtons = qvhackToolBox.getHolderElement();
         deviceView.appendChild(controlButtons);
         const video = document.createElement('div');
         video.className = `video ${WAIT_CLASS}`;
         deviceView.appendChild(video);
         deviceView.appendChild(moreBox);
-        decoder.setParent(video);
-        decoder.on('video-view-resize', this.onViewVideoResize);
-        decoder.on('input-video-resize', this.onInputVideoResize);
+        player.setParent(video);
+        player.on('video-view-resize', this.onViewVideoResize);
+        player.on('input-video-resize', this.onInputVideoResize);
         this.videoWrapper = video;
-        const bounds = QVHackStreamClient.getMaxSize(controlButtons);
+        const bounds = StreamClientQVHack.getMaxSize(controlButtons);
         if (bounds) {
-            decoder.setBounds(bounds);
+            player.setBounds(bounds);
         }
 
         document.body.appendChild(deviceView);
         this.streamReceiver.on('video', (data) => {
-            const STATE = Decoder.STATE;
-            if (decoder.getState() === STATE.PAUSED) {
-                decoder.play();
+            const STATE = BasePlayer.STATE;
+            if (player.getState() === STATE.PAUSED) {
+                player.play();
             }
-            if (decoder.getState() === STATE.PLAYING) {
-                decoder.pushFrame(new Uint8Array(data));
+            if (player.getState() === STATE.PLAYING) {
+                player.pushFrame(new Uint8Array(data));
             }
         });
-        console.log(decoder.getName(), udid, url);
+        console.log(player.getName(), udid, url);
     }
 
     private static getMaxSize(controlButtons: HTMLElement): Size | undefined {
@@ -145,7 +145,7 @@ export class QVHackStreamClient extends BaseClient<never> {
         return this.deviceName;
     }
 
-    private setTouchListeners(decoder: Decoder): void {
+    private setTouchListeners(player: BasePlayer): void {
         if (!this.hasTouchListeners) {
             TouchHandler.init();
             let down = 0;
@@ -154,10 +154,10 @@ export class QVHackStreamClient extends BaseClient<never> {
             let endPosition: Position | undefined;
             const onMouseEvent = (e: MouseEvent) => {
                 let handled = false;
-                const tag = decoder.getTouchableElement();
+                const tag = player.getTouchableElement();
 
                 if (e.target === tag) {
-                    const screenInfo: ScreenInfo = decoder.getScreenInfo() as ScreenInfo;
+                    const screenInfo: ScreenInfo = player.getScreenInfo() as ScreenInfo;
                     if (!screenInfo) {
                         return;
                     }

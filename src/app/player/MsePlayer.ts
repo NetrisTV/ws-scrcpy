@@ -1,4 +1,4 @@
-import Decoder from './Decoder';
+import { BasePlayer } from './BasePlayer';
 import VideoConverter, { setLogger } from 'h264-converter';
 import VideoSettings from '../VideoSettings';
 import Size from '../Size';
@@ -14,7 +14,7 @@ type ConverterFake = {
     sourceBuffer: SourceBuffer;
 };
 
-export default class MseDecoder extends Decoder {
+export class MsePlayer extends BasePlayer {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 8000000,
@@ -45,7 +45,7 @@ export default class MseDecoder extends Decoder {
     private currentTimeNotChangedSince = -1;
     private bigBufferSince = -1;
     private aheadOfBufferSince = -1;
-    public fpf: number = MseDecoder.DEFAULT_FRAMES_PER_FRAGMENT;
+    public fpf: number = MsePlayer.DEFAULT_FRAMES_PER_FRAGMENT;
     public readonly supportsScreenshot: boolean = true;
     private sourceBuffer?: SourceBuffer;
     private removeStart = -1;
@@ -62,8 +62,8 @@ export default class MseDecoder extends Decoder {
     private MAX_BUFFER = this.isSafari ? 2 : this.isChrome && this.isMac ? 0.9 : 0.2;
     private MAX_AHEAD = -0.2;
 
-    constructor(udid: string, protected tag: HTMLVideoElement = MseDecoder.createElement()) {
-        super(udid, 'MseDecoder', tag);
+    constructor(udid: string, name = 'MSE_Player', protected tag: HTMLVideoElement = MsePlayer.createElement()) {
+        super(udid, name, tag);
         tag.oncontextmenu = function (e: MouseEvent): boolean {
             e.preventDefault();
             return false;
@@ -84,8 +84,8 @@ export default class MseDecoder extends Decoder {
 
     private static createConverter(
         tag: HTMLVideoElement,
-        fps: number = MseDecoder.DEFAULT_FRAMES_PER_SECOND,
-        fpf: number = MseDecoder.DEFAULT_FRAMES_PER_FRAGMENT,
+        fps: number = MsePlayer.DEFAULT_FRAMES_PER_SECOND,
+        fpf: number = MsePlayer.DEFAULT_FRAMES_PER_FRAGMENT,
     ): VideoConverter {
         return new VideoConverter(tag, fps, fpf);
     }
@@ -178,15 +178,15 @@ export default class MseDecoder extends Decoder {
 
     public play(): void {
         super.play();
-        if (this.getState() !== Decoder.STATE.PLAYING) {
+        if (this.getState() !== BasePlayer.STATE.PLAYING) {
             return;
         }
         if (!this.converter) {
-            let fps = MseDecoder.DEFAULT_FRAMES_PER_SECOND;
+            let fps = MsePlayer.DEFAULT_FRAMES_PER_SECOND;
             if (this.videoSettings) {
                 fps = this.videoSettings.maxFps;
             }
-            this.converter = MseDecoder.createConverter(this.tag, fps, this.fpf);
+            this.converter = MsePlayer.createConverter(this.tag, fps, this.fpf);
             this.canPlay = false;
             this.resetStats();
         }
@@ -208,10 +208,10 @@ export default class MseDecoder extends Decoder {
             const state = this.getState();
             if (this.converter) {
                 this.stop();
-                this.converter = MseDecoder.createConverter(this.tag, videoSettings.maxFps, this.fpf);
+                this.converter = MsePlayer.createConverter(this.tag, videoSettings.maxFps, this.fpf);
                 this.canPlay = false;
             }
-            if (state === Decoder.STATE.PLAYING) {
+            if (state === BasePlayer.STATE.PLAYING) {
                 this.play();
             }
         }
@@ -219,7 +219,7 @@ export default class MseDecoder extends Decoder {
     }
 
     public getPreferredVideoSetting(): VideoSettings {
-        return MseDecoder.preferredVideoSettings;
+        return MsePlayer.preferredVideoSettings;
     }
 
     cleanSourceBuffer = (): void => {
@@ -362,7 +362,7 @@ export default class MseDecoder extends Decoder {
         if (this.isSafari) {
             return;
         }
-        if (Decoder.isIFrame(frame)) {
+        if (BasePlayer.isIFrame(frame)) {
             let start = 0;
             let end = 0;
             if (this.tag.buffered && this.tag.buffered.length) {

@@ -13,7 +13,7 @@ export type MapItem<T> = {
     title: string;
 };
 
-export abstract class DeviceTrackerClient<
+export abstract class BaseDeviceTracker<
     T extends DroidDeviceDescriptor | QVHackDeviceDescriptor,
     K
 > extends ManagerClient<K> {
@@ -45,7 +45,7 @@ export abstract class DeviceTrackerClient<
             console.log(e.data);
             return;
         }
-        if (message.type !== DeviceTrackerClient.ACTION) {
+        if (message.type !== BaseDeviceTracker.ACTION) {
             console.log(`Unknown message type: ${message.type}`);
             return;
         }

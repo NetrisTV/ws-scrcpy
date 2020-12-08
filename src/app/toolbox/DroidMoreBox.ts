@@ -1,11 +1,11 @@
-import Decoder from '../decoder/Decoder';
+import { BasePlayer } from '../player/BasePlayer';
 import { TextControlMessage } from '../controlMessage/TextControlMessage';
 import { CommandControlMessage } from '../controlMessage/CommandControlMessage';
 import { ControlMessage } from '../controlMessage/ControlMessage';
 import Size from '../Size';
 import DeviceMessage from '../DeviceMessage';
 import VideoSettings from '../VideoSettings';
-import { ScrcpyClient } from '../client/ScrcpyClient';
+import { StreamClientScrcpy } from '../client/StreamClientScrcpy';
 
 export class DroidMoreBox {
     private static defaultSize = new Size(480, 480);
@@ -18,14 +18,14 @@ export class DroidMoreBox {
     private readonly maxWidthInput?: HTMLInputElement;
     private readonly maxHeightInput?: HTMLInputElement;
 
-    constructor(udid: string, private decoder: Decoder, private client: ScrcpyClient) {
-        const decoderName = decoder.getName();
-        const videoSettings = decoder.getVideoSettings();
-        const preferredSettings = decoder.getPreferredVideoSetting();
+    constructor(udid: string, private player: BasePlayer, private client: StreamClientScrcpy) {
+        const playerName = player.getName();
+        const videoSettings = player.getVideoSettings();
+        const preferredSettings = player.getPreferredVideoSetting();
         const moreBox = document.createElement('div');
         moreBox.className = 'more-box';
         const nameBox = document.createElement('p');
-        nameBox.innerText = `${udid} (${decoderName})`;
+        nameBox.innerText = `${udid} (${playerName})`;
         nameBox.className = 'text-with-shadow';
         moreBox.appendChild(nameBox);
         const input = (this.input = document.createElement('input'));
@@ -56,7 +56,7 @@ export class DroidMoreBox {
                     const spoilerCheck = document.createElement('input');
 
                     const innerDiv = document.createElement('div');
-                    const id = `spoiler_video_${udid}_${decoderName}_${action}`;
+                    const id = `spoiler_video_${udid}_${playerName}_${action}`;
 
                     spoiler.className = 'spoiler';
                     spoilerCheck.type = 'checkbox';
@@ -163,17 +163,17 @@ export class DroidMoreBox {
         }
         DroidMoreBox.wrap('p', commands, moreBox);
 
-        const qualityId = `show_video_quality_${udid}_${decoderName}`;
+        const qualityId = `show_video_quality_${udid}_${playerName}`;
         const qualityLabel = document.createElement('label');
         const qualityCheck = document.createElement('input');
         qualityCheck.type = 'checkbox';
-        qualityCheck.checked = Decoder.DEFAULT_SHOW_QUALITY_STATS;
+        qualityCheck.checked = BasePlayer.DEFAULT_SHOW_QUALITY_STATS;
         qualityCheck.id = qualityId;
         qualityLabel.htmlFor = qualityId;
         qualityLabel.innerText = 'Show quality stats';
         DroidMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox);
         qualityCheck.onchange = () => {
-            decoder.setShowQualityStats(qualityCheck.checked);
+            player.setShowQualityStats(qualityCheck.checked);
         };
 
         const stop = (ev?: string | Event) => {
@@ -184,7 +184,7 @@ export class DroidMoreBox {
             if (parent) {
                 parent.removeChild(moreBox);
             }
-            decoder.off('video-view-resize', this.onViewVideoResize);
+            player.off('video-view-resize', this.onViewVideoResize);
             if (this.onStop) {
                 this.onStop();
                 delete this.onStop;
@@ -196,8 +196,8 @@ export class DroidMoreBox {
         stopBtn.onclick = stop;
 
         DroidMoreBox.wrap('p', [stopBtn], moreBox);
-        decoder.on('video-view-resize', this.onViewVideoResize);
-        decoder.on('video-settings', this.onVideoSettings);
+        player.on('video-view-resize', this.onViewVideoResize);
+        player.on('video-settings', this.onVideoSettings);
         this.holder = moreBox;
     }
 
@@ -238,7 +238,7 @@ export class DroidMoreBox {
     };
 
     private reset = (): void => {
-        const preferredSettings = this.decoder.getPreferredVideoSetting();
+        const preferredSettings = this.player.getPreferredVideoSetting();
         this.onVideoSettings(preferredSettings);
     };
 

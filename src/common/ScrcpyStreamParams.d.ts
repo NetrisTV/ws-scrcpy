@@ -1,10 +1,10 @@
 import { ParsedUrlQueryInput } from 'querystring';
-import { Decoders } from './Decoders';
+import { Players } from './Players';
 
 export interface ScrcpyStreamParams extends ParsedUrlQueryInput {
     action: 'stream';
     udid: string;
-    decoder: Decoders;
+    player: Players;
     ip: string;
     port: string;
     query?: string;

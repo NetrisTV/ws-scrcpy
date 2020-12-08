@@ -1,6 +1,6 @@
-import { DeviceTrackerClient, MapItem } from './DeviceTrackerClient';
+import { BaseDeviceTracker, MapItem } from './BaseDeviceTracker';
 import QVHackDeviceDescriptor from '../../common/QVHackDeviceDescriptor';
-import { QVHackStreamClient } from './QVHackStreamClient';
+import { StreamClientQVHack } from './StreamClientQVHack';
 
 const SERVER_PORT = 8080;
 const SERVER_HOST = location.hostname;
@@ -27,11 +27,11 @@ const FIELDS_MAP: MapItem<QVHackDeviceDescriptor>[] = [
     },
 ];
 
-export class QVHackClientDeviceTracker extends DeviceTrackerClient<QVHackDeviceDescriptor, never> {
+export class DeviceTrackerQVHack extends BaseDeviceTracker<QVHackDeviceDescriptor, never> {
     public static ACTION = 'devicelist';
     protected tableId = 'qvhack_devices_list';
-    public static start(): QVHackClientDeviceTracker {
-        return new QVHackClientDeviceTracker(QVHackClientDeviceTracker.ACTION);
+    public static start(): DeviceTrackerQVHack {
+        return new DeviceTrackerQVHack(DeviceTrackerQVHack.ACTION);
     }
 
     constructor(action: string) {
@@ -80,18 +80,18 @@ export class QVHackClientDeviceTracker extends DeviceTrackerClient<QVHackDeviceD
                     row.appendChild(td);
                 }
             });
-            const decoderTd = document.createElement('td');
-            const link = QVHackClientDeviceTracker.buildLink(
+            const playerTd = document.createElement('td');
+            const link = DeviceTrackerQVHack.buildLink(
                 {
-                    action: QVHackStreamClient.ACTION,
+                    action: StreamClientQVHack.ACTION,
                     udid: device.Udid,
                     ip: SERVER_HOST,
                     port: SERVER_PORT.toString(10),
                 },
                 'stream',
             );
-            decoderTd.appendChild(link);
-            row.appendChild(decoderTd);
+            playerTd.appendChild(link);
+            row.appendChild(playerTd);
 
             tbody.appendChild(row);
         });

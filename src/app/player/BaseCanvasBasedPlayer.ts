@@ -1,4 +1,4 @@
-import Decoder, { PlaybackQuality } from './Decoder';
+import { BasePlayer, PlaybackQuality } from './BasePlayer';
 import ScreenInfo from '../ScreenInfo';
 import VideoSettings from '../VideoSettings';
 
@@ -12,7 +12,7 @@ interface CanvasDecoder {
     decode(buffer: Uint8Array, width: number, height: number): void;
 }
 
-export default abstract class CanvasCommon extends Decoder {
+export abstract class BaseCanvasBasedPlayer extends BasePlayer {
     protected framesList: Uint8Array[] = [];
     protected lastDecodedFrame?: DecodedFrame;
     protected videoStats: PlaybackQuality[] = [];
@@ -46,7 +46,11 @@ export default abstract class CanvasCommon extends Decoder {
         return tag;
     }
 
-    constructor(udid: string, name = 'Canvas', protected tag: HTMLCanvasElement = CanvasCommon.createElement()) {
+    constructor(
+        udid: string,
+        name = 'Canvas',
+        protected tag: HTMLCanvasElement = BaseCanvasBasedPlayer.createElement(),
+    ) {
         super(udid, name, tag);
     }
 
@@ -84,7 +88,7 @@ export default abstract class CanvasCommon extends Decoder {
     }
 
     private shiftFrame(): void {
-        if (this.getState() !== Decoder.STATE.PLAYING) {
+        if (this.getState() !== BasePlayer.STATE.PLAYING) {
             return;
         }
         const first = this.framesList.shift();
@@ -135,7 +139,7 @@ export default abstract class CanvasCommon extends Decoder {
         if (this.canvas) {
             const parent = this.tag.parentNode;
             if (parent) {
-                const tag = CanvasCommon.createElement(this.tag.id);
+                const tag = BaseCanvasBasedPlayer.createElement(this.tag.id);
                 tag.className = this.tag.className;
                 parent.replaceChild(tag, this.tag);
                 parent.appendChild(this.touchableCanvas);
@@ -154,7 +158,7 @@ export default abstract class CanvasCommon extends Decoder {
 
     public play(): void {
         super.play();
-        if (this.getState() !== Decoder.STATE.PLAYING || !this.screenInfo) {
+        if (this.getState() !== BasePlayer.STATE.PLAYING || !this.screenInfo) {
             return;
         }
         if (!this.canvas) {
@@ -180,7 +184,7 @@ export default abstract class CanvasCommon extends Decoder {
 
     public pushFrame(frame: Uint8Array): void {
         super.pushFrame(frame);
-        if (Decoder.isIFrame(frame)) {
+        if (BasePlayer.isIFrame(frame)) {
             if (this.videoSettings) {
                 const { maxFps } = this.videoSettings;
                 if (this.framesList.length > maxFps / 2) {

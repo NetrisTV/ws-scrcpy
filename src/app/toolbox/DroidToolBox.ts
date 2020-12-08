@@ -1,12 +1,12 @@
 import { ToolBox } from './ToolBox';
 import KeyEvent from '../android/KeyEvent';
 import SvgImage from '../ui/SvgImage';
-import Decoder from '../decoder/Decoder';
 import { KeyCodeControlMessage } from '../controlMessage/KeyCodeControlMessage';
 import { ToolBoxButton } from './ToolBoxButton';
 import { ToolBoxElement } from './ToolBoxElement';
 import { ToolBoxCheckbox } from './ToolBoxCheckbox';
-import { ScrcpyClient } from '../client/ScrcpyClient';
+import { StreamClientScrcpy } from '../client/StreamClientScrcpy';
+import { BasePlayer } from '../player/BasePlayer';
 
 const BUTTONS = [
     {
@@ -48,11 +48,11 @@ export class DroidToolBox extends ToolBox {
 
     public static createToolBox(
         udid: string,
-        decoder: Decoder,
-        client: ScrcpyClient,
+        player: BasePlayer,
+        client: StreamClientScrcpy,
         moreBox?: HTMLElement,
     ): DroidToolBox {
-        const decoderName = decoder.getName();
+        const playerName = player.getName();
         const list = BUTTONS.slice();
         const handler = <K extends keyof HTMLElementEventMap, T extends HTMLElement>(
             type: K,
@@ -74,10 +74,10 @@ export class DroidToolBox extends ToolBox {
             button.addEventListener('mouseup', handler);
             return button;
         });
-        if (decoder.supportsScreenshot) {
+        if (player.supportsScreenshot) {
             const screenshot = new ToolBoxButton('Take screenshot', SvgImage.Icon.CAMERA);
             screenshot.addEventListener('click', () => {
-                decoder.createScreenshot(client.getDeviceName());
+                player.createScreenshot(client.getDeviceName());
             });
             elements.push(screenshot);
         }
@@ -85,7 +85,7 @@ export class DroidToolBox extends ToolBox {
         const keyboard = new ToolBoxCheckbox(
             'Capture keyboard',
             SvgImage.Icon.KEYBOARD,
-            `capture_keyboard_${udid}_${decoderName}`,
+            `capture_keyboard_${udid}_${playerName}`,
         );
         keyboard.addEventListener('click', (_, el) => {
             const element = el.getElement();
@@ -94,7 +94,7 @@ export class DroidToolBox extends ToolBox {
         elements.push(keyboard);
 
         if (moreBox) {
-            const more = new ToolBoxCheckbox('More', SvgImage.Icon.MORE, `show_more_${udid}_${decoderName}`);
+            const more = new ToolBoxCheckbox('More', SvgImage.Icon.MORE, `show_more_${udid}_${playerName}`);
             more.addEventListener('click', (_, el) => {
                 const element = el.getElement();
                 moreBox.style.display = element.checked ? 'block' : 'none';

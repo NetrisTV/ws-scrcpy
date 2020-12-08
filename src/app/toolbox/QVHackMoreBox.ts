@@ -1,30 +1,30 @@
-import Decoder from '../decoder/Decoder';
+import { BasePlayer } from '../player/BasePlayer';
 import Size from '../Size';
 
 export class QVHackMoreBox {
     private onStop?: () => void;
     private readonly holder: HTMLElement;
 
-    constructor(udid: string, decoder: Decoder) {
-        const decoderName = decoder.getName();
+    constructor(udid: string, player: BasePlayer) {
+        const playerName = player.getName();
         const moreBox = document.createElement('div');
         moreBox.className = 'more-box';
         const nameBox = document.createElement('p');
-        nameBox.innerText = `${udid} (${decoderName})`;
+        nameBox.innerText = `${udid} (${playerName})`;
         nameBox.className = 'text-with-shadow';
         moreBox.appendChild(nameBox);
 
-        const qualityId = `show_video_quality_${udid}_${decoderName}`;
+        const qualityId = `show_video_quality_${udid}_${playerName}`;
         const qualityLabel = document.createElement('label');
         const qualityCheck = document.createElement('input');
         qualityCheck.type = 'checkbox';
-        qualityCheck.checked = Decoder.DEFAULT_SHOW_QUALITY_STATS;
+        qualityCheck.checked = BasePlayer.DEFAULT_SHOW_QUALITY_STATS;
         qualityCheck.id = qualityId;
         qualityLabel.htmlFor = qualityId;
         qualityLabel.innerText = 'Show quality stats';
         QVHackMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox);
         qualityCheck.onchange = () => {
-            decoder.setShowQualityStats(qualityCheck.checked);
+            player.setShowQualityStats(qualityCheck.checked);
         };
 
         const stop = (ev?: string | Event) => {
@@ -35,7 +35,7 @@ export class QVHackMoreBox {
             if (parent) {
                 parent.removeChild(moreBox);
             }
-            decoder.off('video-view-resize', this.onViewVideoResize);
+            player.off('video-view-resize', this.onViewVideoResize);
             if (this.onStop) {
                 this.onStop();
                 delete this.onStop;
@@ -47,7 +47,7 @@ export class QVHackMoreBox {
         stopBtn.onclick = stop;
 
         QVHackMoreBox.wrap('p', [stopBtn], moreBox);
-        decoder.on('video-view-resize', this.onViewVideoResize);
+        player.on('video-view-resize', this.onViewVideoResize);
         this.holder = moreBox;
     }
 

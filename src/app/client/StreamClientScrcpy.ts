@@ -1,9 +1,5 @@
-import MseDecoder from '../decoder/MseDecoder';
-import BroadwayDecoder from '../decoder/BroadwayDecoder';
 import { BaseClient } from './BaseClient';
-import Decoder from '../decoder/Decoder';
-import Tinyh264Decoder from '../decoder/Tinyh264Decoder';
-import { Decoders } from '../../common/Decoders';
+import { Players } from '../../common/Players';
 import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
 import { DroidMoreBox } from '../toolbox/DroidMoreBox';
 import { DroidToolBox } from '../toolbox/DroidToolBox';
@@ -20,8 +16,12 @@ import FilePushHandler from '../FilePushHandler';
 import DragAndPushLogger from '../DragAndPushLogger';
 import { KeyEventListener, KeyInputHandler } from '../KeyInputHandler';
 import { KeyCodeControlMessage } from '../controlMessage/KeyCodeControlMessage';
+import { MsePlayer } from '../player/MsePlayer';
+import { BroadwayPlayer } from '../player/BroadwayPlayer';
+import { TinyH264Player } from '../player/TinyH264Player';
+import { BasePlayer } from '../player/BasePlayer';
 
-export class ScrcpyClient extends BaseClient<never> implements KeyEventListener {
+export class StreamClientScrcpy extends BaseClient<never> implements KeyEventListener {
     public static ACTION = 'stream';
     private hasTouchListeners = false;
 
@@ -36,31 +36,31 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
         super();
 
         this.streamReceiver = new StreamReceiver(params.ip, params.port, params.query);
-        this.startStream(params.udid, params.decoder);
+        this.startStream(params.udid, params.player);
         this.setBodyClass('stream');
         this.setTitle(`${params.udid} stream`);
     }
 
-    public startStream(udid: string, decoderName: Decoders): void {
+    public startStream(udid: string, playerName: Players): void {
         if (!udid) {
             return;
         }
-        let decoderClass: new (udid: string) => Decoder;
-        switch (decoderName) {
+        let playerClass: new (udid: string) => BasePlayer;
+        switch (playerName) {
             case 'mse':
-                decoderClass = MseDecoder;
+                playerClass = MsePlayer;
                 break;
             case 'broadway':
-                decoderClass = BroadwayDecoder;
+                playerClass = BroadwayPlayer;
                 break;
             case 'tinyh264':
-                decoderClass = Tinyh264Decoder;
+                playerClass = TinyH264Player;
                 break;
             default:
                 return;
         }
-        const decoder = new decoderClass(udid);
-        this.setTouchListeners(decoder);
+        const player = new playerClass(udid);
+        this.setTouchListeners(player);
 
         const deviceView = document.createElement('div');
         deviceView.className = 'device-view';
@@ -78,25 +78,25 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
                 parent.removeChild(moreBox);
             }
             this.streamReceiver.stop();
-            decoder.stop();
+            player.stop();
         };
 
-        const droidMoreBox = new DroidMoreBox(udid, decoder, this);
+        const droidMoreBox = new DroidMoreBox(udid, player, this);
         const moreBox = droidMoreBox.getHolderElement();
         droidMoreBox.setOnStop(stop);
-        const droidToolBox = DroidToolBox.createToolBox(udid, decoder, this, moreBox);
+        const droidToolBox = DroidToolBox.createToolBox(udid, player, this, moreBox);
         this.controlButtons = droidToolBox.getHolderElement();
         deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');
         video.className = 'video';
         deviceView.appendChild(video);
         deviceView.appendChild(moreBox);
-        decoder.setParent(video);
-        decoder.pause();
+        player.setParent(video);
+        player.pause();
 
         document.body.appendChild(deviceView);
-        const current = decoder.getVideoSettings();
-        if (decoder.getPreferredVideoSetting().equals(current)) {
+        const current = player.getVideoSettings();
+        if (player.getPreferredVideoSetting().equals(current)) {
             const bounds = this.getMaxSize();
             const { bitrate, maxFps, iFrameInterval, lockedVideoOrientation, sendFrameMeta } = current;
             const newVideoSettings = new VideoSettings({
@@ -107,25 +107,24 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
                 lockedVideoOrientation,
                 sendFrameMeta,
             });
-            decoder.setVideoSettings(newVideoSettings, false);
+            player.setVideoSettings(newVideoSettings, false);
         }
-        const element = decoder.getTouchableElement();
+        const element = player.getTouchableElement();
         const handler = new FilePushHandler(element, this.streamReceiver);
         const logger = new DragAndPushLogger(element);
         handler.addEventListener(logger);
-        // this.filePushHandlers.set(decoder, handler);
 
         const streamReceiver = this.streamReceiver;
         streamReceiver.on('deviceMessage', (message) => {
             droidMoreBox.OnDeviceMessage(message);
         });
         streamReceiver.on('video', (data) => {
-            const STATE = Decoder.STATE;
-            if (decoder.getState() === STATE.PAUSED) {
-                decoder.play();
+            const STATE = BasePlayer.STATE;
+            if (player.getState() === STATE.PAUSED) {
+                player.play();
             }
-            if (decoder.getState() === STATE.PLAYING) {
-                decoder.pushFrame(new Uint8Array(data));
+            if (player.getState() === STATE.PLAYING) {
+                player.pushFrame(new Uint8Array(data));
             }
         });
         streamReceiver.on('clientsStats', (stats) => {
@@ -136,21 +135,21 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
         streamReceiver.on('videoParameters', ({ screenInfo, videoSettings }) => {
             let min = VideoSettings.copy(videoSettings);
             let playing = false;
-            const STATE = Decoder.STATE;
-            if (decoder.getState() === STATE.PAUSED) {
-                decoder.play();
+            const STATE = BasePlayer.STATE;
+            if (player.getState() === STATE.PAUSED) {
+                player.play();
             }
-            if (decoder.getState() === STATE.PLAYING) {
+            if (player.getState() === STATE.PLAYING) {
                 playing = true;
             }
-            const oldInfo = decoder.getScreenInfo();
+            const oldInfo = player.getScreenInfo();
             if (!screenInfo.equals(oldInfo)) {
-                decoder.setScreenInfo(screenInfo);
+                player.setScreenInfo(screenInfo);
             }
 
-            const oldSettings = decoder.getVideoSettings();
+            const oldSettings = player.getVideoSettings();
             if (!videoSettings.equals(oldSettings)) {
-                decoder.setVideoSettings(videoSettings, videoSettings.equals(this.requestedVideoSettings));
+                player.setVideoSettings(videoSettings, videoSettings.equals(this.requestedVideoSettings));
             }
             if (!oldInfo) {
                 const bounds = oldSettings.bounds;
@@ -166,7 +165,7 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
                 this.sendNewVideoSetting(min);
             }
         });
-        console.log(decoder.getName(), udid);
+        console.log(player.getName(), udid);
     }
 
     public sendEvent(e: ControlMessage): void {
@@ -212,15 +211,15 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
         return new Size(width, height);
     }
 
-    private setTouchListeners(decoder: Decoder): void {
+    private setTouchListeners(player: BasePlayer): void {
         if (!this.hasTouchListeners) {
             TouchHandler.init();
             let down = 0;
             const supportsPassive = Util.supportsPassive();
             const onMouseEvent = (e: MouseEvent | TouchEvent) => {
-                const tag = decoder.getTouchableElement();
+                const tag = player.getTouchableElement();
                 if (e.target === tag) {
-                    const screenInfo: ScreenInfo = decoder.getScreenInfo() as ScreenInfo;
+                    const screenInfo: ScreenInfo = player.getScreenInfo() as ScreenInfo;
                     if (!screenInfo) {
                         return;
                     }

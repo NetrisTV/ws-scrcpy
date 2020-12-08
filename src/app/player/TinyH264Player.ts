@@ -1,8 +1,8 @@
+import { BaseCanvasBasedPlayer } from './BaseCanvasBasedPlayer';
 import TinyH264Worker from 'worker-loader!../tinyh264/H264NALDecoder.worker';
 import VideoSettings from '../VideoSettings';
 import YUVWebGLCanvas from '../tinyh264/YUVWebGLCanvas';
 import YUVCanvas from '../tinyh264/YUVCanvas';
-import CanvasCommon from './CanvasCommon';
 import Size from '../Size';
 
 type WorkerMessage = {
@@ -13,7 +13,7 @@ type WorkerMessage = {
     renderStateId: number;
 };
 
-export default class Tinyh264Decoder extends CanvasCommon {
+export class TinyH264Player extends BaseCanvasBasedPlayer {
     private static videoStreamId = 1;
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
@@ -30,7 +30,7 @@ export default class Tinyh264Decoder extends CanvasCommon {
     public readonly supportsScreenshot: boolean = true;
 
     constructor(udid: string) {
-        super(udid, 'Tinyh264Decoder');
+        super(udid, 'tinyh264');
     }
 
     private onWorkerMessage = (e: MessageEvent): void => {
@@ -56,7 +56,7 @@ export default class Tinyh264Decoder extends CanvasCommon {
     protected initCanvas(width: number, height: number): void {
         super.initCanvas(width, height);
 
-        if (CanvasCommon.hasWebGLSupport()) {
+        if (BaseCanvasBasedPlayer.hasWebGLSupport()) {
             this.canvas = new YUVWebGLCanvas(this.tag);
         } else {
             this.canvas = new YUVCanvas(this.tag);
@@ -74,7 +74,7 @@ export default class Tinyh264Decoder extends CanvasCommon {
                 data: data.buffer,
                 offset: data.byteOffset,
                 length: data.byteLength,
-                renderStateId: Tinyh264Decoder.videoStreamId,
+                renderStateId: TinyH264Player.videoStreamId,
             },
             [data.buffer],
         );
@@ -91,20 +91,20 @@ export default class Tinyh264Decoder extends CanvasCommon {
         super.stop();
         if (this.worker) {
             this.worker.removeEventListener('message', this.onWorkerMessage);
-            this.worker.postMessage({ type: 'release', renderStateId: Tinyh264Decoder.videoStreamId });
+            this.worker.postMessage({ type: 'release', renderStateId: TinyH264Player.videoStreamId });
             delete this.worker;
         }
     }
 
     public getPreferredVideoSetting(): VideoSettings {
-        return Tinyh264Decoder.preferredVideoSettings;
+        return TinyH264Player.preferredVideoSettings;
     }
 
     protected clearState(): void {
         super.clearState();
         if (this.worker) {
-            this.worker.postMessage({ type: 'release', renderStateId: Tinyh264Decoder.videoStreamId });
-            Tinyh264Decoder.videoStreamId++;
+            this.worker.postMessage({ type: 'release', renderStateId: TinyH264Player.videoStreamId });
+            TinyH264Player.videoStreamId++;
         }
     }
 }
