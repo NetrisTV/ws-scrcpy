@@ -1,4 +1,4 @@
-import Size from '../Size';
+import Size from './utils/Size';
 import Texture from './Texture';
 import error from './utils/error';
 // @ts-ignore

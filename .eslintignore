@@ -1,6 +1,6 @@
 src/public/**/*.js
 vendor/**/*.js
+vendor/**/*.ts
 src/app/Util.ts
-src/app/h264-live-player/**/*.ts
 *.js
 typings/**/*.d.ts

@@ -26,6 +26,10 @@ export default class Size {
         return new Size(a.width, a.height);
     }
 
+    length(): number {
+        return this.w * this.h;
+    }
+
     public rotate(): Size {
         return new Size(this.height, this.width);
     }

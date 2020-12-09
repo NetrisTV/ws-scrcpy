@@ -1,5 +1,5 @@
 import WebGLCanvas from './WebGLCanvas';
-import Size from '../Size';
+import Size from './utils/Size';
 import Program from './Program';
 import Shader from './Shader';
 import Script from './Script';

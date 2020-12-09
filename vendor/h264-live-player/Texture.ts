@@ -1,4 +1,4 @@
-import Size from '../Size';
+import Size from './utils/Size';
 import assert from './utils/assert';
 import Program from './Program';
 
@@ -16,7 +16,7 @@ export default class Texture {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         this.format = format ? format : gl.LUMINANCE;
         if (size) {
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, size.width, size.height, 0, this.format, gl.UNSIGNED_BYTE, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, size.w, size.h, 0, this.format, gl.UNSIGNED_BYTE, null);
         }
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);

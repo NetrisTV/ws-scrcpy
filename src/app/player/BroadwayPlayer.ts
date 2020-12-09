@@ -1,11 +1,11 @@
 import '../../../vendor/Broadway/avc.wasm.asset';
 import { BaseCanvasBasedPlayer } from './BaseCanvasBasedPlayer';
 import Size from '../Size';
-import YUVCanvas from '../h264-live-player/YUVCanvas';
-import YUVWebGLCanvas from '../h264-live-player/YUVWebGLCanvas';
+import YUVCanvas from '../../../vendor/h264-live-player/YUVCanvas';
+import YUVWebGLCanvas from '../../../vendor/h264-live-player/YUVWebGLCanvas';
 import Avc from '../../../vendor/Broadway/Decoder';
 import VideoSettings from '../VideoSettings';
-import Canvas from '../h264-live-player/Canvas';
+import Canvas from '../../../vendor/h264-live-player/Canvas';
 
 export class BroadwayPlayer extends BaseCanvasBasedPlayer {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({

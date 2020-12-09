@@ -1,4 +1,4 @@
-import Size from '../Size';
+import Size from './utils/Size';
 
 export default abstract class Canvas {
     protected constructor(readonly canvas: HTMLCanvasElement, readonly size: Size) {}

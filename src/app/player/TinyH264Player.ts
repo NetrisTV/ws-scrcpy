@@ -1,8 +1,8 @@
 import { BaseCanvasBasedPlayer } from './BaseCanvasBasedPlayer';
-import TinyH264Worker from 'worker-loader!../tinyh264/H264NALDecoder.worker';
+import TinyH264Worker from 'worker-loader!./../../../vendor/tinyh264/H264NALDecoder.worker';
 import VideoSettings from '../VideoSettings';
-import YUVWebGLCanvas from '../tinyh264/YUVWebGLCanvas';
-import YUVCanvas from '../tinyh264/YUVCanvas';
+import YUVWebGLCanvas from '../../../vendor/tinyh264/YUVWebGLCanvas';
+import YUVCanvas from '../../../vendor/tinyh264/YUVCanvas';
 import Size from '../Size';
 
 type WorkerMessage = {

@@ -1,4 +1,4 @@
-import Size from '../Size';
+import Size from './utils/Size';
 import Canvas from './Canvas';
 
 export default class YUVCanvas extends Canvas {
