@@ -1,6 +1,6 @@
 import * as portfinder from 'portfinder';
 import * as http from 'http';
-import { Adb } from './adbkit/lib/adb/Adb';
+import Adb from '@devicefarmer/adbkit/lib/adb';
 import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, VersionMetadata } from '../common/RemoteDevtools';
 import { URL } from 'url';
 
@@ -64,7 +64,7 @@ export class AdbUtils {
         url: string,
     ): Promise<IncomingMessage> {
         const client = Adb.createClient();
-        const socket = await client.openLocalAbstract(serial, unixSocketName);
+        const socket = await client.openLocal(serial, `localabstract:${unixSocketName}`);
         const request = new (http.ClientRequest as any)(url, {
             createConnection: () => {
                 return socket;
