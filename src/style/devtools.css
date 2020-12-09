@@ -39,11 +39,11 @@ body.devtools {
     font-weight: bold;
 }
 
-.list {
+div.list {
     margin-top: 5px;
 }
 
-.list > .row {
+div.list > .row {
     padding: 6px 0;
     position: relative;
 }
@@ -54,7 +54,7 @@ body.devtools {
 
 .properties-box > img {
     flex-shrink: 0;
-    height: 16px;
+    height: 23px;
     padding-left: 2px;
     padding-right: 5px;
     vertical-align: top;
