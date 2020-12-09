@@ -13,6 +13,7 @@ import { ACTION } from './Constants';
 import { ServiceWebsocketProxy } from './ServiceWebsocketProxy';
 import { ServiceRemoteDevtools } from './ServiceRemoteDevtools';
 
+const proto = 'http';
 const port = parseInt(process.argv[2], 10) || 8000;
 const map: Record<string, string> = {
     '.wasm': 'application/wasm',
@@ -154,30 +155,45 @@ server.listen(port);
 
 server.on('listening', printListeningMsg);
 
-function fixedEncodeURI(str: string): string {
-    return encodeURI(str).replace(/%5B/g, '[').replace(/%5D/g, ']');
-}
-
 function printListeningMsg(): void {
-    const list: string[] = [];
-    const formatAddress = (ip: string, ipv6: boolean): void => {
-        const host = ipv6 ? `[${ip}]` : ip;
-        list.push(`http://${host}:${port}`);
+    const ipv4List: string[] = [];
+    const ipv6List: string[] = [];
+    const formatAddress = (ip: string, scopeid: number | undefined): void => {
+        if (typeof scopeid === 'undefined') {
+            ipv4List.push(`${proto}://${ip}:${port}`);
+            return;
+        }
+        if (scopeid === 0) {
+            ipv6List.push(`${proto}://[${ip}]:${port}`);
+        } else {
+            return;
+            // skip
+            // ipv6List.push(`${proto}://[${ip}%${scopeid}]:${port}`);
+        }
     };
-    formatAddress(os.hostname(), false);
     Object.keys(os.networkInterfaces())
         .map((key) => os.networkInterfaces()[key])
         .forEach((info) => {
             info.forEach((iface) => {
-                const ipv4 = iface.family === 'IPv4';
-                const ipv6 = iface.family === 'IPv6';
-                if (!ipv4 && !ipv6) {
+                let scopeid: number | undefined;
+                if (iface.family === 'IPv6') {
+                    scopeid = iface.scopeid;
+                } else if (iface.family === 'IPv4') {
+                    scopeid = undefined;
+                } else {
                     return;
                 }
-                formatAddress(iface.address, ipv6);
+                formatAddress(iface.address, scopeid);
             });
         });
-    console.log('Listening on:', list.map(fixedEncodeURI).join(' '));
+    const nameList = [encodeURI(`${proto}://${os.hostname()}:${port}`), encodeURI(`${proto}://localhost:${port}`)];
+    console.log('Listening on:\n\t' + nameList.join(' '));
+    if (ipv4List.length) {
+        console.log('\t' + ipv4List.join(' '));
+    }
+    if (ipv6List.length) {
+        console.log('\t' + ipv6List.join(' '));
+    }
 }
 
 if (process.platform === 'win32') {
