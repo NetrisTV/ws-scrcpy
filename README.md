@@ -12,7 +12,7 @@ Browser must support the following technologies:
 
 Server:
 * Node.js v10+
-* node-gyp (on Window: `npm install --global windows-build-tools node-gyp`)
+* node-gyp ([installation](https://github.com/nodejs/node-gyp#installation))
 * `adb` executable must be available in the PATH environment variable
 
 Device:
@@ -22,6 +22,7 @@ Device:
 
 ## Build and Start
 
+Make sure you have installed [node.js](https://nodejs.org/en/download/), [node-gyp](https://github.com/nodejs/node-gyp) and [build tools](https://github.com/nodejs/node-gyp#installation)
 ```shell
 git clone https://github.com/NetrisTV/ws-scrcpy.git
 cd ws-scrcpy
