@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/bluebird": "^3.5.32",
     "@types/node": "^12.0.2",
+    "@types/node-forge": "^0.9.5",
     "@types/ws": "^6.0.4",
     "@typescript-eslint/eslint-plugin": "^3.8.0",
     "@typescript-eslint/parser": "^3.8.0",
