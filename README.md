@@ -7,7 +7,7 @@ Web client prototype for [scrcpy](https://github.com/Genymobile/scrcpy).
 Browser must support the following technologies:
 * WebSockets
 * Media Source Extensions and h264 decoding ([MseDecoder](/src/app/decoder/MseDecoder.ts))
-* WebWorkers [tinyh264](/src/app/decoder/Tinyh264Decoder.ts))
+* WebWorkers ([tinyh264](/src/app/decoder/Tinyh264Decoder.ts)
 * WebAssembly  ([Broadway.js](/src/app/decoder/BroadwayDecoder.ts) and [tinyh264](/src/app/decoder/Tinyh264Decoder.ts))
 
 Server:
@@ -76,7 +76,7 @@ npm run dist:qvhack:frontend
 * [xevokk/h264-converter](https://github.com/xevokk/h264-converter)
 * [131/h264-live-player](https://github.com/131/h264-live-player)
 * [mbebenita/Broadway](https://github.com/mbebenita/Broadway)
-* [openstf/adbkit](https://github.com/openstf/adbkit)
+* [DeviceFarmer/adbkit](https://github.com/DeviceFarmer/adbkit)
 * [xtermjs/xterm.js](https://github.com/xtermjs/xterm.js)
 * [udevbe/tinyh264](https://github.com/udevbe/tinyh264)
 
