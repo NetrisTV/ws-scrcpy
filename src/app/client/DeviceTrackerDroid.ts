@@ -7,19 +7,19 @@ import { DeviceTrackerCommand } from '../../common/DeviceTrackerCommand';
 
 const FIELDS_MAP: MapItem<DroidDeviceDescriptor>[] = [
     {
-        field: 'product.manufacturer',
+        field: 'ro.product.manufacturer',
         title: 'Manufacturer',
     },
     {
-        field: 'product.model',
+        field: 'ro.product.model',
         title: 'Model',
     },
     {
-        field: 'build.version.release',
+        field: 'ro.build.version.release',
         title: 'Release',
     },
     {
-        field: 'build.version.sdk',
+        field: 'ro.build.version.sdk',
         title: 'SDK',
     },
     {
@@ -152,16 +152,21 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
         return optionElement;
     }
 
-    protected buildDeviceTable(data: DroidDeviceDescriptor[]): void {
+    protected buildDeviceTable(): void {
+        const data = this.descriptors;
         const devices = this.getOrCreateTableHolder();
         const tbody = this.getOrBuildTableBody(devices);
 
         data.forEach((device) => {
             const row = document.createElement('tr');
             const escapedUdid = this.escapeUdid(device.udid);
+            const isActive = device.state === 'device';
             const localStorageKey = DeviceTrackerDroid.getLocalStorageKey(escapedUdid);
             const lastSelected = localStorage && localStorage.getItem(localStorageKey);
             row.id = `device_row_${escapedUdid}`;
+            if (!isActive) {
+                row.className = 'not-active';
+            }
             let hasPid = false;
             let selectInterface: HTMLSelectElement | undefined;
             this.rows.forEach((item) => {
@@ -175,21 +180,26 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                     if (fieldName === 'pid') {
                         hasPid = value !== '-1';
                         const actionButton = document.createElement('button');
-                        actionButton.onclick = this.onActionButtonClick;
                         actionButton.className = 'kill-server-button';
                         actionButton.setAttribute('data-udid', device.udid);
                         actionButton.setAttribute('data-pid', value);
                         let command: string;
-                        if (hasPid) {
-                            command = DeviceTrackerCommand.KILL_SERVER;
-                            actionButton.title = 'Kill server';
-                            actionButton.innerText = `☠ ${value}`;
+                        if (isActive) {
+                            actionButton.onclick = this.onActionButtonClick;
+                            if (hasPid) {
+                                command = DeviceTrackerCommand.KILL_SERVER;
+                                actionButton.title = 'Kill server';
+                                actionButton.innerText = `☠ ${value}`;
+                            } else {
+                                command = DeviceTrackerCommand.START_SERVER;
+                                actionButton.title = 'Start server';
+                                actionButton.innerText = `↺ ${value}`;
+                            }
+                            actionButton.setAttribute('data-command', command);
                         } else {
-                            command = DeviceTrackerCommand.START_SERVER;
-                            actionButton.title = 'Start server';
-                            actionButton.innerText = `↺ ${value}`;
+                            actionButton.title = 'Possible PID';
+                            actionButton.innerText = `❓ ${value}`;
                         }
-                        actionButton.setAttribute('data-command', command);
                         td.appendChild(actionButton);
                     } else if (fieldName === 'interfaces') {
                         const selectElement = document.createElement('select');
@@ -210,11 +220,13 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                                 optionElement.selected = true;
                             }
                         });
-                        const adbProxyOption = DeviceTrackerDroid.createProxyOption(device.udid);
-                        if (lastSelected === 'proxy') {
-                            adbProxyOption.selected = true;
+                        if (isActive) {
+                            const adbProxyOption = DeviceTrackerDroid.createProxyOption(device.udid);
+                            if (lastSelected === 'proxy') {
+                                adbProxyOption.selected = true;
+                            }
+                            selectElement.appendChild(adbProxyOption);
                         }
-                        selectElement.appendChild(adbProxyOption);
                         selectElement.onchange = this.onInterfaceSelected;
                         td.appendChild(selectElement);
                         selectInterface = selectElement;
@@ -223,7 +235,6 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                     }
                 }
             });
-            const isActive = device.state === 'device';
             const name = `${AttributePrefixPlayerFor}${escapedUdid}`;
             PLAYERS.forEach((playerName) => {
                 const playerTd = document.createElement('td');
@@ -260,7 +271,7 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
             }
             row.appendChild(shellTd);
             tbody.appendChild(row);
-            if (isActive && hasPid && selectInterface) {
+            if (hasPid && selectInterface) {
                 this.updateLink(selectInterface, false);
             }
         });

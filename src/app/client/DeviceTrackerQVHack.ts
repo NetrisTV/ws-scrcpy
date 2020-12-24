@@ -57,8 +57,8 @@ export class DeviceTrackerQVHack extends BaseDeviceTracker<QVHackDeviceDescripto
         new Response(e.data)
             .text()
             .then((text: string) => {
-                const list: QVHackDeviceDescriptor[] = JSON.parse(text) as QVHackDeviceDescriptor[];
-                this.buildDeviceTable(list);
+                this.descriptors = JSON.parse(text) as QVHackDeviceDescriptor[];
+                this.buildDeviceTable();
             })
             .catch((error: Error) => {
                 console.error(error.message);
@@ -66,7 +66,8 @@ export class DeviceTrackerQVHack extends BaseDeviceTracker<QVHackDeviceDescripto
             });
     }
 
-    public buildDeviceTable(data: QVHackDeviceDescriptor[]): void {
+    public buildDeviceTable(): void {
+        const data = this.descriptors;
         const devices = this.getOrCreateTableHolder();
         const tbody = this.getOrBuildTableBody(devices);
 

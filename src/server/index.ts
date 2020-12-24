@@ -2,8 +2,9 @@ import * as readline from 'readline';
 import { HttpServer } from './services/HttpServer';
 import { WebSocketServer } from './services/WebSocketServer';
 import { Service, ServiceClass } from './services/Service';
+import { AndroidDeviceTracker } from './services/AndroidDeviceTracker';
 
-const servicesToStart: ServiceClass[] = [HttpServer, WebSocketServer];
+const servicesToStart: ServiceClass[] = [HttpServer, WebSocketServer, AndroidDeviceTracker];
 const runningServices: Service[] = [];
 
 servicesToStart.forEach((serviceClass: ServiceClass) => {

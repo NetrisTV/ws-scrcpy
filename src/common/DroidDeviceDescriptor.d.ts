@@ -1,14 +1,13 @@
 import { NetInterface } from './NetInterface';
+import { BaseDeviceDescriptor } from './BaseDeviceDescriptor';
 
-export default interface DroidDeviceDescriptor {
-    'build.version.release': string;
-    'build.version.sdk': string;
+export default interface DroidDeviceDescriptor extends BaseDeviceDescriptor {
+    'ro.build.version.release': string;
+    'ro.build.version.sdk': string;
     'ro.product.cpu.abi': string;
-    'product.manufacturer': string;
-    'product.model': string;
+    'ro.product.manufacturer': string;
+    'ro.product.model': string;
     'wifi.interface': string;
     interfaces: NetInterface[];
-    udid: string;
-    state: string;
     pid: number;
 }

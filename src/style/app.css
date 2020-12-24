@@ -7,8 +7,11 @@
     --controls-bg-color: hsla(0, 0%, 95%, 0.8);
     --control-buttons-bg-color: hsl(0, 0%, 95%);
     --text-color: hsl(210, 16%, 22%);
+    --text-color-light: hsl(200, 16%, 52%);
     --link-color: hsl(218, 85%, 43%);
+    --link-color-light: hsl(218, 85%, 73%);
     --link-color_visited: hsl(271, 68%, 32%);
+    --link-color_visited-light: hsl(271, 68%, 72%);
     --svg-checkbox-bg-color: hsl(172, 100%, 37%);
     --svg-button-fill: hsl(199, 17%, 46%);
     --table-border-color: hsl(0, 0%, 82%);
@@ -26,8 +29,11 @@
         --controls-bg-color: hsla(201, 18%, 19%, 0.8);
         --control-buttons-bg-color: hsl(201, 18%, 19%);
         --text-color: hsl(0, 0%, 90%);
+        --text-color-light: hsl(0, 0%, 60%);
         --link-color: hsl(218, 63%, 47%);
+        --link-color-light: hsl(218, 63%, 27%);
         --link-color_visited: hsl(267, 31%, 47%);
+        --link-color_visited-light: hsl(267, 31%, 27%);
         --svg-checkbox-bg-color: hsl(172, 100%, 27%);
         --svg-button-fill: hsl(0, 0%, 100%);
         --table-border-color: hsl(0, 0%, 32%);
@@ -118,6 +124,7 @@ body.stream {
 .table-wrapper table select {
     color: var(--text-color);
     background-color: var(--main-bg-color);
+    border-color: var(--text-color);
 }
 
 .table-wrapper table tr:hover select {
@@ -126,6 +133,23 @@ body.stream {
 
 .table-wrapper table td.pid {
     white-space: nowrap;
+}
+
+.table-wrapper table tr.not-active select {
+    color: var(--text-color-light);
+    border-color: var(--text-color-light);
+}
+
+.table-wrapper tr.not-active td {
+    color: var(--text-color-light);
+}
+
+.table-wrapper tr.not-active a {
+    color: var(--link-color-light);
+}
+
+.table-wrapper tr.not-active a:visited {
+    color: var(--link-color_visited-light);
 }
 
 .decoder-controls-wrapper {
@@ -234,7 +258,7 @@ body.stream {
 .kill-server-button {
     border: none;
     background: none;
-    color: var(--text-color);
+    color: inherit;
 }
 
 .kill-server-button:hover {

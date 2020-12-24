@@ -3,6 +3,7 @@ import * as http from 'http';
 import Adb from '@devicefarmer/adbkit/lib/adb';
 import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, VersionMetadata } from '../common/RemoteDevtools';
 import { URL } from 'url';
+import { Forward } from '@devicefarmer/adbkit/lib/Forward';
 
 type IncomingMessage = {
     statusCode?: number;
@@ -18,7 +19,7 @@ export class AdbUtils {
     public static async forward(serial: string, remote: string): Promise<number> {
         const client = Adb.createClient();
         const forwards = await client.listForwards(serial);
-        const forward = forwards.find((item) => {
+        const forward = forwards.find((item: Forward) => {
             return item.remote === remote && item.local.startsWith('tcp:') && item.serial === serial;
         });
         if (forward) {

@@ -1,24 +1,22 @@
 import * as querystring from 'querystring';
 import { ManagerClient } from './ManagerClient';
 import { Message } from '../../common/Message';
-import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
 import { ShellParams } from '../../common/ShellParams';
 import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
-import QVHackDeviceDescriptor from '../../common/QVHackDeviceDescriptor';
 import { QVHackStreamParams } from '../../common/QVHackStreamParams';
 import { DevtoolsParams } from '../../common/DevtoolsParams';
+import { BaseDeviceDescriptor } from '../../common/BaseDeviceDescriptor';
 
 export type MapItem<T> = {
     field?: keyof T;
     title: string;
 };
 
-export abstract class BaseDeviceTracker<
-    T extends DroidDeviceDescriptor | QVHackDeviceDescriptor,
-    K
-> extends ManagerClient<K> {
-    public static ACTION = 'devicelist';
+export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> extends ManagerClient<K> {
+    public static ACTION_LIST = 'devicelist';
+    public static ACTION_DEVICE = 'device';
     protected tableId = 'droid_device_list';
+    protected descriptors: T[] = [];
 
     protected constructor(action: string, protected rows: MapItem<T>[]) {
         super(action);
@@ -27,7 +25,7 @@ export abstract class BaseDeviceTracker<
         this.openNewWebSocket();
     }
 
-    protected abstract buildDeviceTable(data: T[]): void;
+    protected abstract buildDeviceTable(): void;
 
     protected onSocketClose(e: CloseEvent): void {
         console.log(`Connection closed: ${e.reason}`);
@@ -45,12 +43,18 @@ export abstract class BaseDeviceTracker<
             console.log(e.data);
             return;
         }
-        if (message.type !== BaseDeviceTracker.ACTION) {
-            console.log(`Unknown message type: ${message.type}`);
-            return;
+        switch (message.type) {
+            case BaseDeviceTracker.ACTION_LIST:
+                this.descriptors = message.data as T[];
+                this.buildDeviceTable();
+                break;
+            case BaseDeviceTracker.ACTION_DEVICE:
+                this.updateDescriptor(message.data as T);
+                this.buildDeviceTable();
+                break;
+            default:
+                console.log(`Unknown message type: ${message.type}`);
         }
-        const list: T[] = message.data as T[];
-        this.buildDeviceTable(list);
     }
 
     protected getOrCreateTableHolder(): HTMLElement {
@@ -62,6 +66,17 @@ export abstract class BaseDeviceTracker<
             document.body.appendChild(devices);
         }
         return devices;
+    }
+
+    protected updateDescriptor(descriptor: T): void {
+        const idx = this.descriptors.findIndex((item: T) => {
+            return item.udid === descriptor.udid;
+        });
+        if (idx !== -1) {
+            this.descriptors[idx] = descriptor;
+        } else {
+            this.descriptors.push(descriptor);
+        }
     }
 
     protected getOrBuildTableBody(parent: HTMLElement): Element {

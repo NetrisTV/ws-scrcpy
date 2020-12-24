@@ -1,31 +1,32 @@
 import WebSocket from 'ws';
-import { ServerDeviceConnection } from './ServerDeviceConnection';
 import { ReleasableService } from './ReleasableService';
 import { Message } from '../common/Message';
 import DroidDeviceDescriptor from '../common/DroidDeviceDescriptor';
 import { DeviceTrackerCommand } from '../common/DeviceTrackerCommand';
+import { AndroidDeviceTracker } from './services/AndroidDeviceTracker';
 
 export class ServiceDeviceTracker extends ReleasableService {
-    private sdc: ServerDeviceConnection = ServerDeviceConnection.getInstance();
+    private adt: AndroidDeviceTracker = AndroidDeviceTracker.getInstance();
 
     constructor(ws: WebSocket) {
         super(ws);
 
-        this.sdc
+        this.adt
             .init()
             .then(() => {
-                this.sdc.addListener(ServerDeviceConnection.UPDATE_EVENT, this.buildAndSendMessage);
-                this.buildAndSendMessage(this.sdc.getDevices());
+                this.adt.on('device', this.buildAndSendMessage);
+                this.buildAndSendMessage(this.adt.getDevices());
             })
             .catch((e: Error) => {
                 console.error(`Error: ${e.message}`);
             });
     }
 
-    private buildAndSendMessage = (list: DroidDeviceDescriptor[]): void => {
+    private buildAndSendMessage = (list: DroidDeviceDescriptor | DroidDeviceDescriptor[]): void => {
+        const type: string = Array.isArray(list) ? 'devicelist' : 'device';
         const msg: Message = {
             id: -1,
-            type: 'devicelist',
+            type,
             data: list,
         };
         this.sendMessage(msg);
@@ -52,7 +53,7 @@ export class ServiceDeviceTracker extends ReleasableService {
             case DeviceTrackerCommand.KILL_SERVER: {
                 const { udid, pid } = data;
                 if (typeof udid === 'string' && udid && typeof pid === 'number' && pid > 0) {
-                    this.sdc.killServer(udid, pid).catch((e) => {
+                    this.adt.killServer(udid, pid).catch((e) => {
                         const { message } = e;
                         console.error(`Command: "${command}", error: ${message}`);
                         this.ws.send({ command, error: message });
@@ -65,7 +66,7 @@ export class ServiceDeviceTracker extends ReleasableService {
             case DeviceTrackerCommand.START_SERVER: {
                 const { udid } = data;
                 if (typeof udid === 'string' && udid) {
-                    this.sdc.startServer(udid).catch((e) => {
+                    this.adt.startServer(udid).catch((e) => {
                         const { message } = e;
                         console.error(`Command: "${command}", error: ${message}`);
                         this.ws.send({ command, error: message });
@@ -82,6 +83,6 @@ export class ServiceDeviceTracker extends ReleasableService {
 
     public release(): void {
         super.release();
-        this.sdc.removeListener(ServerDeviceConnection.UPDATE_EVENT, this.buildAndSendMessage);
+        this.adt.off('device', this.buildAndSendMessage);
     }
 }
