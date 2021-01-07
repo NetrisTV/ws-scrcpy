@@ -36,10 +36,12 @@ export default class BroadwayDecoder extends CanvasCommon {
             this.avc = new Avc();
         }
         this.avc.onPictureDecoded = (buffer: Uint8Array, width: number, height: number) => {
+            this.decodedFrames.push({
+                width,
+                height,
+                buffer,
+            });
             this.onFrameDecoded();
-            if (this.canvas) {
-                this.canvas.decode(buffer, width, height);
-            }
         };
     }
 

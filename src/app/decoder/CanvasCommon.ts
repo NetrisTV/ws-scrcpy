@@ -2,11 +2,22 @@ import Decoder, { PlaybackQuality } from './Decoder';
 import ScreenInfo from '../ScreenInfo';
 import VideoSettings from '../VideoSettings';
 
+type DecodedFrame = {
+    width: number;
+    height: number;
+    buffer: Uint8Array;
+};
+
+interface CanvasDecoder {
+    decode(buffer: Uint8Array, width: number, height: number): void;
+}
+
 export default abstract class CanvasCommon extends Decoder {
     protected framesList: Uint8Array[] = [];
+    protected decodedFrames: DecodedFrame[] = [];
     protected videoStats: PlaybackQuality[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    protected canvas?: any;
+    protected animationFrameId?: number;
+    protected canvas?: CanvasDecoder;
 
     public static hasWebGLSupport(): boolean {
         // For some reason if I use here `this.tag` image on canvas will be flattened
@@ -42,6 +53,31 @@ export default abstract class CanvasCommon extends Decoder {
     protected abstract decode(data: Uint8Array): void;
     public abstract getPreferredVideoSetting(): VideoSettings;
 
+    protected drawDecoded = (): void => {
+        if (!this.canvas) {
+            return;
+        }
+        if (this.decodedFrames.length) {
+            const last = this.decodedFrames.pop();
+            if (last && this.canvas) {
+                const { buffer, width, height } = last;
+                this.canvas.decode(buffer, width, height);
+            }
+        }
+        const dropped = this.decodedFrames.length;
+        if (dropped > 0) {
+            this.decodedFrames.length = 0;
+            this.videoStats.push({
+                decodedFrames: 0,
+                droppedFrames: dropped,
+                inputBytes: 0,
+                inputFrames: 0,
+                timestamp: Date.now(),
+            });
+        }
+        delete this.animationFrameId;
+    };
+
     protected onFrameDecoded(): void {
         this.videoStats.push({
             decodedFrames: 1,
@@ -50,20 +86,20 @@ export default abstract class CanvasCommon extends Decoder {
             inputFrames: 0,
             timestamp: Date.now(),
         });
+        if (!this.animationFrameId) {
+            this.animationFrameId = requestAnimationFrame(this.drawDecoded);
+        }
     }
 
-    private shiftFrame = (): void => {
+    private shiftFrame(): void {
         if (this.getState() !== Decoder.STATE.PLAYING) {
             return;
         }
-
-        const frame = this.framesList.shift();
-
-        if (frame) {
-            this.decode(frame);
+        const first = this.framesList.shift();
+        if (first) {
+            this.decode(first);
         }
-        requestAnimationFrame(this.shiftFrame);
-    };
+    }
 
     protected calculateMomentumStats(): void {
         const timestamp = Date.now();
@@ -134,7 +170,7 @@ export default abstract class CanvasCommon extends Decoder {
             this.initCanvas(width, height);
             this.resetStats();
         }
-        requestAnimationFrame(this.shiftFrame);
+        this.shiftFrame();
     }
 
     public stop(): void {
@@ -169,6 +205,7 @@ export default abstract class CanvasCommon extends Decoder {
             }
         }
         this.framesList.push(frame);
+        this.shiftFrame();
     }
 
     protected clearState(): void {
