@@ -14,7 +14,7 @@ interface CanvasDecoder {
 
 export default abstract class CanvasCommon extends Decoder {
     protected framesList: Uint8Array[] = [];
-    protected decodedFrames: DecodedFrame[] = [];
+    protected lastDecodedFrame?: DecodedFrame;
     protected videoStats: PlaybackQuality[] = [];
     protected animationFrameId?: number;
     protected canvas?: CanvasDecoder;
@@ -57,31 +57,23 @@ export default abstract class CanvasCommon extends Decoder {
         if (!this.canvas) {
             return;
         }
-        if (this.decodedFrames.length) {
-            const last = this.decodedFrames.pop();
-            if (last && this.canvas) {
-                const { buffer, width, height } = last;
-                this.canvas.decode(buffer, width, height);
-            }
+        if (this.lastDecodedFrame) {
+            const { buffer, width, height } = this.lastDecodedFrame;
+            this.canvas.decode(buffer, width, height);
         }
-        const dropped = this.decodedFrames.length;
-        if (dropped > 0) {
-            this.decodedFrames.length = 0;
-            this.videoStats.push({
-                decodedFrames: 0,
-                droppedFrames: dropped,
-                inputBytes: 0,
-                inputFrames: 0,
-                timestamp: Date.now(),
-            });
-        }
-        delete this.animationFrameId;
+        this.lastDecodedFrame = undefined;
+        this.animationFrameId = undefined;
     };
 
-    protected onFrameDecoded(): void {
+    protected onFrameDecoded(width: number, height: number, buffer: Uint8Array): void {
+        let dropped = 0;
+        if (this.lastDecodedFrame) {
+            dropped = 1;
+        }
+        this.lastDecodedFrame = { width, height, buffer };
         this.videoStats.push({
             decodedFrames: 1,
-            droppedFrames: 0,
+            droppedFrames: dropped,
             inputBytes: 0,
             inputFrames: 0,
             timestamp: Date.now(),

@@ -38,12 +38,7 @@ export default class Tinyh264Decoder extends CanvasCommon {
         switch (message.type) {
             case 'pictureReady':
                 const { width, height, data } = message;
-                this.decodedFrames.push({
-                    width,
-                    height,
-                    buffer: new Uint8Array(data),
-                });
-                this.onFrameDecoded();
+                this.onFrameDecoded(width, height, new Uint8Array(data));
                 break;
             case 'decoderReady':
                 this.isDecoderReady = true;
