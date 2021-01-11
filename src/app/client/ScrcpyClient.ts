@@ -134,7 +134,7 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
             this.clientsCount = stats.clientsCount;
         });
         streamReceiver.on('videoParameters', ({ screenInfo, videoSettings }) => {
-            let min: VideoSettings = VideoSettings.copy(videoSettings) as VideoSettings;
+            let min = VideoSettings.copy(videoSettings);
             let playing = false;
             const STATE = Decoder.STATE;
             if (decoder.getState() === STATE.PAUSED) {
@@ -202,7 +202,7 @@ export class ScrcpyClient extends BaseClient<never> implements KeyEventListener 
         return this.clientsCount;
     }
 
-    private getMaxSize(): Size | undefined {
+    public getMaxSize(): Size | undefined {
         if (!this.controlButtons) {
             return;
         }

@@ -1,7 +1,7 @@
 {
   "name": "ws-scrcpy",
   "version": "0.6.1",
-  "description": "ws client for scrcpy",
+  "description": "Web client for scrcpy and more",
   "scripts": {
     "clean": "npx rimraf dist",
     "build:webpack": "webpack --config webpack.ws-scrcpy.config.js",
@@ -27,6 +27,7 @@
     "ws": "^7.2.3"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.32",
     "@types/node": "^12.0.2",
     "@types/ws": "^6.0.4",
     "@typescript-eslint/eslint-plugin": "^3.8.0",

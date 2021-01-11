@@ -241,11 +241,11 @@ export default class TouchHandler {
         this.updateDirty(topLeft, bottomRight);
     }
 
-    public static drawPointer(ctx: CanvasRenderingContext2D, point: Point) {
+    public static drawPointer(ctx: CanvasRenderingContext2D, point: Point): void {
         this.drawPoint(ctx, point, this.touchPointRadius, this.touchPointImage);
     }
 
-    public static drawCenter(ctx: CanvasRenderingContext2D, point: Point) {
+    public static drawCenter(ctx: CanvasRenderingContext2D, point: Point): void {
         this.drawPoint(ctx, point, this.centerPointRadius, this.centerPointImage);
     }
 

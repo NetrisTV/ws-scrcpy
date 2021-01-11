@@ -68,10 +68,7 @@ export default class VideoSettings {
         });
     }
 
-    public static copy(a?: VideoSettings | null): VideoSettings | null {
-        if (!a) {
-            return null;
-        }
+    public static copy(a: VideoSettings): VideoSettings {
         return new VideoSettings({
             bitrate: a.bitrate,
             crop: Rect.copy(a.crop),

@@ -6,13 +6,14 @@
     --table-header-bg-color: hsl(0, 0%, 95%);
     --controls-bg-color: hsla(0, 0%, 95%, 0.8);
     --control-buttons-bg-color: hsl(0, 0%, 95%);
-    --text-color: hsl(0, 0%, 20%);
-    --link-color: hsl(240, 100%, 47%);
+    --text-color: hsl(210, 16%, 22%);
+    --link-color: hsl(218, 85%, 43%);
     --link-color_visited: hsl(271, 68%, 32%);
     --svg-checkbox-bg-color: hsl(172, 100%, 37%);
     --svg-button-fill: hsl(199, 17%, 46%);
     --table-border-color: hsl(0, 0%, 82%);
     --kill-button-hover-color: hsl(342, 100%, 37%);
+    --url-color: hsl(0, 0%, 60%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,12 +26,13 @@
         --controls-bg-color: hsla(201, 18%, 19%, 0.8);
         --control-buttons-bg-color: hsl(201, 18%, 19%);
         --text-color: hsl(0, 0%, 90%);
-        --link-color: hsl(210, 63%, 47%);
+        --link-color: hsl(218, 63%, 47%);
         --link-color_visited: hsl(267, 31%, 47%);
         --svg-checkbox-bg-color: hsl(172, 100%, 27%);
         --svg-button-fill: hsl(0, 0%, 100%);
         --table-border-color: hsl(0, 0%, 32%);
         --kill-button-hover-color: hsl(342, 100%, 27%);
+        --url-color: hsl(0, 0%, 60%);
     }
 }
 

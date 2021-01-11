@@ -158,9 +158,11 @@ export default class WdaConnection {
         if (!wdaScreen) {
             wdaScreen = await this.getWdaScreen();
         }
-        const { scale } = wdaScreen;
+        const { statusBarSize } = wdaScreen;
         // ignore the locked video orientation, the events will apply in coordinates considered in the physical device orientation
         const { videoSize, deviceRotation, contentRect } = this.screenInfo;
+        const { right, left } = contentRect;
+        const scale = (right - left) / statusBarSize.x;
 
         // reverse the video rotation to apply the events
         const devicePosition = position.rotate(deviceRotation);
@@ -180,7 +182,7 @@ export default class WdaConnection {
         return new Point(scaledX, scaledY);
     }
 
-    public setUrl(url: string) {
+    public setUrl(url: string): void {
         this.wdaUrl = url;
     }
 }

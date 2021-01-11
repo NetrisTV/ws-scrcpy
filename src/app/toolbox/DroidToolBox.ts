@@ -46,7 +46,12 @@ export class DroidToolBox extends ToolBox {
         super(list);
     }
 
-    public static createToolBox(udid: string, decoder: Decoder, client: ScrcpyClient, moreBox?: HTMLElement) {
+    public static createToolBox(
+        udid: string,
+        decoder: Decoder,
+        client: ScrcpyClient,
+        moreBox?: HTMLElement,
+    ): DroidToolBox {
         const decoderName = decoder.getName();
         const list = BUTTONS.slice();
         const handler = <K extends keyof HTMLElementEventMap, T extends HTMLElement>(

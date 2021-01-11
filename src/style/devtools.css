@@ -1,0 +1,123 @@
+
+body.devtools {
+    font-family: Ubuntu, Arial, sans-serif;
+    font-size: 13px;
+}
+
+.device {
+    padding: 20px;
+}
+
+.device-header {
+    -webkit-box-align: baseline;
+    -webkit-box-orient: horizontal;
+    display: -webkit-box;
+    margin: 10px 0 0;
+    padding: 2px 0;
+}
+
+.device-name {
+    font-size: 150%;
+}
+
+.device-serial {
+    color: var(--url-color);
+    font-size: 80%;
+    margin-left: 6px;
+}
+
+.browser-header {
+    align-items: center;
+    display: flex;
+    flex-flow: row wrap;
+    min-height: 33px;
+    padding-top: 10px;
+}
+
+.browser-header > .browser-name {
+    font-size: 110%;
+    font-weight: bold;
+}
+
+.list {
+    margin-top: 5px;
+}
+
+.list > .row {
+    padding: 6px 0;
+    position: relative;
+}
+
+.properties-box {
+    display: flex;
+}
+
+.properties-box > img {
+    flex-shrink: 0;
+    height: 16px;
+    padding-left: 2px;
+    padding-right: 5px;
+    vertical-align: top;
+    width: 23px;
+}
+
+.subrow-box {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.subrow {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.subrow > div {
+    margin-right: 0.5em;
+}
+
+.url {
+    color: var(--url-color);
+    max-width: 200px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.action {
+    color: var(--link-color);
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+.action.disabled {
+    color: var(--url-color);
+    cursor: not-allowed;
+}
+
+a.action {
+    text-decoration: none;
+}
+
+a.action.copy {
+    cursor: copy;
+}
+
+.browser-header .action {
+    margin-left: 10px;
+}
+
+.open > input {
+    border: 1px solid #aaa;
+    height: 17px;
+    line-height: 17px;
+    margin-left: 20px;
+    padding: 0 2px;
+}
+
+.tooltip {
+    z-index: 1;
+    position: absolute;
+    padding: 2px;
+    color: var(--controls-bg-color);
+    background-color: var(--text-color);
+}

@@ -26,7 +26,7 @@ export class QVHackToolBox extends ToolBox {
         client: QVHackStreamClient,
         wdaConnection: WdaConnection,
         moreBox?: HTMLElement,
-    ) {
+    ): QVHackToolBox {
         const decoderName = decoder.getName();
         const list = BUTTONS.slice();
         const handler = <K extends keyof HTMLElementEventMap, T extends HTMLElement>(

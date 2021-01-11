@@ -54,6 +54,7 @@ export default class MseDecoder extends Decoder {
     private lastTime = -1;
     protected canPlay = false;
     private seekingSince = -1;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected readonly isSafari = !!((window as unknown) as any)['safari'];
     protected readonly isChrome = navigator.userAgent.includes('Chrome');
     protected readonly isMac = navigator.platform.startsWith('Mac');

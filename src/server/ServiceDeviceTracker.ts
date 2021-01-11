@@ -3,11 +3,7 @@ import { ServerDeviceConnection } from './ServerDeviceConnection';
 import { ReleasableService } from './ReleasableService';
 import { Message } from '../common/Message';
 import DroidDeviceDescriptor from '../common/DroidDeviceDescriptor';
-
-enum Command {
-    KILL_SERVER = 'kill_server',
-    START_SERVER = 'start_server',
-}
+import { DeviceTrackerCommand } from '../common/DeviceTrackerCommand';
 
 export class ServiceDeviceTracker extends ReleasableService {
     private sdc: ServerDeviceConnection = ServerDeviceConnection.getInstance();
@@ -53,7 +49,7 @@ export class ServiceDeviceTracker extends ReleasableService {
         }
         const command = data.command;
         switch (command) {
-            case Command.KILL_SERVER: {
+            case DeviceTrackerCommand.KILL_SERVER: {
                 const { udid, pid } = data;
                 if (typeof udid === 'string' && udid && typeof pid === 'number' && pid > 0) {
                     this.sdc.killServer(udid, pid).catch((e) => {
@@ -66,7 +62,7 @@ export class ServiceDeviceTracker extends ReleasableService {
                 }
                 break;
             }
-            case Command.START_SERVER: {
+            case DeviceTrackerCommand.START_SERVER: {
                 const { udid } = data;
                 if (typeof udid === 'string' && udid) {
                     this.sdc.startServer(udid).catch((e) => {

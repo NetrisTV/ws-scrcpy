@@ -3,6 +3,7 @@ import { ACTION, SERVER_PORT } from '../../server/Constants';
 import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
 import querystring from 'querystring';
 import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
+import { DeviceTrackerCommand } from '../../common/DeviceTrackerCommand';
 
 const FIELDS_MAP: MapItem<DroidDeviceDescriptor>[] = [
     {
@@ -45,6 +46,9 @@ const FIELDS_MAP: MapItem<DroidDeviceDescriptor>[] = [
     },
     {
         title: 'tinyh264',
+    },
+    {
+        title: 'devtools',
     },
     {
         title: 'Shell',
@@ -174,11 +178,11 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                         actionButton.setAttribute('data-pid', value);
                         let command: string;
                         if (hasPid) {
-                            command = 'kill_server';
+                            command = DeviceTrackerCommand.KILL_SERVER;
                             actionButton.title = 'Kill server';
                             actionButton.innerText = `☠ ${value}`;
                         } else {
-                            command = 'start_server';
+                            command = DeviceTrackerCommand.START_SERVER;
                             actionButton.title = 'Start server';
                             actionButton.innerText = `↺ ${value}`;
                         }
@@ -225,12 +229,26 @@ export class DroidDeviceTrackerClient extends DeviceTrackerClient<DroidDeviceDes
                 row.appendChild(decoderTd);
             });
 
+            const devtoolsTd = document.createElement('td');
+            if (isActive) {
+                devtoolsTd.appendChild(
+                    DeviceTrackerClient.buildLink(
+                        {
+                            action: ACTION.DEVTOOLS,
+                            udid: device.udid,
+                        },
+                        'devtools',
+                    ),
+                );
+            }
+            row.appendChild(devtoolsTd);
+
             const shellTd = document.createElement('td');
             if (isActive) {
                 shellTd.appendChild(
                     DeviceTrackerClient.buildLink(
                         {
-                            action: 'shell',
+                            action: ACTION.SHELL,
                             udid: device.udid,
                         },
                         'shell',

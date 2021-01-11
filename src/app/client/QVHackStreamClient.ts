@@ -5,7 +5,7 @@ import { QVHackMoreBox } from '../toolbox/QVHackMoreBox';
 import { QVHackToolBox } from '../toolbox/QVHackToolBox';
 import WdaConnection from '../WdaConnection';
 import { WsQVHackClient } from './WsQVHackClient';
-import Decoder, { VideoResizeListener } from '../decoder/Decoder';
+import Decoder from '../decoder/Decoder';
 import Size from '../Size';
 import ScreenInfo from '../ScreenInfo';
 import { StreamReceiver } from './StreamReceiver';
@@ -16,7 +16,7 @@ const ACTION = 'stream-qvh';
 const PORT = 8080;
 const WAIT_CLASS = 'wait';
 
-export class QVHackStreamClient extends BaseClient<never> implements VideoResizeListener {
+export class QVHackStreamClient extends BaseClient<never> {
     public static ACTION: QVHackStreamParams['action'] = ACTION;
     private hasTouchListeners = false;
     private deviceName = '';
@@ -44,12 +44,12 @@ export class QVHackStreamClient extends BaseClient<never> implements VideoResize
         this.setTitle(`${params.udid} stream`);
     }
 
-    async onViewVideoResize(): Promise<void> {
+    private onViewVideoResize = (): void => {
         this.runWebDriverAgent();
-    }
-    onInputVideoResize(screenInfo: ScreenInfo): void {
+    };
+    private onInputVideoResize = (screenInfo: ScreenInfo): void => {
         this.wdaConnection.setScreenInfo(screenInfo);
-    }
+    };
 
     private runWebDriverAgent() {
         if (typeof this.wdaUrl === 'string') {
@@ -110,7 +110,8 @@ export class QVHackStreamClient extends BaseClient<never> implements VideoResize
         deviceView.appendChild(video);
         deviceView.appendChild(moreBox);
         decoder.setParent(video);
-        decoder.addResizeListener(this);
+        decoder.on('video-view-resize', this.onViewVideoResize);
+        decoder.on('input-video-resize', this.onInputVideoResize);
         this.videoWrapper = video;
         const bounds = QVHackStreamClient.getMaxSize(controlButtons);
         if (bounds) {
