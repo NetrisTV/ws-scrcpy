@@ -1,23 +1,33 @@
-import { ReleasableService } from './ReleasableService';
+import { Mw, RequestParameters } from './Mw';
 import WebSocket from 'ws';
 import * as pty from 'node-pty';
 import * as os from 'os';
 import { IPty } from 'node-pty';
-import { Message } from '../common/Message';
-import { XtermClientMessage, XtermServiceParameters } from '../common/XtermMessage';
+import { Message } from '../../common/Message';
+import { XtermClientMessage, XtermServiceParameters } from '../../common/XtermMessage';
+import { ACTION } from '../Constants';
 
 const OS_WINDOWS = os.platform() === 'win32';
 const USE_BINARY = !OS_WINDOWS;
 const EVENT_TYPE_SHELL = 'shell';
 
-export class ServiceShell extends ReleasableService {
+export class RemoteShell extends Mw {
+    public static readonly TAG = 'RemoteShell';
     private term?: IPty;
     private initialized = false;
+
+    public static processRequest(ws: WebSocket, params: RequestParameters): RemoteShell | undefined {
+        if (params.parsedQuery?.action !== ACTION.SHELL) {
+            return;
+        }
+        return new RemoteShell(ws);
+    }
+
     constructor(ws: WebSocket) {
         super(ws);
     }
 
-    public static createTerminal(ws: WebSocket, params: XtermServiceParameters): IPty {
+    public createTerminal(params: XtermServiceParameters): IPty {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const env = Object.assign({}, process.env) as any;
         env['COLORTERM'] = 'truecolor';
@@ -32,12 +42,12 @@ export class ServiceShell extends ReleasableService {
             env,
             encoding: null,
         });
-        const send = USE_BINARY ? this.bufferUtf8(ws, 5) : this.buffer(ws, 5);
+        const send = USE_BINARY ? this.bufferUtf8(5) : this.buffer(5);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore Documentation is incorrect for `encoding: null`
         term.on('data', send);
-        term.on('exit', () => {
-            ws.close();
+        term.on('exit', (code: number) => {
+            this.ws.close(1000, `[${[RemoteShell.TAG]}] terminal process exited with code: ${code}`);
         });
         return term;
     }
@@ -53,11 +63,11 @@ export class ServiceShell extends ReleasableService {
         try {
             data = JSON.parse(event.data.toString());
         } catch (e) {
-            console.error(e.message);
+            console.error(`[${RemoteShell.TAG}]`, e.message);
             return;
         }
         this.handleMessage(data as Message).catch((e: Error) => {
-            console.error(e.message);
+            console.error(`[${RemoteShell.TAG}]`, e.message);
         });
     }
 
@@ -68,7 +78,7 @@ export class ServiceShell extends ReleasableService {
         const data: XtermClientMessage = message.data as XtermClientMessage;
         const { type } = data;
         if (type === 'start') {
-            this.term = ServiceShell.createTerminal(this.ws, data);
+            this.term = this.createTerminal(data);
             this.initialized = true;
         }
         if (type === 'stop') {
@@ -77,14 +87,14 @@ export class ServiceShell extends ReleasableService {
     };
 
     // string message buffering
-    private static buffer(ws: WebSocket, timeout: number): (data: string) => void {
+    private buffer(timeout: number): (data: string) => void {
         let s = '';
         let sender: NodeJS.Timeout | null = null;
         return (data: string) => {
             s += data;
             if (!sender) {
                 sender = setTimeout(() => {
-                    ws.send(s);
+                    this.ws.send(s);
                     s = '';
                     sender = null;
                 }, timeout);
@@ -92,7 +102,7 @@ export class ServiceShell extends ReleasableService {
         };
     }
 
-    private static bufferUtf8(ws: WebSocket, timeout: number): (data: Buffer) => void {
+    private bufferUtf8(timeout: number): (data: Buffer) => void {
         let buffer: Buffer[] = [];
         let sender: NodeJS.Timeout | null = null;
         let length = 0;
@@ -101,17 +111,13 @@ export class ServiceShell extends ReleasableService {
             length += data.length;
             if (!sender) {
                 sender = setTimeout(() => {
-                    ws.send(Buffer.concat(buffer, length));
+                    this.ws.send(Buffer.concat(buffer, length));
                     buffer = [];
                     sender = null;
                     length = 0;
                 }, timeout);
             }
         };
-    }
-
-    public static createService(ws: WebSocket): ReleasableService {
-        return new ServiceShell(ws);
     }
 
     public release(): void {

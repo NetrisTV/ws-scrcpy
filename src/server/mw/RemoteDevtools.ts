@@ -1,12 +1,27 @@
 import WebSocket from 'ws';
-import { ReleasableService } from './ReleasableService';
-import { RemoteDevtoolsCommand } from '../common/RemoteDevtoolsCommand';
-import { AdbUtils } from './AdbUtils';
-import { ACTION } from './Constants';
+import { Mw, RequestParameters } from './Mw';
+import { RemoteDevtoolsCommand } from '../../common/RemoteDevtoolsCommand';
+import { AdbUtils } from '../AdbUtils';
+import { ACTION } from '../Constants';
 
-export class ServiceRemoteDevtools extends ReleasableService {
-    public static createService(ws: WebSocket, host: string, udid: string): ServiceRemoteDevtools {
-        return new ServiceRemoteDevtools(ws, host, udid);
+export class RemoteDevtools extends Mw {
+    public static readonly TAG = 'RemoteDevtools';
+    public static processRequest(ws: WebSocket, params: RequestParameters): RemoteDevtools | undefined {
+        const { request, parsedQuery } = params;
+        if (parsedQuery.action !== ACTION.DEVTOOLS) {
+            return;
+        }
+        const host = request.headers['host'];
+        const udid = parsedQuery.udid;
+        if (typeof udid !== 'string' || !udid) {
+            ws.close(4003, `[${this.TAG}] Invalid value "${udid}" for "udid" parameter`);
+            return;
+        }
+        if (typeof host !== 'string' || !host) {
+            ws.close(4003, `[${this.TAG}] Invalid value "${host}" in "Host" header`);
+            return;
+        }
+        return new RemoteDevtools(ws, host, udid);
     }
     constructor(ws: WebSocket, private readonly host: string, private readonly udid: string) {
         super(ws);

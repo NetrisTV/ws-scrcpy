@@ -1,7 +1,20 @@
-import { Message } from '../common/Message';
+import { Message } from '../../common/Message';
 import WebSocket from 'ws';
+import * as http from 'http';
+import * as querystring from 'querystring';
+import url from 'url';
 
-export abstract class ReleasableService {
+export type RequestParameters = {
+    request: http.IncomingMessage;
+    parsedUrl: url.UrlWithStringQuery;
+    parsedQuery: querystring.ParsedUrlQuery;
+};
+
+export interface MwFactory {
+    processRequest(ws: WebSocket, params: RequestParameters): Mw | undefined;
+}
+
+export abstract class Mw {
     protected constructor(protected readonly ws: WebSocket) {
         this.ws.onmessage = this.onSocketMessage.bind(this);
         this.ws.onclose = this.onSocketClose.bind(this);
