@@ -47,13 +47,19 @@ export class Device extends TypedEmitter<DeviceEvents> {
             'ro.product.manufacturer': '',
             'ro.product.model': '',
             'ro.product.cpu.abi': '',
+            'last.seen.active.timestamp': 0,
         };
         this.client = AdbKit.createClient();
         this.setState(state);
     }
 
     public setState(state: string): void {
-        this.connected = state === 'device';
+        if (state === 'device') {
+            this.connected = true;
+            this.descriptor['last.seen.active.timestamp'] = Date.now();
+        } else {
+            this.connected = false;
+        }
         this.descriptor.state = state;
         this.emitUpdate();
         this.fetchDeviceInfo();
@@ -356,6 +362,9 @@ export class Device extends TypedEmitter<DeviceEvents> {
         const THROTTLE = 300;
         const now = Date.now();
         const time = now - this.lastEmit;
+        if (this.connected) {
+            this.descriptor['last.seen.active.timestamp'] = now;
+        }
         if (time > THROTTLE) {
             this.lastEmit = now;
             this.emit('update', this);

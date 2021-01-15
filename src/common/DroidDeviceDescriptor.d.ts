@@ -10,4 +10,5 @@ export default interface DroidDeviceDescriptor extends BaseDeviceDescriptor {
     'wifi.interface': string;
     interfaces: NetInterface[];
     pid: number;
+    'last.seen.active.timestamp': number;
 }

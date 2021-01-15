@@ -185,6 +185,7 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                         actionButton.setAttribute('data-pid', value);
                         let command: string;
                         if (isActive) {
+                            actionButton.classList.add('active');
                             actionButton.onclick = this.onActionButtonClick;
                             if (hasPid) {
                                 command = DeviceTrackerCommand.KILL_SERVER;
@@ -197,7 +198,13 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                             }
                             actionButton.setAttribute('data-command', command);
                         } else {
-                            actionButton.title = 'Possible PID';
+                            const timestamp = device['last.seen.active.timestamp'];
+                            if (timestamp) {
+                                const date = new Date(timestamp);
+                                actionButton.title = `Last seen on ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
+                            } else {
+                                actionButton.title = `Not active`;
+                            }
                             actionButton.innerText = `❓ ${value}`;
                         }
                         td.appendChild(actionButton);

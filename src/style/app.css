@@ -264,3 +264,7 @@ body.stream {
 .kill-server-button:hover {
     color: var(--kill-button-hover-color);
 }
+
+.kill-server-button.active {
+    cursor: pointer;
+}
