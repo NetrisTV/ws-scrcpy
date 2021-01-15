@@ -255,16 +255,16 @@ body.stream {
     fill: var(--svg-checkbox-bg-color);
 }
 
-.kill-server-button {
+td .action-button {
     border: none;
     background: none;
     color: inherit;
 }
 
-.kill-server-button:hover {
+td .action-button:hover {
     color: var(--kill-button-hover-color);
 }
 
-.kill-server-button.active {
+td .action-button.active {
     cursor: pointer;
 }

@@ -55,6 +55,21 @@ export class DeviceTracker extends Mw {
         }
         const command = data.command;
         switch (command) {
+            case DeviceTrackerCommand.UPDATE_INTERFACES: {
+                const { udid } = data;
+                if (typeof udid === 'string' && udid) {
+                    this.adt.updateInterfaces(udid).catch((e) => {
+                        const { message } = e;
+                        console.error(`[${DeviceTracker.TAG}], Command: "${command}", error: ${message}`);
+                        this.ws.send({ command, error: message });
+                    });
+                } else {
+                    console.error(
+                        `[${DeviceTracker.TAG}], Incorrect parameters for ${data.command} command: udid:"${udid}"`,
+                    );
+                }
+                break;
+            }
             case DeviceTrackerCommand.KILL_SERVER: {
                 const { udid, pid } = data;
                 if (typeof udid === 'string' && udid && typeof pid === 'number' && pid > 0) {

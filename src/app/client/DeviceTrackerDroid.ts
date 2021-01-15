@@ -127,9 +127,16 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
         const pidString = button.getAttribute('data-pid') || '';
         const command = button.getAttribute('data-command') as string;
         const pid = parseInt(pidString, 10);
+        const data: { command: string; udid?: string; pid?: number } = { command };
+        if (typeof udid === 'string') {
+            data.udid = udid;
+        }
+        if (!isNaN(pid)) {
+            data.pid = pid;
+        }
 
         if (this.hasConnection()) {
-            (this.ws as WebSocket).send(JSON.stringify({ command, udid, pid }));
+            (this.ws as WebSocket).send(JSON.stringify(data));
         }
     };
 
@@ -180,7 +187,7 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                     if (fieldName === 'pid') {
                         hasPid = value !== '-1';
                         const actionButton = document.createElement('button');
-                        actionButton.className = 'kill-server-button';
+                        actionButton.className = 'action-button kill-server-button';
                         actionButton.setAttribute('data-udid', device.udid);
                         actionButton.setAttribute('data-pid', value);
                         let command: string;
@@ -233,6 +240,14 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                                 adbProxyOption.selected = true;
                             }
                             selectElement.appendChild(adbProxyOption);
+                            const actionButton = document.createElement('button');
+                            actionButton.className = 'action-button update-interfaces-button active';
+                            actionButton.title = `Update information`;
+                            actionButton.innerText = `↺`;
+                            actionButton.setAttribute('data-udid', device.udid);
+                            actionButton.setAttribute('data-command', DeviceTrackerCommand.UPDATE_INTERFACES);
+                            actionButton.onclick = this.onActionButtonClick;
+                            td.appendChild(actionButton);
                         }
                         selectElement.onchange = this.onInterfaceSelected;
                         td.appendChild(selectElement);

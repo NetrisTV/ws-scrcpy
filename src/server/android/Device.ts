@@ -22,12 +22,16 @@ export interface DeviceEvents {
 }
 
 export class Device extends TypedEmitter<DeviceEvents> {
+    private static readonly INITIAL_UPDATE_TIMEOUT = 1500;
+    private static readonly MAX_UPDATES_COUNT = 7;
     private connected = true;
     private pidDetectionVariant: PID_DETECTION = PID_DETECTION.UNKNOWN;
     private client: AdbKitClient;
     private properties?: Record<string, string>;
     private spawnServer = true;
     private updateTimeoutId?: Timeout;
+    private updateTimeout = Device.INITIAL_UPDATE_TIMEOUT;
+    private updateCount = 0;
     private throttleTimeoutId?: Timeout;
     private lastEmit = 0;
     protected readonly TAG: string;
@@ -57,6 +61,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
         if (state === 'device') {
             this.connected = true;
             this.descriptor['last.seen.active.timestamp'] = Date.now();
+            this.properties = undefined;
         } else {
             this.connected = false;
         }
@@ -297,15 +302,19 @@ export class Device extends TypedEmitter<DeviceEvents> {
         if (this.updateTimeoutId) {
             return;
         }
-        this.updateTimeoutId = setTimeout(this.fetchDeviceInfo, 1500);
+        if (++this.updateCount > Device.MAX_UPDATES_COUNT) {
+            console.error(this.TAG, 'The maximum number of attempts to fetch device info has been reached.');
+            return;
+        }
+        this.updateTimeoutId = setTimeout(this.fetchDeviceInfo, this.updateTimeout);
+        this.updateTimeout *= 2;
     }
 
     private fetchDeviceInfo = (): void => {
         if (this.connected) {
             const propsPromise = this.getProperties().then((props) => {
                 if (!props) {
-                    this.scheduleInfoUpdate();
-                    return;
+                    return false;
                 }
                 let changed = false;
                 Properties.forEach((propName: keyof DroidDeviceDescriptor) => {
@@ -317,41 +326,38 @@ export class Device extends TypedEmitter<DeviceEvents> {
                 if (changed) {
                     this.emitUpdate();
                 }
+                return true;
             });
-            const netIntPromise = this.getNetInterfaces().then((interfaces) => {
-                let changed = false;
-                const old = this.descriptor.interfaces;
-                if (old.length !== interfaces.length) {
-                    changed = true;
-                } else {
-                    old.forEach((value, idx) => {
-                        if (value.name !== interfaces[idx].name || value.ipv4 !== interfaces[idx].ipv4) {
-                            changed = true;
-                        }
-                    });
-                }
-                if (changed) {
-                    this.descriptor.interfaces = interfaces;
-                    this.emitUpdate();
-                }
-                // if (!this.descriptor.interfaces.length) {
-                //     this.scheduleInfoUpdate();
-                // }
+            const netIntPromise = this.updateInterfaces().then((interfaces) => {
+                return !!interfaces.length;
             });
-            const pidPromise = this.getServerPid().then(() => {
-                if (this.descriptor.pid === -1 && this.spawnServer) {
-                    return this.startServer();
-                }
-                return;
+            let pidPromise: Promise<number | undefined>;
+            if (this.spawnServer) {
+                pidPromise = this.startServer();
+            } else {
+                pidPromise = this.getServerPid();
+            }
+            const serverPromise = pidPromise.then(() => {
+                return !(this.descriptor.pid === -1 && this.spawnServer);
             });
-            Promise.all([propsPromise, netIntPromise, pidPromise])
-                .then(() => {
+            Promise.all([propsPromise, netIntPromise, serverPromise])
+                .then((results) => {
                     this.updateTimeoutId = undefined;
+                    const failedCount = results.filter((result) => !result).length;
+                    if (!failedCount) {
+                        this.updateCount = 0;
+                        this.updateTimeout = Device.INITIAL_UPDATE_TIMEOUT;
+                    } else {
+                        this.scheduleInfoUpdate();
+                    }
                 })
                 .catch(() => {
+                    this.updateTimeoutId = undefined;
                     this.scheduleInfoUpdate();
                 });
         } else {
+            this.updateCount = 0;
+            this.updateTimeout = Device.INITIAL_UPDATE_TIMEOUT;
             this.updateTimeoutId = undefined;
             this.emitUpdate();
         }
@@ -397,6 +403,27 @@ export class Device extends TypedEmitter<DeviceEvents> {
         }
     }
 
+    public async updateInterfaces(): Promise<NetInterface[]> {
+        return this.getNetInterfaces().then((interfaces) => {
+            let changed = false;
+            const old = this.descriptor.interfaces;
+            if (old.length !== interfaces.length) {
+                changed = true;
+            } else {
+                old.forEach((value, idx) => {
+                    if (value.name !== interfaces[idx].name || value.ipv4 !== interfaces[idx].ipv4) {
+                        changed = true;
+                    }
+                });
+            }
+            if (changed) {
+                this.descriptor.interfaces = interfaces;
+                this.emitUpdate();
+            }
+            return this.descriptor.interfaces;
+        });
+    }
+
     public async killServer(pid: number): Promise<void> {
         this.spawnServer = false;
         const realPid = await this.getServerPid();
@@ -408,7 +435,9 @@ export class Device extends TypedEmitter<DeviceEvents> {
         }
         try {
             const output = await this.killProcess(realPid);
-            console.log(this.TAG, `kill server: ${output}`);
+            if (output) {
+                console.log(this.TAG, `kill server: "${output}"`);
+            }
             this.descriptor.pid = -1;
             this.emitUpdate();
         } catch (e) {
@@ -420,12 +449,13 @@ export class Device extends TypedEmitter<DeviceEvents> {
         this.spawnServer = true;
         const pid = await this.getServerPid();
         if (typeof pid === 'number') {
-            console.error(this.TAG, `Server already running: PID:${pid}`);
             return pid;
         }
         try {
             const output = await ScrcpyServer.run(this);
-            console.log(this.TAG, `start server: ${output}`);
+            if (output) {
+                console.log(this.TAG, `start server: "${output}"`);
+            }
             return this.getServerPid();
         } catch (e) {
             console.error(this.TAG, `Error: ${e.message}`);
