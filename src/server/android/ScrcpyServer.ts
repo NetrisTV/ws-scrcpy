@@ -5,6 +5,7 @@ import { Device } from './Device';
 import { ARGS_STRING, SERVER_PACKAGE, SERVER_PROCESS_NAME, SERVER_VERSION } from '../Constants';
 import path from 'path';
 import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
+import { ServerVersion } from './ServerVersion';
 
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, 'vendor/Genymobile/scrcpy');
@@ -18,19 +19,26 @@ export class ScrcpyServer {
         return device.push(src, dst);
     }
 
-    private static async waitForServerPid(device: Device, tryCounter = 0): Promise<number[] | undefined> {
-        const list = await this.getServerPid(device);
-        if (Array.isArray(list) && list.length) {
-            return list;
-        }
-        if (tryCounter > 5) {
-            throw new Error('Failed to start server');
+    private static async waitForServerPid(
+        device: Device,
+        params: { tryCounter: number; processExited: boolean },
+    ): Promise<number[] | undefined> {
+        const { tryCounter, processExited } = params;
+        if (processExited) {
+            return;
         }
         return new Promise<number[] | undefined>((resolve) => {
-            tryCounter++;
-            setTimeout(() => {
-                resolve(this.waitForServerPid(device, tryCounter));
-            }, 100 + tryCounter);
+            const timeout = 3000 + 100 * tryCounter;
+            setTimeout(async () => {
+                const list = await this.getServerPid(device);
+                if (Array.isArray(list) && list.length) {
+                    return resolve(list);
+                }
+                if (++params.tryCounter > 5) {
+                    throw new Error('Failed to start server');
+                }
+                return resolve(this.waitForServerPid(device, params));
+            }, timeout);
         });
     }
 
@@ -46,8 +54,24 @@ export class ScrcpyServer {
         const promises = list.map((pid) => {
             return device.runShellCommandAdbKit(`cat /proc/${pid}/cmdline`).then((output) => {
                 const args = output.split('\0');
-                if (args[0] === SERVER_PROCESS_NAME && args[2] === SERVER_PACKAGE && args[3] === SERVER_VERSION) {
-                    serverPid.push(pid);
+                if (args[0] === SERVER_PROCESS_NAME && args[2] === SERVER_PACKAGE) {
+                    const versionString = args[3];
+                    if (versionString === SERVER_VERSION) {
+                        serverPid.push(pid);
+                    } else {
+                        const currentVersion = new ServerVersion(versionString);
+                        if (currentVersion.isCompatible()) {
+                            const desired = new ServerVersion(SERVER_VERSION);
+                            if (desired.gt(currentVersion)) {
+                                console.log(
+                                    device.TAG,
+                                    `Found older server version running (PID: ${pid}, Version: ${versionString})`,
+                                );
+                                console.log(device.TAG, 'Perform kill now');
+                                device.killProcess(pid);
+                            }
+                        }
+                    }
                 }
                 return;
             });
@@ -66,7 +90,21 @@ export class ScrcpyServer {
         }
         await this.copyServer(device);
 
-        list = await Promise.race([device.runShellCommandAdbKit(RUN_COMMAND), this.waitForServerPid(device)]);
+        const params = { tryCounter: 0, processExited: false };
+        const runPromise = device.runShellCommandAdbKit(RUN_COMMAND);
+        runPromise
+            .then((out) => {
+                if (device.isConnected()) {
+                    console.log(device.TAG, 'Server exited:', out);
+                }
+            })
+            .catch((e) => {
+                console.log(device.TAG, 'Error:', e.message);
+            })
+            .finally(() => {
+                params.processExited = true;
+            });
+        list = await Promise.race([runPromise, this.waitForServerPid(device, params)]);
         if (Array.isArray(list) && list.length) {
             return list;
         }
