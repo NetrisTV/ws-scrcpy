@@ -12,32 +12,51 @@ const FILE_DIR = path.join(__dirname, 'vendor/Genymobile/scrcpy');
 const FILE_NAME = 'scrcpy-server.jar';
 const RUN_COMMAND = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS_STRING}`;
 
+type WaitForPidParams = { tryCounter: number; processExited: boolean; lookPidFile: boolean };
+
 export class ScrcpyServer {
+    private static PID_FILE_PATH = '/data/local/tmp/ws_scrcpy.pid';
     private static async copyServer(device: Device): Promise<PushTransfer> {
         const src = path.join(FILE_DIR, FILE_NAME);
         const dst = TEMP_PATH + FILE_NAME; // don't use path.join(): will not work on win host
         return device.push(src, dst);
     }
 
-    private static async waitForServerPid(
-        device: Device,
-        params: { tryCounter: number; processExited: boolean },
-    ): Promise<number[] | undefined> {
-        const { tryCounter, processExited } = params;
+    // Important to notice that we first try to read PID from file.
+    // Checking with `.getServerPid()` will return process id, but process may stop.
+    // PID file only created after WebSocket server has been successfully started.
+    private static async waitForServerPid(device: Device, params: WaitForPidParams): Promise<number[] | undefined> {
+        const { tryCounter, processExited, lookPidFile } = params;
         if (processExited) {
             return;
         }
+        const timeout = 500 + 100 * tryCounter;
+        if (lookPidFile) {
+            const fileName = ScrcpyServer.PID_FILE_PATH;
+            const content = await device.runShellCommandAdbKit(`test -f ${fileName} && cat ${fileName}`);
+            if (content.trim()) {
+                const pid = parseInt(content, 10);
+                if (pid && !isNaN(pid)) {
+                    const realPid = await this.getServerPid(device);
+                    if (realPid?.includes(pid)) {
+                        return realPid;
+                    } else {
+                        params.lookPidFile = false;
+                    }
+                }
+            }
+        } else {
+            const list = await this.getServerPid(device);
+            if (Array.isArray(list) && list.length) {
+                return list;
+            }
+        }
+        if (++params.tryCounter > 5) {
+            throw new Error('Failed to start server');
+        }
         return new Promise<number[] | undefined>((resolve) => {
-            const timeout = 3000 + 100 * tryCounter;
-            setTimeout(async () => {
-                const list = await this.getServerPid(device);
-                if (Array.isArray(list) && list.length) {
-                    return resolve(list);
-                }
-                if (++params.tryCounter > 5) {
-                    throw new Error('Failed to start server');
-                }
-                return resolve(this.waitForServerPid(device, params));
+            setTimeout(() => {
+                resolve(this.waitForServerPid(device, params));
             }, timeout);
         });
     }
@@ -99,7 +118,7 @@ export class ScrcpyServer {
         }
         await this.copyServer(device);
 
-        const params = { tryCounter: 0, processExited: false };
+        const params: WaitForPidParams = { tryCounter: 0, processExited: false, lookPidFile: true };
         const runPromise = device.runShellCommandAdb(RUN_COMMAND);
         runPromise
             .then((out) => {
