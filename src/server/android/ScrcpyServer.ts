@@ -54,22 +54,31 @@ export class ScrcpyServer {
         const promises = list.map((pid) => {
             return device.runShellCommandAdbKit(`cat /proc/${pid}/cmdline`).then((output) => {
                 const args = output.split('\0');
-                if (args[0] === SERVER_PROCESS_NAME && args[2] === SERVER_PACKAGE) {
-                    const versionString = args[3];
-                    if (versionString === SERVER_VERSION) {
-                        serverPid.push(pid);
-                    } else {
-                        const currentVersion = new ServerVersion(versionString);
-                        if (currentVersion.isCompatible()) {
-                            const desired = new ServerVersion(SERVER_VERSION);
-                            if (desired.gt(currentVersion)) {
-                                console.log(
-                                    device.TAG,
-                                    `Found older server version running (PID: ${pid}, Version: ${versionString})`,
-                                );
-                                console.log(device.TAG, 'Perform kill now');
-                                device.killProcess(pid);
-                            }
+                if (!args.length || args[0] !== SERVER_PROCESS_NAME) {
+                    return;
+                }
+                let first = args[0];
+                while (args.length && first !== SERVER_PACKAGE) {
+                    args.shift();
+                    first = args[0];
+                }
+                if (args.length < 3) {
+                    return;
+                }
+                const versionString = args[1];
+                if (versionString === SERVER_VERSION) {
+                    serverPid.push(pid);
+                } else {
+                    const currentVersion = new ServerVersion(versionString);
+                    if (currentVersion.isCompatible()) {
+                        const desired = new ServerVersion(SERVER_VERSION);
+                        if (desired.gt(currentVersion)) {
+                            console.log(
+                                device.TAG,
+                                `Found old server version running (PID: ${pid}, Version: ${versionString})`,
+                            );
+                            console.log(device.TAG, 'Perform kill now');
+                            device.killProcess(pid);
                         }
                     }
                 }
@@ -91,7 +100,7 @@ export class ScrcpyServer {
         await this.copyServer(device);
 
         const params = { tryCounter: 0, processExited: false };
-        const runPromise = device.runShellCommandAdbKit(RUN_COMMAND);
+        const runPromise = device.runShellCommandAdb(RUN_COMMAND);
         runPromise
             .then((out) => {
                 if (device.isConnected()) {

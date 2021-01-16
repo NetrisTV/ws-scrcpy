@@ -109,7 +109,15 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             return preferred;
         }
         const parsed = JSON.parse(saved);
-        const { crop, bitrate, iFrameInterval, sendFrameMeta, lockedVideoOrientation } = parsed;
+        const {
+            crop,
+            bitrate,
+            iFrameInterval,
+            sendFrameMeta,
+            lockedVideoOrientation,
+            codecOptions,
+            encoderName,
+        } = parsed;
 
         // REMOVE `frameRate`
         const maxFps = isNaN(parsed.maxFps) ? parsed.frameRate : parsed.maxFps;
@@ -132,6 +140,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             lockedVideoOrientation: !isNaN(lockedVideoOrientation)
                 ? lockedVideoOrientation
                 : preferred.lockedVideoOrientation,
+            codecOptions,
+            encoderName,
         });
     }
 

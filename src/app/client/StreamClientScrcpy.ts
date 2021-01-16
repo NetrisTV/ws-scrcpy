@@ -162,7 +162,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
                 }
             }
             if (!min.equals(videoSettings) || !playing) {
-                this.sendNewVideoSetting(min);
+                this.sendEvent(CommandControlMessage.createSetVideoSettingsCommand(min));
             }
         });
         console.log(player.getName(), udid);
