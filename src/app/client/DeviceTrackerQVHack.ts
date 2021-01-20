@@ -35,7 +35,7 @@ export class DeviceTrackerQVHack extends BaseDeviceTracker<QVHackDeviceDescripto
     }
 
     constructor(action: string) {
-        super(action, FIELDS_MAP);
+        super(action);
         this.setBodyClass('list');
         this.setTitle('Device list');
     }
@@ -64,6 +64,20 @@ export class DeviceTrackerQVHack extends BaseDeviceTracker<QVHackDeviceDescripto
                 console.error(error.message);
                 console.log(e.data);
             });
+    }
+
+    protected buildTableHead(): HTMLTableSectionElement {
+        const thead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        FIELDS_MAP.forEach((item) => {
+            const { title } = item;
+            const th = document.createElement('th');
+            th.innerText = title;
+            th.className = title.toLowerCase();
+            headRow.appendChild(th);
+        });
+        thead.appendChild(headRow);
+        return thead;
     }
 
     public buildDeviceTable(): void {

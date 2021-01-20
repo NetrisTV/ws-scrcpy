@@ -1,5 +1,5 @@
 import { BasePlayer } from './BasePlayer';
-import VideoConverter, { setLogger } from 'h264-converter';
+import VideoConverter, { setLogger, mimeType } from 'h264-converter';
 import VideoSettings from '../VideoSettings';
 import Size from '../Size';
 
@@ -15,6 +15,7 @@ type ConverterFake = {
 };
 
 export class MsePlayer extends BasePlayer {
+    public static readonly decoderName = 'mse';
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 8000000,
@@ -61,6 +62,10 @@ export class MsePlayer extends BasePlayer {
     private MAX_TIME_TO_RECOVER = 200; // ms
     private MAX_BUFFER = this.isSafari ? 2 : this.isChrome && this.isMac ? 0.9 : 0.2;
     private MAX_AHEAD = -0.2;
+
+    public static isSupported(): boolean {
+        return typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported(mimeType);
+    }
 
     constructor(udid: string, name = 'MSE_Player', protected tag: HTMLVideoElement = MsePlayer.createElement()) {
         super(udid, name, tag);
@@ -220,6 +225,10 @@ export class MsePlayer extends BasePlayer {
 
     public getPreferredVideoSetting(): VideoSettings {
         return MsePlayer.preferredVideoSettings;
+    }
+
+    public static getPreferredVideoSetting(): VideoSettings {
+        return this.preferredVideoSettings;
     }
 
     cleanSourceBuffer = (): void => {

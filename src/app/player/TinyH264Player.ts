@@ -14,6 +14,7 @@ type WorkerMessage = {
 };
 
 export class TinyH264Player extends BaseCanvasBasedPlayer {
+    public static readonly decoderName = 'tinyh264';
     private static videoStreamId = 1;
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
@@ -28,6 +29,10 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
     private isDecoderReady = false;
     protected canvas?: YUVWebGLCanvas | YUVCanvas;
     public readonly supportsScreenshot: boolean = true;
+
+    public static isSupported(): boolean {
+        return typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
+    }
 
     constructor(udid: string) {
         super(udid, 'tinyh264');

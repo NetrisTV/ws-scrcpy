@@ -17,6 +17,7 @@
     --table-border-color: hsl(0, 0%, 82%);
     --kill-button-hover-color: hsl(342, 100%, 37%);
     --url-color: hsl(0, 0%, 60%);
+    --font-size: 1em;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,6 +61,10 @@ body {
     overflow: hidden;
 }
 
+body.list {
+    overflow: auto;
+}
+
 body.shell {
     background-color: var(--shell-bg-color);
 }
@@ -99,6 +104,7 @@ body.stream {
     border-spacing: 0;
     border-collapse: collapse;
     font-family: monospace;
+    font-size: var(--font-size);
 }
 
 .table-wrapper table thead {
@@ -131,8 +137,40 @@ body.stream {
     background-color: var(--row-bg-color_hover);;
 }
 
-.table-wrapper table td.pid {
+.table-wrapper table td.stream {
+    text-align: center;
+}
+
+.table-wrapper table td.server_pid,
+.table-wrapper table td.version,
+.table-wrapper table td.net_interface {
     white-space: nowrap;
+}
+
+.table-wrapper table td button {
+    fill: var(--text-color)
+}
+
+.table-wrapper table td button > span {
+    padding: 0 0.5em;
+}
+
+.table-wrapper table td button > span,
+.table-wrapper table td button > svg {
+    vertical-align: middle;
+}
+
+.table-wrapper table td button > svg {
+    width: var(--font-size);
+    height: var(--font-size);
+}
+
+.table-wrapper table td button > svg > path {
+    fill: var(--text-color);
+}
+
+.table-wrapper table tr.not-active td button > svg > path {
+    fill: var(--text-color-light);
 }
 
 .table-wrapper table tr.not-active select {
@@ -261,8 +299,12 @@ td .action-button {
     color: inherit;
 }
 
-td .action-button:hover {
+.table-wrapper table tr.active td .action-button:hover {
     color: var(--kill-button-hover-color);
+}
+
+.table-wrapper table tr.active td button.action-button:hover > svg > path {
+    fill: var(--kill-button-hover-color);
 }
 
 td .action-button.active {

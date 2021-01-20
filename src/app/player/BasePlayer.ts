@@ -31,6 +31,12 @@ export interface PlayerEvents {
     'video-settings': VideoSettings;
 }
 
+export interface PlayerClass {
+    decoderName: string;
+    isSupported(): boolean;
+    new (udid: string): BasePlayer;
+}
+
 export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     private static readonly STAT_BACKGROUND: string = 'rgba(0, 0, 0, 0.5)';
     private static readonly STAT_TEXT_COLOR: string = 'hsl(24, 85%, 50%)';

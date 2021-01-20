@@ -1,5 +1,4 @@
 import { BaseClient } from './BaseClient';
-import { Players } from '../../common/Players';
 import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
 import { DroidMoreBox } from '../toolbox/DroidMoreBox';
 import { DroidToolBox } from '../toolbox/DroidToolBox';
@@ -16,13 +15,11 @@ import FilePushHandler from '../FilePushHandler';
 import DragAndPushLogger from '../DragAndPushLogger';
 import { KeyEventListener, KeyInputHandler } from '../KeyInputHandler';
 import { KeyCodeControlMessage } from '../controlMessage/KeyCodeControlMessage';
-import { MsePlayer } from '../player/MsePlayer';
-import { BroadwayPlayer } from '../player/BroadwayPlayer';
-import { TinyH264Player } from '../player/TinyH264Player';
-import { BasePlayer } from '../player/BasePlayer';
+import { BasePlayer, PlayerClass } from '../player/BasePlayer';
 
 export class StreamClientScrcpy extends BaseClient<never> implements KeyEventListener {
     public static ACTION = 'stream';
+    private static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
     private hasTouchListeners = false;
 
     private controlButtons?: HTMLElement;
@@ -31,6 +28,16 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     private clientsCount = -1;
     private requestedVideoSettings?: VideoSettings;
     private readonly streamReceiver: StreamReceiver;
+
+    public static registerPlayer(playerClass: PlayerClass): void {
+        if (playerClass.isSupported()) {
+            this.players.set(playerClass.decoderName, playerClass);
+        }
+    }
+
+    public static getPlayers(): PlayerClass[] {
+        return Array.from(this.players.values());
+    }
 
     constructor(params: ScrcpyStreamParams) {
         super();
@@ -41,23 +48,18 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         this.setTitle(`${params.udid} stream`);
     }
 
-    public startStream(udid: string, playerName: Players): void {
+    public startStream(udid: string, playerName: string): void {
         if (!udid) {
             return;
         }
-        let playerClass: new (udid: string) => BasePlayer;
-        switch (playerName) {
-            case 'mse':
-                playerClass = MsePlayer;
-                break;
-            case 'broadway':
-                playerClass = BroadwayPlayer;
-                break;
-            case 'tinyh264':
-                playerClass = TinyH264Player;
-                break;
-            default:
-                return;
+        let playerClass: PlayerClass | undefined;
+        for (const value of StreamClientScrcpy.players.values()) {
+            if (value.decoderName === playerName) {
+                playerClass = value;
+            }
+        }
+        if (!playerClass) {
+            return;
         }
         const player = new playerClass(udid);
         this.setTouchListeners(player);
