@@ -110,6 +110,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         }
         const parsed = JSON.parse(saved);
         const {
+            displayId,
             crop,
             bitrate,
             iFrameInterval,
@@ -131,6 +132,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             bounds = new Size(parsed.bounds.width, parsed.bounds.height);
         }
         return new VideoSettings({
+            displayId: typeof displayId === 'number' ? displayId : 0,
             crop: crop ? new Rect(crop.left, crop.top, crop.right, crop.bottom) : preferred.crop,
             bitrate: !isNaN(bitrate) ? bitrate : preferred.bitrate,
             bounds: bounds !== null ? bounds : preferred.bounds,

@@ -10,12 +10,13 @@ interface Settings {
     iFrameInterval: number;
     sendFrameMeta: boolean;
     lockedVideoOrientation: number;
+    displayId?: number;
     codecOptions?: string;
     encoderName?: string;
 }
 
 export default class VideoSettings {
-    public static readonly BASE_BUFFER_LENGTH: number = 31;
+    public static readonly BASE_BUFFER_LENGTH: number = 35;
     public readonly crop?: Rect | null = null;
     public readonly bitrate: number = 0;
     public readonly bounds?: Size | null = null;
@@ -23,6 +24,7 @@ export default class VideoSettings {
     public readonly iFrameInterval: number = 0;
     public readonly sendFrameMeta: boolean = false;
     public readonly lockedVideoOrientation: number = -1;
+    public readonly displayId: number = 0;
     public readonly codecOptions?: string;
     public readonly encoderName?: string;
 
@@ -35,6 +37,7 @@ export default class VideoSettings {
             this.iFrameInterval = data.iFrameInterval;
             this.sendFrameMeta = data.sendFrameMeta;
             this.lockedVideoOrientation = data.lockedVideoOrientation;
+            this.displayId = typeof data.displayId === 'number' ? data.displayId : 0;
             if (data.codecOptions) {
                 this.codecOptions = data.codecOptions.trim();
             }
@@ -68,6 +71,8 @@ export default class VideoSettings {
         offset += 1;
         const lockedVideoOrientation = buffer.readInt8(offset);
         offset += 1;
+        const displayId = buffer.readInt32BE(offset);
+        offset += 4;
         let bounds: Size | null = null;
         let crop: Rect | null = null;
         if (width !== 0 && height !== 0) {
@@ -100,6 +105,7 @@ export default class VideoSettings {
                 maxFps,
                 iFrameInterval,
                 lockedVideoOrientation,
+                displayId,
                 sendFrameMeta,
                 codecOptions,
                 encoderName,
@@ -117,6 +123,7 @@ export default class VideoSettings {
                 maxFps: a.maxFps,
                 iFrameInterval: a.iFrameInterval,
                 lockedVideoOrientation: a.lockedVideoOrientation,
+                displayId: a.displayId,
                 sendFrameMeta: a.sendFrameMeta,
                 codecOptions: a.codecOptions,
                 encoderName: a.encoderName,
@@ -134,6 +141,7 @@ export default class VideoSettings {
             this.codecOptions === o.codecOptions &&
             Rect.equals(this.crop, o.crop) &&
             this.lockedVideoOrientation === o.lockedVideoOrientation &&
+            this.displayId === o.displayId &&
             Size.equals(this.bounds, o.bounds) &&
             this.bitrate === o.bitrate &&
             this.maxFps === o.maxFps &&
@@ -168,6 +176,7 @@ export default class VideoSettings {
         offset = buffer.writeInt16BE(bottom, offset);
         offset = buffer.writeInt8(this.sendFrameMeta ? 1 : 0, offset);
         offset = buffer.writeInt8(this.lockedVideoOrientation, offset);
+        offset = buffer.writeInt32BE(this.displayId, offset);
         if (codecOptionsBytes) {
             offset = buffer.writeInt32BE(codecOptionsBytes.length, offset);
             buffer.fill(codecOptionsBytes, offset);
@@ -193,10 +202,10 @@ export default class VideoSettings {
             this.bounds}, crop=${
             this.crop}, metaFrame=${
             this.sendFrameMeta}, lockedVideoOrientation=${
-            this.lockedVideoOrientation}, codecOptions=${
+            this.lockedVideoOrientation}, displayId=${
+            this.displayId}, codecOptions=${
             this.codecOptions}, encoderName=${
-            this.encoderName}
-        }`;
+            this.encoderName}}`;
     }
 
     public toJSON(): Settings {
@@ -208,6 +217,7 @@ export default class VideoSettings {
             crop: this.crop,
             sendFrameMeta: this.sendFrameMeta,
             lockedVideoOrientation: this.lockedVideoOrientation,
+            displayId: this.displayId,
             codecOptions: this.codecOptions,
             encoderName: this.encoderName,
         };
