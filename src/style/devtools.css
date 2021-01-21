@@ -4,11 +4,11 @@ body.devtools {
     font-size: 13px;
 }
 
-.device {
+body.devtools .device {
     padding: 20px;
 }
 
-.device-header {
+body.devtools .device-header {
     -webkit-box-align: baseline;
     -webkit-box-orient: horizontal;
     display: -webkit-box;
@@ -16,17 +16,17 @@ body.devtools {
     padding: 2px 0;
 }
 
-.device-name {
+body.devtools .device-name {
     font-size: 150%;
 }
 
-.device-serial {
+body.devtools .device-serial {
     color: var(--url-color);
     font-size: 80%;
     margin-left: 6px;
 }
 
-.browser-header {
+body.devtools .browser-header {
     align-items: center;
     display: flex;
     flex-flow: row wrap;
@@ -34,25 +34,25 @@ body.devtools {
     padding-top: 10px;
 }
 
-.browser-header > .browser-name {
+body.devtools .browser-header > .browser-name {
     font-size: 110%;
     font-weight: bold;
 }
 
-div.list {
+body.devtools div.list {
     margin-top: 5px;
 }
 
-div.list > .row {
+body.devtools div.list > .row {
     padding: 6px 0;
     position: relative;
 }
 
-.properties-box {
+body.devtools .properties-box {
     display: flex;
 }
 
-.properties-box > img {
+body.devtools .properties-box > img {
     flex-shrink: 0;
     height: 23px;
     padding-left: 2px;
@@ -61,21 +61,21 @@ div.list > .row {
     width: 23px;
 }
 
-.subrow-box {
+body.devtools .subrow-box {
     display: inline-block;
     vertical-align: top;
 }
 
-.subrow {
+body.devtools .subrow {
     display: flex;
     flex-flow: row wrap;
 }
 
-.subrow > div {
+body.devtools .subrow > div {
     margin-right: 0.5em;
 }
 
-.url {
+.body.devtools url {
     color: var(--url-color);
     max-width: 200px;
     text-overflow: ellipsis;
@@ -83,30 +83,30 @@ div.list > .row {
     overflow: hidden;
 }
 
-.action {
+body.devtools .action {
     color: var(--link-color);
     cursor: pointer;
     margin-right: 15px;
 }
 
-.action.disabled {
+body.devtools .action.disabled {
     color: var(--url-color);
     cursor: not-allowed;
 }
 
-a.action {
+body.devtools a.action {
     text-decoration: none;
 }
 
-a.action.copy {
+body.devtools a.action.copy {
     cursor: copy;
 }
 
-.browser-header .action {
+body.devtools .browser-header .action {
     margin-left: 10px;
 }
 
-.open > input {
+body.devtools .open > input {
     border: 1px solid #aaa;
     height: 17px;
     line-height: 17px;
@@ -114,7 +114,7 @@ a.action.copy {
     padding: 0 2px;
 }
 
-.tooltip {
+body.devtools .tooltip {
     z-index: 1;
     position: absolute;
     padding: 2px;
