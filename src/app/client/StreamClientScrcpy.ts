@@ -16,10 +16,19 @@ import DragAndPushLogger from '../DragAndPushLogger';
 import { KeyEventListener, KeyInputHandler } from '../KeyInputHandler';
 import { KeyCodeControlMessage } from '../controlMessage/KeyCodeControlMessage';
 import { BasePlayer, PlayerClass } from '../player/BasePlayer';
+import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import { ConfigureScrcpy, ConfigureScrcpyOptions } from './ConfigureScrcpy';
+import { DeviceTrackerDroid } from './DeviceTrackerDroid';
+import { DeviceTrackerCommand } from '../../common/DeviceTrackerCommand';
+import { html } from '../ui/HtmlTag';
+
+const ATTRIBUTE_UDID = 'data-udid';
+const ATTRIBUTE_COMMAND = 'data-command';
 
 export class StreamClientScrcpy extends BaseClient<never> implements KeyEventListener {
-    public static ACTION = 'stream';
+    public static ACTION: ScrcpyStreamParams['action'] = 'stream';
     private static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
+    private static configureDialog?: ConfigureScrcpy;
     private hasTouchListeners = false;
 
     private controlButtons?: HTMLElement;
@@ -27,7 +36,6 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     private clientId = -1;
     private clientsCount = -1;
     private requestedVideoSettings?: VideoSettings;
-    private readonly streamReceiver: StreamReceiver;
 
     public static registerPlayer(playerClass: PlayerClass): void {
         if (playerClass.isSupported()) {
@@ -39,19 +47,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         return Array.from(this.players.values());
     }
 
-    constructor(params: ScrcpyStreamParams) {
-        super();
-
-        this.streamReceiver = new StreamReceiver(params.ip, params.port, params.query);
-        this.startStream(params.udid, params.player);
-        this.setBodyClass('stream');
-        this.setTitle(`${params.udid} stream`);
-    }
-
-    public startStream(udid: string, playerName: string): void {
-        if (!udid) {
-            return;
-        }
+    public static createPlayer(udid: string, playerName: string): BasePlayer | undefined {
         let playerClass: PlayerClass | undefined;
         for (const value of StreamClientScrcpy.players.values()) {
             if (value.decoderName === playerName) {
@@ -61,7 +57,51 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         if (!playerClass) {
             return;
         }
-        const player = new playerClass(udid);
+        return new playerClass(udid);
+    }
+
+    public static createFromParam(params: ScrcpyStreamParams): StreamClientScrcpy {
+        const streamReceiver = new StreamReceiver(params.ip, params.port, params.query);
+        let player = params.player;
+        if (typeof player !== 'string') {
+            // TODO: remove deprecated
+            player = params.decoder as string;
+        }
+        const client = new StreamClientScrcpy(streamReceiver);
+        client.startStream(params.udid, player);
+        client.setTitle(`${params.udid} stream`);
+        return client;
+    }
+
+    public static createWithReceiver(
+        streamReceiver: StreamReceiver,
+        params: { udid: string; playerName: BasePlayer },
+    ): StreamClientScrcpy {
+        const client = new StreamClientScrcpy(streamReceiver);
+        client.startStream(params.udid, params.playerName);
+        return client;
+    }
+
+    protected constructor(private readonly streamReceiver: StreamReceiver) {
+        super();
+
+        this.setBodyClass('stream');
+    }
+
+    public startStream(udid: string, playerName: string | BasePlayer): void {
+        if (!udid) {
+            return;
+        }
+        let player: BasePlayer;
+        if (typeof playerName === 'string') {
+            const p = StreamClientScrcpy.createPlayer(udid, playerName);
+            if (!p) {
+                throw Error(`Unsupported player: "${playerName}"`);
+            }
+            player = p;
+        } else {
+            player = playerName;
+        }
         this.setTouchListeners(player);
 
         const deviceView = document.createElement('div');
@@ -288,4 +328,76 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
             this.hasTouchListeners = true;
         }
     }
+
+    public static createEntryForDeviceList(
+        descriptor: DroidDeviceDescriptor,
+        blockClass: string,
+    ): HTMLElement | DocumentFragment | undefined {
+        const hasPid = descriptor.pid !== -1;
+        if (hasPid) {
+            const configureButtonId = `configure_${Util.escapeUdid(descriptor.udid)}`;
+            const e = html`<div class="stream ${blockClass}">
+                <button
+                    ${ATTRIBUTE_UDID}="${descriptor.udid}"
+                    ${ATTRIBUTE_COMMAND}="${DeviceTrackerCommand.CONFIGURE_STREAM}"
+                    id="${configureButtonId}"
+                    class="active action-button"
+                >
+                    ${this.ACTION}
+                </button>
+            </div>`;
+            const a = e.content.getElementById(configureButtonId);
+            a && (a.onclick = this.onConfigureStreamClick);
+            return e.content;
+        }
+        return;
+    }
+
+    private static onConfigureStreamClick = (e: MouseEvent): void => {
+        const button = e.currentTarget as HTMLAnchorElement;
+        const udid = button.getAttribute(ATTRIBUTE_UDID);
+        if (!udid) {
+            return;
+        }
+        const tracker = DeviceTrackerDroid.getInstance();
+        const descriptor = tracker.getDescriptorByUdid(udid);
+        if (!descriptor) {
+            return;
+        }
+        e.preventDefault();
+        const elements = document.getElementsByName(
+            `${DeviceTrackerDroid.AttributePrefixInterfaceSelectFor}${Util.escapeUdid(udid)}`,
+        );
+        if (!elements || !elements.length) {
+            return;
+        }
+        const select = elements[0] as HTMLSelectElement;
+        const optionElement = select.options[select.selectedIndex];
+        const port = optionElement.getAttribute('data-port');
+        const name = optionElement.getAttribute('data-name');
+        const ipv4 = optionElement.getAttribute('value');
+        const query = optionElement.getAttribute('data-query') || undefined;
+        if (!port || !ipv4 || !name) {
+            return;
+        }
+        const options: ConfigureScrcpyOptions = {
+            port,
+            name,
+            ipv4,
+            query,
+        };
+        const dialog = new ConfigureScrcpy(descriptor, options);
+        dialog.on('closed', StreamClientScrcpy.onConfigureDialogClosed);
+        StreamClientScrcpy.configureDialog = dialog;
+    };
+
+    private static onConfigureDialogClosed = (success: boolean): void => {
+        StreamClientScrcpy.configureDialog?.off('closed', StreamClientScrcpy.onConfigureDialogClosed);
+        StreamClientScrcpy.configureDialog = undefined;
+        if (success) {
+            const tracker = DeviceTrackerDroid.getInstance();
+            tracker?.destroy();
+            return;
+        }
+    };
 }

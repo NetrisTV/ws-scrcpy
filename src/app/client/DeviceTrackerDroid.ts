@@ -1,3 +1,4 @@
+import '../../style/devicelist.css';
 import { BaseDeviceTracker } from './BaseDeviceTracker';
 import { ACTION, SERVER_PORT } from '../../server/Constants';
 import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
@@ -6,34 +7,15 @@ import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
 import { DeviceTrackerCommand } from '../../common/DeviceTrackerCommand';
 import { StreamClientScrcpy } from './StreamClientScrcpy';
 import SvgImage from '../ui/SvgImage';
+import { html } from '../ui/HtmlTag';
+import { DevtoolsClient } from './DevtoolsClient';
+import { ShellClient } from './ShellClient';
+import Util from '../Util';
 
-type Column = { title: string };
-type Field = string | ((descriptor: DroidDeviceDescriptor) => string);
+type Field = keyof DroidDeviceDescriptor | ((descriptor: DroidDeviceDescriptor) => string);
 type DescriptionColumn = { title: string; field: Field };
 
 const DESC_COLUMNS: DescriptionColumn[] = [
-    {
-        title: 'Name',
-        field: (descriptor: DroidDeviceDescriptor) => {
-            const manufacturer = descriptor['ro.product.manufacturer'];
-            const model = descriptor['ro.product.model'];
-            return `${manufacturer} ${model}`;
-        },
-    },
-    {
-        title: 'Version',
-        field: (descriptor: DroidDeviceDescriptor) => {
-            return `${descriptor['ro.build.version.release']} [${descriptor['ro.build.version.sdk']}]`;
-        },
-    },
-    {
-        title: 'Serial',
-        field: 'udid',
-    },
-    {
-        title: 'State',
-        field: 'state',
-    },
     {
         title: 'Net Interface',
         field: 'interfaces',
@@ -44,37 +26,38 @@ const DESC_COLUMNS: DescriptionColumn[] = [
     },
 ];
 
-const ACTION_COLUMNS: Column[] = [
-    {
-        title: 'Stream',
-    },
-    {
-        title: 'DevTools',
-    },
-    {
-        title: 'Shell',
-    },
-];
-
 const AttributePlayerName = 'data-player-name';
 const AttributePrefixPlayerFor = 'player_for_';
 
 export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor, never> {
     public static ACTION = ACTION.DEVICE_LIST;
-    public static CREATE_DIRECT_LINKS = true;
+    public static CREATE_DIRECT_LINKS = false;
+    public static AttributePrefixInterfaceSelectFor = 'interface_select_for';
+    private static instance?: DeviceTrackerDroid;
 
     public static start(): DeviceTrackerDroid {
-        return new DeviceTrackerDroid(this.ACTION);
+        return this.getInstance();
     }
 
-    constructor(action: string) {
-        super(action);
+    public static getInstance(): DeviceTrackerDroid {
+        if (!this.instance) {
+            this.instance = new DeviceTrackerDroid();
+        }
+        return this.instance;
+    }
+
+    protected constructor() {
+        super(DeviceTrackerDroid.ACTION);
     }
 
     protected onSocketOpen(): void {
         // if (this.hasConnection()) {
         //     this.ws.send(JSON.stringify({ command: 'list' }));
         // }
+    }
+
+    protected buildTableHead(): HTMLTableSectionElement {
+        throw new Error('Method not implemented.');
     }
 
     onInterfaceSelected = (e: Event): void => {
@@ -141,12 +124,6 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
         }
     };
 
-    onConfigureStreamClick = (e: MouseEvent): void => {
-        const button = e.currentTarget as HTMLButtonElement;
-        const udid = button.getAttribute('data-udid');
-        console.log(`onConfigureStreamClick: ${udid}`);
-    };
-
     private static getLocalStorageKey(udid: string): string {
         return `device_list::${udid}::interface`;
     }
@@ -170,62 +147,75 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
         return title.toLowerCase().replace(/\s/g, '_');
     }
 
-    private appendTh(title: string, headRow: HTMLTableRowElement): void {
-        const th = document.createElement('th');
-        th.innerText = title;
-        th.className = DeviceTrackerDroid.titleToClassName(title);
-        headRow.appendChild(th);
-    }
-
-    protected buildTableHead(): HTMLTableSectionElement {
-        const thead = document.createElement('thead');
-        const headRow = document.createElement('tr');
-        DESC_COLUMNS.forEach((item) => {
-            this.appendTh(item.title, headRow);
-        });
-        if (DeviceTrackerDroid.CREATE_DIRECT_LINKS) {
-            StreamClientScrcpy.getPlayers().forEach((value) => {
-                this.appendTh(value.decoderName, headRow);
-            });
+    protected getOrBuildTableBody(parent: HTMLElement): Element {
+        const className = 'device-list';
+        let tbody = document.querySelector(`#devices #${this.tableId}.${className}`) as Element;
+        if (!tbody) {
+            const fragment = html`<div id="${this.tableId}" class="${className}"></div>`.content;
+            parent.appendChild(fragment);
+            const last = parent.children.item(parent.children.length - 1);
+            if (last) {
+                tbody = last;
+            }
+        } else {
+            while (tbody.children.length) {
+                tbody.removeChild(tbody.children[0]);
+            }
         }
-        ACTION_COLUMNS.forEach((item) => {
-            this.appendTh(item.title, headRow);
-        });
-        thead.appendChild(headRow);
-        return thead;
+        return tbody;
     }
 
     protected buildDeviceTable(): void {
         const data = this.descriptors;
         const devices = this.getOrCreateTableHolder();
         const tbody = this.getOrBuildTableBody(devices);
+        const blockClass = 'desc-block';
 
         data.forEach((device) => {
-            const row = document.createElement('tr');
-            const escapedUdid = this.escapeUdid(device.udid);
+            const escapedUdid = Util.escapeUdid(device.udid);
             const isActive = device.state === 'device';
             const localStorageKey = DeviceTrackerDroid.getLocalStorageKey(escapedUdid);
             const lastSelected = localStorage && localStorage.getItem(localStorageKey);
-            row.id = `device_row_${escapedUdid}`;
-            if (!isActive) {
-                row.className = 'not-active';
-            } else {
-                row.className = 'active';
-            }
             let hasPid = false;
             let selectInterface: HTMLSelectElement | undefined;
+            const servicesId = `device_services_${escapedUdid}`;
+            const row = html`<div id="device_row_${escapedUdid}" class="device ${isActive ? 'active' : 'not-active'}">
+                <div class="device-header">
+                    <div class="device-name">${device['ro.product.manufacturer']} ${device['ro.product.model']}</div>
+                    <div class="device-serial">${device.udid}</div>
+                    <div class="device-version">
+                        <div class="release-version">${device['ro.build.version.release']}</div>
+                        <div class="sdk-version">${device['ro.build.version.sdk']}</div>
+                    </div>
+                    <div class="device-state" title="State: ${device.state}"></div>
+                </div>
+                <div id="${servicesId}" class="services"></div>
+            </div>`.content;
+            const services = row.getElementById(servicesId);
+            if (!services) {
+                return;
+            }
+
+            const shellEntry = ShellClient.createEntryForDeviceList(device, blockClass);
+            shellEntry && services.appendChild(shellEntry);
+            const devtoolsEntry = DevtoolsClient.createEntryForDeviceList(device, blockClass);
+            devtoolsEntry && services.appendChild(devtoolsEntry);
+
+            const streamEntry = StreamClientScrcpy.createEntryForDeviceList(device, blockClass);
+            streamEntry && services.appendChild(streamEntry);
+
             DESC_COLUMNS.forEach((item) => {
                 const { title } = item;
                 const fieldName = item.field;
                 let value: string;
                 if (typeof item.field === 'string') {
-                    value = '' + device[item.field as keyof DroidDeviceDescriptor];
+                    value = '' + device[item.field];
                 } else {
                     value = item.field(device);
                 }
-                const td = document.createElement('td');
-                td.className = DeviceTrackerDroid.titleToClassName(title);
-                row.appendChild(td);
+                const td = document.createElement('div');
+                td.classList.add(DeviceTrackerDroid.titleToClassName(title), blockClass);
+                services.appendChild(td);
                 if (fieldName === 'pid') {
                     hasPid = value !== '-1';
                     const actionButton = document.createElement('button');
@@ -264,6 +254,10 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                     const selectElement = document.createElement('select');
                     selectElement.setAttribute('data-udid', device.udid);
                     selectElement.setAttribute('data-escaped-udid', escapedUdid);
+                    selectElement.setAttribute(
+                        'name',
+                        `${DeviceTrackerDroid.AttributePrefixInterfaceSelectFor}${escapedUdid}`,
+                    );
                     device[fieldName].forEach((value) => {
                         const optionElement = document.createElement('option');
                         optionElement.setAttribute('data-port', SERVER_PORT.toString(10));
@@ -306,56 +300,14 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                 const name = `${AttributePrefixPlayerFor}${escapedUdid}`;
                 StreamClientScrcpy.getPlayers().forEach((playerClass) => {
                     const { decoderName } = playerClass;
-                    const playerTd = document.createElement('td');
+                    const playerTd = document.createElement('div');
+                    playerTd.classList.add(blockClass);
                     playerTd.setAttribute('name', name);
                     playerTd.setAttribute(AttributePlayerName, decoderName);
-                    row.appendChild(playerTd);
+                    services.appendChild(playerTd);
                 });
             }
 
-            const streamTd = document.createElement('td');
-            streamTd.className = DeviceTrackerDroid.titleToClassName('Stream');
-            if (isActive) {
-                const configButton = document.createElement('button');
-                configButton.className = 'action-button configure-stream-button active';
-                configButton.title = `Configure stream`;
-                configButton.appendChild(SvgImage.create(SvgImage.Icon.SETTINGS));
-                configButton.setAttribute('data-udid', device.udid);
-                configButton.setAttribute('data-command', DeviceTrackerCommand.CONFIGURE_STREAM);
-                configButton.onclick = this.onConfigureStreamClick;
-                streamTd.appendChild(configButton);
-            }
-            row.appendChild(streamTd);
-
-            const devtoolsTd = document.createElement('td');
-            devtoolsTd.className = DeviceTrackerDroid.titleToClassName('DevTools');
-            if (isActive) {
-                devtoolsTd.appendChild(
-                    BaseDeviceTracker.buildLink(
-                        {
-                            action: ACTION.DEVTOOLS,
-                            udid: device.udid,
-                        },
-                        'devtools',
-                    ),
-                );
-            }
-            row.appendChild(devtoolsTd);
-
-            const shellTd = document.createElement('td');
-            shellTd.className = DeviceTrackerDroid.titleToClassName('Shell');
-            if (isActive) {
-                shellTd.appendChild(
-                    BaseDeviceTracker.buildLink(
-                        {
-                            action: ACTION.SHELL,
-                            udid: device.udid,
-                        },
-                        'shell',
-                    ),
-                );
-            }
-            row.appendChild(shellTd);
             tbody.appendChild(row);
             if (hasPid && selectInterface) {
                 this.updateLink(selectInterface, false);

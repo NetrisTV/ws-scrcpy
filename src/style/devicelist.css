@@ -1,0 +1,189 @@
+:root {
+    --device-border-color: hsl(0, 0%, 82%);
+    --device-list-stripe-color: hsl(0, 0%, 96%);
+    --device-list-default-color: hsl(0, 0%, 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --device-border-color: hsl(0, 0%, 32%);
+        --device-list-stripe-color: rgb(41, 41, 41);
+        --device-list-default-color: rgb(36, 36, 36);
+        --device-list-selected-color: rgba(57, 57, 57, .6);
+    }
+}
+
+#devices {
+    padding: 20px 0;
+}
+
+body.list .device-list button {
+    font-size: var(--font-size);
+    color: var(--button-text-color);
+}
+
+body.list .device-list div.device:nth-child(2n+1){
+    background-color: var(--device-list-default-color);
+}
+
+body.list .device-list div.device:nth-child(2n){
+    background-color: var(--device-list-stripe-color);
+}
+
+body.list .device-header {
+    padding: 2px 0;
+}
+
+body.list .device-header div {
+    display: inline-flex;
+}
+
+body.list .device-name {
+    font-size: 120%;
+}
+
+body.list .device-serial {
+    color: var(--url-color);
+    font-size: 80%;
+    margin-left: 6px;
+}
+
+body.list .device-version {
+    font-size: 100%;
+    margin-left: 6px;
+    align-items: baseline;
+}
+
+body.list .device-version .sdk-version {
+    font-size: 75%;
+    color: var(--url-color);
+    margin-left: 0.2em;
+}
+
+body.list .device-state {
+    border-radius: 25px;
+    background-color: red;
+    font-size: 80%;
+    margin-left: 6px;
+    width: 1em;
+    height: 1em;
+}
+
+body.list .device.active .device-state {
+    background-color: green;
+}
+
+body.list .device-list {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+body.list .device-list {
+    border-spacing: 0;
+    border-collapse: collapse;
+    font-family: monospace;
+    font-size: var(--font-size);
+}
+
+body.list .device-list div.device {
+    padding: 5px 20px 5px;
+}
+
+body.list .device-list div.device:hover {
+    background-color: var(--row-bg-color_hover)
+}
+
+body.list .device-list div.device select {
+    color: var(--text-color);
+    background-color: var(--main-bg-color);
+    margin-left: 0;
+    border: none;
+}
+
+body.list .device-list div.device:hover select {
+    background-color: var(--row-bg-color_hover);;
+}
+
+body.list .device-list div.desc-block {
+    margin: .3em;
+    display: inline-flex;
+}
+
+body.list .device-list div.desc-block.stream,
+body.list .device-list div.desc-block.server_pid,
+body.list .device-list div.desc-block.net_interface {
+    border: 1px solid var(--device-border-color);
+    border-radius: .3em;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+body.list .device-list div.device div.desc-block.stream button.action-button {
+    color: var(--button-text-color);
+}
+
+body.list .device-list div.desc-block button {
+    fill: var(--text-color)
+}
+
+body.list .device-list div.desc-block button > span {
+    padding: 0 .5em;
+}
+
+body.list .device-list div.desc-block button > span,
+body.list .device-list div.desc-block button > svg {
+    vertical-align: middle;
+}
+
+body.list .device-list div.desc-block button > svg {
+    width: var(--font-size);
+    height: var(--font-size);
+}
+
+body.list .device-list div.desc-block button > svg > path {
+    fill: var(--text-color);
+}
+
+body.list .device-list .device.not-active div.desc-block button > svg > path {
+    fill: var(--text-color-light);
+}
+
+body.list .device-list .device.not-active select {
+    color: var(--text-color-light);
+}
+
+body.list .device-list .device.not-active {
+    color: var(--text-color-light);
+}
+
+body.list .device-list .device.not-active a {
+    color: var(--link-color-light);
+}
+
+body.list .device-list .device.not-active a:visited {
+    color: var(--link-color_visited-light);
+}
+
+body.list .device-list div.device div.desc-block .action-button {
+    border: none;
+    background-color: rgba(0, 0, 0, 0);
+    color: inherit;
+}
+
+body.list .device-list div.device div.desc-block .action-button.update-interfaces-button {
+    margin-right: 0;
+}
+
+body.list .device-list div.device div.desc-block .action-button.active {
+    cursor: pointer;
+}
+
+body.list .device-list .device.active div.desc-block .action-button:hover {
+    color: var(--kill-button-hover-color);
+}
+
+body.list .device-list .device.active div.desc-block button.action-button:hover > svg > path {
+    fill: var(--kill-button-hover-color);
+}

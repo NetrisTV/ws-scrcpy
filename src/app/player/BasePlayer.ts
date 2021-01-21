@@ -34,6 +34,8 @@ export interface PlayerEvents {
 export interface PlayerClass {
     decoderName: string;
     isSupported(): boolean;
+    getPreferredVideoSetting(): VideoSettings;
+    getVideoSettingFromStorage(preferred: VideoSettings, playerName: string, deviceName: string): VideoSettings;
     new (udid: string): BasePlayer;
 }
 
@@ -101,7 +103,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         return `${playerName}:${udid}:${innerWidth}x${innerHeight}`;
     }
 
-    private static getVideoSettingFromStorage(
+    public static getVideoSettingFromStorage(
         preferred: VideoSettings,
         playerName: string,
         deviceName: string,

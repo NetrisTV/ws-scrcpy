@@ -105,6 +105,10 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
         return TinyH264Player.preferredVideoSettings;
     }
 
+    public static getPreferredVideoSetting(): VideoSettings {
+        return this.preferredVideoSettings;
+    }
+
     protected clearState(): void {
         super.clearState();
         if (this.worker) {

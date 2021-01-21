@@ -1,7 +1,9 @@
 import { TypedEmitter } from '../TypedEmitter';
 
 export class BaseClient<T> extends TypedEmitter<T> {
-    public setTitle(text: string): void {
+    protected title = 'BaseClient';
+
+    public setTitle(text = this.title): void {
         let titleTag: HTMLTitleElement | null = document.querySelector('head > title');
         if (!titleTag) {
             titleTag = document.createElement('title');
@@ -11,9 +13,5 @@ export class BaseClient<T> extends TypedEmitter<T> {
 
     public setBodyClass(text: string): void {
         document.body.className = text;
-    }
-
-    public escapeUdid(udid: string): string {
-        return 'udid_' + udid.replace(/[. :]/g, '_');
     }
 }

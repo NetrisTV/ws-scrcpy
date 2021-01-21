@@ -1,0 +1,107 @@
+.dialog-background {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialog-container {
+    font-family: monospace;
+    width: 75%;
+    max-width: 30em;
+    min-width: 20em;
+    background-color: var(--main-bg-color);
+    border-radius: 0.3em;
+    overflow: hidden;
+}
+
+.dialog-container button, .dialog-container select, .dialog-container input {
+    font-family: monospace;
+}
+
+.dialog-container button {
+    font-size: var(--font-size);
+}
+
+.dialog-container select {
+    text-overflow: ellipsis;
+}
+
+.dialog-block {
+    padding: 0.5em;
+}
+
+.dialog-header {
+    background-color: var(--header-bg-color);
+}
+
+.dialog-header span.dialog-title {
+    display: inline-block;
+    padding: 0 0.5em;
+}
+
+.dialog-header span.dialog-title.subtitle {
+    font-weight: lighter;
+}
+
+.dialog-body {
+    background-color: var(--main-bg-color);
+    overflow: hidden;
+}
+
+.dialog-body.hidden {
+    height: 0;
+    padding: 0;
+}
+
+.dialog-body.visible {
+    height: auto;
+}
+
+.dialog-footer {
+    display: flex;
+    flex-direction: row-reverse;
+    background-color: var(--stream-bg-color);
+}
+
+.dialog-footer button {
+    padding: 0.2em 0.5em;
+    margin: 0 0 0 0.5em;
+    border-radius: 0.3em;
+    /*background-color: var(--main-bg-color);*/
+    color: var(--button-text-color);
+    border: 1px solid var(--button-border-color);
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.dialog-footer button:disabled {
+    cursor: not-allowed;
+    color: var(--text-color-light);
+}
+
+.controls .label {
+    grid-column: labels;
+}
+
+.controls .input {
+    grid-column: controls;
+    box-sizing: border-box;
+    height: 2.75ex;
+}
+
+.controls .button {
+    grid-column: span 2;
+}
+
+.controls {
+    display: grid;
+    grid-template-columns: [labels] 35% [controls] 65%;
+    padding: 1em;
+    grid-gap: 0.2em;
+}

@@ -19,14 +19,25 @@ export abstract class ManagerClient<T> extends BaseClient<T> {
     }
 
     protected openNewWebSocket(): WebSocket {
-        if (this.hasConnection()) {
-            (this.ws as WebSocket).close();
+        if (this.ws && this.ws.readyState === this.ws.OPEN) {
+            this.ws.close();
         }
         this.ws = new WebSocket(this.buildWebSocketUrl());
         this.ws.onopen = this.onSocketOpen.bind(this);
         this.ws.onmessage = this.onSocketMessage.bind(this);
         this.ws.onclose = this.onSocketClose.bind(this);
         return this.ws;
+    }
+
+    protected destroy(): void {
+        if (this.ws) {
+            this.ws.onopen = null;
+            this.ws.onmessage = null;
+            this.ws.onclose = null;
+            if (this.ws.readyState === this.ws.OPEN) {
+                this.ws.close();
+            }
+        }
     }
 
     protected buildWebSocketUrl(): string {

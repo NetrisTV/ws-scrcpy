@@ -8,8 +8,8 @@ interface Settings {
     bounds?: Size | null;
     maxFps: number;
     iFrameInterval: number;
-    sendFrameMeta: boolean;
-    lockedVideoOrientation: number;
+    sendFrameMeta?: boolean;
+    lockedVideoOrientation?: number;
     displayId?: number;
     codecOptions?: string;
     encoderName?: string;
@@ -35,9 +35,11 @@ export default class VideoSettings {
             this.bounds = data.bounds;
             this.maxFps = data.maxFps;
             this.iFrameInterval = data.iFrameInterval;
-            this.sendFrameMeta = data.sendFrameMeta;
-            this.lockedVideoOrientation = data.lockedVideoOrientation;
-            this.displayId = typeof data.displayId === 'number' ? data.displayId : 0;
+            this.sendFrameMeta = data.sendFrameMeta || false;
+            this.lockedVideoOrientation = data.lockedVideoOrientation || -1;
+            if (typeof data.displayId === 'number' && !isNaN(data.displayId) && data.displayId >= 0) {
+                this.displayId = data.displayId;
+            }
             if (data.codecOptions) {
                 this.codecOptions = data.codecOptions.trim();
             }

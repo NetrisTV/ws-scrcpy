@@ -20,7 +20,7 @@ window.onload = function (): void {
     StreamClientScrcpy.registerPlayer(TinyH264Player);
 
     if (action === StreamClientScrcpy.ACTION && typeof parsedQuery.udid === 'string') {
-        new StreamClientScrcpy(parsedQuery as ScrcpyStreamParams);
+        StreamClientScrcpy.createFromParam(parsedQuery as ScrcpyStreamParams);
     } else if (action === ShellClient.ACTION && typeof parsedQuery.udid === 'string') {
         ShellClient.start(parsedQuery as ShellParams);
     } else if (action === DevtoolsClient.ACTION) {

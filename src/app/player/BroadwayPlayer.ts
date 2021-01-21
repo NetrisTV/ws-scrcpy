@@ -55,4 +55,8 @@ export class BroadwayPlayer extends BaseCanvasBasedPlayer {
     public getPreferredVideoSetting(): VideoSettings {
         return BroadwayPlayer.preferredVideoSettings;
     }
+
+    public static getPreferredVideoSetting(): VideoSettings {
+        return this.preferredVideoSettings;
+    }
 }
