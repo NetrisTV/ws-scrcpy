@@ -75,10 +75,10 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
     public static createWithReceiver(
         streamReceiver: StreamReceiver,
-        params: { udid: string; playerName: BasePlayer },
+        params: { udid: string; playerName: BasePlayer; fitIntoScreen?: boolean },
     ): StreamClientScrcpy {
         const client = new StreamClientScrcpy(streamReceiver);
-        client.startStream(params.udid, params.playerName);
+        client.startStream(params.udid, params.playerName, params.fitIntoScreen);
         return client;
     }
 
@@ -88,7 +88,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         this.setBodyClass('stream');
     }
 
-    public startStream(udid: string, playerName: string | BasePlayer): void {
+    public startStream(udid: string, playerName: string | BasePlayer, fitIntoScreen?: boolean): void {
         if (!udid) {
             return;
         }
@@ -138,7 +138,10 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
         document.body.appendChild(deviceView);
         const current = player.getVideoSettings();
-        if (player.getPreferredVideoSetting().equals(current)) {
+        if (typeof fitIntoScreen !== 'boolean') {
+            fitIntoScreen = player.getPreferredVideoSetting().equals(current);
+        }
+        if (fitIntoScreen) {
             const bounds = this.getMaxSize();
             const { bitrate, maxFps, iFrameInterval, lockedVideoOrientation, sendFrameMeta } = current;
             const newVideoSettings = new VideoSettings({
