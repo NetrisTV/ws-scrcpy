@@ -8,7 +8,8 @@ import VideoSettings from '../VideoSettings';
 import Canvas from '../../../vendor/h264-live-player/Canvas';
 
 export class BroadwayPlayer extends BaseCanvasBasedPlayer {
-    public static readonly decoderName = 'broadway';
+    public static readonly storageKeyPrefix = 'BroadwayDecoder';
+    public static readonly playerName = 'Broadway.js';
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 500000,
@@ -26,8 +27,8 @@ export class BroadwayPlayer extends BaseCanvasBasedPlayer {
         return typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
     }
 
-    constructor(udid: string) {
-        super(udid, 'Broadway.js');
+    constructor(udid: string, name = BroadwayPlayer.playerName) {
+        super(udid, name, BroadwayPlayer.storageKeyPrefix);
     }
 
     protected initCanvas(width: number, height: number): void {

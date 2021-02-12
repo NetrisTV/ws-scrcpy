@@ -23,6 +23,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private readonly TAG: string;
     private readonly udid: string;
     private readonly escapedUdid: string;
+    private readonly playerStorageKey: string;
     private deviceName: string;
     private ipv4: string;
     private query?: string;
@@ -41,6 +42,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         super();
         this.udid = descriptor.udid;
         this.escapedUdid = Util.escapeUdid(this.udid);
+        this.playerStorageKey = `configure_stream::${this.escapedUdid}::player`;
         this.deviceName = descriptor['ro.product.model'];
         this.ipv4 = options.ipv4;
         this.query = options.query;
@@ -146,14 +148,14 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     };
 
     private updateVideoSettingsForPlayer(playerSelect: HTMLSelectElement): void {
-        const value = playerSelect.options[playerSelect.selectedIndex].value;
+        const playerName = playerSelect.options[playerSelect.selectedIndex].value;
         const player = StreamClientScrcpy.getPlayers().find((playerClass) => {
-            return playerClass.decoderName === value;
+            return playerClass.playerName === playerName;
         });
         if (player) {
-            this.playerName = player.decoderName;
+            this.playerName = playerName;
             const preferred = player.getPreferredVideoSetting();
-            const storedOrPreferred = player.getVideoSettingFromStorage(preferred, player.decoderName, this.udid);
+            const storedOrPreferred = player.getVideoSettingFromStorage(preferred, player.storageKeyPrefix, this.udid);
             this.fillInputsFromVideoSettings(storedOrPreferred);
         }
     }
@@ -250,6 +252,25 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         }
     }
 
+    private getPreviouslyUsedPlayer(): string {
+        if (!window.localStorage) {
+            return '';
+        }
+        const result = window.localStorage.getItem(this.playerStorageKey);
+        if (result) {
+            return result;
+        } else {
+            return '';
+        }
+    }
+
+    private setPreviouslyUsedPlayer(playerName: string): void {
+        if (!window.localStorage) {
+            return;
+        }
+        window.localStorage.setItem(this.playerStorageKey, playerName);
+    }
+
     private createUI(): HTMLElement {
         const dialogName = 'configureDialog';
         const blockClass = 'dialog-block';
@@ -281,12 +302,16 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         playerSelect.id = playerLabel.htmlFor = `player_${this.escapedUdid}`;
         playerWrapper.appendChild(playerSelect);
         dialogBody.appendChild(playerWrapper);
-        StreamClientScrcpy.getPlayers().forEach((playerClass) => {
-            const { decoderName } = playerClass;
+        const previouslyUsedPlayer = this.getPreviouslyUsedPlayer();
+        StreamClientScrcpy.getPlayers().forEach((playerClass, index) => {
+            const { playerName } = playerClass;
             const optionElement = document.createElement('option');
-            optionElement.setAttribute('value', decoderName);
-            optionElement.innerText = decoderName;
+            optionElement.setAttribute('value', playerName);
+            optionElement.innerText = playerName;
             playerSelect.appendChild(optionElement);
+            if (playerName === previouslyUsedPlayer) {
+                playerSelect.selectedIndex = index;
+            }
         });
         playerSelect.onchange = this.onPlayerChange;
         this.updateVideoSettingsForPlayer(playerSelect);
@@ -381,6 +406,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         if (!player) {
             return;
         }
+        this.setPreviouslyUsedPlayer(this.playerName);
         // return;
         player.setVideoSettings(videoSettings, false);
         StreamClientScrcpy.createWithReceiver(this.streamReceiver, { playerName: player, udid: this.udid });

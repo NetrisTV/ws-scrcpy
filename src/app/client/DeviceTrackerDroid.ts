@@ -299,11 +299,11 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
             if (DeviceTrackerDroid.CREATE_DIRECT_LINKS) {
                 const name = `${AttributePrefixPlayerFor}${escapedUdid}`;
                 StreamClientScrcpy.getPlayers().forEach((playerClass) => {
-                    const { decoderName } = playerClass;
+                    const { playerName } = playerClass;
                     const playerTd = document.createElement('div');
                     playerTd.classList.add(blockClass);
                     playerTd.setAttribute('name', name);
-                    playerTd.setAttribute(AttributePlayerName, decoderName);
+                    playerTd.setAttribute(AttributePlayerName, playerName);
                     services.appendChild(playerTd);
                 });
             }

@@ -39,7 +39,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
     public static registerPlayer(playerClass: PlayerClass): void {
         if (playerClass.isSupported()) {
-            this.players.set(playerClass.decoderName, playerClass);
+            this.players.set(playerClass.playerName, playerClass);
         }
     }
 
@@ -50,7 +50,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     public static createPlayer(udid: string, playerName: string): BasePlayer | undefined {
         let playerClass: PlayerClass | undefined;
         for (const value of StreamClientScrcpy.players.values()) {
-            if (value.decoderName === playerName) {
+            if (value.playerName === playerName) {
                 playerClass = value;
             }
         }

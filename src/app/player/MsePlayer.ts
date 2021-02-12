@@ -15,7 +15,8 @@ type ConverterFake = {
 };
 
 export class MsePlayer extends BasePlayer {
-    public static readonly decoderName = 'mse';
+    public static readonly storageKeyPrefix = 'MseDecoder';
+    public static readonly playerName = 'H264 Converter';
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 8000000,
@@ -67,8 +68,12 @@ export class MsePlayer extends BasePlayer {
         return typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported(mimeType);
     }
 
-    constructor(udid: string, name = 'MSE_Player', protected tag: HTMLVideoElement = MsePlayer.createElement()) {
-        super(udid, name, tag);
+    constructor(
+        udid: string,
+        name = MsePlayer.playerName,
+        protected tag: HTMLVideoElement = MsePlayer.createElement(),
+    ) {
+        super(udid, name, MsePlayer.storageKeyPrefix, tag);
         tag.oncontextmenu = function (e: MouseEvent): boolean {
             e.preventDefault();
             return false;
