@@ -19,6 +19,13 @@ interface ConfigureScrcpyEvents {
     closed: boolean;
 }
 
+type Range = {
+    max: number;
+    min: number;
+    step: number;
+    formatter?: (value: number) => string;
+};
+
 export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private readonly TAG: string;
     private readonly udid: string;
@@ -195,17 +202,33 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         const value = videoSettings[opts.id];
         if (input && typeof value !== 'undefined' && value !== '-' && value !== 0 && value !== null) {
             input.value = value.toString(10);
+            if (input.getAttribute('type') === 'range') {
+                input.dispatchEvent(new Event('change'));
+            }
         }
     }
 
-    private appendBasicInput(parent: HTMLElement, opts: { label: string; id: string }): void {
+    private appendBasicInput(parent: HTMLElement, opts: { label: string; id: string; range?: Range }): void {
         const label = document.createElement('label');
         label.classList.add('label');
         label.innerText = `${opts.label}:`;
+        label.id = `label_${opts.id}_${this.escapedUdid}`;
         parent.appendChild(label);
         const input = document.createElement('input');
         input.classList.add('input');
         input.id = label.htmlFor = `${opts.id}_${this.escapedUdid}`;
+        const { range } = opts;
+        if (range) {
+            label.setAttribute('title', opts.label);
+            input.onchange = () => {
+                const value = range.formatter ? range.formatter(parseInt(input.value, 10)) : input.value;
+                label.innerText = `${opts.label} (${value}):`;
+            };
+            input.setAttribute('type', 'range');
+            input.setAttribute('max', range.max.toString());
+            input.setAttribute('min', range.min.toString());
+            input.setAttribute('step', range.step.toString());
+        }
         parent.appendChild(input);
     }
 
@@ -323,8 +346,16 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         const controls = document.createElement('div');
         controls.classList.add('controls');
 
-        this.appendBasicInput(controls, { label: 'Bitrate', id: 'bitrate' });
-        this.appendBasicInput(controls, { label: 'Max FPS', id: 'maxFps' });
+        this.appendBasicInput(controls, {
+            label: 'Bitrate',
+            id: 'bitrate',
+            range: { min: 524288, max: 8388608, step: 524288, formatter: Util.prettyBytes },
+        });
+        this.appendBasicInput(controls, {
+            label: 'Max FPS',
+            id: 'maxFps',
+            range: { min: 1, max: 60, step: 1 },
+        });
         this.appendBasicInput(controls, { label: 'I-Frame interval', id: 'iFrameInterval' });
         this.appendBasicInput(controls, { label: 'Max width', id: 'maxWidth' });
         this.appendBasicInput(controls, { label: 'Max height', id: 'maxHeight' });

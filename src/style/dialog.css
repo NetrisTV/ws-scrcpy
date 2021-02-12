@@ -92,7 +92,7 @@
 .controls .input {
     grid-column: controls;
     box-sizing: border-box;
-    height: 2.75ex;
+    /*height: 2.75ex;*/
 }
 
 .controls .button {
@@ -104,4 +104,5 @@
     grid-template-columns: [labels] 35% [controls] 65%;
     padding: 1em;
     grid-gap: 0.2em;
+    align-items: center;
 }
