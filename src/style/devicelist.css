@@ -15,6 +15,8 @@
 
 #devices {
     padding: 20px 0;
+    max-height: calc(100% - 40px);
+    overflow-y: auto;
 }
 
 body.list .device-list button {
