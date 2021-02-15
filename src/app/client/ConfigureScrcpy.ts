@@ -253,7 +253,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
             const iFrameInterval = this.getNumberValueFromInput('iFrameInterval');
             const maxWidth = this.getNumberValueFromInput('maxWidth');
             const maxHeight = this.getNumberValueFromInput('maxHeight');
-            const displayId = this.getNumberValueFromInput('displayId');
+            // const displayId = this.getNumberValueFromInput('displayId');
             const codecOptions = this.getStringValueFromInput('codecOptions') || undefined;
             let bounds: Size | undefined;
             if (!isNaN(maxWidth) && !isNaN(maxHeight) && maxWidth && maxHeight) {
@@ -265,7 +265,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
                 bounds,
                 maxFps,
                 iFrameInterval,
-                displayId,
+                // displayId,
                 codecOptions,
                 encoderName,
             });
@@ -359,7 +359,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         this.appendBasicInput(controls, { label: 'I-Frame interval', id: 'iFrameInterval' });
         this.appendBasicInput(controls, { label: 'Max width', id: 'maxWidth' });
         this.appendBasicInput(controls, { label: 'Max height', id: 'maxHeight' });
-        this.appendBasicInput(controls, { label: 'Display id', id: 'displayId' });
+        // this.appendBasicInput(controls, { label: 'Display id', id: 'displayId' });
         this.appendBasicInput(controls, { label: 'Codec options', id: 'codecOptions' });
 
         const encoderLabel = document.createElement('label');
