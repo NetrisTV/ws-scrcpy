@@ -39,7 +39,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
     public static registerPlayer(playerClass: PlayerClass): void {
         if (playerClass.isSupported()) {
-            this.players.set(playerClass.playerName, playerClass);
+            this.players.set(playerClass.playerFullName, playerClass);
         }
     }
 
@@ -50,7 +50,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     public static createPlayer(udid: string, playerName: string): BasePlayer | undefined {
         let playerClass: PlayerClass | undefined;
         for (const value of StreamClientScrcpy.players.values()) {
-            if (value.playerName === playerName) {
+            if (value.playerFullName === playerName || value.playerCodeName === playerName) {
                 playerClass = value;
             }
         }
@@ -346,7 +346,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
                     id="${configureButtonId}"
                     class="active action-button"
                 >
-                    ${this.ACTION}
+                    Configure stream
                 </button>
             </div>`;
             const a = e.content.getElementById(configureButtonId);

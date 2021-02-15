@@ -157,7 +157,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private updateVideoSettingsForPlayer(playerSelect: HTMLSelectElement): void {
         const playerName = playerSelect.options[playerSelect.selectedIndex].value;
         const player = StreamClientScrcpy.getPlayers().find((playerClass) => {
-            return playerClass.playerName === playerName;
+            return playerClass.playerFullName === playerName;
         });
         if (player) {
             this.playerName = playerName;
@@ -327,12 +327,12 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         dialogBody.appendChild(playerWrapper);
         const previouslyUsedPlayer = this.getPreviouslyUsedPlayer();
         StreamClientScrcpy.getPlayers().forEach((playerClass, index) => {
-            const { playerName } = playerClass;
+            const { playerFullName } = playerClass;
             const optionElement = document.createElement('option');
-            optionElement.setAttribute('value', playerName);
-            optionElement.innerText = playerName;
+            optionElement.setAttribute('value', playerFullName);
+            optionElement.innerText = playerFullName;
             playerSelect.appendChild(optionElement);
-            if (playerName === previouslyUsedPlayer) {
+            if (playerFullName === previouslyUsedPlayer) {
                 playerSelect.selectedIndex = index;
             }
         });

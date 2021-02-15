@@ -15,7 +15,8 @@ type WorkerMessage = {
 
 export class TinyH264Player extends BaseCanvasBasedPlayer {
     public static readonly storageKeyPrefix = 'Tinyh264Decoder';
-    public static readonly playerName = 'Tiny H264';
+    public static readonly playerFullName = 'Tiny H264';
+    public static readonly playerCodeName = 'tinyh264';
     private static videoStreamId = 1;
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
@@ -35,7 +36,7 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
         return typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
     }
 
-    constructor(udid: string, name = TinyH264Player.playerName) {
+    constructor(udid: string, name = TinyH264Player.playerFullName) {
         super(udid, name, TinyH264Player.storageKeyPrefix);
     }
 

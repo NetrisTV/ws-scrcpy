@@ -26,13 +26,13 @@ const DESC_COLUMNS: DescriptionColumn[] = [
     },
 ];
 
-const AttributePlayerName = 'data-player-name';
-const AttributePrefixPlayerFor = 'player_for_';
-
 export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor, never> {
-    public static ACTION = ACTION.DEVICE_LIST;
-    public static CREATE_DIRECT_LINKS = false;
-    public static AttributePrefixInterfaceSelectFor = 'interface_select_for';
+    public static readonly ACTION = ACTION.DEVICE_LIST;
+    public static readonly CREATE_DIRECT_LINKS = true;
+    public static readonly AttributePrefixInterfaceSelectFor = 'interface_select_for';
+    public static readonly AttributePlayerFullName = 'data-player-full-name';
+    public static readonly AttributePlayerCodeName = 'data-player-code-name';
+    public static readonly AttributePrefixPlayerFor = 'player_for_';
     private static instance?: DeviceTrackerDroid;
 
     public static start(): DeviceTrackerDroid {
@@ -62,10 +62,10 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
 
     onInterfaceSelected = (e: Event): void => {
         const selectElement = e.currentTarget as HTMLSelectElement;
-        this.updateLink(selectElement, true);
+        DeviceTrackerDroid.updateLink(selectElement, true);
     };
 
-    private updateLink(selectElement: HTMLSelectElement, store: boolean): void {
+    private static updateLink(selectElement: HTMLSelectElement, store: boolean): void {
         const option = selectElement.selectedOptions[0];
         const port = option.getAttribute('data-port') || SERVER_PORT.toString(10);
         const query = option.getAttribute('data-query') || undefined;
@@ -73,7 +73,7 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
         const ip = option.value;
         const escapedUdid = selectElement.getAttribute('data-escaped-udid');
         const udid = selectElement.getAttribute('data-udid');
-        const playerTds = document.getElementsByName(`${AttributePrefixPlayerFor}${escapedUdid}`);
+        const playerTds = document.getElementsByName(`${this.AttributePrefixPlayerFor}${escapedUdid}`);
         if (typeof udid !== 'string') {
             return;
         }
@@ -86,21 +86,22 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
         const action = 'stream';
         playerTds.forEach((item) => {
             item.innerHTML = '';
-            const player = item.getAttribute(AttributePlayerName);
-            if (!player) {
+            const playerFullName = item.getAttribute(this.AttributePlayerFullName);
+            const playerCodeName = item.getAttribute(this.AttributePlayerCodeName);
+            if (!playerFullName || !playerCodeName) {
                 return;
             }
             const q: ScrcpyStreamParams = {
                 action,
                 udid,
-                player,
+                player: decodeURIComponent(playerCodeName),
                 ip,
                 port,
             };
             if (query) {
                 q.query = query;
             }
-            const link = BaseDeviceTracker.buildLink(q, 'stream');
+            const link = BaseDeviceTracker.buildLink(q, decodeURIComponent(playerFullName));
             item.appendChild(link);
         });
     }
@@ -297,20 +298,27 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
             });
 
             if (DeviceTrackerDroid.CREATE_DIRECT_LINKS) {
-                const name = `${AttributePrefixPlayerFor}${escapedUdid}`;
+                const name = `${DeviceTrackerDroid.AttributePrefixPlayerFor}${escapedUdid}`;
                 StreamClientScrcpy.getPlayers().forEach((playerClass) => {
-                    const { playerName } = playerClass;
+                    const { playerCodeName, playerFullName } = playerClass;
                     const playerTd = document.createElement('div');
                     playerTd.classList.add(blockClass);
-                    playerTd.setAttribute('name', name);
-                    playerTd.setAttribute(AttributePlayerName, playerName);
+                    playerTd.setAttribute('name', encodeURIComponent(name));
+                    playerTd.setAttribute(
+                        DeviceTrackerDroid.AttributePlayerFullName,
+                        encodeURIComponent(playerFullName),
+                    );
+                    playerTd.setAttribute(
+                        DeviceTrackerDroid.AttributePlayerCodeName,
+                        encodeURIComponent(playerCodeName),
+                    );
                     services.appendChild(playerTd);
                 });
             }
 
             tbody.appendChild(row);
-            if (hasPid && selectInterface) {
-                this.updateLink(selectInterface, false);
+            if (DeviceTrackerDroid.CREATE_DIRECT_LINKS && hasPid && selectInterface) {
+                DeviceTrackerDroid.updateLink(selectInterface, false);
             }
         });
     }

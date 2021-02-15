@@ -16,7 +16,8 @@ type ConverterFake = {
 
 export class MsePlayer extends BasePlayer {
     public static readonly storageKeyPrefix = 'MseDecoder';
-    public static readonly playerName = 'H264 Converter';
+    public static readonly playerFullName = 'H264 Converter';
+    public static readonly playerCodeName = 'mse';
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
         bitrate: 7340032,
@@ -70,7 +71,7 @@ export class MsePlayer extends BasePlayer {
 
     constructor(
         udid: string,
-        name = MsePlayer.playerName,
+        name = MsePlayer.playerFullName,
         protected tag: HTMLVideoElement = MsePlayer.createElement(),
     ) {
         super(udid, name, MsePlayer.storageKeyPrefix, tag);

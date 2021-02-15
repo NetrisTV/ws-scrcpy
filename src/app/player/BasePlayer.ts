@@ -32,7 +32,8 @@ export interface PlayerEvents {
 }
 
 export interface PlayerClass {
-    playerName: string;
+    playerFullName: string;
+    playerCodeName: string;
     storageKeyPrefix: string;
     isSupported(): boolean;
     getPreferredVideoSetting(): VideoSettings;
