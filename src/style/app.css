@@ -3,7 +3,7 @@
     --stream-bg-color: hsl(0, 0%, 85%);
     --shell-bg-color: hsl(0, 0%, 0%);
     --row-bg-color_hover: hsl(218, 67%, 95%);
-    --table-header-bg-color: hsl(0, 0%, 95%);
+    --header-bg-color: hsl(0, 0%, 95%);
     --controls-bg-color: hsla(0, 0%, 95%, 0.8);
     --control-buttons-bg-color: hsl(0, 0%, 95%);
     --text-color: hsl(210, 16%, 22%);
@@ -14,9 +14,11 @@
     --link-color_visited-light: hsl(271, 68%, 72%);
     --svg-checkbox-bg-color: hsl(172, 100%, 37%);
     --svg-button-fill: hsl(199, 17%, 46%);
-    --table-border-color: hsl(0, 0%, 82%);
     --kill-button-hover-color: hsl(342, 100%, 37%);
     --url-color: hsl(0, 0%, 60%);
+    --button-text-color: hsl(214, 82%, 51%);
+    --button-border-color: hsl(0, 0%, 70%);
+    --font-size: 14px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,7 +27,7 @@
         --stream-bg-color: hsl(0, 0%, 20%);
         --shell-bg-color: hsl(0, 0%, 0%);
         --row-bg-color_hover: hsl(218, 17%, 18%);
-        --table-header-bg-color: hsl(0, 0%, 20%);
+        --header-bg-color: hsl(0, 0%, 20%);
         --controls-bg-color: hsla(201, 18%, 19%, 0.8);
         --control-buttons-bg-color: hsl(201, 18%, 19%);
         --text-color: hsl(0, 0%, 90%);
@@ -36,10 +38,17 @@
         --link-color_visited-light: hsl(267, 31%, 27%);
         --svg-checkbox-bg-color: hsl(172, 100%, 27%);
         --svg-button-fill: hsl(0, 0%, 100%);
-        --table-border-color: hsl(0, 0%, 32%);
         --kill-button-hover-color: hsl(342, 100%, 27%);
         --url-color: hsl(0, 0%, 60%);
+        --device-list-stripe-color: hsl(0, 0%, 16%);
+        --device-list-default-color: hsl(0, 0%, 14%);
+        --button-text-color: hsl(214, 82%, 76%);
+        --button-border-color: hsl(213, 5%, 39%);
     }
+}
+
+html {
+    font-size: var(--font-size);
 }
 
 a {
@@ -57,6 +66,10 @@ body {
     margin: 0;
     height: 100%;
     width: 100%;
+    overflow: hidden;
+}
+
+body.list {
     overflow: hidden;
 }
 
@@ -80,80 +93,6 @@ body.stream {
 
 .wait {
     cursor: wait;
-}
-
-#controls {
-    width: 100%;
-    margin: 20px;
-}
-
-
-.table-wrapper {
-    position: relative;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-}
-
-.table-wrapper table {
-    border-spacing: 0;
-    border-collapse: collapse;
-    font-family: monospace;
-}
-
-.table-wrapper table thead {
-    font-weight: bolder;
-}
-
-.table-wrapper table td, .table-wrapper table th {
-    border-style: solid;
-    border-width: 1px;
-    border-color: var(--table-border-color);
-}
-
-.table-wrapper table tr:hover {
-    background-color: var(--row-bg-color_hover)
-}
-
-.table-wrapper table th {
-    position: sticky;
-    top: -1px;
-    background-color: var(--table-header-bg-color);
-}
-
-.table-wrapper table select {
-    color: var(--text-color);
-    background-color: var(--main-bg-color);
-    border-color: var(--text-color);
-}
-
-.table-wrapper table tr:hover select {
-    background-color: var(--row-bg-color_hover);;
-}
-
-.table-wrapper table td.pid {
-    white-space: nowrap;
-}
-
-.table-wrapper table tr.not-active select {
-    color: var(--text-color-light);
-    border-color: var(--text-color-light);
-}
-
-.table-wrapper tr.not-active td {
-    color: var(--text-color-light);
-}
-
-.table-wrapper tr.not-active a {
-    color: var(--link-color-light);
-}
-
-.table-wrapper tr.not-active a:visited {
-    color: var(--link-color_visited-light);
-}
-
-.decoder-controls-wrapper {
-    padding: 5px;
 }
 
 .device-view {
@@ -210,26 +149,25 @@ body.stream {
     position: absolute;
     background-color: var(--controls-bg-color);
     z-index: 2;
-    padding: 0 10px 10px 10px;
+    padding: 0 .714rem .714rem .714rem;
 }
 
 .text-with-shadow, .more-box label {
     color: var(--text-color);
-    text-shadow: var(--row-bg-color_hover) 0 0 5px;
+    text-shadow: var(--row-bg-color_hover) 0 0 .357rem;
 }
-
 
 .control-buttons-list {
     float: right;
-    width: 52px;
+    width: 3.715rem;
     background-color: var(--control-buttons-bg-color);
 }
 
 .control-button {
-    margin: 5px 11px;
+    margin: .357rem .786rem;
     padding: 0;
-    width: 30px;
-    height: 30px;
+    width: 2.143rem;
+    height: 2.143rem;
     border: none;
     opacity: 0.75;
     background-color: var(--control-buttons-bg-color);
@@ -253,18 +191,4 @@ body.stream {
 
 .control-buttons-list > input[type=checkbox]:checked + label > svg {
     fill: var(--svg-checkbox-bg-color);
-}
-
-td .action-button {
-    border: none;
-    background: none;
-    color: inherit;
-}
-
-td .action-button:hover {
-    color: var(--kill-button-hover-color);
-}
-
-td .action-button.active {
-    cursor: pointer;
 }

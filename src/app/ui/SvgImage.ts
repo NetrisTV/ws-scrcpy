@@ -7,6 +7,10 @@ import VolumeUpSVG from '../../public/images/skin-light/ic_volume_up_678_48px.sv
 import BackSVG from '../../public/images/skin-light/System_Back_678.svg';
 import HomeSVG from '../../public/images/skin-light/System_Home_678.svg';
 import OverviewSVG from '../../public/images/skin-light/System_Overview_678.svg';
+import CancelSVG from '../../public/images/buttons/cancel.svg';
+import OfflineSVG from '../../public/images/buttons/offline.svg';
+import RefreshSVG from '../../public/images/buttons/refresh.svg';
+import SettingsSVG from '../../public/images/buttons/settings.svg';
 
 export enum Icon {
     BACK,
@@ -18,6 +22,10 @@ export enum Icon {
     MORE,
     CAMERA,
     KEYBOARD,
+    CANCEL,
+    OFFLINE,
+    REFRESH,
+    SETTINGS,
 }
 
 export default class SvgImage {
@@ -42,6 +50,14 @@ export default class SvgImage {
                 return HomeSVG;
             case Icon.OVERVIEW:
                 return OverviewSVG;
+            case Icon.CANCEL:
+                return CancelSVG;
+            case Icon.OFFLINE:
+                return OfflineSVG;
+            case Icon.REFRESH:
+                return RefreshSVG;
+            case Icon.SETTINGS:
+                return SettingsSVG;
             default:
                 return '';
         }

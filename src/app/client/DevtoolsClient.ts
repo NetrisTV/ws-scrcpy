@@ -5,6 +5,8 @@ import { DevtoolsParams } from '../../common/DevtoolsParams';
 import { RemoteDevtoolsCommand } from '../../common/RemoteDevtoolsCommand';
 import { Message } from '../../common/Message';
 import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, TargetDescription } from '../../common/RemoteDevtools';
+import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import { BaseDeviceTracker } from './BaseDeviceTracker';
 
 const FRONTEND_RE = /^https?:\/\/chrome-devtools-frontend\.appspot\.com\/serve_rev\/(@.*)/;
 
@@ -330,5 +332,26 @@ export class DevtoolsClient extends ManagerClient<never> {
         } else {
             document.body.appendChild(block);
         }
+    }
+
+    public static createEntryForDeviceList(
+        descriptor: DroidDeviceDescriptor,
+        blockClass: string,
+    ): HTMLElement | DocumentFragment | undefined {
+        if (descriptor.state !== 'device') {
+            return;
+        }
+        const entry = document.createElement('div');
+        entry.classList.add('devtools', blockClass);
+        entry.appendChild(
+            BaseDeviceTracker.buildLink(
+                {
+                    action: ACTION.DEVTOOLS,
+                    udid: descriptor.udid,
+                },
+                'devtools',
+            ),
+        );
+        return entry;
     }
 }

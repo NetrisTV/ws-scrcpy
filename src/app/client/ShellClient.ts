@@ -6,6 +6,9 @@ import { FitAddon } from 'xterm-addon-fit';
 import { MessageXtermClient } from '../../common/MessageXtermClient';
 import { ACTION } from '../../server/Constants';
 import { ShellParams } from '../../common/ShellParams';
+import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import { BaseDeviceTracker } from './BaseDeviceTracker';
+import Util from '../Util';
 
 export class ShellClient extends ManagerClient<never> {
     public static ACTION = ACTION.SHELL;
@@ -26,7 +29,7 @@ export class ShellClient extends ManagerClient<never> {
         this.term.loadAddon(new AttachAddon(ws));
         this.fitAddon = new FitAddon();
         this.term.loadAddon(this.fitAddon);
-        this.escapedUdid = this.escapeUdid(udid);
+        this.escapedUdid = Util.escapeUdid(udid);
         this.term.open(ShellClient.getOrCreateContainer(this.escapedUdid));
         this.updateTerminalSize();
     }
@@ -91,5 +94,26 @@ export class ShellClient extends ManagerClient<never> {
         terminalContainer.style.width = width;
         terminalContainer.style.height = height;
         this.fitAddon.fit();
+    }
+
+    public static createEntryForDeviceList(
+        descriptor: DroidDeviceDescriptor,
+        blockClass: string,
+    ): HTMLElement | DocumentFragment | undefined {
+        if (descriptor.state !== 'device') {
+            return;
+        }
+        const entry = document.createElement('div');
+        entry.classList.add('shell', blockClass);
+        entry.appendChild(
+            BaseDeviceTracker.buildLink(
+                {
+                    action: ACTION.SHELL,
+                    udid: descriptor.udid,
+                },
+                'shell',
+            ),
+        );
+        return entry;
     }
 }

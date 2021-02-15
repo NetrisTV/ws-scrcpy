@@ -6,34 +6,42 @@ import ScreenInfo from '../ScreenInfo';
 import Util from '../Util';
 
 const DEVICE_NAME_FIELD_LENGTH = 64;
-const MAGIC = 'scrcpy';
-const MAGIC_BYTES = Util.stringToUtf8ByteArray(MAGIC);
+const MAGIC_BYTES_INITIAL = Util.stringToUtf8ByteArray('scrcpy_initial');
+const MAGIC_BYTES_MESSAGE = Util.stringToUtf8ByteArray('scrcpy_message');
 const CLIENT_ID_LENGTH = 2;
 const CLIENTS_COUNT_LENGTH = 2;
-const DEVICE_INFO_LENGTH =
-    MAGIC.length +
-    DEVICE_NAME_FIELD_LENGTH +
-    ScreenInfo.BUFFER_LENGTH +
-    VideoSettings.BUFFER_LENGTH +
-    CLIENT_ID_LENGTH +
-    CLIENTS_COUNT_LENGTH;
+
+type VideoParameters = {
+    videoSettings: VideoSettings;
+    screenInfo: ScreenInfo;
+};
+
+type ClientsStats = {
+    deviceName: string;
+    clientId: number;
+    clientsCount: number;
+};
 
 interface StreamReceiverEvents {
     video: ArrayBuffer;
     deviceMessage: DeviceMessage;
-    videoParameters: {
-        videoSettings: VideoSettings;
-        screenInfo: ScreenInfo;
-    };
-    clientsStats: {
-        deviceName: string;
-        clientId: number;
-        clientsCount: number;
-    };
+    videoParameters: VideoParameters;
+    clientsStats: ClientsStats;
+    encoders: string[];
+    connected: void;
+    disconnected: CloseEvent;
+}
+
+interface InitialInfo {
+    videoParameters: VideoParameters;
+    encoders: string[];
+    clientsStats: ClientsStats;
 }
 
 export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     private events: ControlMessage[] = [];
+    private encoders: Set<string> = new Set<string>();
+    private initialInfo?: InitialInfo;
 
     constructor(
         private readonly host: string,
@@ -46,8 +54,8 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
         (this.ws as WebSocket).binaryType = 'arraybuffer';
     }
 
-    private handleDeviceInfo(data: ArrayBuffer): void {
-        let offset = MAGIC.length;
+    private handleInitialInfo(data: ArrayBuffer): void {
+        let offset = MAGIC_BYTES_INITIAL.length;
         let nameBytes = new Uint8Array(data, offset, DEVICE_NAME_FIELD_LENGTH);
         nameBytes = Util.filterTrailingZeroes(nameBytes);
         const deviceName = Util.utf8ByteArrayToString(nameBytes);
@@ -55,18 +63,41 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
         let temp = new Buffer(new Uint8Array(data, offset, ScreenInfo.BUFFER_LENGTH));
         offset += ScreenInfo.BUFFER_LENGTH;
         const screenInfo = ScreenInfo.fromBuffer(temp);
-        temp = new Buffer(new Uint8Array(data, offset, VideoSettings.BUFFER_LENGTH));
+        temp = new Buffer(new Uint8Array(data, offset));
         const videoSettings = VideoSettings.fromBuffer(temp);
-        offset += VideoSettings.BUFFER_LENGTH;
+        offset += videoSettings.bytesLength;
         temp = new Buffer(new Uint8Array(data, offset, CLIENT_ID_LENGTH + CLIENTS_COUNT_LENGTH));
         const clientId = temp.readInt16BE(0);
         const clientsCount = temp.readInt16BE(CLIENT_ID_LENGTH);
-        this.emit('clientsStats', {
+        offset += CLIENT_ID_LENGTH + CLIENTS_COUNT_LENGTH;
+        this.encoders.clear();
+        if (data.byteLength > offset) {
+            temp = new Buffer(new Uint8Array(data, offset));
+            offset = 0;
+            const encodersCount = temp.readInt32BE(offset);
+            offset += 4;
+            for (let i = 0; i < encodersCount; i++) {
+                const nameLength = temp.readInt32BE(offset);
+                offset += 4;
+                const nameBytes = temp.slice(offset, offset + nameLength);
+                offset += nameLength;
+                const name = Util.utf8ByteArrayToString(nameBytes);
+                this.encoders.add(name);
+            }
+        }
+        const encoders = this.getEncoders();
+        const videoParameters = { videoSettings, screenInfo };
+        const clientsStats = {
             clientId: clientId,
             clientsCount: clientsCount,
             deviceName: deviceName,
-        });
-        this.emit('videoParameters', { videoSettings, screenInfo });
+        };
+        this.initialInfo = {
+            encoders,
+            videoParameters,
+            clientsStats,
+        };
+        this.triggerInitialInfoEvents();
     }
 
     private static EqualArrays(a: ArrayLike<number>, b: ArrayLike<number>): boolean {
@@ -81,29 +112,33 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
         return true;
     }
 
-    protected onSocketClose(): void {
+    protected onSocketClose(ev: CloseEvent): void {
         console.log('WS closed');
+        this.emit('disconnected', ev);
     }
 
     protected onSocketMessage(e: MessageEvent): void {
         if (e.data instanceof ArrayBuffer) {
-            const data = new Uint8Array(e.data);
-            const magicBytes = new Uint8Array(e.data, 0, MAGIC.length);
-            if (StreamReceiver.EqualArrays(magicBytes, MAGIC_BYTES)) {
-                if (data.length === DEVICE_INFO_LENGTH) {
-                    this.handleDeviceInfo(e.data);
+            // works only because MAGIC_BYTES_INITIAL and MAGIC_BYTES_MESSAGE have same length
+            if (e.data.byteLength > MAGIC_BYTES_INITIAL.length) {
+                const magicBytes = new Uint8Array(e.data, 0, MAGIC_BYTES_INITIAL.length);
+                if (StreamReceiver.EqualArrays(magicBytes, MAGIC_BYTES_INITIAL)) {
+                    this.handleInitialInfo(e.data);
                     return;
-                } else {
+                }
+                if (StreamReceiver.EqualArrays(magicBytes, MAGIC_BYTES_MESSAGE)) {
                     const message = DeviceMessage.fromBuffer(e.data);
                     this.emit('deviceMessage', message);
+                    return;
                 }
-            } else {
-                this.emit('video', data);
             }
+
+            this.emit('video', new Uint8Array(e.data));
         }
     }
 
     protected onSocketOpen(): void {
+        this.emit('connected', void 0);
         let e = this.events.shift();
         while (e) {
             this.sendEvent(e);
@@ -124,6 +159,19 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
             (this.ws as WebSocket).close();
         }
         this.events.length = 0;
+    }
+
+    public getEncoders(): string[] {
+        return Array.from(this.encoders.values());
+    }
+
+    public triggerInitialInfoEvents(): void {
+        if (this.initialInfo) {
+            const { encoders, videoParameters, clientsStats } = this.initialInfo;
+            this.emit('encoders', encoders);
+            this.emit('clientsStats', clientsStats);
+            this.emit('videoParameters', videoParameters);
+        }
     }
 
     protected buildWebSocketUrl(): string {

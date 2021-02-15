@@ -13,15 +13,17 @@ export type MapItem<T> = {
 };
 
 export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> extends ManagerClient<K> {
-    public static ACTION_LIST = 'devicelist';
-    public static ACTION_DEVICE = 'device';
+    public static readonly ACTION_LIST = 'devicelist';
+    public static readonly ACTION_DEVICE = 'device';
+    public static readonly HOLDER_ELEMENT_ID = 'devices';
+    protected title = 'Device list';
     protected tableId = 'droid_device_list';
     protected descriptors: T[] = [];
 
-    protected constructor(action: string, protected rows: MapItem<T>[]) {
+    protected constructor(action: string) {
         super(action);
         this.setBodyClass('list');
-        this.setTitle('Device list');
+        this.setTitle();
         this.openNewWebSocket();
     }
 
@@ -58,10 +60,11 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
     }
 
     protected getOrCreateTableHolder(): HTMLElement {
-        let devices = document.getElementById('devices');
+        const id = BaseDeviceTracker.HOLDER_ELEMENT_ID;
+        let devices = document.getElementById(id);
         if (!devices) {
             devices = document.createElement('div');
-            devices.id = 'devices';
+            devices.id = id;
             devices.className = 'table-wrapper';
             document.body.appendChild(devices);
         }
@@ -79,20 +82,13 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         }
     }
 
+    protected abstract buildTableHead(): HTMLTableSectionElement;
+
     protected getOrBuildTableBody(parent: HTMLElement): Element {
         let tbody = document.querySelector(`#devices table#${this.tableId} tbody`) as Element;
         if (!tbody) {
             const table = document.createElement('table');
-            const thead = document.createElement('thead');
-            const headRow = document.createElement('tr');
-            this.rows.forEach((item) => {
-                const { title } = item;
-                const th = document.createElement('th');
-                th.innerText = title;
-                th.className = title.toLowerCase();
-                headRow.appendChild(th);
-            });
-            thead.appendChild(headRow);
+            const thead = this.buildTableHead();
             table.appendChild(thead);
             tbody = document.createElement('tbody');
             table.id = this.tableId;
@@ -107,7 +103,7 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         return tbody;
     }
 
-    protected static buildLink(
+    public static buildLink(
         q: ScrcpyStreamParams | DevtoolsParams | ShellParams | QVHackStreamParams,
         text: string,
     ): HTMLAnchorElement {
@@ -116,7 +112,25 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         a.setAttribute('href', `${location.origin}${location.pathname}${hash}`);
         a.setAttribute('rel', 'noopener noreferrer');
         a.setAttribute('target', '_blank');
+        a.classList.add(`link-${q.action}`);
         a.innerText = text;
         return a;
+    }
+
+    public getDescriptorByUdid(udid: string): T | undefined {
+        if (!this.descriptors.length) {
+            return;
+        }
+        return this.descriptors.find((descriptor: T) => {
+            return descriptor.udid === udid;
+        });
+    }
+
+    public destroy(): void {
+        super.destroy();
+        const holder = document.getElementById(BaseDeviceTracker.HOLDER_ELEMENT_ID);
+        if (holder && holder.parentElement) {
+            holder.parentElement.removeChild(holder);
+        }
     }
 }

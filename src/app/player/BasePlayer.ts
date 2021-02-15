@@ -31,6 +31,16 @@ export interface PlayerEvents {
     'video-settings': VideoSettings;
 }
 
+export interface PlayerClass {
+    playerFullName: string;
+    playerCodeName: string;
+    storageKeyPrefix: string;
+    isSupported(): boolean;
+    getPreferredVideoSetting(): VideoSettings;
+    getVideoSettingFromStorage(preferred: VideoSettings, playerName: string, deviceName: string): VideoSettings;
+    new (udid: string): BasePlayer;
+}
+
 export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     private static readonly STAT_BACKGROUND: string = 'rgba(0, 0, 0, 0.5)';
     private static readonly STAT_TEXT_COLOR: string = 'hsl(24, 85%, 50%)';
@@ -68,6 +78,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     constructor(
         protected udid: string,
         protected name: string = 'BasePlayer',
+        protected storageKeyPrefix: string = 'Dummy',
         protected tag: HTMLElement = document.createElement('div'),
     ) {
         super();
@@ -77,7 +88,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             e.preventDefault();
         };
         const preferred = this.getPreferredVideoSetting();
-        this.videoSettings = BasePlayer.getVideoSettingFromStorage(preferred, this.name, udid);
+        this.videoSettings = BasePlayer.getVideoSettingFromStorage(preferred, this.storageKeyPrefix, udid);
     }
 
     protected static isIFrame(frame: Uint8Array): boolean {
@@ -90,26 +101,35 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         return frame && frame.length > 4 && (frame[4] & 31) === 5;
     }
 
-    private static getStorageKey(playerName: string, udid: string): string {
+    private static getStorageKey(storageKeyPrefix: string, udid: string): string {
         const { innerHeight, innerWidth } = window;
-        return `${playerName}:${udid}:${innerWidth}x${innerHeight}`;
+        return `${storageKeyPrefix}:${udid}:${innerWidth}x${innerHeight}`;
     }
 
-    private static getVideoSettingFromStorage(
+    public static getVideoSettingFromStorage(
         preferred: VideoSettings,
-        playerName: string,
+        storageKeyPrefix: string,
         deviceName: string,
     ): VideoSettings {
         if (!window.localStorage) {
             return preferred;
         }
-        const key = this.getStorageKey(playerName, deviceName);
+        const key = this.getStorageKey(storageKeyPrefix, deviceName);
         const saved = window.localStorage.getItem(key);
         if (!saved) {
             return preferred;
         }
         const parsed = JSON.parse(saved);
-        const { crop, bitrate, iFrameInterval, sendFrameMeta, lockedVideoOrientation } = parsed;
+        const {
+            displayId,
+            crop,
+            bitrate,
+            iFrameInterval,
+            sendFrameMeta,
+            lockedVideoOrientation,
+            codecOptions,
+            encoderName,
+        } = parsed;
 
         // REMOVE `frameRate`
         const maxFps = isNaN(parsed.maxFps) ? parsed.frameRate : parsed.maxFps;
@@ -123,6 +143,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             bounds = new Size(parsed.bounds.width, parsed.bounds.height);
         }
         return new VideoSettings({
+            displayId: typeof displayId === 'number' ? displayId : 0,
             crop: crop ? new Rect(crop.left, crop.top, crop.right, crop.bottom) : preferred.crop,
             bitrate: !isNaN(bitrate) ? bitrate : preferred.bitrate,
             bounds: bounds !== null ? bounds : preferred.bounds,
@@ -132,18 +153,20 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             lockedVideoOrientation: !isNaN(lockedVideoOrientation)
                 ? lockedVideoOrientation
                 : preferred.lockedVideoOrientation,
+            codecOptions,
+            encoderName,
         });
     }
 
     private static putVideoSettingsToStorage(
-        playerName: string,
+        storageKeyPrefix: string,
         deviceName: string,
         videoSettings: VideoSettings,
     ): void {
         if (!window.localStorage) {
             return;
         }
-        const key = this.getStorageKey(playerName, deviceName);
+        const key = this.getStorageKey(storageKeyPrefix, deviceName);
         window.localStorage.setItem(key, JSON.stringify(videoSettings));
     }
 
@@ -212,7 +235,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     public setVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
         this.videoSettings = videoSettings;
         if (saveToStorage) {
-            BasePlayer.putVideoSettingsToStorage(this.name, this.udid, videoSettings);
+            BasePlayer.putVideoSettingsToStorage(this.storageKeyPrefix, this.udid, videoSettings);
         }
         this.resetStats();
         this.emit('video-settings', VideoSettings.copy(videoSettings));

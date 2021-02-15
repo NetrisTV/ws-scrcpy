@@ -34,7 +34,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
     private updateCount = 0;
     private throttleTimeoutId?: Timeout;
     private lastEmit = 0;
-    protected readonly TAG: string;
+    public readonly TAG: string;
     public readonly descriptor: DroidDeviceDescriptor;
 
     constructor(public readonly udid: string, state: string) {

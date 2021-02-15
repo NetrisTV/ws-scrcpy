@@ -1,5 +1,5 @@
 import { BasePlayer } from './BasePlayer';
-import VideoConverter, { setLogger } from 'h264-converter';
+import VideoConverter, { setLogger, mimeType } from 'h264-converter';
 import VideoSettings from '../VideoSettings';
 import Size from '../Size';
 
@@ -15,9 +15,12 @@ type ConverterFake = {
 };
 
 export class MsePlayer extends BasePlayer {
+    public static readonly storageKeyPrefix = 'MseDecoder';
+    public static readonly playerFullName = 'H264 Converter';
+    public static readonly playerCodeName = 'mse';
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
-        bitrate: 8000000,
+        bitrate: 7340032,
         maxFps: 60,
         iFrameInterval: 10,
         bounds: new Size(720, 720),
@@ -62,8 +65,16 @@ export class MsePlayer extends BasePlayer {
     private MAX_BUFFER = this.isSafari ? 2 : this.isChrome && this.isMac ? 0.9 : 0.2;
     private MAX_AHEAD = -0.2;
 
-    constructor(udid: string, name = 'MSE_Player', protected tag: HTMLVideoElement = MsePlayer.createElement()) {
-        super(udid, name, tag);
+    public static isSupported(): boolean {
+        return typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported(mimeType);
+    }
+
+    constructor(
+        udid: string,
+        name = MsePlayer.playerFullName,
+        protected tag: HTMLVideoElement = MsePlayer.createElement(),
+    ) {
+        super(udid, name, MsePlayer.storageKeyPrefix, tag);
         tag.oncontextmenu = function (e: MouseEvent): boolean {
             e.preventDefault();
             return false;
@@ -220,6 +231,10 @@ export class MsePlayer extends BasePlayer {
 
     public getPreferredVideoSetting(): VideoSettings {
         return MsePlayer.preferredVideoSettings;
+    }
+
+    public static getPreferredVideoSetting(): VideoSettings {
+        return this.preferredVideoSettings;
     }
 
     cleanSourceBuffer = (): void => {

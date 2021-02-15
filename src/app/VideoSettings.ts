@@ -1,5 +1,6 @@
 import Rect from './Rect';
 import Size from './Size';
+import Util from './Util';
 
 interface Settings {
     crop?: Rect | null;
@@ -7,13 +8,15 @@ interface Settings {
     bounds?: Size | null;
     maxFps: number;
     iFrameInterval: number;
-    sendFrameMeta: boolean;
-    lockedVideoOrientation: number;
+    sendFrameMeta?: boolean;
+    lockedVideoOrientation?: number;
+    displayId?: number;
     codecOptions?: string;
+    encoderName?: string;
 }
 
 export default class VideoSettings {
-    public static readonly BUFFER_LENGTH: number = 23;
+    public static readonly BASE_BUFFER_LENGTH: number = 35;
     public readonly crop?: Rect | null = null;
     public readonly bitrate: number = 0;
     public readonly bounds?: Size | null = null;
@@ -21,32 +24,57 @@ export default class VideoSettings {
     public readonly iFrameInterval: number = 0;
     public readonly sendFrameMeta: boolean = false;
     public readonly lockedVideoOrientation: number = -1;
-    public readonly codecOptions: string = '-';
+    public readonly displayId: number = 0;
+    public readonly codecOptions?: string;
+    public readonly encoderName?: string;
 
-    constructor(data?: Settings) {
+    constructor(data?: Settings, public readonly bytesLength: number = VideoSettings.BASE_BUFFER_LENGTH) {
         if (data) {
             this.crop = data.crop;
             this.bitrate = data.bitrate;
             this.bounds = data.bounds;
             this.maxFps = data.maxFps;
             this.iFrameInterval = data.iFrameInterval;
-            this.sendFrameMeta = data.sendFrameMeta;
-            this.lockedVideoOrientation = data.lockedVideoOrientation;
+            this.sendFrameMeta = data.sendFrameMeta || false;
+            this.lockedVideoOrientation = data.lockedVideoOrientation || -1;
+            if (typeof data.displayId === 'number' && !isNaN(data.displayId) && data.displayId >= 0) {
+                this.displayId = data.displayId;
+            }
+            if (data.codecOptions) {
+                this.codecOptions = data.codecOptions.trim();
+            }
+            if (data.encoderName) {
+                this.encoderName = data.encoderName.trim();
+            }
         }
     }
 
     public static fromBuffer(buffer: Buffer): VideoSettings {
-        const bitrate = buffer.readUInt32BE(0);
-        const maxFps = buffer.readUInt32BE(4);
-        const iFrameInterval = buffer.readUInt8(8);
-        const width = buffer.readUInt16BE(9);
-        const height = buffer.readUInt16BE(11);
-        const left = buffer.readUInt16BE(13);
-        const top = buffer.readUInt16BE(15);
-        const right = buffer.readUInt16BE(17);
-        const bottom = buffer.readUInt16BE(19);
-        const sendFrameMeta = !!buffer.readUInt8(21);
-        const lockedVideoOrientation = buffer.readInt8(22);
+        let offset = 0;
+        const bitrate = buffer.readInt32BE(offset);
+        offset += 4;
+        const maxFps = buffer.readInt32BE(offset);
+        offset += 4;
+        const iFrameInterval = buffer.readInt8(offset);
+        offset += 1;
+        const width = buffer.readInt16BE(offset);
+        offset += 2;
+        const height = buffer.readInt16BE(offset);
+        offset += 2;
+        const left = buffer.readInt16BE(offset);
+        offset += 2;
+        const top = buffer.readInt16BE(offset);
+        offset += 2;
+        const right = buffer.readInt16BE(offset);
+        offset += 2;
+        const bottom = buffer.readInt16BE(offset);
+        offset += 2;
+        const sendFrameMeta = !!buffer.readInt8(offset);
+        offset += 1;
+        const lockedVideoOrientation = buffer.readInt8(offset);
+        offset += 1;
+        const displayId = buffer.readInt32BE(offset);
+        offset += 4;
         let bounds: Size | null = null;
         let crop: Rect | null = null;
         if (width !== 0 && height !== 0) {
@@ -55,30 +83,55 @@ export default class VideoSettings {
         if (left || top || right || bottom) {
             crop = new Rect(left, top, right, bottom);
         }
-        const codecOptions = '-';
-        return new VideoSettings({
-            crop,
-            bitrate,
-            bounds,
-            maxFps,
-            iFrameInterval,
-            lockedVideoOrientation,
-            sendFrameMeta,
-            codecOptions,
-        });
+        let codecOptions;
+        let encoderName;
+        const codecOptionsLength = buffer.readInt32BE(offset);
+        offset += 4;
+        if (codecOptionsLength) {
+            const codecOptionsBytes = buffer.slice(offset, offset + codecOptionsLength);
+            offset += codecOptionsLength;
+            codecOptions = Util.utf8ByteArrayToString(codecOptionsBytes);
+        }
+        const encoderNameLength = buffer.readInt32BE(offset);
+        offset += 4;
+        if (encoderNameLength) {
+            const encoderNameBytes = buffer.slice(offset, offset + encoderNameLength);
+            offset += encoderNameLength;
+            encoderName = Util.utf8ByteArrayToString(encoderNameBytes);
+        }
+        return new VideoSettings(
+            {
+                crop,
+                bitrate,
+                bounds,
+                maxFps,
+                iFrameInterval,
+                lockedVideoOrientation,
+                displayId,
+                sendFrameMeta,
+                codecOptions,
+                encoderName,
+            },
+            offset,
+        );
     }
 
     public static copy(a: VideoSettings): VideoSettings {
-        return new VideoSettings({
-            bitrate: a.bitrate,
-            crop: Rect.copy(a.crop),
-            bounds: Size.copy(a.bounds),
-            maxFps: a.maxFps,
-            iFrameInterval: a.iFrameInterval,
-            lockedVideoOrientation: a.lockedVideoOrientation,
-            sendFrameMeta: a.sendFrameMeta,
-            codecOptions: a.codecOptions,
-        });
+        return new VideoSettings(
+            {
+                bitrate: a.bitrate,
+                crop: Rect.copy(a.crop),
+                bounds: Size.copy(a.bounds),
+                maxFps: a.maxFps,
+                iFrameInterval: a.iFrameInterval,
+                lockedVideoOrientation: a.lockedVideoOrientation,
+                displayId: a.displayId,
+                sendFrameMeta: a.sendFrameMeta,
+                codecOptions: a.codecOptions,
+                encoderName: a.encoderName,
+            },
+            a.bytesLength,
+        );
     }
 
     public equals(o?: VideoSettings | null): boolean {
@@ -86,9 +139,11 @@ export default class VideoSettings {
             return false;
         }
         return (
+            this.encoderName === o.encoderName &&
             this.codecOptions === o.codecOptions &&
             Rect.equals(this.crop, o.crop) &&
             this.lockedVideoOrientation === o.lockedVideoOrientation &&
+            this.displayId === o.displayId &&
             Size.equals(this.bounds, o.bounds) &&
             this.bitrate === o.bitrate &&
             this.maxFps === o.maxFps &&
@@ -97,23 +152,46 @@ export default class VideoSettings {
     }
 
     public toBuffer(): Buffer {
-        const buffer = new Buffer(VideoSettings.BUFFER_LENGTH);
+        let additionalLength = 0;
+        let codecOptionsBytes;
+        let encoderNameBytes;
+        if (this.codecOptions) {
+            codecOptionsBytes = Util.stringToUtf8ByteArray(this.codecOptions);
+            additionalLength += codecOptionsBytes.length;
+        }
+        if (this.encoderName) {
+            encoderNameBytes = Util.stringToUtf8ByteArray(this.encoderName);
+            additionalLength += encoderNameBytes.length;
+        }
+        const buffer = new Buffer(VideoSettings.BASE_BUFFER_LENGTH + additionalLength);
         const { width = 0, height = 0 } = this.bounds || {};
         const { left = 0, top = 0, right = 0, bottom = 0 } = this.crop || {};
         let offset = 0;
-        offset = buffer.writeUInt32BE(this.bitrate, offset);
-        offset = buffer.writeUInt32BE(this.maxFps, offset);
-        offset = buffer.writeUInt8(this.iFrameInterval, offset);
-        offset = buffer.writeUInt16BE(width, offset);
-        offset = buffer.writeUInt16BE(height, offset);
-        offset = buffer.writeUInt16BE(left, offset);
-        offset = buffer.writeUInt16BE(top, offset);
-        offset = buffer.writeUInt16BE(right, offset);
-        offset = buffer.writeUInt16BE(bottom, offset);
-        offset = buffer.writeUInt8(this.sendFrameMeta ? 1 : 0, offset);
-        buffer.writeInt8(this.lockedVideoOrientation, offset);
-        // FIXME: codec options are ignored
-        //  should be something like: "codecOptions=`i-frame-interval=${iFrameInterval}`";
+        offset = buffer.writeInt32BE(this.bitrate, offset);
+        offset = buffer.writeInt32BE(this.maxFps, offset);
+        offset = buffer.writeInt8(this.iFrameInterval, offset);
+        offset = buffer.writeInt16BE(width, offset);
+        offset = buffer.writeInt16BE(height, offset);
+        offset = buffer.writeInt16BE(left, offset);
+        offset = buffer.writeInt16BE(top, offset);
+        offset = buffer.writeInt16BE(right, offset);
+        offset = buffer.writeInt16BE(bottom, offset);
+        offset = buffer.writeInt8(this.sendFrameMeta ? 1 : 0, offset);
+        offset = buffer.writeInt8(this.lockedVideoOrientation, offset);
+        offset = buffer.writeInt32BE(this.displayId, offset);
+        if (codecOptionsBytes) {
+            offset = buffer.writeInt32BE(codecOptionsBytes.length, offset);
+            buffer.fill(codecOptionsBytes, offset);
+            offset = codecOptionsBytes.length;
+        } else {
+            offset = buffer.writeInt32BE(0, offset);
+        }
+        if (encoderNameBytes) {
+            offset = buffer.writeInt32BE(encoderNameBytes.length, offset);
+            buffer.fill(encoderNameBytes, offset);
+        } else {
+            buffer.writeInt32BE(0, offset);
+        }
         return buffer;
     }
 
@@ -126,7 +204,10 @@ export default class VideoSettings {
             this.bounds}, crop=${
             this.crop}, metaFrame=${
             this.sendFrameMeta}, lockedVideoOrientation=${
-            this.lockedVideoOrientation}}`;
+            this.lockedVideoOrientation}, displayId=${
+            this.displayId}, codecOptions=${
+            this.codecOptions}, encoderName=${
+            this.encoderName}}`;
     }
 
     public toJSON(): Settings {
@@ -138,7 +219,9 @@ export default class VideoSettings {
             crop: this.crop,
             sendFrameMeta: this.sendFrameMeta,
             lockedVideoOrientation: this.lockedVideoOrientation,
+            displayId: this.displayId,
             codecOptions: this.codecOptions,
+            encoderName: this.encoderName,
         };
     }
 }

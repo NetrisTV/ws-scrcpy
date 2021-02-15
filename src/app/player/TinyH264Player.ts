@@ -14,10 +14,13 @@ type WorkerMessage = {
 };
 
 export class TinyH264Player extends BaseCanvasBasedPlayer {
+    public static readonly storageKeyPrefix = 'Tinyh264Decoder';
+    public static readonly playerFullName = 'Tiny H264';
+    public static readonly playerCodeName = 'tinyh264';
     private static videoStreamId = 1;
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
-        bitrate: 500000,
+        bitrate: 524288,
         maxFps: 24,
         iFrameInterval: 5,
         bounds: new Size(480, 480),
@@ -29,8 +32,12 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
     protected canvas?: YUVWebGLCanvas | YUVCanvas;
     public readonly supportsScreenshot: boolean = true;
 
-    constructor(udid: string) {
-        super(udid, 'tinyh264');
+    public static isSupported(): boolean {
+        return typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
+    }
+
+    constructor(udid: string, name = TinyH264Player.playerFullName) {
+        super(udid, name, TinyH264Player.storageKeyPrefix);
     }
 
     private onWorkerMessage = (e: MessageEvent): void => {
@@ -98,6 +105,10 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
 
     public getPreferredVideoSetting(): VideoSettings {
         return TinyH264Player.preferredVideoSettings;
+    }
+
+    public static getPreferredVideoSetting(): VideoSettings {
+        return this.preferredVideoSettings;
     }
 
     protected clearState(): void {

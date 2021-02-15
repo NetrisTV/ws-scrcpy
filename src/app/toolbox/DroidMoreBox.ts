@@ -138,13 +138,18 @@ export class DroidMoreBox {
                         const width = parseInt(maxWidthInput.value, 10) & ~15;
                         const height = parseInt(maxHeightInput.value, 10) & ~15;
                         const bounds = new Size(width, height);
+                        const current = player.getVideoSettings();
+                        const { lockedVideoOrientation, sendFrameMeta, displayId, codecOptions, encoderName } = current;
                         const videoSettings = new VideoSettings({
                             bounds,
                             bitrate,
                             maxFps,
                             iFrameInterval,
-                            lockedVideoOrientation: -1,
-                            sendFrameMeta: false,
+                            lockedVideoOrientation,
+                            sendFrameMeta,
+                            displayId,
+                            codecOptions,
+                            encoderName,
                         });
                         client.sendNewVideoSetting(videoSettings);
                     } else if (action === CommandControlMessage.TYPE_SET_CLIPBOARD) {

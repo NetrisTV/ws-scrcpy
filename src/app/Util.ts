@@ -22,6 +22,10 @@ export default class Util {
         return `${value.toFixed(suffix ? 1 : 0)}${Util.SUFFIX[suffix]}`;
     }
 
+    public static escapeUdid(udid: string): string {
+        return 'udid_' + udid.replace(/[. :]/g, '_');
+    }
+
     // https://github.com/google/closure-library/blob/51e5a5ac373aefa354a991816ec418d730e29a7e/closure/goog/crypt/crypt.js#L117
 /*
     Copyright 2008 The Closure Library Authors. All Rights Reserved.
