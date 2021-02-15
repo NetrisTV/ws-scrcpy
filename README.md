@@ -1,16 +1,14 @@
 # ws scrcpy
 
-Web client for [scrcpy](https://github.com/Genymobile/scrcpy) and more.
+Web client for [Genymobile/scrcpy][scrcpy] and more.
 
 ## Requirements
 
 Browser must support the following technologies:
 * WebSockets
-* Media Source Extensions and h264 decoding
-([MseDecoder](/src/app/decoder/MseDecoder.ts))
-* WebWorkers ([tinyh264](/src/app/decoder/Tinyh264Decoder.ts))
-* WebAssembly  ([Broadway.js](/src/app/decoder/BroadwayDecoder.ts) and
-[tinyh264](/src/app/decoder/Tinyh264Decoder.ts))
+* Media Source Extensions and h264 decoding;
+* WebWorkers
+* WebAssembly
 
 Server:
 * Node.js v10+
@@ -19,14 +17,16 @@ Server:
 
 Device:
 * Android 5.0+ (API 21+)
-* Enabled [debugging](https://developer.android.com/studio/command-line/adb.html#Enabling)
+* Enabled [adb debugging](https://developer.android.com/studio/command-line/adb.html#Enabling)
 * On some devices, you also need to enable
 [an additional option](https://github.com/Genymobile/scrcpy/issues/70#issuecomment-373286323)
 to control it using keyboard and mouse.
 
 ## Build and Start
 
-Make sure you have installed [node.js](https://nodejs.org/en/download/), [node-gyp](https://github.com/nodejs/node-gyp) and [build tools](https://github.com/nodejs/node-gyp#installation)
+Make sure you have installed [node.js](https://nodejs.org/en/download/),
+[node-gyp](https://github.com/nodejs/node-gyp) and
+[build tools](https://github.com/nodejs/node-gyp#installation)
 ```shell
 git clone https://github.com/NetrisTV/ws-scrcpy.git
 cd ws-scrcpy
@@ -42,9 +42,21 @@ npm start
 ## Supported features
 
 ### Screen casting
-The modified [version](https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.16.x)
-of [Genymobile/scrcpy](https://github.com/Genymobile/scrcpy) used to stream
-H264 video, which then decoded by one of included decoders.
+The modified [version][fork] of [Genymobile/scrcpy][scrcpy] used to stream
+H264-video, which then decoded by one of included decoders:
+
+* MsePlayer, formerly "native" ([code](/src/app/player/MsePlayer.ts)). Based on
+[xevokk/h264-converter][xevokk/h264-converter]. TL;DR. HTML5 Video.<br>
+Requires [Media Source API][MSE] and `video/mp4; codecs="avc1.42E01E"`
+[support][isTypeSupported]. Creates mp4 containers from NALU, received from a
+device, then feeds them to [MediaSource][MediaSource]. In theory, it can use
+hardware acceleration.
+* BroadwayPlayer ([code](/src/app/player/BroadwayPlayer.ts)). Based on
+[mbebenita/Broadway][broadway] and [131/h264-live-player][h264-live-player].<br>
+Requires [WebAssembly][wasm] and preferably [WebGL][webgl] support.
+* TinyH264Player ([code](/src/app/player/TinyH264Player.ts)). Based on
+[udevbe/tinyh264][tinyh264].<br>
+Requires [WebAssembly][wasm], [WebWorkers][workers], [WebGL][webgl] support.
 
 ### Remote control
 * Touch events (including multi-touch)
@@ -58,8 +70,8 @@ current point
 
 ### File push
 Drag & drop an APK file to push it to the `/data/local/tmp` directory. You can
-install it manually from the included
-[xterm.js](https://github.com/xtermjs/xterm.js) terminal emulator (see below).
+install it manually from the included [xtermjs/xterm.js][xterm.js] terminal
+emulator (see below).
 
 ### Remote shell
 Control your device from `adb shell` in your browser.
@@ -100,16 +112,33 @@ npm run dist:qvhack:frontend
 ```
 
 ## Related projects
-* [Genymobile/scrcpy](https://github.com/Genymobile/scrcpy)
-* [xevokk/h264-converter](https://github.com/xevokk/h264-converter)
-* [131/h264-live-player](https://github.com/131/h264-live-player)
-* [mbebenita/Broadway](https://github.com/mbebenita/Broadway)
-* [DeviceFarmer/adbkit](https://github.com/DeviceFarmer/adbkit)
-* [xtermjs/xterm.js](https://github.com/xtermjs/xterm.js)
-* [udevbe/tinyh264](https://github.com/udevbe/tinyh264)
+* [Genymobile/scrcpy][scrcpy]
+* [xevokk/h264-converter][xevokk/h264-converter]
+* [131/h264-live-player][h264-live-player]
+* [mbebenita/Broadway][broadway]
+* [DeviceFarmer/adbkit][adbkit]
+* [xtermjs/xterm.js][xterm.js]
+* [udevbe/tinyh264][tinyh264]
 
 ## scrcpy websocket fork
 
-Currently, support of WebSocket protocol added to v1.16 of scrcpy
+Currently, support of WebSocket protocol added to v1.17 of scrcpy
 * [Prebuilt package](/vendor/Genymobile/scrcpy/scrcpy-server.jar)
-* [Source code](https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.16.x)
+* [Source code][fork]
+
+[fork]: https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.17.x
+
+[scrcpy]: https://github.com/Genymobile/scrcpy
+[xevokk/h264-converter]: https://github.com/xevokk/h264-converter
+[h264-live-player]: https://github.com/131/h264-live-player
+[broadway]: https://github.com/mbebenita/Broadway
+[adbkit]: https://github.com/DeviceFarmer/adbkit
+[xterm.js]: https://github.com/xtermjs/xterm.js
+[tinyh264]: https://github.com/udevbe/tinyh264
+
+[MSE]: https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API
+[isTypeSupported]: https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/isTypeSupported
+[MediaSource]: https://developer.mozilla.org/en-US/docs/Web/API/MediaSource
+[wasm]: https://developer.mozilla.org/en-US/docs/WebAssembly
+[webgl]: https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API
+[workers]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API
