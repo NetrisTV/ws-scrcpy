@@ -118,6 +118,9 @@ export default class TouchHandler {
         let { clientWidth, clientHeight } = target;
         let touchX = e.clientX - target.offsetLeft + scrollLeft;
         let touchY = e.clientY - target.offsetTop + scrollTop;
+        if (touchX < 0 || touchX > clientWidth || touchY < 0 || touchY > clientHeight) {
+            return null;
+        }
         const eps = 1e5;
         const ratio = width / height;
         const shouldBe = Math.round(eps * ratio);
