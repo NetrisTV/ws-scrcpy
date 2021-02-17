@@ -20,7 +20,7 @@ export class TouchControlMessage extends ControlMessage {
         readonly pressure: number,
         readonly buttons: number,
     ) {
-        super(ControlMessage.TYPE_MOUSE);
+        super(ControlMessage.TYPE_TOUCH);
     }
 
     /**

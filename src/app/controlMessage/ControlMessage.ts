@@ -5,7 +5,7 @@ export interface ControlMessageInterface {
 export class ControlMessage {
     public static TYPE_KEYCODE = 0;
     public static TYPE_TEXT = 1;
-    public static TYPE_MOUSE = 2;
+    public static TYPE_TOUCH = 2;
     public static TYPE_SCROLL = 3;
     public static TYPE_BACK_OR_SCREEN_ON = 4;
     public static TYPE_EXPAND_NOTIFICATION_PANEL = 5;
