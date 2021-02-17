@@ -6,11 +6,14 @@ import Point from './Point';
 import Position from './Position';
 import TouchPointPNG from '../public/images/multitouch/touch_point.png';
 import CenterPointPNG from '../public/images/multitouch/center_point.png';
+import Util from './Util';
+import { BasePlayer } from './player/BasePlayer';
 
 interface Touch {
     action: number;
     position: Position;
     buttons: number;
+    invalid: boolean;
 }
 
 interface TouchOnClient {
@@ -29,14 +32,27 @@ interface CommonTouchAndMouse {
     button: number;
 }
 
-export default class TouchHandler {
-    private static readonly STROKE_STYLE: string = '#00BEA4';
-    private static BUTTONS_MAP: Record<number, number> = {
+interface MiniMouseEvent extends CommonTouchAndMouse {
+    ctrlKey: boolean;
+    shiftKey: boolean;
+    buttons: number;
+}
+
+export interface TouchHandlerListener {
+    sendMessage: (messages: TouchControlMessage) => void;
+}
+
+const TAG = '[TouchHandler]';
+const SIMULATE_MULTI_TOUCH = 'SIMULATE_MULTI_TOUCH';
+
+export class TouchHandler {
+    protected static readonly STROKE_STYLE: string = '#00BEA4';
+    protected static BUTTONS_MAP: Record<number, number> = {
         0: 17, // ?? BUTTON_PRIMARY
         1: MotionEvent.BUTTON_TERTIARY,
         2: 26, // ?? BUTTON_SECONDARY
     };
-    private static EVENT_ACTION_MAP: Record<string, number> = {
+    protected static EVENT_ACTION_MAP: Record<string, number> = {
         touchstart: MotionEvent.ACTION_DOWN,
         touchend: MotionEvent.ACTION_UP,
         touchmove: MotionEvent.ACTION_MOVE,
@@ -44,11 +60,8 @@ export default class TouchHandler {
         mousedown: MotionEvent.ACTION_DOWN,
         mousemove: MotionEvent.ACTION_MOVE,
         mouseup: MotionEvent.ACTION_UP,
+        [SIMULATE_MULTI_TOUCH]: -1,
     };
-    private static multiTouchActive = false;
-    private static multiTouchCenter?: Point;
-    private static multiTouchShift = false;
-    private static dirtyPlace: Point[] = [];
     private static idToPointerMap: Map<number, number> = new Map();
     private static pointerToIdMap: Map<number, number> = new Map();
     private static touchPointRadius = 10;
@@ -56,17 +69,71 @@ export default class TouchHandler {
     private static touchPointImage?: HTMLImageElement;
     private static centerPointImage?: HTMLImageElement;
     private static pointImagesLoaded = false;
-    private static initialized = false;
+    private static hasTouchListeners = false;
+    private static instances = new Map<BasePlayer, TouchHandler>();
+    private multiTouchActive = false;
+    private multiTouchCenter?: Point;
+    private multiTouchShift = false;
+    private dirtyPlace: Point[] = [];
+    private readonly ctx: CanvasRenderingContext2D | null;
+    private readonly tag: HTMLCanvasElement;
+    private readonly storedFromMouseEvent = new Map<number, TouchControlMessage>();
+    private readonly storedFromTouchEvent = new Map<number, TouchControlMessage>();
+    private over = false;
+    private lastPosition?: MouseEvent;
 
-    public static init(): void {
-        if (this.initialized) {
-            return;
-        }
-        this.loadImages();
-        this.initialized = true;
+    protected constructor(public readonly player: BasePlayer, public readonly listener: TouchHandlerListener) {
+        this.tag = player.getTouchableElement();
+        this.ctx = this.tag.getContext('2d');
+        this.tag.addEventListener('mouseleave', this.onMouseLeave);
+        this.tag.addEventListener('mouseenter', this.onMouseEnter);
+        TouchHandler.loadImages();
+        TouchHandler.bindGlobalListeners();
     }
 
-    private static loadImages(): void {
+    public static createTouchHandler(player: BasePlayer, listener: TouchHandlerListener): TouchHandler {
+        const old = this.instances.get(player);
+        if (old) {
+            return old;
+        }
+        const handler = new TouchHandler(player, listener);
+        this.instances.set(player, handler);
+        return handler;
+    }
+
+    protected static bindGlobalListeners(): void {
+        if (this.hasTouchListeners) {
+            return;
+        }
+        const supportsPassive = Util.supportsPassive();
+        const options = supportsPassive ? { passive: false } : false;
+        document.body.addEventListener('touchstart', this.onMouseOrTouchEvent, options);
+        document.body.addEventListener('touchend', this.onMouseOrTouchEvent, options);
+        document.body.addEventListener('touchmove', this.onMouseOrTouchEvent, options);
+        document.body.addEventListener('touchcancel', this.onMouseOrTouchEvent, options);
+        document.body.addEventListener('mousedown', this.onMouseOrTouchEvent);
+        document.body.addEventListener('mouseup', this.onMouseOrTouchEvent);
+        document.body.addEventListener('mousemove', this.onMouseOrTouchEvent);
+        document.body.addEventListener('keydown', this.onKeyEvent);
+        document.body.addEventListener('keyup', this.onKeyEvent);
+    }
+
+    protected static onMouseOrTouchEvent = (e: MouseEvent | TouchEvent): void => {
+        TouchHandler.instances.forEach((instance) => {
+            instance.onTouchEvent(e);
+        });
+    };
+
+    protected static onKeyEvent = (e: KeyboardEvent): void => {
+        TouchHandler.instances.forEach((instance) => {
+            instance.onKey(e);
+        });
+    };
+
+    protected static loadImages(): void {
+        if (this.pointImagesLoaded) {
+            return;
+        }
         const total = 2;
         let current = 0;
 
@@ -88,7 +155,7 @@ export default class TouchHandler {
         center.onload = onload;
     }
 
-    private static getPointerId(type: string, identifier: number): number {
+    protected static getPointerId(type: string, identifier: number): number {
         if (this.idToPointerMap.has(identifier)) {
             const pointerId = this.idToPointerMap.get(identifier) as number;
             if (type === 'touchend' || type === 'touchcancel') {
@@ -106,8 +173,8 @@ export default class TouchHandler {
         return pointerId;
     }
 
-    private static calculateCoordinates(e: CommonTouchAndMouse, screenInfo: ScreenInfo): TouchOnClient | null {
-        const action = this.EVENT_ACTION_MAP[e.type];
+    protected static calculateCoordinates(e: CommonTouchAndMouse, screenInfo: ScreenInfo): TouchOnClient | null {
+        const action = this.mapTypeToAction(e.type);
         if (typeof action === 'undefined' || !screenInfo) {
             return null;
         }
@@ -118,8 +185,9 @@ export default class TouchHandler {
         let { clientWidth, clientHeight } = target;
         let touchX = e.clientX - target.offsetLeft + scrollLeft;
         let touchY = e.clientY - target.offsetTop + scrollTop;
+        let invalid = false;
         if (touchX < 0 || touchX > clientWidth || touchY < 0 || touchY > clientHeight) {
-            return null;
+            invalid = true;
         }
         const eps = 1e5;
         const ratio = width / height;
@@ -129,7 +197,7 @@ export default class TouchHandler {
             const realHeight = Math.ceil(clientWidth / ratio);
             const top = (clientHeight - realHeight) / 2;
             if (touchY < top || touchY > top + realHeight) {
-                return null;
+                invalid = true;
             }
             touchY -= top;
             clientHeight = realHeight;
@@ -137,7 +205,7 @@ export default class TouchHandler {
             const realWidth = Math.ceil(clientHeight * ratio);
             const left = (clientWidth - realWidth) / 2;
             if (touchX < left || touchX > left + realWidth) {
-                return null;
+                invalid = true;
             }
             touchX -= left;
             clientWidth = realWidth;
@@ -148,12 +216,16 @@ export default class TouchHandler {
         const point = new Point(x, y);
         const position = new Position(point, size);
         const buttons = this.BUTTONS_MAP[e.button];
+        if (x < 0 || y < 0 || x > width || y > height) {
+            invalid = true;
+        }
         return {
             client: {
                 width: clientWidth,
                 height: clientHeight,
             },
             touch: {
+                invalid,
                 action,
                 position,
                 buttons,
@@ -161,18 +233,23 @@ export default class TouchHandler {
         };
     }
 
-    private static getTouch(e: MouseEvent, screenInfo: ScreenInfo): Touch[] | null {
-        const touchOnClient = this.calculateCoordinates(e, screenInfo);
+    protected getTouch(
+        e: CommonTouchAndMouse,
+        screenInfo: ScreenInfo,
+        ctrlKey: boolean,
+        shiftKey: boolean,
+    ): Touch[] | null {
+        const touchOnClient = TouchHandler.calculateCoordinates(e, screenInfo);
         if (!touchOnClient) {
             return null;
         }
         const { client, touch } = touchOnClient;
         const result: Touch[] = [touch];
-        if (!e.ctrlKey) {
+        if (!ctrlKey) {
             this.multiTouchActive = false;
             this.multiTouchCenter = undefined;
             this.multiTouchShift = false;
-            this.clearCanvas(e.target as HTMLCanvasElement);
+            this.clearCanvas();
             return result;
         }
         const { position, action, buttons } = touch;
@@ -180,7 +257,7 @@ export default class TouchHandler {
         const { width, height } = screenSize;
         const { x, y } = point;
         if (!this.multiTouchActive) {
-            if (e.shiftKey) {
+            if (shiftKey) {
                 this.multiTouchCenter = point;
                 this.multiTouchShift = true;
             } else {
@@ -189,17 +266,21 @@ export default class TouchHandler {
         }
         this.multiTouchActive = true;
         let opposite: Point | undefined;
+        let invalid = false;
         if (this.multiTouchShift && this.multiTouchCenter) {
             const oppoX = 2 * this.multiTouchCenter.x - x;
             const oppoY = 2 * this.multiTouchCenter.y - y;
-            if (oppoX <= width && oppoX >= 0 && oppoY <= height && oppoY >= 0) {
-                opposite = new Point(oppoX, oppoY);
+            opposite = new Point(oppoX, oppoY);
+            if (!(oppoX <= width && oppoX >= 0 && oppoY <= height && oppoY >= 0)) {
+                invalid = true;
             }
         } else {
             opposite = new Point(client.width - x, client.height - y);
+            invalid = touch.invalid;
         }
         if (opposite) {
             result.push({
+                invalid,
                 action,
                 buttons,
                 position: new Position(opposite, screenSize),
@@ -208,35 +289,36 @@ export default class TouchHandler {
         return result;
     }
 
-    private static drawCircle(ctx: CanvasRenderingContext2D, point: Point, radius: number): void {
+    protected drawCircle(ctx: CanvasRenderingContext2D, point: Point, radius: number): void {
         ctx.beginPath();
         ctx.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
         ctx.stroke();
     }
 
-    public static drawLine(ctx: CanvasRenderingContext2D, point1: Point, point2: Point): void {
-        ctx.save();
-        ctx.strokeStyle = this.STROKE_STYLE;
-        ctx.beginPath();
-        ctx.moveTo(point1.x, point1.y);
-        ctx.lineTo(point2.x, point2.y);
-        ctx.stroke();
-        ctx.restore();
+    public drawLine(point1: Point, point2: Point): void {
+        if (!this.ctx) {
+            return;
+        }
+        this.ctx.save();
+        this.ctx.strokeStyle = TouchHandler.STROKE_STYLE;
+        this.ctx.beginPath();
+        this.ctx.moveTo(point1.x, point1.y);
+        this.ctx.lineTo(point2.x, point2.y);
+        this.ctx.stroke();
+        this.ctx.restore();
     }
 
-    private static drawPoint(
-        ctx: CanvasRenderingContext2D,
-        point: Point,
-        radius: number,
-        image?: HTMLImageElement,
-    ): void {
-        let { lineWidth } = ctx;
-        if (this.pointImagesLoaded && image) {
+    protected drawPoint(point: Point, radius: number, image?: HTMLImageElement): void {
+        if (!this.ctx) {
+            return;
+        }
+        let { lineWidth } = this.ctx;
+        if (TouchHandler.pointImagesLoaded && image) {
             radius = image.width / 2;
             lineWidth = 0;
-            ctx.drawImage(image, point.x - radius, point.y - radius);
+            this.ctx.drawImage(image, point.x - radius, point.y - radius);
         } else {
-            this.drawCircle(ctx, point, radius);
+            this.drawCircle(this.ctx, point, radius);
         }
 
         const topLeft = new Point(point.x - radius - lineWidth, point.y - radius - lineWidth);
@@ -244,15 +326,18 @@ export default class TouchHandler {
         this.updateDirty(topLeft, bottomRight);
     }
 
-    public static drawPointer(ctx: CanvasRenderingContext2D, point: Point): void {
-        this.drawPoint(ctx, point, this.touchPointRadius, this.touchPointImage);
+    public drawPointer(point: Point): void {
+        this.drawPoint(point, TouchHandler.touchPointRadius, TouchHandler.touchPointImage);
+        if (this.multiTouchCenter) {
+            this.drawLine(this.multiTouchCenter, point);
+        }
     }
 
-    public static drawCenter(ctx: CanvasRenderingContext2D, point: Point): void {
-        this.drawPoint(ctx, point, this.centerPointRadius, this.centerPointImage);
+    public drawCenter(point: Point): void {
+        this.drawPoint(point, TouchHandler.centerPointRadius, TouchHandler.centerPointImage);
     }
 
-    private static updateDirty(topLeft: Point, bottomRight: Point): void {
+    protected updateDirty(topLeft: Point, bottomRight: Point): void {
         if (!this.dirtyPlace.length) {
             this.dirtyPlace.push(topLeft, bottomRight);
             return;
@@ -268,9 +353,9 @@ export default class TouchHandler {
         this.dirtyPlace.push(newTopLeft, newBottomRight);
     }
 
-    public static clearCanvas(target: HTMLCanvasElement): void {
-        const { clientWidth, clientHeight } = target;
-        const ctx = target.getContext('2d');
+    public clearCanvas(): void {
+        const { clientWidth, clientHeight } = this.tag;
+        const ctx = this.ctx;
         if (ctx && this.dirtyPlace.length) {
             const topLeft = this.dirtyPlace[0];
             const bottomRight = this.dirtyPlace[1];
@@ -280,23 +365,26 @@ export default class TouchHandler {
             const w = Math.min(clientWidth, bottomRight.x - x);
             const h = Math.min(clientHeight, bottomRight.y - y);
             ctx.clearRect(x, y, w, h);
+            ctx.strokeStyle = TouchHandler.STROKE_STYLE;
         }
     }
 
-    public static formatTouchEvent(
+    public formatTouchEvent(
         e: TouchEvent,
         screenInfo: ScreenInfo,
-        tag: HTMLElement,
-    ): TouchControlMessage[] | null {
-        const events: TouchControlMessage[] = [];
+        storage: Map<number, TouchControlMessage>,
+    ): TouchControlMessage[] {
+        const logPrefix = `${TAG}[formatTouchEvent]`;
+        const messages: TouchControlMessage[] = [];
         const touches = e.changedTouches;
         if (touches && touches.length) {
             for (let i = 0, l = touches.length; i < l; i++) {
                 const touch = touches[i];
                 const pointerId = TouchHandler.getPointerId(e.type, touch.identifier);
-                if (touch.target !== tag) {
+                if (touch.target !== this.tag) {
                     continue;
                 }
+                const previous = storage.get(pointerId);
                 const item: CommonTouchAndMouse = {
                     clientX: touch.clientX,
                     clientY: touch.clientY,
@@ -304,50 +392,188 @@ export default class TouchHandler {
                     button: 0,
                     target: e.target,
                 };
-                const event = this.calculateCoordinates(item, screenInfo);
+                const event = TouchHandler.calculateCoordinates(item, screenInfo);
                 if (event) {
-                    const { action, buttons, position } = event.touch;
+                    const { action, buttons, position, invalid } = event.touch;
                     const pressure = touch.force * 255;
-                    events.push(new TouchControlMessage(action, pointerId, position, pressure, buttons));
+                    if (!invalid) {
+                        const message = new TouchControlMessage(action, pointerId, position, pressure, buttons);
+                        messages.push(...TouchHandler.validateMessage(e, message, storage, `${logPrefix}[validate]`));
+                    } else {
+                        if (previous) {
+                            messages.push(TouchHandler.createEmulatedMessage(MotionEvent.ACTION_UP, previous));
+                            storage.delete(pointerId);
+                        }
+                    }
                 } else {
-                    console.error(`Failed to format touch`, touch);
+                    console.error(logPrefix, `Failed to format touch`, touch);
                 }
             }
         } else {
-            console.error('No "touches"', e);
+            console.error(logPrefix, 'No "touches"', e);
         }
-        if (events.length) {
-            return events;
-        }
-        return null;
+        return messages;
     }
 
-    public static buildTouchEvent(e: MouseEvent, screenInfo: ScreenInfo): TouchControlMessage[] | null {
-        const touches = this.getTouch(e, screenInfo);
+    public buildTouchEvent(
+        e: MiniMouseEvent,
+        screenInfo: ScreenInfo,
+        storage: Map<number, TouchControlMessage>,
+    ): TouchControlMessage[] {
+        const logPrefix = `${TAG}[buildTouchEvent]`;
+        const touches = this.getTouch(e, screenInfo, e.ctrlKey, e.shiftKey);
         if (!touches) {
-            return null;
+            return [];
         }
-        const target = e.target as HTMLCanvasElement;
-        if (this.multiTouchActive) {
-            const ctx = target.getContext('2d');
-            if (ctx) {
-                this.clearCanvas(target);
-                ctx.strokeStyle = TouchHandler.STROKE_STYLE;
-                touches.forEach((touch) => {
-                    const { point } = touch.position;
-                    this.drawPointer(ctx, point);
-                    if (this.multiTouchCenter) {
-                        this.drawLine(ctx, this.multiTouchCenter, point);
-                    }
-                });
-                if (this.multiTouchCenter) {
-                    this.drawCenter(ctx, this.multiTouchCenter);
+        const messages: TouchControlMessage[] = [];
+        const points: Point[] = [];
+        this.clearCanvas();
+        touches.forEach((touch: Touch, pointerId: number) => {
+            const { action, buttons, position } = touch;
+            const previous = storage.get(pointerId);
+            if (!touch.invalid) {
+                const message = new TouchControlMessage(action, pointerId, position, 255, buttons);
+                messages.push(...TouchHandler.validateMessage(e, message, storage, `${logPrefix}[validate]`));
+                points.push(touch.position.point);
+            } else {
+                if (previous) {
+                    points.push(previous.position.point);
                 }
             }
-        }
-        return touches.map((touch: Touch, pointerId: number) => {
-            const { action, buttons, position } = touch;
-            return new TouchControlMessage(action, pointerId, position, 255, buttons);
         });
+        if (this.multiTouchActive) {
+            if (this.multiTouchCenter) {
+                this.drawCenter(this.multiTouchCenter);
+            }
+            points.forEach((point) => {
+                this.drawPointer(point);
+            });
+        }
+        const hasActionUp = messages.find((message) => {
+            return message.action === MotionEvent.ACTION_UP;
+        });
+        if (hasActionUp && storage.size) {
+            console.warn(logPrefix, 'Looks like one of Multi-touch pointers was not raised up');
+            storage.forEach((message) => {
+                messages.push(TouchHandler.createEmulatedMessage(MotionEvent.ACTION_UP, message));
+            });
+            storage.clear();
+        }
+        return messages;
+    }
+
+    private static validateMessage(
+        originalEvent: MiniMouseEvent | TouchEvent,
+        message: TouchControlMessage,
+        storage: Map<number, TouchControlMessage>,
+        logPrefix: string,
+    ): TouchControlMessage[] {
+        const messages: TouchControlMessage[] = [];
+        const { action, pointerId } = message;
+        const previous = storage.get(pointerId);
+        if (action === MotionEvent.ACTION_UP) {
+            if (!previous) {
+                console.warn(logPrefix, 'Received ACTION_UP while there are no DOWN stored');
+            } else {
+                storage.delete(pointerId);
+                messages.push(message);
+            }
+        } else if (action === MotionEvent.ACTION_DOWN) {
+            if (previous) {
+                console.warn(logPrefix, 'Received ACTION_DOWN while already has one stored');
+            } else {
+                storage.set(pointerId, message);
+                messages.push(message);
+            }
+        } else if (action === MotionEvent.ACTION_MOVE) {
+            if (!previous) {
+                if (
+                    (originalEvent instanceof MouseEvent && originalEvent.buttons) ||
+                    originalEvent instanceof TouchEvent
+                ) {
+                    console.warn(logPrefix, 'Received ACTION_MOVE while there are no DOWN stored');
+                    const emulated = TouchHandler.createEmulatedMessage(MotionEvent.ACTION_DOWN, message);
+                    messages.push(emulated);
+                    storage.set(pointerId, emulated);
+                }
+            } else {
+                messages.push(message);
+                storage.set(pointerId, message);
+            }
+        }
+        return messages;
+    }
+
+    private static createEmulatedMessage(action: number, event: TouchControlMessage): TouchControlMessage {
+        const { pointerId, position, buttons, pressure } = event;
+        return new TouchControlMessage(action, pointerId, position, pressure, buttons);
+    }
+
+    protected onTouchEvent(e: MouseEvent | TouchEvent): void {
+        const screenInfo = this.player.getScreenInfo();
+        if (!screenInfo) {
+            return;
+        }
+        let messages: TouchControlMessage[];
+        let storage: Map<number, TouchControlMessage>;
+        if (e instanceof MouseEvent) {
+            if (e.target !== this.tag) {
+                return;
+            }
+            storage = this.storedFromMouseEvent;
+            messages = this.buildTouchEvent(e, screenInfo, storage);
+            if (this.over) {
+                this.lastPosition = e;
+            }
+        } else if (e instanceof TouchEvent) {
+            // TODO: Research drag from out of the target inside it
+            if (e.target !== this.tag) {
+                return;
+            }
+            storage = this.storedFromTouchEvent;
+            messages = this.formatTouchEvent(e, screenInfo, storage);
+        } else {
+            console.error(TAG, 'Unsupported event', e);
+            return;
+        }
+        if (e.cancelable) {
+            e.preventDefault();
+        }
+        e.stopPropagation();
+        messages.forEach((message) => {
+            this.listener.sendMessage(message);
+        });
+    }
+
+    protected onKey(e: KeyboardEvent): void {
+        if (!this.lastPosition) {
+            return;
+        }
+        const screenInfo = this.player.getScreenInfo();
+        if (!screenInfo) {
+            return;
+        }
+        const { ctrlKey, shiftKey } = e;
+        const { target, button, buttons, clientY, clientX } = this.lastPosition;
+        const type = SIMULATE_MULTI_TOUCH;
+        const event: MiniMouseEvent = { ctrlKey, shiftKey, type, target, button, buttons, clientX, clientY };
+        this.buildTouchEvent(event, screenInfo, new Map());
+    }
+
+    private onMouseEnter = (): void => {
+        this.over = true;
+    };
+    private onMouseLeave = (): void => {
+        this.lastPosition = undefined;
+        this.over = false;
+        this.storedFromMouseEvent.forEach((message) => {
+            this.listener.sendMessage(TouchHandler.createEmulatedMessage(MotionEvent.ACTION_UP, message));
+        });
+        this.storedFromMouseEvent.clear();
+        this.clearCanvas();
+    };
+
+    public static mapTypeToAction(type: string): number {
+        return this.EVENT_ACTION_MAP[type];
     }
 }

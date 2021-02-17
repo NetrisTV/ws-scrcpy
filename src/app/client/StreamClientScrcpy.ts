@@ -7,10 +7,8 @@ import Size from '../Size';
 import { ControlMessage } from '../controlMessage/ControlMessage';
 import { StreamReceiver } from './StreamReceiver';
 import { CommandControlMessage } from '../controlMessage/CommandControlMessage';
-import TouchHandler from '../TouchHandler';
+import { TouchHandler, TouchHandlerListener } from '../TouchHandler';
 import Util from '../Util';
-import ScreenInfo from '../ScreenInfo';
-import { TouchControlMessage } from '../controlMessage/TouchControlMessage';
 import FilePushHandler from '../FilePushHandler';
 import DragAndPushLogger from '../DragAndPushLogger';
 import { KeyEventListener, KeyInputHandler } from '../KeyInputHandler';
@@ -24,18 +22,19 @@ import { html } from '../ui/HtmlTag';
 
 const ATTRIBUTE_UDID = 'data-udid';
 const ATTRIBUTE_COMMAND = 'data-command';
+const TAG = '[StreamClientScrcpy]';
 
-export class StreamClientScrcpy extends BaseClient<never> implements KeyEventListener {
+export class StreamClientScrcpy extends BaseClient<never> implements KeyEventListener, TouchHandlerListener {
     public static ACTION: ScrcpyStreamParams['action'] = 'stream';
     private static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
     private static configureDialog?: ConfigureScrcpy;
-    private hasTouchListeners = false;
 
     private controlButtons?: HTMLElement;
     private deviceName = '';
     private clientId = -1;
     private clientsCount = -1;
     private requestedVideoSettings?: VideoSettings;
+    private touchHandler?: TouchHandler;
 
     public static registerPlayer(playerClass: PlayerClass): void {
         if (playerClass.isSupported()) {
@@ -108,7 +107,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         deviceView.className = 'device-view';
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
-                console.error(ev);
+                console.error(TAG, ev);
             }
             let parent;
             parent = deviceView.parentElement;
@@ -207,13 +206,13 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
                 }
             }
             if (!min.equals(videoSettings) || !playing) {
-                this.sendEvent(CommandControlMessage.createSetVideoSettingsCommand(min));
+                this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(min));
             }
         });
-        console.log(player.getName(), udid);
+        console.log(TAG, player.getName(), udid);
     }
 
-    public sendEvent(e: ControlMessage): void {
+    public sendMessage(e: ControlMessage): void {
         this.streamReceiver.sendEvent(e);
     }
 
@@ -230,12 +229,12 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     }
 
     public onKeyEvent(event: KeyCodeControlMessage): void {
-        this.sendEvent(event);
+        this.sendMessage(event);
     }
 
     public sendNewVideoSetting(videoSettings: VideoSettings): void {
         this.requestedVideoSettings = videoSettings;
-        this.sendEvent(CommandControlMessage.createSetVideoSettingsCommand(videoSettings));
+        this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(videoSettings));
     }
 
     public getClientId(): number {
@@ -257,79 +256,10 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     }
 
     private setTouchListeners(player: BasePlayer): void {
-        if (!this.hasTouchListeners) {
-            TouchHandler.init();
-            let down = 0;
-            const supportsPassive = Util.supportsPassive();
-            const onMouseEvent = (e: MouseEvent | TouchEvent) => {
-                const tag = player.getTouchableElement();
-                if (e.target === tag) {
-                    const screenInfo: ScreenInfo = player.getScreenInfo() as ScreenInfo;
-                    if (!screenInfo) {
-                        return;
-                    }
-                    let events: TouchControlMessage[] | null = null;
-                    let condition = true;
-                    if (e instanceof MouseEvent) {
-                        condition = down > 0;
-                        events = TouchHandler.buildTouchEvent(e, screenInfo);
-                    } else if (e instanceof TouchEvent) {
-                        events = TouchHandler.formatTouchEvent(e, screenInfo, tag);
-                    }
-                    if (events && events.length && condition) {
-                        events.forEach((event) => {
-                            this.sendEvent(event);
-                        });
-                    }
-                    if (e.cancelable) {
-                        e.preventDefault();
-                    }
-                    e.stopPropagation();
-                }
-            };
-
-            const options = supportsPassive ? { passive: false } : false;
-            document.body.addEventListener(
-                'touchstart',
-                (e: TouchEvent): void => {
-                    onMouseEvent(e);
-                },
-                options,
-            );
-            document.body.addEventListener(
-                'touchend',
-                (e: TouchEvent): void => {
-                    onMouseEvent(e);
-                },
-                options,
-            );
-            document.body.addEventListener(
-                'touchmove',
-                (e: TouchEvent): void => {
-                    onMouseEvent(e);
-                },
-                options,
-            );
-            document.body.addEventListener(
-                'touchcancel',
-                (e: TouchEvent): void => {
-                    onMouseEvent(e);
-                },
-                options,
-            );
-            document.body.addEventListener('mousedown', (e: MouseEvent): void => {
-                down++;
-                onMouseEvent(e);
-            });
-            document.body.addEventListener('mouseup', (e: MouseEvent): void => {
-                onMouseEvent(e);
-                down--;
-            });
-            document.body.addEventListener('mousemove', (e: MouseEvent): void => {
-                onMouseEvent(e);
-            });
-            this.hasTouchListeners = true;
+        if (this.touchHandler) {
+            return;
         }
+        this.touchHandler = TouchHandler.createTouchHandler(player, this);
     }
 
     public static createEntryForDeviceList(

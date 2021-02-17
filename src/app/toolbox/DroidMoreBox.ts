@@ -35,7 +35,7 @@ export class DroidMoreBox {
         DroidMoreBox.wrap('p', [input, sendButton], moreBox);
         sendButton.onclick = () => {
             if (input.value) {
-                client.sendEvent(new TextControlMessage(input.value));
+                client.sendMessage(new TextControlMessage(input.value));
             }
         };
 
@@ -161,7 +161,7 @@ export class DroidMoreBox {
                         event = new CommandControlMessage(action);
                     }
                     if (event) {
-                        client.sendEvent(event);
+                        client.sendMessage(event);
                     }
                 };
             }
