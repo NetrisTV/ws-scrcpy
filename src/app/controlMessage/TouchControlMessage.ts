@@ -12,6 +12,22 @@ export interface TouchControlMessageInterface extends ControlMessageInterface {
 
 export class TouchControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 28;
+    /**
+     * - For a touch screen or touch pad, reports the approximate pressure
+     * applied to the surface by a finger or other tool.  The value is
+     * normalized to a range from 0 (no pressure at all) to 1 (normal pressure),
+     * although values higher than 1 may be generated depending on the
+     * calibration of the input device.
+     * - For a trackball, the value is set to 1 if the trackball button is pressed
+     * or 0 otherwise.
+     * - For a mouse, the value is set to 1 if the primary mouse button is pressed
+     * or 0 otherwise.
+     *
+     * - scrcpy server expects signed short (2 bytes) for a pressure value
+     * - in browser TouchEvent has `force` property (values in 0..1 range), we
+     * use it as "pressure" for scrcpy
+     */
+    public static readonly MAX_PRESSURE_VALUE = 0xffff;
 
     constructor(
         readonly action: number,
@@ -37,7 +53,7 @@ export class TouchControlMessage extends ControlMessage {
         offset = buffer.writeUInt32BE(this.position.point.y, offset);
         offset = buffer.writeUInt16BE(this.position.screenSize.width, offset);
         offset = buffer.writeUInt16BE(this.position.screenSize.height, offset);
-        offset = buffer.writeUInt16BE(this.pressure, offset);
+        offset = buffer.writeUInt16BE(this.pressure * TouchControlMessage.MAX_PRESSURE_VALUE, offset);
         buffer.writeUInt32BE(this.buttons, offset);
         return buffer;
     }

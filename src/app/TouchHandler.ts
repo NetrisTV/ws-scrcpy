@@ -395,7 +395,10 @@ export class TouchHandler {
                 const event = TouchHandler.calculateCoordinates(item, screenInfo);
                 if (event) {
                     const { action, buttons, position, invalid } = event.touch;
-                    const pressure = touch.force * 255;
+                    let pressure = 0;
+                    if (action !== MotionEvent.ACTION_UP) {
+                        pressure = touch.force;
+                    }
                     if (!invalid) {
                         const message = new TouchControlMessage(action, pointerId, position, pressure, buttons);
                         messages.push(...TouchHandler.validateMessage(e, message, storage, `${logPrefix}[validate]`));
@@ -432,7 +435,11 @@ export class TouchHandler {
             const { action, buttons, position } = touch;
             const previous = storage.get(pointerId);
             if (!touch.invalid) {
-                const message = new TouchControlMessage(action, pointerId, position, 255, buttons);
+                let pressure = 1.0;
+                if (action === MotionEvent.ACTION_UP) {
+                    pressure = 0;
+                }
+                const message = new TouchControlMessage(action, pointerId, position, pressure, buttons);
                 messages.push(...TouchHandler.validateMessage(e, message, storage, `${logPrefix}[validate]`));
                 points.push(touch.position.point);
             } else {
@@ -505,7 +512,11 @@ export class TouchHandler {
     }
 
     private static createEmulatedMessage(action: number, event: TouchControlMessage): TouchControlMessage {
-        const { pointerId, position, buttons, pressure } = event;
+        const { pointerId, position, buttons } = event;
+        let pressure = event.pressure;
+        if (action === MotionEvent.ACTION_UP) {
+            pressure = 0;
+        }
         return new TouchControlMessage(action, pointerId, position, pressure, buttons);
     }
 
