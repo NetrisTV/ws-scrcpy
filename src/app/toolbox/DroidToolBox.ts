@@ -64,7 +64,7 @@ export class DroidToolBox extends ToolBox {
             const { code } = element.optional;
             const action = type === 'mousedown' ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP;
             const event = new KeyCodeControlMessage(action, code, 0, 0);
-            client.sendEvent(event);
+            client.sendMessage(event);
         };
         const elements: ToolBoxElement<any>[] = list.map((item) => {
             const button = new ToolBoxButton(item.title, item.icon, {

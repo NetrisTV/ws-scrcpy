@@ -214,7 +214,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     public abstract getPreferredVideoSetting(): VideoSettings;
     protected abstract calculateMomentumStats(): void;
 
-    public getTouchableElement(): HTMLElement {
+    public getTouchableElement(): HTMLCanvasElement {
         return this.touchableCanvas;
     }
 
