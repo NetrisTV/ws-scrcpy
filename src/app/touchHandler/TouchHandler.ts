@@ -29,7 +29,7 @@ interface CommonTouchAndMouse {
     clientY: number;
     type: string;
     target: EventTarget | null;
-    button: number;
+    buttons: number;
 }
 
 interface MiniMouseEvent extends CommonTouchAndMouse {
@@ -53,11 +53,6 @@ export type KeyEventNames = 'keydown' | 'keyup';
 export abstract class TouchHandler {
     protected static readonly SIMULATE_MULTI_TOUCH = 'SIMULATE_MULTI_TOUCH';
     protected static readonly STROKE_STYLE: string = '#00BEA4';
-    protected static BUTTONS_MAP: Record<number, number> = {
-        0: 17, // ?? BUTTON_PRIMARY
-        1: MotionEvent.BUTTON_TERTIARY,
-        2: 26, // ?? BUTTON_SECONDARY
-    };
     protected static EVENT_ACTION_MAP: Record<string, number> = {
         touchstart: MotionEvent.ACTION_DOWN,
         touchend: MotionEvent.ACTION_UP,
@@ -251,7 +246,6 @@ export abstract class TouchHandler {
         const size = new Size(width, height);
         const point = new Point(x, y);
         const position = new Position(point, size);
-        const buttons = this.BUTTONS_MAP[e.button];
         if (x < 0 || y < 0 || x > width || y > height) {
             invalid = true;
         }
@@ -264,7 +258,7 @@ export abstract class TouchHandler {
                 invalid,
                 action,
                 position,
-                buttons,
+                buttons: e.buttons,
             },
         };
     }
@@ -480,7 +474,7 @@ export abstract class TouchHandler {
                     clientX: touch.clientX,
                     clientY: touch.clientY,
                     type: e.type,
-                    button: 0,
+                    buttons: MotionEvent.BUTTON_PRIMARY,
                     target: e.target,
                 };
                 const event = TouchHandler.calculateCoordinates(item, screenInfo);
