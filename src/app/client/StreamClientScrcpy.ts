@@ -7,7 +7,6 @@ import Size from '../Size';
 import { ControlMessage } from '../controlMessage/ControlMessage';
 import { StreamReceiver } from './StreamReceiver';
 import { CommandControlMessage } from '../controlMessage/CommandControlMessage';
-import { TouchHandler, TouchHandlerListener } from '../TouchHandler';
 import Util from '../Util';
 import FilePushHandler from '../FilePushHandler';
 import DragAndPushLogger from '../DragAndPushLogger';
@@ -19,6 +18,7 @@ import { ConfigureScrcpy, ConfigureScrcpyOptions } from './ConfigureScrcpy';
 import { DeviceTrackerDroid } from './DeviceTrackerDroid';
 import { DeviceTrackerCommand } from '../../common/DeviceTrackerCommand';
 import { html } from '../ui/HtmlTag';
+import { FeaturedTouchHandler, TouchHandlerListener } from '../touchHandler/FeaturedTouchHandler';
 
 const ATTRIBUTE_UDID = 'data-udid';
 const ATTRIBUTE_COMMAND = 'data-command';
@@ -34,7 +34,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     private clientId = -1;
     private clientsCount = -1;
     private requestedVideoSettings?: VideoSettings;
-    private touchHandler?: TouchHandler;
+    private touchHandler?: FeaturedTouchHandler;
 
     public static registerPlayer(playerClass: PlayerClass): void {
         if (playerClass.isSupported()) {
@@ -259,7 +259,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         if (this.touchHandler) {
             return;
         }
-        this.touchHandler = TouchHandler.createTouchHandler(player, this);
+        this.touchHandler = new FeaturedTouchHandler(player, this);
     }
 
     public static createEntryForDeviceList(

@@ -7,11 +7,10 @@ import { WsQVHackClient } from './WsQVHackClient';
 import Size from '../Size';
 import ScreenInfo from '../ScreenInfo';
 import { StreamReceiver } from './StreamReceiver';
-import { TouchHandler, TouchHandlerListener } from '../TouchHandler';
-// import Position from '../Position';
+import Position from '../Position';
 import { MsePlayerForQVHack } from '../player/MsePlayerForQVHack';
 import { BasePlayer } from '../player/BasePlayer';
-import { TouchControlMessage } from '../controlMessage/TouchControlMessage';
+import { SimpleTouchHandler, TouchHandlerListener } from '../touchHandler/SimpleTouchHandler';
 
 const ACTION = 'stream-qvh';
 const PORT = 8080;
@@ -26,7 +25,7 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
     private wdaUrl?: string;
     private readonly streamReceiver: StreamReceiver;
     private videoWrapper?: HTMLElement;
-    private touchHandler?: TouchHandler;
+    private touchHandler?: SimpleTouchHandler;
 
     constructor(params: QVHackStreamParams) {
         super();
@@ -43,10 +42,6 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
         this.startStream(params.udid, `ws://${params.ip}:${params.port}/ws?stream=${udid}`);
         this.setBodyClass('stream');
         this.setTitle(`${params.udid} stream`);
-    }
-
-    public sendMessage(message: TouchControlMessage): void {
-        console.log(message);
     }
 
     private onViewVideoResize = (): void => {
@@ -154,81 +149,14 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
         if (this.touchHandler) {
             return;
         }
-        this.touchHandler = TouchHandler.createTouchHandler(player, this);
-        // if (!this.hasTouchListeners) {
-        //     TouchHandler.init();
-        //     let down = 0;
-        //     // const supportsPassive = Util.supportsPassive();
-        //     let startPosition: Position | undefined;
-        //     let endPosition: Position | undefined;
-        //     const onMouseEvent = (e: MouseEvent) => {
-        //         let handled = false;
-        //         const tag = player.getTouchableElement();
-        //
-        //         if (e.target === tag) {
-        //             const screenInfo: ScreenInfo = player.getScreenInfo() as ScreenInfo;
-        //             if (!screenInfo) {
-        //                 return;
-        //             }
-        //             handled = true;
-        //             const events = TouchHandler.buildTouchEvent(e, screenInfo);
-        //             if (down === 1 && events?.length === 1) {
-        //                 if (e.type === 'mousedown') {
-        //                     startPosition = events[0].position;
-        //                 } else {
-        //                     endPosition = events[0].position;
-        //                 }
-        //                 const target = e.target as HTMLCanvasElement;
-        //                 const ctx = target.getContext('2d');
-        //                 if (ctx) {
-        //                     if (startPosition) {
-        //                         TouchHandler.drawPointer(ctx, startPosition.point);
-        //                     }
-        //                     if (endPosition) {
-        //                         TouchHandler.drawPointer(ctx, endPosition.point);
-        //                         if (startPosition) {
-        //                             TouchHandler.drawLine(ctx, startPosition.point, endPosition.point);
-        //                         }
-        //                     }
-        //                 }
-        //                 if (e.type === 'mouseup') {
-        //                     if (startPosition && endPosition) {
-        //                         TouchHandler.clearCanvas(target);
-        //                         if (startPosition.point.distance(endPosition.point) < 10) {
-        //                             this.wdaConnection.wdaPerformClick(endPosition);
-        //                         } else {
-        //                             this.wdaConnection.wdaPerformScroll(startPosition, endPosition);
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //             if (handled) {
-        //                 if (e.cancelable) {
-        //                     e.preventDefault();
-        //                 }
-        //                 e.stopPropagation();
-        //             }
-        //         }
-        //         if (e.type === 'mouseup') {
-        //             startPosition = undefined;
-        //             endPosition = undefined;
-        //         }
-        //     };
-        //     document.body.addEventListener('click', (e: MouseEvent): void => {
-        //         onMouseEvent(e);
-        //     });
-        //     document.body.addEventListener('mousedown', (e: MouseEvent): void => {
-        //         down++;
-        //         onMouseEvent(e);
-        //     });
-        //     document.body.addEventListener('mouseup', (e: MouseEvent): void => {
-        //         onMouseEvent(e);
-        //         down--;
-        //     });
-        //     document.body.addEventListener('mousemove', (e: MouseEvent): void => {
-        //         onMouseEvent(e);
-        //     });
-        //     this.hasTouchListeners = true;
-        // }
+        this.touchHandler = new SimpleTouchHandler(player, this);
+    }
+
+    public performClick(position: Position): void {
+        this.wdaConnection.wdaPerformClick(position);
+    }
+
+    public performScroll(from: Position, to: Position): void {
+        this.wdaConnection.wdaPerformScroll(from, to);
     }
 }
