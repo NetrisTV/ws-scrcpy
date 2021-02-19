@@ -71,7 +71,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     private state: number = BasePlayer.STATE.STOPPED;
     private qualityAnimationId?: number;
     private showQualityStats = BasePlayer.DEFAULT_SHOW_QUALITY_STATS;
-    private receivedFirstFrame = false;
+    protected receivedFirstFrame = false;
     private statLines: string[] = [];
     public readonly supportsScreenshot: boolean = false;
 
@@ -249,6 +249,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         if (this.needScreenInfoBeforePlay()) {
             this.pause();
         }
+        this.receivedFirstFrame = false;
         this.screenInfo = screenInfo;
         const { width, height } = screenInfo.videoSize;
         this.touchableCanvas.width = width;

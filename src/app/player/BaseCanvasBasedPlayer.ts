@@ -62,15 +62,21 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
         if (!this.canvas) {
             return;
         }
-        if (this.lastDecodedFrame) {
-            const { buffer, width, height } = this.lastDecodedFrame;
-            this.canvas.decode(buffer, width, height);
+        if (this.receivedFirstFrame) {
+            if (this.lastDecodedFrame) {
+                const { buffer, width, height } = this.lastDecodedFrame;
+                this.canvas.decode(buffer, width, height);
+            }
         }
         this.lastDecodedFrame = undefined;
         this.animationFrameId = undefined;
     };
 
     protected onFrameDecoded(width: number, height: number, buffer: Uint8Array): void {
+        if (!this.receivedFirstFrame) {
+            // decoded frame with previous video settings
+            return;
+        }
         let dropped = 0;
         if (this.lastDecodedFrame) {
             dropped = 1;
