@@ -5,7 +5,7 @@ import { DroidToolBox } from '../toolbox/DroidToolBox';
 import VideoSettings from '../VideoSettings';
 import Size from '../Size';
 import { ControlMessage } from '../controlMessage/ControlMessage';
-import { StreamReceiver } from './StreamReceiver';
+import { ClientsStats, DisplayCombinedInfo, StreamReceiver } from './StreamReceiver';
 import { CommandControlMessage } from '../controlMessage/CommandControlMessage';
 import Util from '../Util';
 import FilePushHandler from '../FilePushHandler';
@@ -19,6 +19,14 @@ import { DeviceTrackerDroid } from './DeviceTrackerDroid';
 import { DeviceTrackerCommand } from '../../common/DeviceTrackerCommand';
 import { html } from '../ui/HtmlTag';
 import { FeaturedTouchHandler, TouchHandlerListener } from '../touchHandler/FeaturedTouchHandler';
+import DeviceMessage from '../DeviceMessage';
+
+type StartParams = {
+    udid: string;
+    playerName: string | BasePlayer;
+    fitIntoScreen?: boolean;
+    videoSettings?: VideoSettings;
+};
 
 const ATTRIBUTE_UDID = 'data-udid';
 const ATTRIBUTE_COMMAND = 'data-command';
@@ -33,8 +41,12 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     private deviceName = '';
     private clientId = -1;
     private clientsCount = -1;
+    private joinedStream = false;
     private requestedVideoSettings?: VideoSettings;
     private touchHandler?: FeaturedTouchHandler;
+    private droidMoreBox?: DroidMoreBox;
+    private player?: BasePlayer;
+    private filePushHandler?: FilePushHandler;
 
     public static registerPlayer(playerClass: PlayerClass): void {
         if (playerClass.isSupported()) {
@@ -59,25 +71,20 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         return new playerClass(udid);
     }
 
-    public static createFromParam(params: ScrcpyStreamParams): StreamClientScrcpy {
-        const streamReceiver = new StreamReceiver(params.ip, params.port, params.query);
-        let player = params.player;
-        if (typeof player !== 'string') {
-            // TODO: remove deprecated
-            player = params.decoder as string;
-        }
+    // TODO: remove deprecated method
+    public static createFromParam({ udid, player, decoder, ip, port, query }: ScrcpyStreamParams): StreamClientScrcpy {
+        const streamReceiver = new StreamReceiver(ip, port, query);
+        const playerName: string = typeof player === 'string' ? player : (decoder as string);
         const client = new StreamClientScrcpy(streamReceiver);
-        client.startStream(params.udid, player);
-        client.setTitle(`${params.udid} stream`);
+        const fitIntoScreen = true;
+        client.startStream({ udid, playerName, fitIntoScreen });
+        client.setTitle(`${udid} stream`);
         return client;
     }
 
-    public static createWithReceiver(
-        streamReceiver: StreamReceiver,
-        params: { udid: string; playerName: BasePlayer; fitIntoScreen?: boolean },
-    ): StreamClientScrcpy {
+    public static createWithReceiver(streamReceiver: StreamReceiver, params: StartParams): StreamClientScrcpy {
         const client = new StreamClientScrcpy(streamReceiver);
-        client.startStream(params.udid, params.playerName, params.fitIntoScreen);
+        client.startStream(params);
         return client;
     }
 
@@ -87,10 +94,94 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         this.setBodyClass('stream');
     }
 
-    public startStream(udid: string, playerName: string | BasePlayer, fitIntoScreen?: boolean): void {
+    public OnDeviceMessage = (message: DeviceMessage): void => {
+        if (this.droidMoreBox) {
+            this.droidMoreBox.OnDeviceMessage(message);
+        }
+    };
+
+    public onVideo = (data: ArrayBuffer): void => {
+        if (!this.player) {
+            return;
+        }
+        const STATE = BasePlayer.STATE;
+        if (this.player.getState() === STATE.PAUSED) {
+            this.player.play();
+        }
+        if (this.player.getState() === STATE.PLAYING) {
+            this.player.pushFrame(new Uint8Array(data));
+        }
+    };
+
+    public onClientsStats = (stats: ClientsStats): void => {
+        this.deviceName = stats.deviceName;
+        this.clientId = stats.clientId;
+    };
+
+    public onDisplayInfo = (info: DisplayCombinedInfo): void => {
+        if (!this.player) {
+            return;
+        }
+        const currentSettings = this.player.getVideoSettings();
+        if (info.displayInfo.displayId !== currentSettings.displayId) {
+            return;
+        }
+        if (this.player.getState() === BasePlayer.STATE.PAUSED) {
+            this.player.play();
+        }
+        const { videoSettings, screenInfo } = info;
+        if (!videoSettings || !screenInfo) {
+            console.log('!videoSettings || !screenInfo', videoSettings, screenInfo);
+            this.joinedStream = true;
+            this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(currentSettings));
+            return;
+        }
+        console.log('streamReceiver', 'videoSettings:', videoSettings);
+        console.log('streamReceiver', 'screenInfo:', screenInfo);
+
+        this.clientsCount = info.connectionCount;
+        let min = VideoSettings.copy(videoSettings);
+        const oldInfo = this.player.getScreenInfo();
+        if (!screenInfo.equals(oldInfo)) {
+            this.player.setScreenInfo(screenInfo);
+        }
+
+        if (!videoSettings.equals(currentSettings)) {
+            this.player.setVideoSettings(videoSettings, videoSettings.equals(this.requestedVideoSettings));
+        }
+        if (!oldInfo) {
+            const bounds = currentSettings.bounds;
+            const videoSize: Size = screenInfo.videoSize;
+            const onlyOneClient = this.clientsCount === 0;
+            const smallerThenCurrent = bounds && (bounds.width < videoSize.width || bounds.height < videoSize.height);
+            if (onlyOneClient || smallerThenCurrent) {
+                min = currentSettings;
+            }
+        }
+        if (!min.equals(videoSettings) || !this.joinedStream) {
+            this.joinedStream = true;
+            this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(min));
+        }
+    };
+
+    public onDisconnected = (): void => {
+        this.streamReceiver.off('deviceMessage', this.OnDeviceMessage);
+        this.streamReceiver.off('video', this.onVideo);
+        this.streamReceiver.off('clientsStats', this.onClientsStats);
+        this.streamReceiver.off('displayInfo', this.onDisplayInfo);
+        this.streamReceiver.off('disconnected', this.onDisconnected);
+
+        this.filePushHandler?.release();
+        this.filePushHandler = undefined;
+        this.touchHandler?.release();
+        this.touchHandler = undefined;
+    };
+
+    public startStream({ udid, playerName, videoSettings, fitIntoScreen }: StartParams): void {
         if (!udid) {
             return;
         }
+
         let player: BasePlayer;
         if (typeof playerName === 'string') {
             const p = StreamClientScrcpy.createPlayer(udid, playerName);
@@ -101,7 +192,12 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         } else {
             player = playerName;
         }
+        this.player = player;
         this.setTouchListeners(player);
+
+        if (!videoSettings) {
+            videoSettings = player.getVideoSettings();
+        }
 
         const deviceView = document.createElement('div');
         deviceView.className = 'device-view';
@@ -122,7 +218,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
             player.stop();
         };
 
-        const droidMoreBox = new DroidMoreBox(udid, player, this);
+        const droidMoreBox = (this.droidMoreBox = new DroidMoreBox(udid, player, this));
         const moreBox = droidMoreBox.getHolderElement();
         droidMoreBox.setOnStop(stop);
         const droidToolBox = DroidToolBox.createToolBox(udid, player, this, moreBox);
@@ -136,13 +232,9 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         player.pause();
 
         document.body.appendChild(deviceView);
-        const current = player.getVideoSettings();
-        if (typeof fitIntoScreen !== 'boolean') {
-            fitIntoScreen = player.getPreferredVideoSetting().equals(current);
-        }
         if (fitIntoScreen) {
             const bounds = this.getMaxSize();
-            const { bitrate, maxFps, iFrameInterval, lockedVideoOrientation, sendFrameMeta } = current;
+            const { bitrate, maxFps, iFrameInterval, lockedVideoOrientation, sendFrameMeta } = videoSettings;
             const newVideoSettings = new VideoSettings({
                 bounds,
                 bitrate,
@@ -154,61 +246,16 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
             player.setVideoSettings(newVideoSettings, false);
         }
         const element = player.getTouchableElement();
-        const handler = new FilePushHandler(element, this.streamReceiver);
         const logger = new DragAndPushLogger(element);
-        handler.addEventListener(logger);
+        this.filePushHandler = new FilePushHandler(element, this.streamReceiver);
+        this.filePushHandler.addEventListener(logger);
 
         const streamReceiver = this.streamReceiver;
-        streamReceiver.on('deviceMessage', (message) => {
-            droidMoreBox.OnDeviceMessage(message);
-        });
-        streamReceiver.on('video', (data) => {
-            const STATE = BasePlayer.STATE;
-            if (player.getState() === STATE.PAUSED) {
-                player.play();
-            }
-            if (player.getState() === STATE.PLAYING) {
-                player.pushFrame(new Uint8Array(data));
-            }
-        });
-        streamReceiver.on('clientsStats', (stats) => {
-            this.deviceName = stats.deviceName;
-            this.clientId = stats.clientId;
-            this.clientsCount = stats.clientsCount;
-        });
-        streamReceiver.on('videoParameters', ({ screenInfo, videoSettings }) => {
-            let min = VideoSettings.copy(videoSettings);
-            let playing = false;
-            const STATE = BasePlayer.STATE;
-            if (player.getState() === STATE.PAUSED) {
-                player.play();
-            }
-            if (player.getState() === STATE.PLAYING) {
-                playing = true;
-            }
-            const oldInfo = player.getScreenInfo();
-            if (!screenInfo.equals(oldInfo)) {
-                player.setScreenInfo(screenInfo);
-            }
-
-            const oldSettings = player.getVideoSettings();
-            if (!videoSettings.equals(oldSettings)) {
-                player.setVideoSettings(videoSettings, videoSettings.equals(this.requestedVideoSettings));
-            }
-            if (!oldInfo) {
-                const bounds = oldSettings.bounds;
-                const videoSize: Size = screenInfo.videoSize;
-                const onlyOneClient = this.clientsCount === 0;
-                const smallerThenCurrent =
-                    bounds && (bounds.width < videoSize.width || bounds.height < videoSize.height);
-                if (onlyOneClient || smallerThenCurrent) {
-                    min = oldSettings;
-                }
-            }
-            if (!min.equals(videoSettings) || !playing) {
-                this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(min));
-            }
-        });
+        streamReceiver.on('deviceMessage', this.OnDeviceMessage);
+        streamReceiver.on('video', this.onVideo);
+        streamReceiver.on('clientsStats', this.onClientsStats);
+        streamReceiver.on('displayInfo', this.onDisplayInfo);
+        streamReceiver.on('disconnected', this.onDisconnected);
         console.log(TAG, player.getName(), udid);
     }
 
@@ -234,6 +281,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
     public sendNewVideoSetting(videoSettings: VideoSettings): void {
         this.requestedVideoSettings = videoSettings;
+        console.log('sendNewVideoSetting');
         this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(videoSettings));
     }
 

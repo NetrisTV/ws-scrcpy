@@ -4,44 +4,46 @@ import DeviceMessage from '../DeviceMessage';
 import VideoSettings from '../VideoSettings';
 import ScreenInfo from '../ScreenInfo';
 import Util from '../Util';
+import { DisplayInfo } from '../DisplayInfo';
 
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC_BYTES_INITIAL = Util.stringToUtf8ByteArray('scrcpy_initial');
 const MAGIC_BYTES_MESSAGE = Util.stringToUtf8ByteArray('scrcpy_message');
-const CLIENT_ID_LENGTH = 2;
-const CLIENTS_COUNT_LENGTH = 2;
 
-type VideoParameters = {
-    videoSettings: VideoSettings;
-    screenInfo: ScreenInfo;
-};
-
-type ClientsStats = {
+export type ClientsStats = {
     deviceName: string;
     clientId: number;
-    clientsCount: number;
+};
+
+export type DisplayCombinedInfo = {
+    clientId: number;
+    displayCount: number;
+    displayInfo: DisplayInfo;
+    videoSettings?: VideoSettings;
+    screenInfo?: ScreenInfo;
+    connectionCount: number;
 };
 
 interface StreamReceiverEvents {
     video: ArrayBuffer;
     deviceMessage: DeviceMessage;
-    videoParameters: VideoParameters;
+    displayInfo: DisplayCombinedInfo;
     clientsStats: ClientsStats;
     encoders: string[];
     connected: void;
     disconnected: CloseEvent;
 }
 
-interface InitialInfo {
-    videoParameters: VideoParameters;
-    encoders: string[];
-    clientsStats: ClientsStats;
-}
-
 export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     private events: ControlMessage[] = [];
-    private encoders: Set<string> = new Set<string>();
-    private initialInfo?: InitialInfo;
+    private encodersSet: Set<string> = new Set<string>();
+    private clientId = -1;
+    private deviceName = '';
+    private readonly displayInfoMap: Map<number, DisplayInfo> = new Map();
+    private readonly connectionCountMap: Map<number, number> = new Map();
+    private readonly screenInfoMap: Map<number, ScreenInfo> = new Map();
+    private readonly videoSettingsMap: Map<number, VideoSettings> = new Map();
+    private hasInitialInfo = false;
 
     constructor(
         private readonly host: string,
@@ -57,46 +59,50 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     private handleInitialInfo(data: ArrayBuffer): void {
         let offset = MAGIC_BYTES_INITIAL.length;
         let nameBytes = new Uint8Array(data, offset, DEVICE_NAME_FIELD_LENGTH);
-        nameBytes = Util.filterTrailingZeroes(nameBytes);
-        const deviceName = Util.utf8ByteArrayToString(nameBytes);
         offset += DEVICE_NAME_FIELD_LENGTH;
-        let temp = new Buffer(new Uint8Array(data, offset, ScreenInfo.BUFFER_LENGTH));
-        offset += ScreenInfo.BUFFER_LENGTH;
-        const screenInfo = ScreenInfo.fromBuffer(temp);
-        temp = new Buffer(new Uint8Array(data, offset));
-        const videoSettings = VideoSettings.fromBuffer(temp);
-        offset += videoSettings.bytesLength;
-        temp = new Buffer(new Uint8Array(data, offset, CLIENT_ID_LENGTH + CLIENTS_COUNT_LENGTH));
-        const clientId = temp.readInt16BE(0);
-        const clientsCount = temp.readInt16BE(CLIENT_ID_LENGTH);
-        offset += CLIENT_ID_LENGTH + CLIENTS_COUNT_LENGTH;
-        this.encoders.clear();
-        if (data.byteLength > offset) {
-            temp = new Buffer(new Uint8Array(data, offset));
-            offset = 0;
-            const encodersCount = temp.readInt32BE(offset);
-            offset += 4;
-            for (let i = 0; i < encodersCount; i++) {
-                const nameLength = temp.readInt32BE(offset);
-                offset += 4;
-                const nameBytes = temp.slice(offset, offset + nameLength);
-                offset += nameLength;
-                const name = Util.utf8ByteArrayToString(nameBytes);
-                this.encoders.add(name);
+        let rest: Buffer = new Buffer(new Uint8Array(data, offset));
+        const displaysCount = rest.readInt32BE(0);
+        this.displayInfoMap.clear();
+        this.connectionCountMap.clear();
+        this.screenInfoMap.clear();
+        this.videoSettingsMap.clear();
+        rest = rest.slice(4);
+        for (let i = 0; i < displaysCount; i++) {
+            const displayInfoBuffer = rest.slice(0, DisplayInfo.BUFFER_LENGTH);
+            const displayInfo = DisplayInfo.fromBuffer(displayInfoBuffer);
+            const { displayId } = displayInfo;
+            this.displayInfoMap.set(displayId, displayInfo);
+            rest = rest.slice(DisplayInfo.BUFFER_LENGTH);
+            this.connectionCountMap.set(displayId, rest.readInt32BE(0));
+            rest = rest.slice(4);
+            const screenInfoBytesCount = rest.readInt32BE(0);
+            rest = rest.slice(4);
+            if (screenInfoBytesCount) {
+                this.screenInfoMap.set(displayId, ScreenInfo.fromBuffer(rest.slice(0, screenInfoBytesCount)));
+                rest = rest.slice(screenInfoBytesCount);
+            }
+            const videoSettingsBytesCount = rest.readInt32BE(0);
+            rest = rest.slice(4);
+            if (videoSettingsBytesCount) {
+                this.videoSettingsMap.set(displayId, VideoSettings.fromBuffer(rest.slice(0, videoSettingsBytesCount)));
+                rest = rest.slice(videoSettingsBytesCount);
             }
         }
-        const encoders = this.getEncoders();
-        const videoParameters = { videoSettings, screenInfo };
-        const clientsStats = {
-            clientId: clientId,
-            clientsCount: clientsCount,
-            deviceName: deviceName,
-        };
-        this.initialInfo = {
-            encoders,
-            videoParameters,
-            clientsStats,
-        };
+        this.encodersSet.clear();
+        const encodersCount = rest.readInt32BE(0);
+        rest = rest.slice(4);
+        for (let i = 0; i < encodersCount; i++) {
+            const nameLength = rest.readInt32BE(0);
+            rest = rest.slice(4);
+            const nameBytes = rest.slice(0, nameLength);
+            rest = rest.slice(nameLength);
+            const name = Util.utf8ByteArrayToString(nameBytes);
+            this.encodersSet.add(name);
+        }
+        this.clientId = rest.readInt32BE(0);
+        nameBytes = Util.filterTrailingZeroes(nameBytes);
+        this.deviceName = Util.utf8ByteArrayToString(nameBytes);
+        this.hasInitialInfo = true;
         this.triggerInitialInfoEvents();
     }
 
@@ -162,15 +168,32 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     }
 
     public getEncoders(): string[] {
-        return Array.from(this.encoders.values());
+        return Array.from(this.encodersSet.values());
+    }
+
+    public getDeviceName(): string {
+        return this.deviceName;
     }
 
     public triggerInitialInfoEvents(): void {
-        if (this.initialInfo) {
-            const { encoders, videoParameters, clientsStats } = this.initialInfo;
+        if (this.hasInitialInfo) {
+            const encoders = this.getEncoders();
             this.emit('encoders', encoders);
-            this.emit('clientsStats', clientsStats);
-            this.emit('videoParameters', videoParameters);
+            const { clientId, deviceName } = this;
+            this.emit('clientsStats', { clientId, deviceName });
+            const displayCount = this.displayInfoMap.size;
+            this.displayInfoMap.forEach((displayInfo: DisplayInfo, displayId: number) => {
+                const connectionCount = this.connectionCountMap.get(displayId) || 0;
+                const value: DisplayCombinedInfo = {
+                    clientId,
+                    displayCount,
+                    displayInfo,
+                    videoSettings: this.videoSettingsMap.get(displayId),
+                    screenInfo: this.screenInfoMap.get(displayId),
+                    connectionCount,
+                };
+                this.emit('displayInfo', value);
+            });
         }
     }
 
