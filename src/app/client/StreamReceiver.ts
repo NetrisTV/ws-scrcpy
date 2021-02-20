@@ -16,8 +16,6 @@ export type ClientsStats = {
 };
 
 export type DisplayCombinedInfo = {
-    clientId: number;
-    displayCount: number;
     displayInfo: DisplayInfo;
     videoSettings?: VideoSettings;
     screenInfo?: ScreenInfo;
@@ -27,7 +25,7 @@ export type DisplayCombinedInfo = {
 interface StreamReceiverEvents {
     video: ArrayBuffer;
     deviceMessage: DeviceMessage;
-    displayInfo: DisplayCombinedInfo;
+    displayInfo: DisplayCombinedInfo[];
     clientsStats: ClientsStats;
     encoders: string[];
     connected: void;
@@ -181,20 +179,22 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
             this.emit('encoders', encoders);
             const { clientId, deviceName } = this;
             this.emit('clientsStats', { clientId, deviceName });
-            const displayCount = this.displayInfoMap.size;
+            const infoArray: DisplayCombinedInfo[] = [];
             this.displayInfoMap.forEach((displayInfo: DisplayInfo, displayId: number) => {
                 const connectionCount = this.connectionCountMap.get(displayId) || 0;
-                const value: DisplayCombinedInfo = {
-                    clientId,
-                    displayCount,
+                infoArray.push({
                     displayInfo,
                     videoSettings: this.videoSettingsMap.get(displayId),
                     screenInfo: this.screenInfoMap.get(displayId),
                     connectionCount,
-                };
-                this.emit('displayInfo', value);
+                });
             });
+            this.emit('displayInfo', infoArray);
         }
+    }
+
+    public getDisplayInfo(displayId: number): DisplayInfo | undefined {
+        return this.displayInfoMap.get(displayId);
     }
 
     protected buildWebSocketUrl(): string {

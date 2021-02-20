@@ -20,6 +20,7 @@ import { DeviceTrackerCommand } from '../../common/DeviceTrackerCommand';
 import { html } from '../ui/HtmlTag';
 import { FeaturedTouchHandler, TouchHandlerListener } from '../touchHandler/FeaturedTouchHandler';
 import DeviceMessage from '../DeviceMessage';
+import { DisplayInfo } from '../DisplayInfo';
 
 type StartParams = {
     udid: string;
@@ -58,7 +59,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         return Array.from(this.players.values());
     }
 
-    public static createPlayer(udid: string, playerName: string): BasePlayer | undefined {
+    public static createPlayer(playerName: string, udid: string, displayInfo?: DisplayInfo): BasePlayer | undefined {
         let playerClass: PlayerClass | undefined;
         for (const value of StreamClientScrcpy.players.values()) {
             if (value.playerFullName === playerName || value.playerCodeName === playerName) {
@@ -68,7 +69,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         if (!playerClass) {
             return;
         }
-        return new playerClass(udid);
+        return new playerClass(udid, displayInfo);
     }
 
     // TODO: remove deprecated method
@@ -78,7 +79,6 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         const client = new StreamClientScrcpy(streamReceiver);
         const fitIntoScreen = true;
         client.startStream({ udid, playerName, fitIntoScreen });
-        client.setTitle(`${udid} stream`);
         return client;
     }
 
@@ -116,14 +116,19 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     public onClientsStats = (stats: ClientsStats): void => {
         this.deviceName = stats.deviceName;
         this.clientId = stats.clientId;
+        this.setTitle(`Stream ${this.deviceName}`);
     };
 
-    public onDisplayInfo = (info: DisplayCombinedInfo): void => {
+    public onDisplayInfo = (infoArray: DisplayCombinedInfo[]): void => {
         if (!this.player) {
             return;
         }
         const currentSettings = this.player.getVideoSettings();
-        if (info.displayInfo.displayId !== currentSettings.displayId) {
+        const displayId = currentSettings.displayId;
+        const info = infoArray.find((value) => {
+            return value.displayInfo.displayId === displayId;
+        });
+        if (!info) {
             return;
         }
         if (this.player.getState() === BasePlayer.STATE.PAUSED) {
@@ -184,7 +189,11 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
         let player: BasePlayer;
         if (typeof playerName === 'string') {
-            const p = StreamClientScrcpy.createPlayer(udid, playerName);
+            let displayInfo: DisplayInfo | undefined;
+            if (this.streamReceiver && videoSettings) {
+                displayInfo = this.streamReceiver.getDisplayInfo(videoSettings.displayId);
+            }
+            const p = StreamClientScrcpy.createPlayer(playerName, udid, displayInfo);
             if (!p) {
                 throw Error(`Unsupported player: "${playerName}"`);
             }

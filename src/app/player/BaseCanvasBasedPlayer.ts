@@ -1,6 +1,7 @@
 import { BasePlayer, PlaybackQuality } from './BasePlayer';
 import ScreenInfo from '../ScreenInfo';
 import VideoSettings from '../VideoSettings';
+import { DisplayInfo } from '../DisplayInfo';
 
 type DecodedFrame = {
     width: number;
@@ -48,11 +49,12 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
 
     constructor(
         udid: string,
+        displayInfo?: DisplayInfo,
         name = 'Canvas',
         storageKeyPrefix = 'DummyCanvas',
         protected tag: HTMLCanvasElement = BaseCanvasBasedPlayer.createElement(),
     ) {
-        super(udid, name, storageKeyPrefix, tag);
+        super(udid, displayInfo, name, storageKeyPrefix, tag);
     }
 
     protected abstract decode(data: Uint8Array): void;

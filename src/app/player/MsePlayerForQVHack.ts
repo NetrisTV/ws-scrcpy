@@ -15,7 +15,7 @@ export class MsePlayerForQVHack extends MsePlayer {
     });
 
     constructor(udid: string, tag: HTMLVideoElement) {
-        super(udid, 'MSE_Player_For_QVHack', tag);
+        super(udid, undefined, 'MSE_Player_For_QVHack', tag);
     }
 
     protected onCanPlayHandler(): void {
