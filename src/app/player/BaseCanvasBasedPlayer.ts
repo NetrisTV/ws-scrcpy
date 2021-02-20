@@ -34,7 +34,6 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
                 gl = null;
             }
         }
-        console.log('WebGL support:' + !!gl);
         return !!gl;
     }
 

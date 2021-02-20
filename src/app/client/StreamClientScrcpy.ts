@@ -136,13 +136,10 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         }
         const { videoSettings, screenInfo } = info;
         if (!videoSettings || !screenInfo) {
-            console.log('!videoSettings || !screenInfo', videoSettings, screenInfo);
             this.joinedStream = true;
             this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(currentSettings));
             return;
         }
-        console.log('streamReceiver', 'videoSettings:', videoSettings);
-        console.log('streamReceiver', 'screenInfo:', screenInfo);
 
         this.clientsCount = info.connectionCount;
         let min = VideoSettings.copy(videoSettings);
@@ -290,7 +287,6 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
     public sendNewVideoSetting(videoSettings: VideoSettings): void {
         this.requestedVideoSettings = videoSettings;
-        console.log('sendNewVideoSetting');
         this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(videoSettings));
     }
 

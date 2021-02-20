@@ -40,7 +40,6 @@ export class CommandControlMessage extends ControlMessage {
     };
 
     public static createSetVideoSettingsCommand(videoSettings: VideoSettings): CommandControlMessage {
-        console.log('createSetVideoSettingsCommand', videoSettings);
         const temp = videoSettings.toBuffer();
         const event = new CommandControlMessage(ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS);
         const offset = CommandControlMessage.PAYLOAD_LENGTH + 1;
