@@ -100,19 +100,19 @@ export abstract class TouchHandler {
             let set: Set<TouchHandler> | undefined = TouchHandler.eventListeners.get(eventName);
             if (!set) {
                 set = new Set();
-                set.add(touchHandler);
                 document.body.addEventListener(eventName, this.onMouseOrTouchEvent, TouchHandler.options);
+                this.eventListeners.set(eventName, set);
             }
-            this.eventListeners.set(eventName, set);
+            set.add(touchHandler);
         });
         touchHandler.keyEventsNames.forEach((eventName) => {
             let set = TouchHandler.eventListeners.get(eventName);
             if (!set) {
                 set = new Set();
-                set.add(touchHandler);
                 document.body.addEventListener(eventName, this.onKeyEvent);
+                this.eventListeners.set(eventName, set);
             }
-            this.eventListeners.set(eventName, set);
+            set.add(touchHandler);
         });
     }
 
