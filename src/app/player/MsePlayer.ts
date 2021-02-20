@@ -2,6 +2,7 @@ import { BasePlayer } from './BasePlayer';
 import VideoConverter, { setLogger, mimeType } from 'h264-converter';
 import VideoSettings from '../VideoSettings';
 import Size from '../Size';
+import { DisplayInfo } from '../DisplayInfo';
 
 interface QualityStats {
     timestamp: number;
@@ -71,10 +72,11 @@ export class MsePlayer extends BasePlayer {
 
     constructor(
         udid: string,
+        displayInfo?: DisplayInfo,
         name = MsePlayer.playerFullName,
         protected tag: HTMLVideoElement = MsePlayer.createElement(),
     ) {
-        super(udid, name, MsePlayer.storageKeyPrefix, tag);
+        super(udid, displayInfo, name, MsePlayer.storageKeyPrefix, tag);
         tag.oncontextmenu = function (e: MouseEvent): boolean {
             e.preventDefault();
             return false;

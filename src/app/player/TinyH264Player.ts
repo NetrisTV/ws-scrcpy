@@ -4,6 +4,7 @@ import VideoSettings from '../VideoSettings';
 import YUVWebGLCanvas from '../../../vendor/tinyh264/YUVWebGLCanvas';
 import YUVCanvas from '../../../vendor/tinyh264/YUVCanvas';
 import Size from '../Size';
+import { DisplayInfo } from '../DisplayInfo';
 
 type WorkerMessage = {
     type: string;
@@ -36,8 +37,8 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
         return typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
     }
 
-    constructor(udid: string, name = TinyH264Player.playerFullName) {
-        super(udid, name, TinyH264Player.storageKeyPrefix);
+    constructor(udid: string, displayInfo?: DisplayInfo, name = TinyH264Player.playerFullName) {
+        super(udid, displayInfo, name, TinyH264Player.storageKeyPrefix);
     }
 
     private onWorkerMessage = (e: MessageEvent): void => {

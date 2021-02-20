@@ -6,6 +6,7 @@ import YUVWebGLCanvas from '../../../vendor/h264-live-player/YUVWebGLCanvas';
 import Avc from '../../../vendor/Broadway/Decoder';
 import VideoSettings from '../VideoSettings';
 import Canvas from '../../../vendor/h264-live-player/Canvas';
+import { DisplayInfo } from '../DisplayInfo';
 
 export class BroadwayPlayer extends BaseCanvasBasedPlayer {
     public static readonly storageKeyPrefix = 'BroadwayDecoder';
@@ -28,8 +29,8 @@ export class BroadwayPlayer extends BaseCanvasBasedPlayer {
         return typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
     }
 
-    constructor(udid: string, name = BroadwayPlayer.playerFullName) {
-        super(udid, name, BroadwayPlayer.storageKeyPrefix);
+    constructor(udid: string, displayInfo?: DisplayInfo, name = BroadwayPlayer.playerFullName) {
+        super(udid, displayInfo, name, BroadwayPlayer.storageKeyPrefix);
     }
 
     protected initCanvas(width: number, height: number): void {

@@ -1,6 +1,7 @@
 import { BasePlayer, PlaybackQuality } from './BasePlayer';
 import ScreenInfo from '../ScreenInfo';
 import VideoSettings from '../VideoSettings';
+import { DisplayInfo } from '../DisplayInfo';
 
 type DecodedFrame = {
     width: number;
@@ -48,11 +49,12 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
 
     constructor(
         udid: string,
+        displayInfo?: DisplayInfo,
         name = 'Canvas',
         storageKeyPrefix = 'DummyCanvas',
         protected tag: HTMLCanvasElement = BaseCanvasBasedPlayer.createElement(),
     ) {
-        super(udid, name, storageKeyPrefix, tag);
+        super(udid, displayInfo, name, storageKeyPrefix, tag);
     }
 
     protected abstract decode(data: Uint8Array): void;
@@ -62,15 +64,21 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
         if (!this.canvas) {
             return;
         }
-        if (this.lastDecodedFrame) {
-            const { buffer, width, height } = this.lastDecodedFrame;
-            this.canvas.decode(buffer, width, height);
+        if (this.receivedFirstFrame) {
+            if (this.lastDecodedFrame) {
+                const { buffer, width, height } = this.lastDecodedFrame;
+                this.canvas.decode(buffer, width, height);
+            }
         }
         this.lastDecodedFrame = undefined;
         this.animationFrameId = undefined;
     };
 
     protected onFrameDecoded(width: number, height: number, buffer: Uint8Array): void {
+        if (!this.receivedFirstFrame) {
+            // decoded frame with previous video settings
+            return;
+        }
         let dropped = 0;
         if (this.lastDecodedFrame) {
             dropped = 1;

@@ -4,7 +4,9 @@ export const SERVER_VERSION = '1.17-ws1';
 
 export const SERVER_TYPE = 'web';
 
-const ARGUMENTS = [SERVER_VERSION, SERVER_TYPE, SERVER_PORT];
+export const LOG_LEVEL = 'ERROR';
+
+const ARGUMENTS = [SERVER_VERSION, SERVER_TYPE, LOG_LEVEL, SERVER_PORT];
 
 export const SERVER_PROCESS_NAME = 'app_process';
 
