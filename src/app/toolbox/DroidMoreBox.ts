@@ -21,6 +21,7 @@ export class DroidMoreBox {
     constructor(udid: string, private player: BasePlayer, private client: StreamClientScrcpy) {
         const playerName = player.getName();
         const videoSettings = player.getVideoSettings();
+        const { displayId } = videoSettings;
         const preferredSettings = player.getPreferredVideoSetting();
         const moreBox = document.createElement('div');
         moreBox.className = 'more-box';
@@ -56,7 +57,7 @@ export class DroidMoreBox {
                     const spoilerCheck = document.createElement('input');
 
                     const innerDiv = document.createElement('div');
-                    const id = `spoiler_video_${udid}_${playerName}_${action}`;
+                    const id = `spoiler_video_${udid}_${playerName}_${displayId}_${action}`;
 
                     spoiler.className = 'spoiler';
                     spoilerCheck.type = 'checkbox';
@@ -168,7 +169,7 @@ export class DroidMoreBox {
         }
         DroidMoreBox.wrap('p', commands, moreBox);
 
-        const qualityId = `show_video_quality_${udid}_${playerName}`;
+        const qualityId = `show_video_quality_${udid}_${playerName}_${displayId}`;
         const qualityLabel = document.createElement('label');
         const qualityCheck = document.createElement('input');
         qualityCheck.type = 'checkbox';

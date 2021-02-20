@@ -94,7 +94,9 @@ export class DroidToolBox extends ToolBox {
         elements.push(keyboard);
 
         if (moreBox) {
-            const more = new ToolBoxCheckbox('More', SvgImage.Icon.MORE, `show_more_${udid}_${playerName}`);
+            const displayId = player.getVideoSettings().displayId;
+            const id = `show_more_${udid}_${playerName}_${displayId}`;
+            const more = new ToolBoxCheckbox('More', SvgImage.Icon.MORE, id);
             more.addEventListener('click', (_, el) => {
                 const element = el.getElement();
                 moreBox.style.display = element.checked ? 'block' : 'none';
