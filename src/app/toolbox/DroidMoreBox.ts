@@ -169,6 +169,31 @@ export class DroidMoreBox {
         }
         DroidMoreBox.wrap('p', commands, moreBox);
 
+        const screenPowerModeId = `screen_power_mode_${udid}_${playerName}_${displayId}`;
+        const screenPowerModeLabel = document.createElement('label');
+        screenPowerModeLabel.style.display = 'none';
+        const labelTextPrefix = 'Mode';
+        const buttonTextPrefix = 'Set screen power mode';
+        const screenPowerModeCheck = document.createElement('input');
+        screenPowerModeCheck.type = 'checkbox';
+        let mode = (screenPowerModeCheck.checked = false) ? 'ON' : 'OFF';
+        screenPowerModeCheck.id = screenPowerModeLabel.htmlFor = screenPowerModeId;
+        screenPowerModeLabel.innerText = `${labelTextPrefix} ${mode}`;
+        screenPowerModeCheck.onchange = () => {
+            mode = screenPowerModeCheck.checked ? 'ON' : 'OFF';
+            screenPowerModeLabel.innerText = `${labelTextPrefix} ${mode}`;
+            sendScreenPowerModeButton.innerText = `${buttonTextPrefix} ${mode}`;
+        };
+        const sendScreenPowerModeButton = document.createElement('button');
+        sendScreenPowerModeButton.innerText = `${buttonTextPrefix} ${mode}`;
+        sendScreenPowerModeButton.onclick = () => {
+            const message = CommandControlMessage.createSetScreenPowerModeCommand(screenPowerModeCheck.checked);
+            client.sendMessage(message);
+        };
+        DroidMoreBox.wrap('p', [screenPowerModeCheck, screenPowerModeLabel, sendScreenPowerModeButton], moreBox, [
+            'flex-center',
+        ]);
+
         const qualityId = `show_video_quality_${udid}_${playerName}_${displayId}`;
         const qualityLabel = document.createElement('label');
         const qualityCheck = document.createElement('input');
@@ -177,7 +202,7 @@ export class DroidMoreBox {
         qualityCheck.id = qualityId;
         qualityLabel.htmlFor = qualityId;
         qualityLabel.innerText = 'Show quality stats';
-        DroidMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox);
+        DroidMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox, ['flex-center']);
         qualityCheck.onchange = () => {
             player.setShowQualityStats(qualityCheck.checked);
         };
@@ -257,8 +282,11 @@ export class DroidMoreBox {
         document.execCommand('copy');
     }
 
-    private static wrap(tagName: string, elements: HTMLElement[], parent: HTMLElement): void {
+    private static wrap(tagName: string, elements: HTMLElement[], parent: HTMLElement, opt_classes?: string[]): void {
         const wrap = document.createElement(tagName);
+        if (opt_classes) {
+            wrap.classList.add(...opt_classes);
+        }
         elements.forEach((e) => {
             wrap.appendChild(e);
         });
