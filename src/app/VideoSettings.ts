@@ -182,13 +182,14 @@ export default class VideoSettings {
         if (codecOptionsBytes) {
             offset = buffer.writeInt32BE(codecOptionsBytes.length, offset);
             buffer.fill(codecOptionsBytes, offset);
-            offset = codecOptionsBytes.length;
+            offset += codecOptionsBytes.length;
         } else {
             offset = buffer.writeInt32BE(0, offset);
         }
         if (encoderNameBytes) {
             offset = buffer.writeInt32BE(encoderNameBytes.length, offset);
             buffer.fill(encoderNameBytes, offset);
+            offset += encoderNameBytes.length;
         } else {
             buffer.writeInt32BE(0, offset);
         }
