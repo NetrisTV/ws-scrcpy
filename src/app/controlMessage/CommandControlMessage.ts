@@ -70,6 +70,16 @@ export class CommandControlMessage extends ControlMessage {
         return event;
     }
 
+    public static createSetScreenPowerModeCommand(mode: boolean): CommandControlMessage {
+        const event = new CommandControlMessage(ControlMessage.TYPE_SET_SCREEN_POWER_MODE);
+        let offset = 0;
+        const buffer = Buffer.alloc(1 + 1);
+        offset = buffer.writeInt8(event.type, offset);
+        buffer.writeUInt8(mode ? 1 : 0, offset);
+        event.buffer = buffer;
+        return event;
+    }
+
     public static createPushFileCommand(params: FilePushParams): CommandControlMessage {
         const { id, fileName, fileSize, chunk, state } = params;
 

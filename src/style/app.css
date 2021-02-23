@@ -91,6 +91,11 @@ body.stream {
     outline: none;
 }
 
+.flex-center {
+    display: flex;
+    align-items: center;
+}
+
 .wait {
     cursor: wait;
 }
