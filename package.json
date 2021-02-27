@@ -9,7 +9,7 @@
     "copy:license": "node -e \"require('fs').copyFileSync('LICENSE', 'dist/LICENSE')\"",
     "dist:dev": "npm run build:dev:webpack && npm run copy:package.json && npm run copy:license",
     "dist:prod": "npm run build:prod:webpack && npm run copy:package.json && npm run copy:license",
-    "dist": "npm run dist:dev",
+    "dist": "npm run dist:prod",
     "build:qvhack:frontend": "webpack --config webpack/ws-qvhack.dev.ts",
     "dist:qvhack:frontend": "npm run build:qvhack:frontend && npm run copy:license",
     "copy:package.json": "node -e \"const j=require('./package.json');const {name,version,description,author,license,dependencies,scripts}=j; const p={name, version, description,author,license,dependencies}; p.scripts={start: scripts['dist:start']};fs.writeFileSync('./dist/package.json', JSON.stringify(p, null, '  '))\"",
