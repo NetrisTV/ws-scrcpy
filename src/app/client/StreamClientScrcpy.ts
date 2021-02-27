@@ -59,17 +59,30 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         return Array.from(this.players.values());
     }
 
-    public static createPlayer(playerName: string, udid: string, displayInfo?: DisplayInfo): BasePlayer | undefined {
+    private static getPlayerClass(playerName: string): PlayerClass | undefined {
         let playerClass: PlayerClass | undefined;
         for (const value of StreamClientScrcpy.players.values()) {
             if (value.playerFullName === playerName || value.playerCodeName === playerName) {
                 playerClass = value;
             }
         }
+        return playerClass;
+    }
+
+    public static createPlayer(playerName: string, udid: string, displayInfo?: DisplayInfo): BasePlayer | undefined {
+        const playerClass = this.getPlayerClass(playerName);
         if (!playerClass) {
             return;
         }
         return new playerClass(udid, displayInfo);
+    }
+
+    public static getFitToScreen(playerName: string, udid: string, displayInfo?: DisplayInfo): boolean {
+        const playerClass = this.getPlayerClass(playerName);
+        if (!playerClass) {
+            return false;
+        }
+        return playerClass.getFitToScreenStatus(udid, displayInfo);
     }
 
     // TODO: remove deprecated method
@@ -77,8 +90,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         const streamReceiver = new StreamReceiver(ip, port, query);
         const playerName: string = typeof player === 'string' ? player : (decoder as string);
         const client = new StreamClientScrcpy(streamReceiver);
-        const fitIntoScreen = true;
-        client.startStream({ udid, playerName, fitToScreen: fitIntoScreen });
+        client.startStream({ udid, playerName });
         return client;
     }
 
@@ -209,6 +221,9 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
             if (!p) {
                 throw Error(`Unsupported player: "${playerName}"`);
             }
+            if (typeof fitToScreen !== 'boolean') {
+                fitToScreen = StreamClientScrcpy.getFitToScreen(playerName, udid, displayInfo);
+            }
             player = p;
         } else {
             player = playerName;
@@ -332,6 +347,8 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
     private applyNewVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
         let fitToScreen = false;
+
+        // TODO: create control (switch/checkbox) instead
         if (videoSettings.bounds && videoSettings.bounds.equals(this.getMaxSize())) {
             fitToScreen = true;
         }
