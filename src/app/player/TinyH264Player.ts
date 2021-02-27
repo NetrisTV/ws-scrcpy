@@ -121,28 +121,36 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
         }
     }
 
-    public static getFitToScreenStatus(deviceName: string, displayInfo?: DisplayInfo): boolean {
-        return BasePlayer.getFitToScreenFromStorage(TinyH264Player.storageKeyPrefix, deviceName, displayInfo);
+    public getFitToScreenStatus(): boolean {
+        return TinyH264Player.getFitToScreenStatus(this.udid, this.displayInfo);
     }
 
-    public static loadVideoSettings(deviceName: string, displayInfo?: DisplayInfo): VideoSettings {
+    public loadVideoSettings(): VideoSettings {
+        return TinyH264Player.loadVideoSettings(this.udid, this.displayInfo);
+    }
+
+    public static getFitToScreenStatus(udid: string, displayInfo?: DisplayInfo): boolean {
+        return BasePlayer.getFitToScreenFromStorage(TinyH264Player.storageKeyPrefix, udid, displayInfo);
+    }
+
+    public static loadVideoSettings(udid: string, displayInfo?: DisplayInfo): VideoSettings {
         return BasePlayer.getVideoSettingFromStorage(
             TinyH264Player.preferredVideoSettings,
             TinyH264Player.storageKeyPrefix,
-            deviceName,
+            udid,
             displayInfo,
         );
     }
 
     public static saveVideoSettings(
-        deviceName: string,
+        udid: string,
         videoSettings: VideoSettings,
         fitToScreen: boolean,
         displayInfo?: DisplayInfo,
     ): void {
         BasePlayer.putVideoSettingsToStorage(
             TinyH264Player.storageKeyPrefix,
-            deviceName,
+            udid,
             videoSettings,
             fitToScreen,
             displayInfo,

@@ -60,32 +60,40 @@ export class BroadwayPlayer extends BaseCanvasBasedPlayer {
         return BroadwayPlayer.preferredVideoSettings;
     }
 
+    public getFitToScreenStatus(): boolean {
+        return BroadwayPlayer.getFitToScreenStatus(this.udid, this.displayInfo);
+    }
+
+    public loadVideoSettings(): VideoSettings {
+        return BroadwayPlayer.loadVideoSettings(this.udid, this.displayInfo);
+    }
+
     public static getPreferredVideoSetting(): VideoSettings {
         return this.preferredVideoSettings;
     }
 
-    public static getFitToScreenStatus(deviceName: string, displayInfo?: DisplayInfo): boolean {
-        return BasePlayer.getFitToScreenFromStorage(BroadwayPlayer.storageKeyPrefix, deviceName, displayInfo);
+    public static getFitToScreenStatus(udid: string, displayInfo?: DisplayInfo): boolean {
+        return BasePlayer.getFitToScreenFromStorage(BroadwayPlayer.storageKeyPrefix, udid, displayInfo);
     }
 
-    public static loadVideoSettings(deviceName: string, displayInfo?: DisplayInfo): VideoSettings {
+    public static loadVideoSettings(udid: string, displayInfo?: DisplayInfo): VideoSettings {
         return BasePlayer.getVideoSettingFromStorage(
             BroadwayPlayer.preferredVideoSettings,
             BroadwayPlayer.storageKeyPrefix,
-            deviceName,
+            udid,
             displayInfo,
         );
     }
 
     public static saveVideoSettings(
-        deviceName: string,
+        udid: string,
         videoSettings: VideoSettings,
         fitToScreen: boolean,
         displayInfo?: DisplayInfo,
     ): void {
         BasePlayer.putVideoSettingsToStorage(
             BroadwayPlayer.storageKeyPrefix,
-            deviceName,
+            udid,
             videoSettings,
             fitToScreen,
             displayInfo,

@@ -408,31 +408,33 @@ export class MsePlayer extends BasePlayer {
         }
     }
 
-    public static getFitToScreenStatus(deviceName: string, displayInfo?: DisplayInfo): boolean {
-        return BasePlayer.getFitToScreenFromStorage(MsePlayer.storageKeyPrefix, deviceName, displayInfo);
+    public getFitToScreenStatus(): boolean {
+        return MsePlayer.getFitToScreenStatus(this.udid, this.displayInfo);
     }
 
-    public static loadVideoSettings(deviceName: string, displayInfo?: DisplayInfo): VideoSettings {
+    public loadVideoSettings(): VideoSettings {
+        return MsePlayer.loadVideoSettings(this.udid, this.displayInfo);
+    }
+
+    public static getFitToScreenStatus(udid: string, displayInfo?: DisplayInfo): boolean {
+        return BasePlayer.getFitToScreenFromStorage(MsePlayer.storageKeyPrefix, udid, displayInfo);
+    }
+
+    public static loadVideoSettings(udid: string, displayInfo?: DisplayInfo): VideoSettings {
         return BasePlayer.getVideoSettingFromStorage(
             MsePlayer.preferredVideoSettings,
             MsePlayer.storageKeyPrefix,
-            deviceName,
+            udid,
             displayInfo,
         );
     }
 
     public static saveVideoSettings(
-        deviceName: string,
+        udid: string,
         videoSettings: VideoSettings,
         fitToScreen: boolean,
         displayInfo?: DisplayInfo,
     ): void {
-        BasePlayer.putVideoSettingsToStorage(
-            MsePlayer.storageKeyPrefix,
-            deviceName,
-            videoSettings,
-            fitToScreen,
-            displayInfo,
-        );
+        BasePlayer.putVideoSettingsToStorage(MsePlayer.storageKeyPrefix, udid, videoSettings, fitToScreen, displayInfo);
     }
 }

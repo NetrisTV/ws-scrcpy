@@ -84,7 +84,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     public readonly supportsScreenshot: boolean = false;
 
     constructor(
-        protected udid: string,
+        public readonly udid: string,
         protected displayInfo?: DisplayInfo,
         protected name: string = 'BasePlayer',
         protected storageKeyPrefix: string = 'Dummy',
@@ -148,14 +148,14 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
     public static getFitToScreenFromStorage(
         storageKeyPrefix: string,
-        deviceName: string,
+        udid: string,
         displayInfo?: DisplayInfo,
     ): boolean {
         if (!window.localStorage) {
             return false;
         }
         let parsedValue = false;
-        const key = `${this.getFullStorageKey(storageKeyPrefix, deviceName, displayInfo)}:fit`;
+        const key = `${this.getFullStorageKey(storageKeyPrefix, udid, displayInfo)}:fit`;
         const saved = window.localStorage.getItem(key);
         if (!saved) {
             return false;
@@ -171,13 +171,13 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     public static getVideoSettingFromStorage(
         preferred: VideoSettings,
         storageKeyPrefix: string,
-        deviceName: string,
+        udid: string,
         displayInfo?: DisplayInfo,
     ): VideoSettings {
         if (!window.localStorage) {
             return preferred;
         }
-        const saved = this.getFromStorageCompat(storageKeyPrefix, deviceName, displayInfo);
+        const saved = this.getFromStorageCompat(storageKeyPrefix, udid, displayInfo);
         if (!saved) {
             return preferred;
         }
@@ -222,7 +222,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
     protected static putVideoSettingsToStorage(
         storageKeyPrefix: string,
-        deviceName: string,
+        udid: string,
         videoSettings: VideoSettings,
         fitToScreen: boolean,
         displayInfo?: DisplayInfo,
@@ -230,7 +230,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         if (!window.localStorage) {
             return;
         }
-        const key = this.getFullStorageKey(storageKeyPrefix, deviceName, displayInfo);
+        const key = this.getFullStorageKey(storageKeyPrefix, udid, displayInfo);
         window.localStorage.setItem(key, JSON.stringify(videoSettings));
         const fitKey = `${key}:fit`;
         window.localStorage.setItem(fitKey, JSON.stringify(fitToScreen));
@@ -482,4 +482,16 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     public setBounds(bounds: Size): void {
         this.bounds = Size.copy(bounds);
     }
+
+    public getDisplayInfo(): DisplayInfo | undefined {
+        return this.displayInfo;
+    }
+
+    public setDisplayInfo(displayInfo: DisplayInfo): void {
+        this.displayInfo = displayInfo;
+    }
+
+    public abstract getFitToScreenStatus(): boolean;
+
+    public abstract loadVideoSettings(): VideoSettings;
 }

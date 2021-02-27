@@ -48,6 +48,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     private droidMoreBox?: DroidMoreBox;
     private player?: BasePlayer;
     private filePushHandler?: FilePushHandler;
+    private fitToScreen?: boolean;
 
     public static registerPlayer(playerClass: PlayerClass): void {
         if (playerClass.isSupported()) {
@@ -100,6 +101,21 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         return client;
     }
 
+    private static createVideoSettingsWithBounds(old: VideoSettings, newBounds: Size): VideoSettings {
+        return new VideoSettings({
+            crop: old.crop,
+            bitrate: old.bitrate,
+            bounds: newBounds,
+            maxFps: old.maxFps,
+            iFrameInterval: old.iFrameInterval,
+            sendFrameMeta: old.sendFrameMeta,
+            lockedVideoOrientation: old.lockedVideoOrientation,
+            displayId: old.displayId,
+            codecOptions: old.codecOptions,
+            encoderName: old.encoderName,
+        });
+    }
+
     protected constructor(private readonly streamReceiver: StreamReceiver) {
         super();
 
@@ -135,7 +151,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         if (!this.player) {
             return;
         }
-        const currentSettings = this.player.getVideoSettings();
+        let currentSettings = this.player.getVideoSettings();
         const displayId = currentSettings.displayId;
         const info = infoArray.find((value) => {
             return value.displayInfo.displayId === displayId;
@@ -147,6 +163,17 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
             this.player.play();
         }
         const { videoSettings, screenInfo } = info;
+        this.player.setDisplayInfo(info.displayInfo);
+        if (typeof this.fitToScreen !== 'boolean') {
+            this.fitToScreen = this.player.getFitToScreenStatus();
+        }
+        if (this.fitToScreen) {
+            const newBounds = this.getMaxSize();
+            if (newBounds) {
+                currentSettings = StreamClientScrcpy.createVideoSettingsWithBounds(currentSettings, newBounds);
+                this.player.setVideoSettings(currentSettings, this.fitToScreen, false);
+            }
+        }
         if (!videoSettings || !screenInfo) {
             this.joinedStream = true;
             this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(currentSettings));
@@ -173,18 +200,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
             }
             const minBounds = currentSettings.bounds?.intersect(min.bounds);
             if (minBounds && !minBounds.equals(min.bounds)) {
-                min = new VideoSettings({
-                    crop: min.crop,
-                    bitrate: min.bitrate,
-                    bounds: minBounds,
-                    maxFps: min.maxFps,
-                    iFrameInterval: min.iFrameInterval,
-                    sendFrameMeta: min.sendFrameMeta,
-                    lockedVideoOrientation: min.lockedVideoOrientation,
-                    displayId: min.displayId,
-                    codecOptions: min.codecOptions,
-                    encoderName: min.encoderName,
-                });
+                min = StreamClientScrcpy.createVideoSettingsWithBounds(min, minBounds);
             }
         }
         if (!min.equals(videoSettings) || !this.joinedStream) {
@@ -211,6 +227,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
             return;
         }
 
+        this.fitToScreen = fitToScreen;
         let player: BasePlayer;
         if (typeof playerName === 'string') {
             let displayInfo: DisplayInfo | undefined;
@@ -269,30 +286,10 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
         document.body.appendChild(deviceView);
         if (fitToScreen) {
-            const bounds = this.getMaxSize();
-            const {
-                bitrate,
-                maxFps,
-                iFrameInterval,
-                lockedVideoOrientation,
-                sendFrameMeta,
-                encoderName,
-                codecOptions,
-                displayId,
-                crop,
-            } = videoSettings;
-            videoSettings = new VideoSettings({
-                crop,
-                bitrate,
-                bounds,
-                maxFps,
-                iFrameInterval,
-                sendFrameMeta,
-                lockedVideoOrientation,
-                displayId,
-                codecOptions,
-                encoderName,
-            });
+            const newBounds = this.getMaxSize();
+            if (newBounds) {
+                videoSettings = StreamClientScrcpy.createVideoSettingsWithBounds(videoSettings, newBounds);
+            }
         }
         this.applyNewVideoSettings(videoSettings, false);
         const element = player.getTouchableElement();
