@@ -270,14 +270,28 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         document.body.appendChild(deviceView);
         if (fitToScreen) {
             const bounds = this.getMaxSize();
-            const { bitrate, maxFps, iFrameInterval, lockedVideoOrientation, sendFrameMeta } = videoSettings;
-            videoSettings = new VideoSettings({
-                bounds,
+            const {
                 bitrate,
                 maxFps,
                 iFrameInterval,
                 lockedVideoOrientation,
                 sendFrameMeta,
+                encoderName,
+                codecOptions,
+                displayId,
+                crop,
+            } = videoSettings;
+            videoSettings = new VideoSettings({
+                crop,
+                bitrate,
+                bounds,
+                maxFps,
+                iFrameInterval,
+                sendFrameMeta,
+                lockedVideoOrientation,
+                displayId,
+                codecOptions,
+                encoderName,
             });
         }
         this.applyNewVideoSettings(videoSettings, false);
