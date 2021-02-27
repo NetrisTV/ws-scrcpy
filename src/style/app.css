@@ -2,7 +2,7 @@
     --main-bg-color: hsl(0, 0%, 100%);
     --stream-bg-color: hsl(0, 0%, 85%);
     --shell-bg-color: hsl(0, 0%, 0%);
-    --row-bg-color_hover: hsl(218, 67%, 95%);
+    --text-shadow-color: hsl(218, 67%, 95%);
     --header-bg-color: hsl(0, 0%, 95%);
     --controls-bg-color: hsla(0, 0%, 95%, 0.8);
     --control-buttons-bg-color: hsl(0, 0%, 95%);
@@ -26,7 +26,7 @@
         --main-bg-color: hsl(0, 0%, 14%);
         --stream-bg-color: hsl(0, 0%, 20%);
         --shell-bg-color: hsl(0, 0%, 0%);
-        --row-bg-color_hover: hsl(218, 17%, 18%);
+        --text-shadow-color: hsl(218, 17%, 18%);
         --header-bg-color: hsl(0, 0%, 20%);
         --controls-bg-color: hsla(201, 18%, 19%, 0.8);
         --control-buttons-bg-color: hsl(201, 18%, 19%);
@@ -69,9 +69,6 @@ body {
     overflow: hidden;
 }
 
-body.list {
-    overflow: hidden;
-}
 
 body.shell {
     background-color: var(--shell-bg-color);
@@ -159,7 +156,7 @@ body.stream {
 
 .text-with-shadow, .more-box label {
     color: var(--text-color);
-    text-shadow: var(--row-bg-color_hover) 0 0 .357rem;
+    text-shadow: var(--text-shadow-color) 0 0 .357rem;
 }
 
 .control-buttons-list {
@@ -182,11 +179,11 @@ body.stream {
     opacity: 1;
 }
 
-.control-buttons-list > input[type=checkbox] {
+.control-wrapper > input[type=checkbox] {
     display: none;
 }
 
-.control-buttons-list > label {
+.control-wrapper > label {
     display: inline-block;
 }
 
@@ -194,6 +191,22 @@ body.stream {
     fill: var(--svg-button-fill);
 }
 
-.control-buttons-list > input[type=checkbox]:checked + label > svg {
+.control-wrapper > input[type=checkbox].two-images:checked + label > svg.image-on {
+    display: block;
+}
+
+.control-wrapper > input[type=checkbox].two-images:not(:checked) + label > svg.image-on {
+    display: none;
+}
+
+.control-wrapper > input[type=checkbox].two-images:checked + label > svg.image-off {
+    display: none;
+}
+
+.control-wrapper > input[type=checkbox].two-images:not(:checked) + label > svg.image-off {
+    display: block;
+}
+
+.control-wrapper > input[type=checkbox]:checked + label > svg {
     fill: var(--svg-checkbox-bg-color);
 }

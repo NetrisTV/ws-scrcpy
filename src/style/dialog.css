@@ -1,23 +1,35 @@
+:root {
+    --block-top-padding: 0.5rem;
+    --block-bottom-padding: 0.5rem;
+    --button-top-padding: 0.2rem;
+    --button-bottom-padding: 0.2rem;
+    --header-height: 3rem;
+    --footer-height: 1.55rem;
+}
+
 .dialog-background {
     width: 100%;
     height: 100%;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     background-color: rgba(0, 0, 0, 0.75);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    z-index: 3;
 }
 
 .dialog-container {
     font-family: monospace;
     width: 75%;
-    max-width: 30em;
-    min-width: 20em;
+    max-width: 30rem;
+    min-width: 20rem;
     background-color: var(--main-bg-color);
-    border-radius: 0.3em;
+    /*border-radius: 0.3rem;*/
     overflow: hidden;
+}
+
+.dialog-container.ready {
+    height: 100%;
+    min-height: 100%;
 }
 
 .dialog-container button, .dialog-container select, .dialog-container input {
@@ -33,25 +45,27 @@
 }
 
 .dialog-block {
-    padding: 0.5em;
 }
 
 .dialog-header {
     background-color: var(--header-bg-color);
+    height: var(--header-height);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    width: auto;
+    position: initial;
 }
 
 .dialog-header span.dialog-title {
     display: inline-block;
-    padding: 0 0.5em;
-}
-
-.dialog-header span.dialog-title.subtitle {
-    font-weight: lighter;
+    padding: 0 0.5rem;
 }
 
 .dialog-body {
-    background-color: var(--main-bg-color);
-    overflow: hidden;
+    padding: var(--block-top-padding) 0.5rem var(--block-bottom-padding);
+    background-color: var(--control-buttons-bg-color);
+    overflow: auto;
 }
 
 .dialog-body.hidden {
@@ -60,24 +74,41 @@
 }
 
 .dialog-body.visible {
-    height: auto;
+    height: calc(
+            100%
+            - 2 * var(--block-top-padding)
+            - 2 * var(--block-bottom-padding)
+            - var(--header-height)
+            - var(--footer-height)
+    );
 }
 
 .dialog-footer {
-    display: flex;
-    flex-direction: row-reverse;
+    /*display: flex;*/
+    /*flex-direction: row-reverse;*/
+    padding: var(--block-top-padding) 0.5rem var(--block-bottom-padding);
     background-color: var(--stream-bg-color);
+    height: var(--footer-height);
+    overflow: hidden;
+}
+
+.dialog-footer span.subtitle {
+    font-weight: lighter;
+    line-height: var(--footer-height);
+    float: left;
 }
 
 .dialog-footer button {
-    padding: 0.2em 0.5em;
-    margin: 0 0 0 0.5em;
-    border-radius: 0.3em;
+    padding: var(--button-top-padding) 0.5rem var(--button-bottom-padding);
+    margin: 0 0 0 0.5rem;
+    border-radius: 0.3rem;
     /*background-color: var(--main-bg-color);*/
     color: var(--button-text-color);
     border: 1px solid var(--button-border-color);
     cursor: pointer;
     background-color: rgba(0, 0, 0, 0);
+    height: var(--footer-height);
+    float: right;
 }
 
 .dialog-footer button:disabled {
@@ -92,17 +123,18 @@
 .controls .input {
     grid-column: controls;
     box-sizing: border-box;
+    margin: 0;
     /*height: 2.75ex;*/
 }
 
 .controls .button {
-    grid-column: span 2;
+    grid-column: controls;
 }
 
 .controls {
     display: grid;
     grid-template-columns: [labels] 35% [controls] 65%;
-    padding: 1em;
-    grid-gap: 0.2em;
+    padding: 1rem;
+    grid-gap: 0.2rem;
     align-items: center;
 }

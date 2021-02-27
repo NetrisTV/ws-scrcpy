@@ -38,12 +38,14 @@ export interface PlayerClass {
     storageKeyPrefix: string;
     isSupported(): boolean;
     getPreferredVideoSetting(): VideoSettings;
-    getVideoSettingFromStorage(
-        preferred: VideoSettings,
-        playerName: string,
+    getFitToScreenStatus(deviceName: string, displayInfo?: DisplayInfo): boolean;
+    loadVideoSettings(deviceName: string, displayInfo?: DisplayInfo): VideoSettings;
+    saveVideoSettings(
         deviceName: string,
+        videoSettings: VideoSettings,
+        fitToScreen: boolean,
         displayInfo?: DisplayInfo,
-    ): VideoSettings;
+    ): void;
     new (udid: string, displayInfo?: DisplayInfo): BasePlayer;
 }
 
@@ -144,6 +146,28 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         return null;
     }
 
+    public static getFitToScreenFromStorage(
+        storageKeyPrefix: string,
+        deviceName: string,
+        displayInfo?: DisplayInfo,
+    ): boolean {
+        if (!window.localStorage) {
+            return false;
+        }
+        let parsedValue = false;
+        const key = `${this.getFullStorageKey(storageKeyPrefix, deviceName, displayInfo)}:fit`;
+        const saved = window.localStorage.getItem(key);
+        if (!saved) {
+            return false;
+        }
+        try {
+            parsedValue = JSON.parse(saved);
+        } catch (e) {
+            console.error('Failed to parse', saved);
+        }
+        return parsedValue;
+    }
+
     public static getVideoSettingFromStorage(
         preferred: VideoSettings,
         storageKeyPrefix: string,
@@ -196,10 +220,11 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         });
     }
 
-    private static putVideoSettingsToStorage(
+    protected static putVideoSettingsToStorage(
         storageKeyPrefix: string,
         deviceName: string,
         videoSettings: VideoSettings,
+        fitToScreen: boolean,
         displayInfo?: DisplayInfo,
     ): void {
         if (!window.localStorage) {
@@ -207,6 +232,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         }
         const key = this.getFullStorageKey(storageKeyPrefix, deviceName, displayInfo);
         window.localStorage.setItem(key, JSON.stringify(videoSettings));
+        const fitKey = `${key}:fit`;
+        window.localStorage.setItem(fitKey, JSON.stringify(fitToScreen));
     }
 
     public abstract getImageDataURL(): string;
@@ -271,10 +298,16 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         return this.videoSettings;
     }
 
-    public setVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
+    public setVideoSettings(videoSettings: VideoSettings, fitToScreen: boolean, saveToStorage: boolean): void {
         this.videoSettings = videoSettings;
         if (saveToStorage) {
-            BasePlayer.putVideoSettingsToStorage(this.storageKeyPrefix, this.udid, videoSettings, this.displayInfo);
+            BasePlayer.putVideoSettingsToStorage(
+                this.storageKeyPrefix,
+                this.udid,
+                videoSettings,
+                fitToScreen,
+                this.displayInfo,
+            );
         }
         this.resetStats();
         this.emit('video-settings', VideoSettings.copy(videoSettings));

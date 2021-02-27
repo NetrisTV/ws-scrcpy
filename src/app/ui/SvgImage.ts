@@ -11,6 +11,10 @@ import CancelSVG from '../../public/images/buttons/cancel.svg';
 import OfflineSVG from '../../public/images/buttons/offline.svg';
 import RefreshSVG from '../../public/images/buttons/refresh.svg';
 import SettingsSVG from '../../public/images/buttons/settings.svg';
+import MenuSVG from '../../public/images/buttons/menu.svg';
+import ArrowBackSVG from '../../public/images/buttons/arrow_back.svg';
+import ToggleOnSVG from '../../public/images/buttons/toggle_on.svg';
+import ToggleOffSVG from '../../public/images/buttons/toggle_off.svg';
 
 export enum Icon {
     BACK,
@@ -26,6 +30,10 @@ export enum Icon {
     OFFLINE,
     REFRESH,
     SETTINGS,
+    MENU,
+    ARROW_BACK,
+    TOGGLE_ON,
+    TOGGLE_OFF,
 }
 
 export default class SvgImage {
@@ -58,6 +66,14 @@ export default class SvgImage {
                 return RefreshSVG;
             case Icon.SETTINGS:
                 return SettingsSVG;
+            case Icon.MENU:
+                return MenuSVG;
+            case Icon.ARROW_BACK:
+                return ArrowBackSVG;
+            case Icon.TOGGLE_ON:
+                return ToggleOnSVG;
+            case Icon.TOGGLE_OFF:
+                return ToggleOffSVG;
             default:
                 return '';
         }

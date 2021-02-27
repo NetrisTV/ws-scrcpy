@@ -1,5 +1,3 @@
-import { Icon } from '../ui/SvgImage';
-
 export type Optional = {
     [index: string]: any;
 };
@@ -11,11 +9,7 @@ export abstract class ToolBoxElement<T extends HTMLElement> {
         string,
         Set<<K extends keyof HTMLElementEventMap>(type: K, el: ToolBoxElement<T>) => any>
     > = new Map();
-    protected constructor(
-        public readonly title: string,
-        public readonly icon: Icon,
-        public readonly optional?: Optional,
-    ) {}
+    protected constructor(public readonly title: string, public readonly optional?: Optional) {}
 
     public abstract getElement(): T;
     public abstract getAllElements(): HTMLElement[];

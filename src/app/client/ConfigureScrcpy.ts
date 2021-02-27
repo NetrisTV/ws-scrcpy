@@ -7,6 +7,10 @@ import { StreamClientScrcpy } from './StreamClientScrcpy';
 import Size from '../Size';
 import Util from '../Util';
 import { DisplayInfo } from '../DisplayInfo';
+import { ToolBoxButton } from '../toolbox/ToolBoxButton';
+import SvgImage from '../ui/SvgImage';
+import { PlayerClass } from '../player/BasePlayer';
+import { ToolBoxCheckbox } from '../toolbox/ToolBoxCheckbox';
 
 export type ConfigureScrcpyOptions = {
     name: string;
@@ -26,6 +30,8 @@ type Range = {
     formatter?: (value: number) => string;
 };
 
+const ATTRIBUTE_VALUE = 'data-value';
+
 export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private readonly TAG: string;
     private readonly udid: string;
@@ -41,11 +47,17 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private background: HTMLElement;
     private dialogBody?: HTMLElement;
     private okButton?: HTMLButtonElement;
-    private cancelButton?: HTMLButtonElement;
+    private fitToScreenCheckbox?: HTMLInputElement;
+    private resetSettingsButton?: HTMLButtonElement;
+    private loadSettingsButton?: HTMLButtonElement;
+    private saveSettingsButton?: HTMLButtonElement;
     private playerSelectElement?: HTMLSelectElement;
     private displayIdSelectElement?: HTMLSelectElement;
     private encoderSelectElement?: HTMLSelectElement;
     private connectionStatusElement?: HTMLElement;
+    private dialogContainer?: HTMLElement;
+    private statusText = '';
+    private connectionCount = 0;
 
     constructor(descriptor: DroidDeviceDescriptor, options: ConfigureScrcpyOptions) {
         super();
@@ -85,6 +97,17 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         streamReceiver.off('disconnected', this.onDisconnected);
     }
 
+    private updateStatus(): void {
+        if (!this.connectionStatusElement) {
+            return;
+        }
+        let text = this.statusText;
+        if (this.connectionCount) {
+            text = `${text}. Other clients: ${this.connectionCount}.`;
+        }
+        this.connectionStatusElement.innerText = text;
+    }
+
     private onEncoders = (encoders: string[]): void => {
         // console.log(this.TAG, 'Encoders', encoders);
         const select = this.encoderSelectElement || document.createElement('select');
@@ -104,9 +127,9 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
 
     private onDisplayInfo = (infoArray: DisplayCombinedInfo[]): void => {
         // console.log(this.TAG, 'Received info');
-        if (this.connectionStatusElement) {
-            this.connectionStatusElement.innerText = `(ready)`;
-        }
+        this.statusText = 'Ready';
+        this.updateStatus();
+        this.dialogContainer?.classList.add('ready');
         const select = this.displayIdSelectElement || document.createElement('select');
         let child;
         while ((child = select.firstChild)) {
@@ -133,21 +156,21 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
             this.displayInfo = displayInfo;
             if (connectionCount > 0 && videoSettings) {
                 // console.log(this.TAG, 'Apply other clients settings');
-                this.fillInputsFromVideoSettings(videoSettings);
-                return;
+                this.fillInputsFromVideoSettings(videoSettings, false);
             } else {
                 // console.log(this.TAG, 'Apply settings for current player');
                 this.updateVideoSettingsForPlayer();
             }
+            this.connectionCount = connectionCount;
+            this.updateStatus();
         }
         this.displayIdSelectElement = select;
     };
 
     private onConnected = (): void => {
         // console.log(this.TAG, 'Connected');
-        if (this.connectionStatusElement) {
-            this.connectionStatusElement.innerText = `(waiting for info...)`;
-        }
+        this.statusText = 'Waiting for info...';
+        this.updateStatus();
         if (this.okButton) {
             this.okButton.disabled = false;
         }
@@ -159,9 +182,8 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
 
     private onDisconnected = (): void => {
         // console.log(this.TAG, 'Disconnected');
-        if (this.connectionStatusElement) {
-            this.connectionStatusElement.innerText = `(disconnected)`;
-        }
+        this.statusText = 'Disconnected';
+        this.updateStatus();
         if (this.okButton) {
             this.okButton.disabled = true;
         }
@@ -188,24 +210,23 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         this.updateVideoSettingsForPlayer();
     };
 
-    private updateVideoSettingsForPlayer(): void {
+    private getPlayer(): PlayerClass | undefined {
         if (!this.playerSelectElement) {
             return;
         }
         const playerName = this.playerSelectElement.options[this.playerSelectElement.selectedIndex].value;
-        const player = StreamClientScrcpy.getPlayers().find((playerClass) => {
+        return StreamClientScrcpy.getPlayers().find((playerClass) => {
             return playerClass.playerFullName === playerName;
         });
+    }
+
+    private updateVideoSettingsForPlayer(): void {
+        const player = this.getPlayer();
         if (player) {
-            this.playerName = playerName;
-            const preferred = player.getPreferredVideoSetting();
-            const storedOrPreferred = player.getVideoSettingFromStorage(
-                preferred,
-                player.storageKeyPrefix,
-                this.udid,
-                this.displayInfo,
-            );
-            this.fillInputsFromVideoSettings(storedOrPreferred);
+            this.playerName = player.playerFullName;
+            const storedOrPreferred = player.loadVideoSettings(this.udid, this.displayInfo);
+            const fitToScreen = player.getFitToScreenStatus(this.udid, this.displayInfo);
+            this.fillInputsFromVideoSettings(storedOrPreferred, fitToScreen);
         }
     }
 
@@ -217,18 +238,17 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         return element as HTMLInputElement;
     }
 
-    private fillInputsFromVideoSettings(videoSettings: VideoSettings): void {
+    private fillInputsFromVideoSettings(videoSettings: VideoSettings, fitToScreen: boolean): void {
         if (this.displayInfo && this.displayInfo.displayId !== videoSettings.displayId) {
             console.error(this.TAG, `Display id from VideoSettings and DisplayInfo don't match`);
         }
-        const { bounds, encoderName } = videoSettings;
         this.fillBasicInput({ id: 'bitrate' }, videoSettings);
         this.fillBasicInput({ id: 'maxFps' }, videoSettings);
         this.fillBasicInput({ id: 'iFrameInterval' }, videoSettings);
-        this.fillBasicInput({ id: 'displayId' }, videoSettings);
+        // this.fillBasicInput({ id: 'displayId' }, videoSettings);
         this.fillBasicInput({ id: 'codecOptions' }, videoSettings);
-        if (bounds) {
-            const { width, height } = bounds;
+        if (videoSettings.bounds) {
+            const { width, height } = videoSettings.bounds;
             const widthInput = this.getBasicInput('maxWidth');
             if (widthInput) {
                 widthInput.value = width.toString(10);
@@ -238,14 +258,43 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
                 heightInput.value = height.toString(10);
             }
         }
-        if (encoderName) {
-            if (this.encoderSelectElement) {
-                const option = Array.from(this.encoderSelectElement.options).find((element) => {
-                    return element.value === encoderName;
-                });
-                if (option) {
-                    this.encoderSelectElement.selectedIndex = option.index;
-                }
+        if (this.encoderSelectElement) {
+            const encoderName = videoSettings.encoderName || '';
+            const option = Array.from(this.encoderSelectElement.options).find((element) => {
+                return element.value === encoderName;
+            });
+            if (option) {
+                this.encoderSelectElement.selectedIndex = option.index;
+            }
+        }
+        if (this.fitToScreenCheckbox) {
+            this.fitToScreenCheckbox.checked = fitToScreen;
+            this.onFitToScreenChanged(fitToScreen);
+        }
+    }
+
+    private onFitToScreenChanged(checked: boolean) {
+        const heightInput = this.getBasicInput('maxHeight');
+        const widthInput = this.getBasicInput('maxWidth');
+        if (!this.fitToScreenCheckbox || !heightInput || !widthInput) {
+            return;
+        }
+        heightInput.disabled = widthInput.disabled = checked;
+        if (checked) {
+            heightInput.setAttribute(ATTRIBUTE_VALUE, heightInput.value);
+            heightInput.value = '';
+            widthInput.setAttribute(ATTRIBUTE_VALUE, widthInput.value);
+            widthInput.value = '';
+        } else {
+            const storedHeight = heightInput.getAttribute(ATTRIBUTE_VALUE);
+            if (typeof storedHeight === 'string') {
+                heightInput.value = storedHeight;
+                heightInput.removeAttribute(ATTRIBUTE_VALUE);
+            }
+            const storedWidth = widthInput.getAttribute(ATTRIBUTE_VALUE);
+            if (typeof storedWidth === 'string') {
+                widthInput.value = storedWidth;
+                widthInput.removeAttribute(ATTRIBUTE_VALUE);
             }
         }
     }
@@ -253,15 +302,22 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private fillBasicInput(opts: { id: keyof VideoSettings }, videoSettings: VideoSettings): void {
         const input = this.getBasicInput(opts.id);
         const value = videoSettings[opts.id];
-        if (input && typeof value !== 'undefined' && value !== '-' && value !== 0 && value !== null) {
-            input.value = value.toString(10);
-            if (input.getAttribute('type') === 'range') {
-                input.dispatchEvent(new Event('change'));
+        if (input) {
+            if (typeof value !== 'undefined' && value !== '-' && value !== 0 && value !== null) {
+                input.value = value.toString(10);
+                if (input.getAttribute('type') === 'range') {
+                    input.dispatchEvent(new Event('input'));
+                }
+            } else {
+                input.value = '';
             }
         }
     }
 
-    private appendBasicInput(parent: HTMLElement, opts: { label: string; id: string; range?: Range }): void {
+    private appendBasicInput(
+        parent: HTMLElement,
+        opts: { label: string; id: string; range?: Range },
+    ): HTMLInputElement {
         const label = document.createElement('label');
         label.classList.add('label');
         label.innerText = `${opts.label}:`;
@@ -273,7 +329,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         const { range } = opts;
         if (range) {
             label.setAttribute('title', opts.label);
-            input.onchange = () => {
+            input.oninput = () => {
                 const value = range.formatter ? range.formatter(parseInt(input.value, 10)) : input.value;
                 label.innerText = `${opts.label} (${value}):`;
             };
@@ -283,6 +339,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
             input.setAttribute('step', range.step.toString());
         }
         parent.appendChild(input);
+        return input;
     }
 
     private getNumberValueFromInput(name: string): number {
@@ -328,6 +385,13 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         }
     }
 
+    private getFitToScreenValue(): boolean {
+        if (!this.fitToScreenCheckbox) {
+            return false;
+        }
+        return this.fitToScreenCheckbox.checked;
+    }
+
     private getPreviouslyUsedPlayer(): string {
         if (!window.localStorage) {
             return '';
@@ -352,19 +416,23 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         const blockClass = 'dialog-block';
         const background = document.createElement('div');
         background.classList.add('dialog-background', dialogName);
-        const dialogContainer = document.createElement('div');
+        const dialogContainer = (this.dialogContainer = document.createElement('div'));
         dialogContainer.classList.add('dialog-container', dialogName);
         const dialogHeader = document.createElement('div');
-        dialogHeader.classList.add('dialog-header', blockClass, dialogName);
+        dialogHeader.classList.add('dialog-header', dialogName, 'control-wrapper');
+        const backButton = new ToolBoxButton('Back', SvgImage.Icon.ARROW_BACK);
+
+        backButton.addEventListener('click', () => {
+            this.cancel();
+        });
+        backButton.getAllElements().forEach((el) => {
+            dialogHeader.appendChild(el);
+        });
+
         const deviceName = document.createElement('span');
         deviceName.classList.add('dialog-title', 'main-title');
         deviceName.innerText = this.deviceName;
-        const statusElement = document.createElement('span');
-        statusElement.classList.add('dialog-title', 'subtitle');
-        statusElement.innerText = `(connecting...)`;
-        this.connectionStatusElement = statusElement;
         dialogHeader.appendChild(deviceName);
-        dialogHeader.appendChild(statusElement);
         const dialogBody = (this.dialogBody = document.createElement('div'));
         dialogBody.classList.add('dialog-body', blockClass, dialogName, 'hidden');
         const playerWrapper = document.createElement('div');
@@ -393,7 +461,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         this.updateVideoSettingsForPlayer();
 
         const controls = document.createElement('div');
-        controls.classList.add('controls');
+        controls.classList.add('controls', 'control-wrapper');
         const displayIdLabel = document.createElement('label');
         displayIdLabel.classList.add('label');
         displayIdLabel.innerText = 'Display:';
@@ -417,6 +485,29 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
             range: { min: 1, max: 60, step: 1 },
         });
         this.appendBasicInput(controls, { label: 'I-Frame interval', id: 'iFrameInterval' });
+        const fitLabel = document.createElement('label');
+        fitLabel.innerText = 'Fit to screen';
+        fitLabel.classList.add('label');
+        controls.appendChild(fitLabel);
+        const fitToggle = new ToolBoxCheckbox(
+            'Fit to screen',
+            { off: SvgImage.Icon.TOGGLE_OFF, on: SvgImage.Icon.TOGGLE_ON },
+            'fit_to_screen',
+        );
+        fitToggle.getAllElements().forEach((el) => {
+            controls.appendChild(el);
+            if (el instanceof HTMLLabelElement) {
+                fitLabel.htmlFor = el.htmlFor;
+                el.classList.add('input');
+            }
+            if (el instanceof HTMLInputElement) {
+                this.fitToScreenCheckbox = el;
+            }
+        });
+        fitToggle.addEventListener('click', (_, el) => {
+            const element = el.getElement();
+            this.onFitToScreenChanged(element.checked);
+        });
         this.appendBasicInput(controls, { label: 'Max width', id: 'maxWidth' });
         this.appendBasicInput(controls, { label: 'Max height', id: 'maxHeight' });
         this.appendBasicInput(controls, { label: 'Codec options', id: 'codecOptions' });
@@ -433,17 +524,48 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         this.encoderSelectElement.id = encoderLabel.htmlFor = `encoderName_${this.escapedUdid}`;
 
         dialogBody.appendChild(controls);
+
+        const buttonsWrapper = document.createElement('div');
+        buttonsWrapper.classList.add('controls');
+
+        const resetSettingsButton = (this.resetSettingsButton = document.createElement('button'));
+        resetSettingsButton.classList.add('button');
+        resetSettingsButton.innerText = 'Reset settings';
+        resetSettingsButton.addEventListener('click', this.resetSettings);
+        buttonsWrapper.appendChild(resetSettingsButton);
+
+        const loadSettingsButton = (this.loadSettingsButton = document.createElement('button'));
+        loadSettingsButton.classList.add('button');
+        loadSettingsButton.innerText = 'Load settings';
+        loadSettingsButton.addEventListener('click', this.loadSettings);
+        buttonsWrapper.appendChild(loadSettingsButton);
+
+        const saveSettingsButton = (this.saveSettingsButton = document.createElement('button'));
+        saveSettingsButton.classList.add('button');
+        saveSettingsButton.innerText = 'Save settings';
+        saveSettingsButton.addEventListener('click', this.saveSettings);
+        buttonsWrapper.appendChild(saveSettingsButton);
+
+        dialogBody.appendChild(buttonsWrapper);
+
         const dialogFooter = document.createElement('div');
         dialogFooter.classList.add('dialog-footer', blockClass, dialogName);
-        const cancelButton = (this.cancelButton = document.createElement('button'));
-        cancelButton.innerText = 'Cancel';
-        cancelButton.addEventListener('click', this.cancel);
+        const statusElement = document.createElement('span');
+        statusElement.classList.add('subtitle');
+        this.connectionStatusElement = statusElement;
+        dialogFooter.appendChild(statusElement);
+        this.statusText = `Connecting...`;
+        this.updateStatus();
+
+        // const cancelButton = (this.cancelButton = document.createElement('button'));
+        // cancelButton.innerText = 'Cancel';
+        // cancelButton.addEventListener('click', this.cancel);
         const okButton = (this.okButton = document.createElement('button'));
         okButton.innerText = 'Open';
         okButton.disabled = true;
         okButton.addEventListener('click', this.openStream);
         dialogFooter.appendChild(okButton);
-        dialogFooter.appendChild(cancelButton);
+        // dialogFooter.appendChild(cancelButton);
         dialogBody.appendChild(dialogFooter);
         dialogContainer.appendChild(dialogHeader);
         dialogContainer.appendChild(dialogBody);
@@ -457,7 +579,10 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private removeUI(): void {
         document.body.removeChild(this.background);
         this.okButton?.removeEventListener('click', this.openStream);
-        this.cancelButton?.removeEventListener('click', this.cancel);
+        // this.cancelButton?.removeEventListener('click', this.cancel);
+        this.resetSettingsButton?.removeEventListener('click', this.resetSettings);
+        this.loadSettingsButton?.removeEventListener('click', this.loadSettings);
+        this.saveSettingsButton?.removeEventListener('click', this.saveSettings);
         this.background.removeEventListener('click', this.onBackgroundClick);
     }
 
@@ -477,11 +602,32 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         this.removeUI();
     };
 
+    private resetSettings = (): void => {
+        const player = this.getPlayer();
+        if (player) {
+            this.fillInputsFromVideoSettings(player.getPreferredVideoSetting(), false);
+        }
+    };
+
+    private loadSettings = (): void => {
+        this.updateVideoSettingsForPlayer();
+    };
+
+    private saveSettings = (): void => {
+        const videoSettings = this.buildVideoSettings();
+        const player = this.getPlayer();
+        if (videoSettings && player) {
+            const fitToScreen = this.getFitToScreenValue();
+            player.saveVideoSettings(this.udid, videoSettings, fitToScreen, this.displayInfo);
+        }
+    };
+
     private openStream = (): void => {
         const videoSettings = this.buildVideoSettings();
         if (!videoSettings || !this.streamReceiver || !this.playerName) {
             return;
         }
+        const fitToScreen = this.getFitToScreenValue();
         this.detachEventsListeners(this.streamReceiver);
         this.emit('closed', true);
         this.removeUI();
@@ -491,11 +637,11 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         }
         this.setPreviouslyUsedPlayer(this.playerName);
         // return;
-        player.setVideoSettings(videoSettings, false);
+        player.setVideoSettings(videoSettings, fitToScreen, false);
         StreamClientScrcpy.createWithReceiver(this.streamReceiver, {
             playerName: player,
             udid: this.udid,
-            fitIntoScreen: false,
+            fitToScreen,
             videoSettings,
         });
         this.streamReceiver.triggerInitialInfoEvents();

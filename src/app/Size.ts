@@ -34,7 +34,7 @@ export default class Size {
         return new Size(this.height, this.width);
     }
 
-    public equals(o: Size | null): boolean {
+    public equals(o: Size | null | undefined): boolean {
         if (this === o) {
             return true;
         }
@@ -42,6 +42,15 @@ export default class Size {
             return false;
         }
         return this.width === o.width && this.height === o.height;
+    }
+
+    public intersect(o: Size | undefined | null): Size {
+        if (!o) {
+            return this;
+        }
+        const minH = Math.min(this.height, o.height);
+        const minW = Math.min(this.width, o.width);
+        return new Size(minW, minH);
     }
 
     public getHalfSize(): Size {

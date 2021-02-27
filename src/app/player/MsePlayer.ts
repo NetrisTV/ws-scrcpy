@@ -216,7 +216,7 @@ export class MsePlayer extends BasePlayer {
         this.stopConverter();
     }
 
-    public setVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
+    public setVideoSettings(videoSettings: VideoSettings, fitToScreen: boolean, saveToStorage: boolean): void {
         if (this.videoSettings && this.videoSettings.maxFps !== videoSettings.maxFps) {
             const state = this.getState();
             if (this.converter) {
@@ -228,7 +228,7 @@ export class MsePlayer extends BasePlayer {
                 this.play();
             }
         }
-        super.setVideoSettings(videoSettings, saveToStorage);
+        super.setVideoSettings(videoSettings, fitToScreen, saveToStorage);
     }
 
     public getPreferredVideoSetting(): VideoSettings {
@@ -406,5 +406,33 @@ export class MsePlayer extends BasePlayer {
             this.converter.pause();
             delete this.converter;
         }
+    }
+
+    public static getFitToScreenStatus(deviceName: string, displayInfo?: DisplayInfo): boolean {
+        return BasePlayer.getFitToScreenFromStorage(MsePlayer.storageKeyPrefix, deviceName, displayInfo);
+    }
+
+    public static loadVideoSettings(deviceName: string, displayInfo?: DisplayInfo): VideoSettings {
+        return BasePlayer.getVideoSettingFromStorage(
+            MsePlayer.preferredVideoSettings,
+            MsePlayer.storageKeyPrefix,
+            deviceName,
+            displayInfo,
+        );
+    }
+
+    public static saveVideoSettings(
+        deviceName: string,
+        videoSettings: VideoSettings,
+        fitToScreen: boolean,
+        displayInfo?: DisplayInfo,
+    ): void {
+        BasePlayer.putVideoSettingsToStorage(
+            MsePlayer.storageKeyPrefix,
+            deviceName,
+            videoSettings,
+            fitToScreen,
+            displayInfo,
+        );
     }
 }

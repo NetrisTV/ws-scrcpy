@@ -5,6 +5,7 @@ import YUVWebGLCanvas from '../../../vendor/tinyh264/YUVWebGLCanvas';
 import YUVCanvas from '../../../vendor/tinyh264/YUVCanvas';
 import Size from '../Size';
 import { DisplayInfo } from '../DisplayInfo';
+import { BasePlayer } from './BasePlayer';
 
 type WorkerMessage = {
     type: string;
@@ -118,5 +119,33 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
             this.worker.postMessage({ type: 'release', renderStateId: TinyH264Player.videoStreamId });
             TinyH264Player.videoStreamId++;
         }
+    }
+
+    public static getFitToScreenStatus(deviceName: string, displayInfo?: DisplayInfo): boolean {
+        return BasePlayer.getFitToScreenFromStorage(TinyH264Player.storageKeyPrefix, deviceName, displayInfo);
+    }
+
+    public static loadVideoSettings(deviceName: string, displayInfo?: DisplayInfo): VideoSettings {
+        return BasePlayer.getVideoSettingFromStorage(
+            TinyH264Player.preferredVideoSettings,
+            TinyH264Player.storageKeyPrefix,
+            deviceName,
+            displayInfo,
+        );
+    }
+
+    public static saveVideoSettings(
+        deviceName: string,
+        videoSettings: VideoSettings,
+        fitToScreen: boolean,
+        displayInfo?: DisplayInfo,
+    ): void {
+        BasePlayer.putVideoSettingsToStorage(
+            TinyH264Player.storageKeyPrefix,
+            deviceName,
+            videoSettings,
+            fitToScreen,
+            displayInfo,
+        );
     }
 }
