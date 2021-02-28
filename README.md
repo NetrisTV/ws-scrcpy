@@ -81,12 +81,10 @@ Control your device from `adb shell` in your browser.
 
 ## Known issues
 
-* New versions are most likely not incompatible with previous ones. If you do
-upgrade, then manually stop `app_process` or just reboot the device.
 * The server on the Android Emulator listens on the internal interface and not
-available from the outside (select `proxy over adb` in interfaces list)
-* Tinyh264Decoder may fail to start, try to reload the page.
-* MseDecoder reports too many dropped frames in quality statistics: needs
+available from the outside. Select `proxy over adb` from the list of interfaces.
+* TinyH264Player may fail to start, try to reload the page.
+* MsePlayer reports too many dropped frames in quality statistics: needs
 further investigation.
 
 ## Security warning
