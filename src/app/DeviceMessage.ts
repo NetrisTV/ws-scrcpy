@@ -4,12 +4,13 @@ export default class DeviceMessage {
     public static TYPE_CLIPBOARD = 0;
     public static TYPE_PUSH_RESPONSE = 101;
 
-    private static MAGIC = 'scrcpy';
+    public static readonly MAGIC_BYTES_MESSAGE = Util.stringToUtf8ByteArray('scrcpy_message');
 
     constructor(public readonly type: number, protected readonly buffer: Buffer) {}
 
     public static fromBuffer(data: ArrayBuffer): DeviceMessage {
-        const buffer = Buffer.from(data, this.MAGIC.length, data.byteLength - this.MAGIC.length);
+        const magicSize = this.MAGIC_BYTES_MESSAGE.length;
+        const buffer = Buffer.from(data, magicSize, data.byteLength - magicSize);
         const type = buffer.readUInt8(0);
         return new DeviceMessage(type, buffer);
     }

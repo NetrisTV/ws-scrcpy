@@ -8,7 +8,6 @@ import { DisplayInfo } from '../DisplayInfo';
 
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC_BYTES_INITIAL = Util.stringToUtf8ByteArray('scrcpy_initial');
-const MAGIC_BYTES_MESSAGE = Util.stringToUtf8ByteArray('scrcpy_message');
 
 export type ClientsStats = {
     deviceName: string;
@@ -130,7 +129,7 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
                     this.handleInitialInfo(e.data);
                     return;
                 }
-                if (StreamReceiver.EqualArrays(magicBytes, MAGIC_BYTES_MESSAGE)) {
+                if (StreamReceiver.EqualArrays(magicBytes, DeviceMessage.MAGIC_BYTES_MESSAGE)) {
                     const message = DeviceMessage.fromBuffer(e.data);
                     this.emit('deviceMessage', message);
                     return;
