@@ -16,6 +16,8 @@ const ACTION = 'stream-qvh';
 const PORT = 8080;
 const WAIT_CLASS = 'wait';
 
+const TAG = '[StreamClientQVHack]';
+
 export class StreamClientQVHack extends BaseClient<never> implements TouchHandlerListener {
     public static ACTION: QVHackStreamParams['action'] = ACTION;
     private deviceName = '';
@@ -66,7 +68,7 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
                     this.wdaUrl = url;
                     this.wdaConnection.setUrl(url);
                 } else {
-                    console.error(`Failed to run WebDriverAgent. Reason: ${data.text}, code: ${data.code}`);
+                    console.error(TAG, `Failed to run WebDriverAgent. Reason: ${data.text}, code: ${data.code}`);
                 }
             })
             .finally(() => {
@@ -83,7 +85,7 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
         deviceView.className = 'device-view';
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
-                console.error(ev);
+                console.error(TAG, ev);
             }
             let parent;
             parent = deviceView.parentElement;

@@ -11,6 +11,8 @@ export type WsQVHackClientEvents = {
     connected: boolean;
 };
 
+const TAG = '[WsQVHackClient]';
+
 export class WsQVHackClient extends ManagerClient<WsQVHackClientEvents> {
     private stopped = false;
     private commands: string[] = [];
@@ -20,7 +22,7 @@ export class WsQVHackClient extends ManagerClient<WsQVHackClientEvents> {
     }
     protected onSocketClose(e: CloseEvent): void {
         this.emit('connected', false);
-        console.log(`Connection closed: ${e.reason}`);
+        console.log(TAG, `Connection closed: ${e.reason}`);
         if (!this.stopped) {
             setTimeout(() => {
                 this.openNewWebSocket();
@@ -51,8 +53,8 @@ export class WsQVHackClient extends ManagerClient<WsQVHackClientEvents> {
                 }
             })
             .catch((error: Error) => {
-                console.error(error.message);
-                console.log(e.data);
+                console.error(TAG, error.message);
+                console.log(TAG, e.data);
             });
     }
 

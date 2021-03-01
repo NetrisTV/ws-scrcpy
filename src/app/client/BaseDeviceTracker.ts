@@ -12,6 +12,8 @@ export type MapItem<T> = {
     title: string;
 };
 
+const TAG = '[BaseDeviceTracker]';
+
 export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> extends ManagerClient<K> {
     public static readonly ACTION_LIST = 'devicelist';
     public static readonly ACTION_DEVICE = 'device';
@@ -30,7 +32,7 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
     protected abstract buildDeviceTable(): void;
 
     protected onSocketClose(e: CloseEvent): void {
-        console.log(`Connection closed: ${e.reason}`);
+        console.log(TAG, `Connection closed: ${e.reason}`);
         setTimeout(() => {
             this.openNewWebSocket();
         }, 2000);
@@ -41,8 +43,8 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         try {
             message = JSON.parse(e.data);
         } catch (error) {
-            console.error(error.message);
-            console.log(e.data);
+            console.error(TAG, error.message);
+            console.log(TAG, e.data);
             return;
         }
         switch (message.type) {
@@ -55,7 +57,7 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
                 this.buildDeviceTable();
                 break;
             default:
-                console.log(`Unknown message type: ${message.type}`);
+                console.log(TAG, `Unknown message type: ${message.type}`);
         }
     }
 

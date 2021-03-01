@@ -10,6 +10,8 @@ import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
 import { BaseDeviceTracker } from './BaseDeviceTracker';
 import Util from '../Util';
 
+const TAG = '[ShellClient]';
+
 export class ShellClient extends ManagerClient<never> {
     public static ACTION = ACTION.SHELL;
     public static start(params: ShellParams): ShellClient {
@@ -39,7 +41,7 @@ export class ShellClient extends ManagerClient<never> {
     };
 
     protected onSocketClose(e: CloseEvent): void {
-        console.log(`Connection closed: ${e.reason}`);
+        console.log(TAG, `Connection closed: ${e.reason}`);
         this.term.dispose();
     }
 

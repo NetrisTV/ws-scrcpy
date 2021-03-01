@@ -17,6 +17,8 @@ export interface DragAndPushListener {
     onError: (error: Error | string) => void;
 }
 
+const TAG = '[FilePushHandler]';
+
 export default class FilePushHandler implements DragEventListener {
     public static readonly REQUEST_NEW_PUSH_ID = 0; // ignored on server, when state is `NEW_PUSH_ID`
     public static readonly NEW_PUSH_ID: number = 1;
@@ -92,7 +94,7 @@ export default class FilePushHandler implements DragEventListener {
                 } else {
                     this.sendUpdate({ pushId, fileName, logString: 'success!', error: false });
                 }
-                console.log(`File "${fileName}" uploaded in ${Date.now() - start}ms`);
+                console.log(TAG, `File "${fileName}" uploaded in ${Date.now() - start}ms`);
                 return;
             }
 

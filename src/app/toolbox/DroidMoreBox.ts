@@ -8,6 +8,8 @@ import DeviceMessage from '../DeviceMessage';
 import VideoSettings from '../VideoSettings';
 import { StreamClientScrcpy } from '../client/StreamClientScrcpy';
 
+const TAG = '[DroidMoreBox]';
+
 export class DroidMoreBox {
     private static defaultSize = new Size(480, 480);
     private onStop?: () => void;
@@ -218,7 +220,7 @@ export class DroidMoreBox {
 
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
-                console.error(ev);
+                console.error(TAG, ev);
             }
             const parent = moreBox.parentElement;
             if (parent) {

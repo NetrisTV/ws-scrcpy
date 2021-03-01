@@ -380,7 +380,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
                 encoderName,
             });
         } catch (e) {
-            console.error(e.message);
+            console.error(this.TAG, e.message);
             return null;
         }
     }

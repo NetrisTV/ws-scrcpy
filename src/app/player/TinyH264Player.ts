@@ -53,7 +53,7 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
                 this.isDecoderReady = true;
                 break;
             default:
-                console.error(this.name, Error(`Wrong message type "${message.type}"`));
+                console.error(`[${this.name}]`, Error(`Wrong message type "${message.type}"`));
         }
     };
 

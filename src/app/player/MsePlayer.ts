@@ -88,7 +88,7 @@ export class MsePlayer extends BasePlayer {
     }
 
     onVideoError = (e: Event): void => {
-        console.error(e);
+        console.error(`[${this.name}]`, e);
     };
 
     onVideoCanPlay = (): void => {
@@ -253,7 +253,7 @@ export class MsePlayer extends BasePlayer {
             this.sourceBuffer.removeEventListener('updateend', this.cleanSourceBuffer);
             this.removeStart = this.removeEnd = -1;
         } catch (e) {
-            console.error(this.name, 'Failed to clean source buffer');
+            console.error(`[${this.name}]`, 'Failed to clean source buffer');
         }
     };
 
@@ -268,7 +268,7 @@ export class MsePlayer extends BasePlayer {
             return;
         }
         const end = this.tag.buffered.end(this.tag.seekable.length - 1);
-        console.log(`${this.name}. Jumping to the end (${this.jumpEnd}, ${end - this.jumpEnd}).`);
+        console.log(`[${this.name}]`, `Jumping to the end (${this.jumpEnd}, ${end - this.jumpEnd}).`);
         this.tag.currentTime = end;
         this.jumpEnd = -1;
         this.sourceBuffer.removeEventListener('updateend', this.jumpToEnd);
@@ -367,7 +367,7 @@ export class MsePlayer extends BasePlayer {
                 this.tag.play();
             };
             if (this.seekingSince !== -1) {
-                console.warn(this.name, `Attempt to seek while already seeking! ${waitingForSeekEnd}`);
+                console.warn(`[${this.name}]`, `Attempt to seek while already seeking! ${waitingForSeekEnd}`);
             }
             this.seekingSince = now;
             this.tag.addEventListener('seeked', onSeekEnd);

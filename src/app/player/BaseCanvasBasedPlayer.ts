@@ -154,10 +154,10 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
                 this.tag = tag;
             }
         }
-        this.tag.onerror = function (e: Event | string): void {
-            console.error(e);
+        this.tag.onerror = (e: Event | string): void => {
+            console.error(`[${this.name}]`, e);
         };
-        this.tag.oncontextmenu = function (e: MouseEvent): void {
+        this.tag.oncontextmenu = (e: MouseEvent): void => {
             e.preventDefault();
         };
         this.tag.width = width;

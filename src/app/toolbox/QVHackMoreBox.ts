@@ -1,6 +1,8 @@
 import { BasePlayer } from '../player/BasePlayer';
 import Size from '../Size';
 
+const TAG = '[QVHackMoreBox]';
+
 export class QVHackMoreBox {
     private onStop?: () => void;
     private readonly holder: HTMLElement;
@@ -29,7 +31,7 @@ export class QVHackMoreBox {
 
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
-                console.error(ev);
+                console.error(TAG, ev);
             }
             const parent = moreBox.parentElement;
             if (parent) {

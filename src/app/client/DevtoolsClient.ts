@@ -10,6 +10,8 @@ import { BaseDeviceTracker } from './BaseDeviceTracker';
 
 const FRONTEND_RE = /^https?:\/\/chrome-devtools-frontend\.appspot\.com\/serve_rev\/(@.*)/;
 
+const TAG = '[DevtoolsClient]';
+
 export class DevtoolsClient extends ManagerClient<never> {
     public static readonly ACTION = ACTION.DEVTOOLS;
     public static readonly TIMEOUT = 1000;
@@ -56,7 +58,7 @@ export class DevtoolsClient extends ManagerClient<never> {
     }
 
     protected onSocketClose(e: CloseEvent): void {
-        console.error(`Socket closed. Code: ${e.code}.${e.reason ? ' Reason: ' + e.reason : ''}`);
+        console.error(TAG, `Socket closed. Code: ${e.code}.${e.reason ? ' Reason: ' + e.reason : ''}`);
         setTimeout(() => {
             this.openNewWebSocket();
         }, 2000);
@@ -67,11 +69,12 @@ export class DevtoolsClient extends ManagerClient<never> {
         try {
             message = JSON.parse(e.data);
         } catch (error) {
-            console.error(error.message);
+            console.error(TAG, error.message);
+            console.log(TAG, e.data);
             return;
         }
         if (message.type !== DevtoolsClient.ACTION) {
-            console.log(`Unknown message type: ${message.type}`);
+            console.log(TAG, `Unknown message type: ${message.type}`);
             return;
         }
         const list = message.data as DevtoolsInfo;

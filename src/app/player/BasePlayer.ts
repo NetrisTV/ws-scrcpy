@@ -163,7 +163,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         try {
             parsedValue = JSON.parse(saved);
         } catch (e) {
-            console.error('Failed to parse', saved);
+            console.error(`[${this.name}]`, 'Failed to parse', saved);
         }
         return parsedValue;
     }

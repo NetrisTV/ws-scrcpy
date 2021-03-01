@@ -1,5 +1,7 @@
 import FilePushHandler, { DragAndPushListener, PushUpdateParams } from './FilePushHandler';
 
+const TAG = '[DragAndPushLogger]';
+
 export default class DragAndPushLogger implements DragAndPushListener {
     private static readonly X: number = 20;
     private static readonly Y: number = 40;
@@ -37,11 +39,11 @@ export default class DragAndPushLogger implements DragAndPushListener {
     };
     private logText(text: string, line: number, scheduleCleanup = false, error = false): void {
         if (!this.ctx) {
-            error ? console.error(text) : console.log(text);
+            error ? console.error(TAG, text) : console.log(TAG, text);
             return;
         }
         if (error) {
-            console.error(text);
+            console.error(TAG, text);
         }
         this.cleanDirtyLine(line);
 

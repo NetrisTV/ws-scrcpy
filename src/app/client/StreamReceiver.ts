@@ -31,6 +31,8 @@ interface StreamReceiverEvents {
     disconnected: CloseEvent;
 }
 
+const TAG = '[StreamReceiver]';
+
 export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     private events: ControlMessage[] = [];
     private encodersSet: Set<string> = new Set<string>();
@@ -116,7 +118,7 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     }
 
     protected onSocketClose(ev: CloseEvent): void {
-        console.log('WS closed');
+        console.log(TAG, 'WS closed');
         this.emit('disconnected', ev);
     }
 

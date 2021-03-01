@@ -27,6 +27,8 @@ const FIELDS_MAP: MapItem<QVHackDeviceDescriptor>[] = [
     },
 ];
 
+const TAG = '[DeviceTrackerQVHack]';
+
 export class DeviceTrackerQVHack extends BaseDeviceTracker<QVHackDeviceDescriptor, never> {
     public static ACTION = 'devicelist';
     protected tableId = 'qvhack_devices_list';
@@ -47,7 +49,7 @@ export class DeviceTrackerQVHack extends BaseDeviceTracker<QVHackDeviceDescripto
     }
 
     protected onSocketClose(e: CloseEvent): void {
-        console.log(`Connection closed: ${e.reason}`);
+        console.log(TAG, `Connection closed: ${e.reason}`);
         setTimeout(() => {
             this.openNewWebSocket();
         }, 2000);
@@ -61,8 +63,8 @@ export class DeviceTrackerQVHack extends BaseDeviceTracker<QVHackDeviceDescripto
                 this.buildDeviceTable();
             })
             .catch((error: Error) => {
-                console.error(error.message);
-                console.log(e.data);
+                console.error(TAG, error.message);
+                console.log(TAG, e.data);
             });
     }
 
