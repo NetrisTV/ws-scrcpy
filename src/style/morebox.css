@@ -1,0 +1,43 @@
+.text-area {
+    width: 100%;
+    resize: vertical;
+}
+
+.more-box {
+    display: none;
+    position: absolute;
+    background-color: var(--controls-bg-color);
+    z-index: 2;
+    padding: 0 .714rem .714rem .714rem;
+}
+
+.text-with-shadow, .more-box label {
+    color: var(--text-color);
+    text-shadow: var(--text-shadow-color) 0 0 .357rem;
+}
+
+.spoiler > input ~ .box {
+    display: none;
+}
+
+.spoiler > input:checked ~ .box {
+    display: block;
+}
+
+.spoiler > label::before {
+    content: '►';
+    margin-right: 5px;
+}
+
+.spoiler > input:checked ~ label::before {
+    content: '▼';
+}
+
+.spoiler > input:checked ~ div {
+    display: block;
+    padding: 10px;
+}
+
+.spoiler > input {
+    display: none;
+}

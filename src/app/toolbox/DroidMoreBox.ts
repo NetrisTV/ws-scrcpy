@@ -1,3 +1,4 @@
+import '../../style/morebox.css';
 import { BasePlayer } from '../player/BasePlayer';
 import { TextControlMessage } from '../controlMessage/TextControlMessage';
 import { CommandControlMessage } from '../controlMessage/CommandControlMessage';
@@ -11,7 +12,7 @@ export class DroidMoreBox {
     private static defaultSize = new Size(480, 480);
     private onStop?: () => void;
     private readonly holder: HTMLElement;
-    private readonly input: HTMLInputElement;
+    private readonly input: HTMLTextAreaElement;
     private readonly bitrateInput?: HTMLInputElement;
     private readonly maxFpsInput?: HTMLInputElement;
     private readonly iFrameIntervalInput?: HTMLInputElement;
@@ -29,11 +30,12 @@ export class DroidMoreBox {
         nameBox.innerText = `${udid} (${playerName})`;
         nameBox.className = 'text-with-shadow';
         moreBox.appendChild(nameBox);
-        const input = (this.input = document.createElement('input'));
+        const input = (this.input = document.createElement('textarea'));
+        input.classList.add('text-area');
         const sendButton = document.createElement('button');
         sendButton.innerText = 'Send as keys';
 
-        DroidMoreBox.wrap('p', [input, sendButton], moreBox);
+        const inputWrapper = DroidMoreBox.wrap('p', [input, sendButton], moreBox);
         sendButton.onclick = () => {
             if (input.value) {
                 client.sendMessage(new TextControlMessage(input.value));
@@ -124,12 +126,18 @@ export class DroidMoreBox {
                     innerDiv.insertBefore(resetButton, innerDiv.firstChild);
                     commands.push(spoiler);
                 } else {
-                    commands.push(btn);
+                    if (
+                        action === CommandControlMessage.TYPE_SET_CLIPBOARD ||
+                        action === CommandControlMessage.TYPE_GET_CLIPBOARD
+                    ) {
+                        inputWrapper.appendChild(btn);
+                    } else {
+                        commands.push(btn);
+                    }
                 }
                 btn.innerText = CommandControlMessage.CommandNames[action];
-                btn.onclick = () => {
-                    let event: CommandControlMessage | undefined;
-                    if (action === ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS) {
+                if (action === ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS) {
+                    btn.onclick = () => {
                         const bitrate = parseInt(bitrateInput.value, 10);
                         const maxFps = parseInt(maxFpsInput.value, 10);
                         const iFrameInterval = parseInt(iFrameIntervalInput.value, 10);
@@ -153,18 +161,19 @@ export class DroidMoreBox {
                             encoderName,
                         });
                         client.sendNewVideoSetting(videoSettings);
-                    } else if (action === CommandControlMessage.TYPE_SET_CLIPBOARD) {
+                    };
+                } else if (action === CommandControlMessage.TYPE_SET_CLIPBOARD) {
+                    btn.onclick = () => {
                         const text = input.value;
                         if (text) {
-                            event = CommandControlMessage.createSetClipboardCommand(text);
+                            client.sendMessage(CommandControlMessage.createSetClipboardCommand(text));
                         }
-                    } else {
-                        event = new CommandControlMessage(action);
-                    }
-                    if (event) {
-                        client.sendMessage(event);
-                    }
-                };
+                    };
+                } else {
+                    btn.onclick = () => {
+                        client.sendMessage(new CommandControlMessage(action));
+                    };
+                }
             }
         }
         DroidMoreBox.wrap('p', commands, moreBox);
@@ -282,7 +291,12 @@ export class DroidMoreBox {
         document.execCommand('copy');
     }
 
-    private static wrap(tagName: string, elements: HTMLElement[], parent: HTMLElement, opt_classes?: string[]): void {
+    private static wrap(
+        tagName: string,
+        elements: HTMLElement[],
+        parent: HTMLElement,
+        opt_classes?: string[],
+    ): HTMLElement {
         const wrap = document.createElement(tagName);
         if (opt_classes) {
             wrap.classList.add(...opt_classes);
@@ -291,6 +305,7 @@ export class DroidMoreBox {
             wrap.appendChild(e);
         });
         parent.appendChild(wrap);
+        return wrap;
     }
 
     public getHolderElement(): HTMLElement {
