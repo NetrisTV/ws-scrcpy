@@ -1,29 +1,20 @@
 import * as http from 'http';
-import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http';
-import url from 'url';
 import path from 'path';
-import fs from 'fs';
 import { Service } from './Service';
 import { Utils } from '../Utils';
-
-const map: Record<string, string> = {
-    '.wasm': 'application/wasm',
-    '.js': 'text/javascript',
-    '.png': 'image/png',
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.jar': 'application/java-archive',
-    '.json': 'application/json',
-    '.jpg': 'image/jpeg',
-};
+import express, { Express } from 'express';
 
 const proto = 'http';
-const PUBLIC_DIR = path.join(__dirname, '../public');
+const DEFAULT_PORT = 8000;
+const DEFAULT_STATIC_DIR = path.join(__dirname, '../public');
 
 export class HttpServer implements Service {
     private static instance: HttpServer;
+    private static PORT = DEFAULT_PORT;
+    private static PUBLIC_DIR = DEFAULT_STATIC_DIR;
+    private static SERVE_STATIC = true;
     private server?: http.Server;
-    private port = parseInt(process.argv[2], 10) || 8000;
+    private app?: Express;
 
     protected constructor() {
         // nothing here
@@ -36,51 +27,29 @@ export class HttpServer implements Service {
         return HttpServer.instance;
     }
 
-    private createServer(publicDir: string): http.Server {
-        const server = http.createServer((req: IncomingMessage, res: ServerResponse) => {
-            if (!req.url) {
-                res.statusCode = 400;
-                res.end(STATUS_CODES[400]);
-                return;
-            }
-            const parsedUrl = url.parse(req.url);
-            let pathname = path.join(publicDir, (parsedUrl.pathname || '.').replace(/^(\.)+/, '.'));
-            fs.stat(pathname, (statErr, stat) => {
-                if (statErr) {
-                    if (statErr.code === 'ENOENT') {
-                        // if the file is not found, return 404
-                        res.statusCode = 404;
-                        res.end(`File ${pathname} not found!`);
-                    } else {
-                        res.statusCode = 500;
-                        res.end(`Error getting the file: ${statErr}.`);
-                    }
-                    return;
-                }
-                if (stat.isDirectory()) {
-                    pathname = path.join(pathname, 'index.html');
-                }
-                const ext = path.parse(pathname).ext;
-                fs.readFile(pathname, (readErr, data) => {
-                    if (readErr) {
-                        res.statusCode = 500;
-                        res.end(`Error getting the file: ${statErr}.`);
-                    } else {
-                        // if the file is found, set Content-type and send data
-                        res.setHeader('Content-type', map[ext] || 'text/plain');
-                        res.end(data);
-                    }
-                });
-            });
-        });
-        server.on('close', () => {
-            console.log(`${this.getName()} stopped`);
-        });
-        return server;
+    public static setPort(port: number): void {
+        if (HttpServer.instance) {
+            throw Error('Unable to change value after instantiation');
+        }
+        HttpServer.PORT = port;
+    }
+
+    public static setPublicDir(dir: string): void {
+        if (HttpServer.instance) {
+            throw Error('Unable to change value after instantiation');
+        }
+        HttpServer.PUBLIC_DIR = dir;
+    }
+
+    public static setServeStatic(enabled: boolean): void {
+        if (HttpServer.instance) {
+            throw Error('Unable to change value after instantiation');
+        }
+        HttpServer.SERVE_STATIC = enabled;
     }
 
     public getPort(): number {
-        return this.port;
+        return HttpServer.PORT;
     }
 
     public getServer(): http.Server | undefined {
@@ -88,13 +57,16 @@ export class HttpServer implements Service {
     }
 
     public getName(): string {
-        return `HTTP Server {tcp:${this.port}}`;
+        return `HTTP Server {tcp:${HttpServer.PORT}}`;
     }
 
     public start(): void {
-        this.server = this.createServer(PUBLIC_DIR);
-        this.server.listen(this.port, () => {
-            Utils.printListeningMsg(proto, this.port);
+        this.app = express();
+        if (HttpServer.SERVE_STATIC && HttpServer.PUBLIC_DIR) {
+            this.app.use(express.static(HttpServer.PUBLIC_DIR));
+        }
+        this.server = http.createServer(this.app).listen(HttpServer.PORT, () => {
+            Utils.printListeningMsg(proto, HttpServer.PORT);
         });
     }
 
