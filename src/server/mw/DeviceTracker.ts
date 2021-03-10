@@ -11,7 +11,7 @@ export class DeviceTracker extends Mw {
     private adt: AndroidDeviceTracker = AndroidDeviceTracker.getInstance();
 
     public static processRequest(ws: WebSocket, params: RequestParameters): DeviceTracker | undefined {
-        if (params.parsedQuery?.action !== ACTION.DEVICE_LIST) {
+        if (params.parsedQuery?.action !== ACTION.DROID_DEVICE_LIST) {
             return;
         }
         return new DeviceTracker(ws);
@@ -41,67 +41,64 @@ export class DeviceTracker extends Mw {
         this.sendMessage(msg);
     };
 
+    private handleError(command: string, errorMessage: string): void {
+        if (errorMessage) {
+            console.error(`[${DeviceTracker.TAG}]. Command: "${command}", error: ${errorMessage}`);
+            this.ws.send({ command, error: errorMessage });
+        }
+    }
+
     protected onSocketMessage(event: WebSocket.MessageEvent): void {
         let data;
         try {
             data = JSON.parse(event.data.toString());
         } catch (e) {
-            console.log(`[${DeviceTracker.TAG}], Received message: ${event.data}`);
+            console.log(`[${DeviceTracker.TAG}]. Received message: ${event.data}`);
             return;
         }
         if (!data || !data.command) {
-            console.log(`[${DeviceTracker.TAG}], Received message: ${event.data}`);
+            console.log(`[${DeviceTracker.TAG}]. Received message: ${event.data}`);
             return;
         }
-        const command = data.command;
+        const { udid, command } = data;
+        const device = this.adt.getDevice(udid);
+        if (!device) {
+            this.handleError(command, `Device "${udid}" not found`);
+            return;
+        }
         switch (command) {
             case DeviceTrackerCommand.UPDATE_INTERFACES: {
                 const { udid } = data;
-                if (typeof udid === 'string' && udid) {
-                    this.adt.updateInterfaces(udid).catch((e) => {
-                        const { message } = e;
-                        console.error(`[${DeviceTracker.TAG}], Command: "${command}", error: ${message}`);
-                        this.ws.send({ command, error: message });
-                    });
-                } else {
-                    console.error(
-                        `[${DeviceTracker.TAG}], Incorrect parameters for ${data.command} command: udid:"${udid}"`,
-                    );
+                if (typeof udid !== 'string' || !udid) {
+                    return this.handleError(command, `Incorrect parameters: udid:"${udid}"`);
                 }
+                device.updateInterfaces().catch((e) => {
+                    this.handleError(command, e.message);
+                });
                 break;
             }
             case DeviceTrackerCommand.KILL_SERVER: {
                 const { udid, pid } = data;
-                if (typeof udid === 'string' && udid && typeof pid === 'number' && pid > 0) {
-                    this.adt.killServer(udid, pid).catch((e) => {
-                        const { message } = e;
-                        console.error(`[${DeviceTracker.TAG}], Command: "${command}", error: ${message}`);
-                        this.ws.send({ command, error: message });
-                    });
-                } else {
-                    console.error(
-                        `[${DeviceTracker.TAG}], Incorrect parameters for ${data.command} command: udid:"${udid}"`,
-                    );
+                if (typeof udid !== 'string' || !udid || typeof pid !== 'number' || pid <= 0) {
+                    return this.handleError(command, `Incorrect parameters: udid:"${udid}"`);
                 }
+                device.killServer(pid).catch((e) => {
+                    this.handleError(command, e.message);
+                });
                 break;
             }
             case DeviceTrackerCommand.START_SERVER: {
                 const { udid } = data;
-                if (typeof udid === 'string' && udid) {
-                    this.adt.startServer(udid).catch((e) => {
-                        const { message } = e;
-                        console.error(`[${DeviceTracker.TAG}], Command: "${command}", error: ${message}`);
-                        this.ws.send({ command, error: message });
-                    });
-                } else {
-                    console.error(
-                        `[${DeviceTracker.TAG}], Incorrect parameters for ${data.command} command: udid:"${udid}"`,
-                    );
+                if (typeof udid !== 'string' || !udid) {
+                    return this.handleError(command, `Incorrect parameters: udid:"${udid}"`);
                 }
+                device.startServer().catch((e) => {
+                    this.handleError(command, e.message);
+                });
                 break;
             }
             default:
-                console.warn(`[${DeviceTracker.TAG}], Unsupported command: "${data.command}"`);
+                this.handleError(command, `Unsupported command: "${data.command}"`);
         }
     }
 

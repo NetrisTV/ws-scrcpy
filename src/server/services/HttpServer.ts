@@ -21,10 +21,14 @@ export class HttpServer implements Service {
     }
 
     public static getInstance(): HttpServer {
-        if (!HttpServer.instance) {
-            HttpServer.instance = new HttpServer();
+        if (!this.instance) {
+            this.instance = new HttpServer();
         }
-        return HttpServer.instance;
+        return this.instance;
+    }
+
+    public static hasInstance(): boolean {
+        return !!this.instance;
     }
 
     public static setPort(port: number): void {

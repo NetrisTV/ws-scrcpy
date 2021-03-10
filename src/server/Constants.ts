@@ -13,7 +13,8 @@ export const SERVER_PROCESS_NAME = 'app_process';
 export const ARGS_STRING = `/ ${SERVER_PACKAGE} ${ARGUMENTS.join(' ')} 2>&1 > /dev/null`;
 
 export enum ACTION {
-    DEVICE_LIST = 'droid-device-list',
+    LIST_DEVICES = 'list-devices',
+    DROID_DEVICE_LIST = 'droid-device-list',
     SHELL = 'shell',
     PROXY = 'proxy',
     DEVTOOLS = 'devtools',

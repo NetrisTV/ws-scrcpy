@@ -27,7 +27,7 @@ const DESC_COLUMNS: DescriptionColumn[] = [
 ];
 
 export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor, never> {
-    public static readonly ACTION = ACTION.DEVICE_LIST;
+    public static readonly ACTION = ACTION.DROID_DEVICE_LIST;
     public static readonly CREATE_DIRECT_LINKS = true;
     public static readonly AttributePrefixInterfaceSelectFor = 'interface_select_for';
     public static readonly AttributePlayerFullName = 'data-player-full-name';

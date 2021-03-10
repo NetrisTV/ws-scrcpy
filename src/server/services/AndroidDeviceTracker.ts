@@ -7,7 +7,6 @@ import AdbKit from '@devicefarmer/adbkit';
 import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
 import Tracker from '@devicefarmer/adbkit/lib/adb/tracker';
 import Timeout = NodeJS.Timeout;
-import { NetInterface } from '../../common/NetInterface';
 
 export interface AndroidDeviceTrackerEvents {
     device: DroidDeviceDescriptor;
@@ -34,6 +33,10 @@ export class AndroidDeviceTracker extends TypedEmitter<AndroidDeviceTrackerEvent
             this.instance = new AndroidDeviceTracker();
         }
         return this.instance;
+    }
+
+    public static hasInstance(): boolean {
+        return !!AndroidDeviceTracker.instance;
     }
 
     private restartTracker = (): void => {
@@ -127,28 +130,8 @@ export class AndroidDeviceTracker extends TypedEmitter<AndroidDeviceTrackerEvent
         return Array.from(this.descriptors.values());
     }
 
-    public async killServer(udid: string, pid: number): Promise<void> {
-        const device = this.deviceMap.get(udid);
-        if (!device) {
-            return;
-        }
-        return device.killServer(pid);
-    }
-
-    public async startServer(udid: string): Promise<number | undefined> {
-        const device = this.deviceMap.get(udid);
-        if (!device) {
-            return;
-        }
-        return device.startServer();
-    }
-
-    public async updateInterfaces(udid: string): Promise<NetInterface[] | undefined> {
-        const device = this.deviceMap.get(udid);
-        if (!device) {
-            return;
-        }
-        return device.updateInterfaces();
+    public getDevice(udid: string): Device | undefined {
+        return this.deviceMap.get(udid);
     }
 
     public getName(): string {
