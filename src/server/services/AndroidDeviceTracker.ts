@@ -120,6 +120,7 @@ export class AndroidDeviceTracker extends TypedEmitter<AndroidDeviceTrackerEvent
             this.tracker = undefined;
         }
         this.tracker = undefined;
+        this.initialized = false;
     }
 
     public getDevices(): DroidDeviceDescriptor[] {
