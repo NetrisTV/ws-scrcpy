@@ -1,11 +1,11 @@
 import '../../style/devtools.css';
 import { ManagerClient } from './ManagerClient';
-import { ACTION } from '../../server/Constants';
-import { DevtoolsParams } from '../../common/DevtoolsParams';
-import { RemoteDevtoolsCommand } from '../../common/RemoteDevtoolsCommand';
-import { Message } from '../../common/Message';
-import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, TargetDescription } from '../../common/RemoteDevtools';
-import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import { ACTION } from '../../common/Constants';
+import { DevtoolsParams } from '../../types/DevtoolsParams';
+import { RemoteDevtoolsCommand } from '../../types/RemoteDevtoolsCommand';
+import { Message } from '../../types/Message';
+import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, TargetDescription } from '../../types/RemoteDevtools';
+import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
 import { BaseDeviceTracker } from './BaseDeviceTracker';
 
 const FRONTEND_RE = /^https?:\/\/chrome-devtools-frontend\.appspot\.com\/serve_rev\/(@.*)/;
@@ -340,6 +340,7 @@ export class DevtoolsClient extends ManagerClient<never> {
     public static createEntryForDeviceList(
         descriptor: DroidDeviceDescriptor,
         blockClass: string,
+        url?: { secure: boolean; hostname: string; port: string | number },
     ): HTMLElement | DocumentFragment | undefined {
         if (descriptor.state !== 'device') {
             return;
@@ -353,6 +354,7 @@ export class DevtoolsClient extends ManagerClient<never> {
                     udid: descriptor.udid,
                 },
                 'devtools',
+                url,
             ),
         );
         return entry;

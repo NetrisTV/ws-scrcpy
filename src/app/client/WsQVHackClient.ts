@@ -1,6 +1,6 @@
 import { ManagerClient } from './ManagerClient';
-import QVHackDeviceDescriptor from '../../common/QVHackDeviceDescriptor';
-import { MessageRunWda } from '../../common/MessageRunWda';
+import QVHackDeviceDescriptor from '../../types/QVHackDeviceDescriptor';
+import { MessageRunWda } from '../../types/MessageRunWda';
 
 const SERVER_PORT = 8080;
 const SERVER_HOST = location.hostname;

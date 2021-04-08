@@ -1,5 +1,5 @@
 import { BaseDeviceTracker, MapItem } from './BaseDeviceTracker';
-import QVHackDeviceDescriptor from '../../common/QVHackDeviceDescriptor';
+import QVHackDeviceDescriptor from '../../types/QVHackDeviceDescriptor';
 import { StreamClientQVHack } from './StreamClientQVHack';
 
 const SERVER_PORT = 8080;
@@ -40,6 +40,7 @@ export class DeviceTrackerQVHack extends BaseDeviceTracker<QVHackDeviceDescripto
         super(action);
         this.setBodyClass('list');
         this.setTitle('Device list');
+        this.openNewWebSocket();
     }
 
     protected onSocketOpen(): void {

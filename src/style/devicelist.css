@@ -219,3 +219,9 @@ body.list #device_list_menu {
 #devices .device-list .device.active div.desc-block button.action-button:hover > svg > path {
     fill: var(--kill-button-hover-color);
 }
+
+#devices .tracker-name {
+    padding: 5px 20px 5px;
+    font-size: larger;
+    font-weight: bolder;
+}

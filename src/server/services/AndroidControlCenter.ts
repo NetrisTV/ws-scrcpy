@@ -1,20 +1,19 @@
 import { TrackerChangeSet } from '@devicefarmer/adbkit/lib/TrackerChangeSet';
 import { Device } from '../android/Device';
-import { TypedEmitter } from '../../app/TypedEmitter';
 import { Service } from './Service';
 import AdbKitClient from '@devicefarmer/adbkit/lib/adb/client';
 import AdbKit from '@devicefarmer/adbkit';
-import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
 import Tracker from '@devicefarmer/adbkit/lib/adb/tracker';
 import Timeout = NodeJS.Timeout;
+import { ControlCenter } from './ControlCenter';
+import { ControlCenterCommand } from '../../common/ControlCenterCommand';
+import * as os from 'os';
+import * as crypto from 'crypto';
 
-export interface AndroidDeviceTrackerEvents {
-    device: DroidDeviceDescriptor;
-}
-
-export class AndroidDeviceTracker extends TypedEmitter<AndroidDeviceTrackerEvents> implements Service {
+export class AndroidControlCenter extends ControlCenter<DroidDeviceDescriptor> implements Service {
     private static readonly defaultWaitAfterError = 1000;
-    private static instance?: AndroidDeviceTracker;
+    private static instance?: AndroidControlCenter;
 
     private initialized = false;
     private client: AdbKitClient = AdbKit.createClient();
@@ -23,20 +22,23 @@ export class AndroidDeviceTracker extends TypedEmitter<AndroidDeviceTrackerEvent
     private restartTimeoutId?: Timeout;
     private deviceMap: Map<string, Device> = new Map();
     private descriptors: Map<string, DroidDeviceDescriptor> = new Map();
+    private readonly id: string;
 
     protected constructor() {
         super();
+        const idString = `android|${os.hostname()}|${os.uptime()}`;
+        this.id = crypto.createHash('md5').update(idString).digest('hex');
     }
 
-    public static getInstance(): AndroidDeviceTracker {
+    public static getInstance(): AndroidControlCenter {
         if (!this.instance) {
-            this.instance = new AndroidDeviceTracker();
+            this.instance = new AndroidControlCenter();
         }
         return this.instance;
     }
 
     public static hasInstance(): boolean {
-        return !!AndroidDeviceTracker.instance;
+        return !!AndroidControlCenter.instance;
     }
 
     private restartTracker = (): void => {
@@ -52,7 +54,7 @@ export class AndroidDeviceTracker extends TypedEmitter<AndroidDeviceTrackerEvent
     };
 
     private onChangeSet = (changes: TrackerChangeSet): void => {
-        this.waitAfterError = AndroidDeviceTracker.defaultWaitAfterError;
+        this.waitAfterError = AndroidControlCenter.defaultWaitAfterError;
         if (changes.added.length) {
             for (const item of changes.added) {
                 const { id, type } = item;
@@ -134,8 +136,12 @@ export class AndroidDeviceTracker extends TypedEmitter<AndroidDeviceTrackerEvent
         return this.deviceMap.get(udid);
     }
 
+    public getId(): string {
+        return this.id;
+    }
+
     public getName(): string {
-        return `Android Device Tracker`;
+        return `Android Device Tracker [${os.hostname()}]`;
     }
 
     public start(): void {
@@ -146,5 +152,28 @@ export class AndroidDeviceTracker extends TypedEmitter<AndroidDeviceTrackerEvent
 
     public release(): void {
         this.stopTracker();
+    }
+
+    public async runCommand(command: ControlCenterCommand): Promise<void> {
+        const udid = command.getUdid();
+        const device = this.getDevice(udid);
+        if (!device) {
+            console.error(`Device with udid:"${udid}" not found`);
+            return;
+        }
+        const type = command.getType();
+        switch (type) {
+            case ControlCenterCommand.KILL_SERVER:
+                await device.killServer(command.getPid());
+                return;
+            case ControlCenterCommand.START_SERVER:
+                await device.startServer();
+                return;
+            case ControlCenterCommand.UPDATE_INTERFACES:
+                await device.updateInterfaces();
+                return;
+            default:
+                throw new Error(`Unsupported command: "${type}"`);
+        }
     }
 }

@@ -1,5 +1,5 @@
 import { BaseClient } from './BaseClient';
-import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
+import { ScrcpyStreamParams } from '../../types/ScrcpyStreamParams';
 import { DroidMoreBox } from '../toolbox/DroidMoreBox';
 import { DroidToolBox } from '../toolbox/DroidToolBox';
 import VideoSettings from '../VideoSettings';
@@ -13,14 +13,16 @@ import DragAndPushLogger from '../DragAndPushLogger';
 import { KeyEventListener, KeyInputHandler } from '../KeyInputHandler';
 import { KeyCodeControlMessage } from '../controlMessage/KeyCodeControlMessage';
 import { BasePlayer, PlayerClass } from '../player/BasePlayer';
-import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
 import { ConfigureScrcpy, ConfigureScrcpyOptions } from './ConfigureScrcpy';
 import { DeviceTrackerDroid } from './DeviceTrackerDroid';
-import { DeviceTrackerCommand } from '../../common/DeviceTrackerCommand';
+import { ControlCenterCommand } from '../../common/ControlCenterCommand';
 import { html } from '../ui/HtmlTag';
 import { FeaturedTouchHandler, TouchHandlerListener } from '../touchHandler/FeaturedTouchHandler';
 import DeviceMessage from '../DeviceMessage';
 import { DisplayInfo } from '../DisplayInfo';
+import { Attribute } from '../Attribute';
+import { HostTracker } from './HostTracker';
 
 type StartParams = {
     udid: string;
@@ -29,14 +31,11 @@ type StartParams = {
     videoSettings?: VideoSettings;
 };
 
-const ATTRIBUTE_UDID = 'data-udid';
-const ATTRIBUTE_COMMAND = 'data-command';
 const TAG = '[StreamClientScrcpy]';
 
 export class StreamClientScrcpy extends BaseClient<never> implements KeyEventListener, TouchHandlerListener {
     public static ACTION: ScrcpyStreamParams['action'] = 'stream';
     private static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
-    private static configureDialog?: ConfigureScrcpy;
 
     private controlButtons?: HTMLElement;
     private deviceName = '';
@@ -87,8 +86,8 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     }
 
     // TODO: remove deprecated method
-    public static createFromParam({ udid, player, decoder, ip, port, query }: ScrcpyStreamParams): StreamClientScrcpy {
-        const streamReceiver = new StreamReceiver(ip, port, query);
+    public static createFromParam({ udid, player, decoder, ws }: ScrcpyStreamParams): StreamClientScrcpy {
+        const streamReceiver = new StreamReceiver(ws);
         const playerName: string = typeof player === 'string' ? player : (decoder as string);
         const client = new StreamClientScrcpy(streamReceiver);
         client.startStream({ udid, playerName });
@@ -371,14 +370,18 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     public static createEntryForDeviceList(
         descriptor: DroidDeviceDescriptor,
         blockClass: string,
+        url: string,
+        fullName: string,
     ): HTMLElement | DocumentFragment | undefined {
         const hasPid = descriptor.pid !== -1;
         if (hasPid) {
             const configureButtonId = `configure_${Util.escapeUdid(descriptor.udid)}`;
             const e = html`<div class="stream ${blockClass}">
                 <button
-                    ${ATTRIBUTE_UDID}="${descriptor.udid}"
-                    ${ATTRIBUTE_COMMAND}="${DeviceTrackerCommand.CONFIGURE_STREAM}"
+                    ${Attribute.UDID}="${descriptor.udid}"
+                    ${Attribute.COMMAND}="${ControlCenterCommand.CONFIGURE_STREAM}"
+                    ${Attribute.FULL_NAME}="${fullName}"
+                    ${Attribute.URL}="${url}"
                     id="${configureButtonId}"
                     class="active action-button"
                 >
@@ -394,49 +397,43 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
     private static onConfigureStreamClick = (e: MouseEvent): void => {
         const button = e.currentTarget as HTMLAnchorElement;
-        const udid = button.getAttribute(ATTRIBUTE_UDID);
-        if (!udid) {
+        const udid = button.getAttribute(Attribute.UDID);
+        const fullName = button.getAttribute(Attribute.FULL_NAME);
+        const trackerUrl = button.getAttribute(Attribute.URL);
+        if (!udid || !trackerUrl) {
             return;
         }
-        const tracker = DeviceTrackerDroid.getInstance();
+        const tracker = DeviceTrackerDroid.getInstanceByUrl(trackerUrl);
         const descriptor = tracker.getDescriptorByUdid(udid);
         if (!descriptor) {
             return;
         }
         e.preventDefault();
         const elements = document.getElementsByName(
-            `${DeviceTrackerDroid.AttributePrefixInterfaceSelectFor}${Util.escapeUdid(udid)}`,
+            `${DeviceTrackerDroid.AttributePrefixInterfaceSelectFor}${fullName}`,
         );
         if (!elements || !elements.length) {
             return;
         }
         const select = elements[0] as HTMLSelectElement;
         const optionElement = select.options[select.selectedIndex];
-        const port = optionElement.getAttribute('data-port');
-        const name = optionElement.getAttribute('data-name');
-        const ipv4 = optionElement.getAttribute('value');
-        const query = optionElement.getAttribute('data-query') || undefined;
-        if (!port || !ipv4 || !name) {
+        const url = optionElement.getAttribute(Attribute.URL);
+        const name = optionElement.getAttribute(Attribute.NAME);
+        if (!url || !name) {
             return;
         }
         const options: ConfigureScrcpyOptions = {
-            port,
             name,
-            ipv4,
-            query,
+            ws: url,
         };
-        const dialog = new ConfigureScrcpy(descriptor, options);
+        const dialog = new ConfigureScrcpy(tracker, descriptor, options);
         dialog.on('closed', StreamClientScrcpy.onConfigureDialogClosed);
-        StreamClientScrcpy.configureDialog = dialog;
     };
 
-    private static onConfigureDialogClosed = (success: boolean): void => {
-        StreamClientScrcpy.configureDialog?.off('closed', StreamClientScrcpy.onConfigureDialogClosed);
-        StreamClientScrcpy.configureDialog = undefined;
-        if (success) {
-            const tracker = DeviceTrackerDroid.getInstance();
-            tracker?.destroy();
-            return;
+    private static onConfigureDialogClosed = (event: { dialog: ConfigureScrcpy; result: boolean }): void => {
+        event.dialog.off('closed', StreamClientScrcpy.onConfigureDialogClosed);
+        if (event.result) {
+            HostTracker.getInstance().destroy();
         }
     };
 }

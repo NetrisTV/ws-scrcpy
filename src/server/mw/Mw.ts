@@ -1,4 +1,4 @@
-import { Message } from '../../common/Message';
+import { Message } from '../../types/Message';
 import WebSocket from 'ws';
 import * as http from 'http';
 import * as querystring from 'querystring';

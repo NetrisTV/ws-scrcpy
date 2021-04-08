@@ -1,5 +1,5 @@
 import { ParsedUrlQueryInput } from 'querystring';
-import { ACTION } from '../server/Constants';
+import { ACTION } from '../common/Constants';
 
 export interface DevtoolsParams extends ParsedUrlQueryInput {
     action: ACTION.DEVTOOLS;

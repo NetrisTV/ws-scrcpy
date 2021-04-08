@@ -2,9 +2,9 @@ import AdbKit from '@devicefarmer/adbkit';
 import AdbKitClient from '@devicefarmer/adbkit/lib/adb/client';
 import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
 import { spawn } from 'child_process';
-import { NetInterface } from '../../common/NetInterface';
+import { NetInterface } from '../../types/NetInterface';
 import { TypedEmitter } from '../../app/TypedEmitter';
-import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
 import { ScrcpyServer } from './ScrcpyServer';
 import { Properties } from './Properties';
 import Timeout = NodeJS.Timeout;
@@ -442,6 +442,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
             this.emitUpdate();
         } catch (e) {
             console.error(this.TAG, `Error: ${e.message}`);
+            throw e;
         }
     }
 
@@ -459,7 +460,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
             return this.getServerPid();
         } catch (e) {
             console.error(this.TAG, `Error: ${e.message}`);
+            throw e;
         }
-        return;
     }
 }

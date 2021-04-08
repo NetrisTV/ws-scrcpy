@@ -1,5 +1,5 @@
 import { BaseClient } from './BaseClient';
-import { QVHackStreamParams } from '../../common/QVHackStreamParams';
+import { QVHackStreamParams } from '../../types/QVHackStreamParams';
 import { QVHackMoreBox } from '../toolbox/QVHackMoreBox';
 import { QVHackToolBox } from '../toolbox/QVHackToolBox';
 import WdaConnection from '../WdaConnection';
@@ -11,6 +11,7 @@ import Position from '../Position';
 import { MsePlayerForQVHack } from '../player/MsePlayerForQVHack';
 import { BasePlayer } from '../player/BasePlayer';
 import { SimpleTouchHandler, TouchHandlerListener } from '../touchHandler/SimpleTouchHandler';
+import Url from 'url';
 
 const ACTION = 'stream-qvh';
 const PORT = 8080;
@@ -40,7 +41,15 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
         } else {
             udid = encodeURIComponent(udid);
         }
-        this.streamReceiver = new StreamReceiver(location.hostname, PORT, '/ws', `?stream=${udid}`);
+        const url = Url.format({
+            protocol: 'ws:',
+            hostname: location.hostname,
+            port: PORT,
+            pathname: '/ws',
+            slashes: true,
+            search: `stream=${udid}`,
+        });
+        this.streamReceiver = new StreamReceiver(url);
         this.startStream(params.udid, `ws://${params.ip}:${params.port}/ws?stream=${udid}`);
         this.setBodyClass('stream');
         this.setTitle(`${params.udid} stream`);

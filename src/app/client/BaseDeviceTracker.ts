@@ -1,11 +1,13 @@
 import * as querystring from 'querystring';
 import { ManagerClient } from './ManagerClient';
-import { Message } from '../../common/Message';
-import { ShellParams } from '../../common/ShellParams';
-import { ScrcpyStreamParams } from '../../common/ScrcpyStreamParams';
-import { QVHackStreamParams } from '../../common/QVHackStreamParams';
-import { DevtoolsParams } from '../../common/DevtoolsParams';
-import { BaseDeviceDescriptor } from '../../common/BaseDeviceDescriptor';
+import { Message } from '../../types/Message';
+import { ShellParams } from '../../types/ShellParams';
+import { ScrcpyStreamParams } from '../../types/ScrcpyStreamParams';
+import { QVHackStreamParams } from '../../types/QVHackStreamParams';
+import { DevtoolsParams } from '../../types/DevtoolsParams';
+import { BaseDeviceDescriptor } from '../../types/BaseDeviceDescriptor';
+import { DeviceTrackerEvent } from '../../types/DeviceTrackerEvent';
+import { DeviceTrackerEventList } from '../../types/DeviceTrackerEventList';
 
 export type MapItem<T> = {
     field?: keyof T;
@@ -21,12 +23,13 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
     protected title = 'Device list';
     protected tableId = 'droid_device_list';
     protected descriptors: T[] = [];
+    protected hostName = '';
+    protected id = '';
 
     protected constructor(action: string) {
         super(action);
         this.setBodyClass('list');
         this.setTitle();
-        this.openNewWebSocket();
     }
 
     protected abstract buildDeviceTable(): void;
@@ -48,17 +51,36 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
             return;
         }
         switch (message.type) {
-            case BaseDeviceTracker.ACTION_LIST:
-                this.descriptors = message.data as T[];
+            case BaseDeviceTracker.ACTION_LIST: {
+                const event = message.data as DeviceTrackerEventList<T>;
+                this.descriptors = event.list;
+                this.setIdAndHostName(event.id, event.name);
                 this.buildDeviceTable();
                 break;
-            case BaseDeviceTracker.ACTION_DEVICE:
-                this.updateDescriptor(message.data as T);
+            }
+            case BaseDeviceTracker.ACTION_DEVICE: {
+                const event = message.data as DeviceTrackerEvent<T>;
+                this.setIdAndHostName(event.id, event.name);
+                this.updateDescriptor(event.device);
                 this.buildDeviceTable();
                 break;
+            }
             default:
                 console.log(TAG, `Unknown message type: ${message.type}`);
         }
+    }
+
+    protected setIdAndHostName(id: string, hostName: string): void {
+        if (this.id === id && this.hostName === hostName) {
+            return;
+        }
+        this.removeList();
+        this.id = id;
+        this.hostName = hostName;
+    }
+
+    protected removeList(): void {
+        throw new Error(`${TAG}. removeList() not implemented`);
     }
 
     protected getOrCreateTableHolder(): HTMLElement {
@@ -108,10 +130,16 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
     public static buildLink(
         q: ScrcpyStreamParams | DevtoolsParams | ShellParams | QVHackStreamParams,
         text: string,
+        url?: { secure: boolean; hostname: string; port: string | number },
     ): HTMLAnchorElement {
         const hash = `#!${querystring.encode(q)}`;
         const a = document.createElement('a');
-        a.setAttribute('href', `${location.origin}${location.pathname}${hash}`);
+        if (url) {
+            const protocol = url.secure ? 'https' : 'http';
+            a.setAttribute('href', `${protocol}://${url.hostname}:${url.port}/${hash}`);
+        } else {
+            a.setAttribute('href', `${location.origin}${location.pathname}${hash}`);
+        }
         a.setAttribute('rel', 'noopener noreferrer');
         a.setAttribute('target', '_blank');
         a.classList.add(`link-${q.action}`);
@@ -126,13 +154,5 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         return this.descriptors.find((descriptor: T) => {
             return descriptor.udid === udid;
         });
-    }
-
-    public destroy(): void {
-        super.destroy();
-        const holder = document.getElementById(BaseDeviceTracker.HOLDER_ELEMENT_ID);
-        if (holder && holder.parentElement) {
-            holder.parentElement.removeChild(holder);
-        }
     }
 }

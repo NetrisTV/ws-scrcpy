@@ -2,7 +2,7 @@ import '../../../vendor/Genymobile/scrcpy/scrcpy-server.jar';
 import '../../../vendor/Genymobile/scrcpy/LICENSE.txt';
 
 import { Device } from './Device';
-import { ARGS_STRING, SERVER_PACKAGE, SERVER_PROCESS_NAME, SERVER_VERSION } from '../Constants';
+import { ARGS_STRING, SERVER_PACKAGE, SERVER_PROCESS_NAME, SERVER_VERSION } from '../../common/Constants';
 import path from 'path';
 import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
 import { ServerVersion } from './ServerVersion';

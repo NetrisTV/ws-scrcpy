@@ -2,14 +2,28 @@ import * as readline from 'readline';
 import { HttpServer } from './services/HttpServer';
 import { WebSocketServer } from './services/WebSocketServer';
 import { Service, ServiceClass } from './services/Service';
-import { AndroidDeviceTracker } from './services/AndroidDeviceTracker';
+import { AndroidControlCenter } from './services/AndroidControlCenter';
 import { DeviceTracker } from './mw/DeviceTracker';
 import { MwFactory } from './mw/Mw';
 import { RemoteShell } from './mw/RemoteShell';
 import { WebsocketProxy } from './mw/WebsocketProxy';
 import { RemoteDevtools } from './mw/RemoteDevtools';
+import { Config } from './Config';
+import { HostTracker } from './mw/HostTracker';
+import { defaultAndroidHostConfiguration } from './default/AndroidHostConfiguration';
 
-const servicesToStart: ServiceClass[] = [HttpServer, WebSocketServer, AndroidDeviceTracker];
+const config = Config.getInstance(defaultAndroidHostConfiguration);
+const servicesToStart: ServiceClass[] = [HttpServer, WebSocketServer];
+const mwList: MwFactory[] = [HostTracker, WebsocketProxy];
+
+if (config.isLocalAndroidTrackerEnabled()) {
+    servicesToStart.push(AndroidControlCenter);
+
+    mwList.push(DeviceTracker);
+    mwList.push(RemoteShell);
+    mwList.push(RemoteDevtools);
+}
+
 const runningServices: Service[] = [];
 
 servicesToStart.forEach((serviceClass: ServiceClass) => {
@@ -18,7 +32,6 @@ servicesToStart.forEach((serviceClass: ServiceClass) => {
     service.start();
 });
 
-const mwList: MwFactory[] = [DeviceTracker, RemoteShell, WebsocketProxy, RemoteDevtools];
 const wsService = WebSocketServer.getInstance();
 mwList.forEach((mwFactory: MwFactory) => {
     wsService.registerMw(mwFactory);

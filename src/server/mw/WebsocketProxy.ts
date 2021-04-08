@@ -1,7 +1,7 @@
 import { Mw, RequestParameters } from './Mw';
 import { AdbUtils } from '../AdbUtils';
 import WebSocket from 'ws';
-import { ACTION } from '../Constants';
+import { ACTION } from '../../common/Constants';
 
 export class WebsocketProxy extends Mw {
     public static readonly TAG = 'WebsocketProxy';

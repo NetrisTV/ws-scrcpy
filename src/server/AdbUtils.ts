@@ -1,7 +1,7 @@
 import * as portfinder from 'portfinder';
 import * as http from 'http';
 import Adb from '@devicefarmer/adbkit/lib/adb';
-import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, VersionMetadata } from '../common/RemoteDevtools';
+import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, VersionMetadata } from '../types/RemoteDevtools';
 import { URL } from 'url';
 import { Forward } from '@devicefarmer/adbkit/lib/Forward';
 

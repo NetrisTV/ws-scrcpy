@@ -29,7 +29,7 @@ export abstract class ManagerClient<T> extends BaseClient<T> {
         return this.ws;
     }
 
-    protected destroy(): void {
+    public destroy(): void {
         if (this.ws) {
             this.ws.onopen = null;
             this.ws.onmessage = null;

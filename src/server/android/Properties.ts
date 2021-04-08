@@ -1,4 +1,4 @@
-import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
 
 export const Properties: ReadonlyArray<keyof DroidDeviceDescriptor> = [
     'ro.product.cpu.abi',

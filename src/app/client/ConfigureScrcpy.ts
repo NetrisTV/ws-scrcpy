@@ -1,5 +1,5 @@
 import '../../style/dialog.css';
-import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
 import { DisplayCombinedInfo, StreamReceiver } from './StreamReceiver';
 import VideoSettings from '../VideoSettings';
 import { BaseClient } from './BaseClient';
@@ -11,16 +11,16 @@ import { ToolBoxButton } from '../toolbox/ToolBoxButton';
 import SvgImage from '../ui/SvgImage';
 import { PlayerClass } from '../player/BasePlayer';
 import { ToolBoxCheckbox } from '../toolbox/ToolBoxCheckbox';
+import { DeviceTrackerDroid } from './DeviceTrackerDroid';
+import { Attribute } from '../Attribute';
 
 export type ConfigureScrcpyOptions = {
     name: string;
-    query?: string;
-    port: string;
-    ipv4: string;
+    ws: string;
 };
 
 interface ConfigureScrcpyEvents {
-    closed: boolean;
+    closed: { dialog: ConfigureScrcpy; result: boolean };
 }
 
 type Range = {
@@ -30,17 +30,13 @@ type Range = {
     formatter?: (value: number) => string;
 };
 
-const ATTRIBUTE_VALUE = 'data-value';
-
 export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private readonly TAG: string;
     private readonly udid: string;
     private readonly escapedUdid: string;
     private readonly playerStorageKey: string;
     private deviceName: string;
-    private ipv4: string;
-    private query?: string;
-    private port: string;
+    private url: string;
     private streamReceiver?: StreamReceiver;
     private playerName?: string;
     private displayInfo?: DisplayInfo;
@@ -59,19 +55,25 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private statusText = '';
     private connectionCount = 0;
 
-    constructor(descriptor: DroidDeviceDescriptor, options: ConfigureScrcpyOptions) {
+    constructor(
+        private readonly tracker: DeviceTrackerDroid,
+        descriptor: DroidDeviceDescriptor,
+        options: ConfigureScrcpyOptions,
+    ) {
         super();
         this.udid = descriptor.udid;
         this.escapedUdid = Util.escapeUdid(this.udid);
         this.playerStorageKey = `configure_stream::${this.escapedUdid}::player`;
         this.deviceName = descriptor['ro.product.model'];
-        this.ipv4 = options.ipv4;
-        this.query = options.query;
-        this.port = options.port;
+        this.url = options.ws;
         this.TAG = `ConfigureScrcpy[${this.udid}]`;
         this.createStreamReceiver();
         this.setTitle(`${this.deviceName}. Configure stream`);
         this.background = this.createUI();
+    }
+
+    public getTracker(): DeviceTrackerDroid {
+        return this.tracker;
     }
 
     private createStreamReceiver(): void {
@@ -79,7 +81,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
             this.detachEventsListeners(this.streamReceiver);
             this.streamReceiver.stop();
         }
-        this.streamReceiver = new StreamReceiver(this.ipv4, this.port, this.query);
+        this.streamReceiver = new StreamReceiver(this.url);
         this.attachEventsListeners(this.streamReceiver);
     }
 
@@ -281,20 +283,20 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         }
         heightInput.disabled = widthInput.disabled = checked;
         if (checked) {
-            heightInput.setAttribute(ATTRIBUTE_VALUE, heightInput.value);
+            heightInput.setAttribute(Attribute.VALUE, heightInput.value);
             heightInput.value = '';
-            widthInput.setAttribute(ATTRIBUTE_VALUE, widthInput.value);
+            widthInput.setAttribute(Attribute.VALUE, widthInput.value);
             widthInput.value = '';
         } else {
-            const storedHeight = heightInput.getAttribute(ATTRIBUTE_VALUE);
+            const storedHeight = heightInput.getAttribute(Attribute.VALUE);
             if (typeof storedHeight === 'string') {
                 heightInput.value = storedHeight;
-                heightInput.removeAttribute(ATTRIBUTE_VALUE);
+                heightInput.removeAttribute(Attribute.VALUE);
             }
-            const storedWidth = widthInput.getAttribute(ATTRIBUTE_VALUE);
+            const storedWidth = widthInput.getAttribute(Attribute.VALUE);
             if (typeof storedWidth === 'string') {
                 widthInput.value = storedWidth;
-                widthInput.removeAttribute(ATTRIBUTE_VALUE);
+                widthInput.removeAttribute(Attribute.VALUE);
             }
         }
     }
@@ -598,7 +600,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
             this.detachEventsListeners(this.streamReceiver);
             this.streamReceiver.stop();
         }
-        this.emit('closed', false);
+        this.emit('closed', { dialog: this, result: false });
         this.removeUI();
     };
 
@@ -629,7 +631,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         }
         const fitToScreen = this.getFitToScreenValue();
         this.detachEventsListeners(this.streamReceiver);
-        this.emit('closed', true);
+        this.emit('closed', { dialog: this, result: true });
         this.removeUI();
         const player = StreamClientScrcpy.createPlayer(this.playerName, this.udid, this.displayInfo);
         if (!player) {

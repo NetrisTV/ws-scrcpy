@@ -44,12 +44,7 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     private readonly videoSettingsMap: Map<number, VideoSettings> = new Map();
     private hasInitialInfo = false;
 
-    constructor(
-        private readonly host: string,
-        private readonly port: number | string,
-        private readonly path = '/',
-        private readonly query = '',
-    ) {
+    constructor(private readonly url: string) {
         super();
         this.openNewWebSocket();
         (this.ws as WebSocket).binaryType = 'arraybuffer';
@@ -199,8 +194,6 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     }
 
     protected buildWebSocketUrl(): string {
-        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        const query = this.query ? this.query : this.action ? `?action=${this.action}` : '';
-        return `${proto}://${this.host}:${this.port}${this.path}${query}`;
+        return this.url;
     }
 }

@@ -3,10 +3,10 @@ import { ManagerClient } from './ManagerClient';
 import { Terminal } from 'xterm';
 import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
-import { MessageXtermClient } from '../../common/MessageXtermClient';
-import { ACTION } from '../../server/Constants';
-import { ShellParams } from '../../common/ShellParams';
-import DroidDeviceDescriptor from '../../common/DroidDeviceDescriptor';
+import { MessageXtermClient } from '../../types/MessageXtermClient';
+import { ACTION } from '../../common/Constants';
+import { ShellParams } from '../../types/ShellParams';
+import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
 import { BaseDeviceTracker } from './BaseDeviceTracker';
 import Util from '../Util';
 
@@ -101,6 +101,7 @@ export class ShellClient extends ManagerClient<never> {
     public static createEntryForDeviceList(
         descriptor: DroidDeviceDescriptor,
         blockClass: string,
+        url?: { secure: boolean; hostname: string; port: string | number },
     ): HTMLElement | DocumentFragment | undefined {
         if (descriptor.state !== 'device') {
             return;
@@ -114,6 +115,7 @@ export class ShellClient extends ManagerClient<never> {
                     udid: descriptor.udid,
                 },
                 'shell',
+                url,
             ),
         );
         return entry;
