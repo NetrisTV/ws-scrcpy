@@ -138,8 +138,8 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
             return;
         }
         const body = document.body;
-        const width = (body.clientWidth - controlButtons.clientWidth) & ~15;
-        const height = body.clientHeight & ~15;
+        const width = (body.clientWidth - controlButtons.clientWidth) & ~7;
+        const height = body.clientHeight & ~7;
         return new Size(width, height);
     }
 

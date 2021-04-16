@@ -344,8 +344,8 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
             return;
         }
         const body = document.body;
-        const width = (body.clientWidth - this.controlButtons.clientWidth) & ~15;
-        const height = body.clientHeight & ~15;
+        const width = (body.clientWidth - this.controlButtons.clientWidth) & ~7;
+        const height = body.clientHeight & ~7;
         return new Size(width, height);
     }
 

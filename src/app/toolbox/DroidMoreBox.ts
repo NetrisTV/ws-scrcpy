@@ -146,8 +146,8 @@ export class DroidMoreBox {
                         if (isNaN(bitrate) || isNaN(maxFps)) {
                             return;
                         }
-                        const width = parseInt(maxWidthInput.value, 10) & ~15;
-                        const height = parseInt(maxHeightInput.value, 10) & ~15;
+                        const width = parseInt(maxWidthInput.value, 10) & ~7;
+                        const height = parseInt(maxHeightInput.value, 10) & ~7;
                         const bounds = new Size(width, height);
                         const current = player.getVideoSettings();
                         const { lockedVideoOrientation, sendFrameMeta, displayId, codecOptions, encoderName } = current;
