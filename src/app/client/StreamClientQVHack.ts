@@ -11,48 +11,61 @@ import Position from '../Position';
 import { MsePlayerForQVHack } from '../player/MsePlayerForQVHack';
 import { BasePlayer } from '../player/BasePlayer';
 import { SimpleTouchHandler, TouchHandlerListener } from '../touchHandler/SimpleTouchHandler';
-import Url from 'url';
+import { ACTION } from '../../common/Action';
 
-const ACTION = 'stream-qvh';
-const PORT = 8080;
 const WAIT_CLASS = 'wait';
 
 const TAG = '[StreamClientQVHack]';
 
 export class StreamClientQVHack extends BaseClient<never> implements TouchHandlerListener {
-    public static ACTION: QVHackStreamParams['action'] = ACTION;
+    public static ACTION = ACTION.STREAM_WS_QVH;
     private deviceName = '';
-    private managerClient = new WsQVHackClient();
+    private managerClient: WsQVHackClient;
     private wdaConnection = new WdaConnection();
-    private readonly udid: string;
-    private wdaUrl?: string;
+    private waitForWda?: boolean;
     private readonly streamReceiver: StreamReceiver;
     private videoWrapper?: HTMLElement;
     private touchHandler?: SimpleTouchHandler;
 
-    constructor(params: QVHackStreamParams) {
-        super();
-        let udid = (this.udid = params.udid);
-
+    public static createFromParam(params: QVHackStreamParams): StreamClientQVHack {
+        let udid = params.udid;
         // Workaround for qvh v0.5-beta
         if (udid.indexOf('-') !== -1) {
             udid = udid.replace('-', '');
-            udid = encodeURIComponent(udid) + '%00'.repeat(16);
-        } else {
-            udid = encodeURIComponent(udid);
+            udid = udid + '\0'.repeat(16);
         }
-        const url = Url.format({
-            protocol: 'ws:',
-            hostname: location.hostname,
-            port: PORT,
-            pathname: '/ws',
-            slashes: true,
-            search: `stream=${udid}`,
-        });
-        this.streamReceiver = new StreamReceiver(url);
-        this.startStream(params.udid, `ws://${params.ip}:${params.port}/ws?stream=${udid}`);
+        const streamReceiver = new StreamReceiver(this.buildWebSocketUrl(ACTION.STREAM_WS_QVH, udid));
+        const wsQVHackClient = new WsQVHackClient(this.buildWebSocketUrl(ACTION.PROXY_WDA, params.udid));
+        const client = new StreamClientQVHack(streamReceiver, wsQVHackClient, params.udid);
+        client.startStream(params.udid);
+        client.setTitle(`${params.udid} stream`);
+        return client;
+    }
+
+    public static buildWebSocketUrl(action: string, udid?: string): string {
+        const secure = location.protocol === 'https:';
+        const proto = secure ? 'wss' : 'ws';
+        const hostname = location.hostname;
+        const path = '/';
+        const search = `?action=${encodeURIComponent(action)}${udid ? `&udid=${encodeURIComponent(udid)}` : ''}`;
+        let port = location.port;
+        if (!port) {
+            if (secure) {
+                port = '443';
+            } else {
+                port = '80';
+            }
+        }
+        return `${proto}://${hostname}:${port}${path}${search}`;
+    }
+
+    constructor(streamReceiver: StreamReceiver, managerClient: WsQVHackClient, private readonly udid: string) {
+        super();
+
+        this.managerClient = managerClient;
+        this.streamReceiver = streamReceiver;
         this.setBodyClass('stream');
-        this.setTitle(`${params.udid} stream`);
+        this.setTitle();
     }
 
     private onViewVideoResize = (): void => {
@@ -63,19 +76,18 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
     };
 
     private runWebDriverAgent() {
-        if (typeof this.wdaUrl === 'string') {
+        if (typeof this.waitForWda === 'boolean') {
             return;
         }
 
-        this.wdaUrl = '';
+        this.waitForWda = true;
         this.managerClient
             .runWebDriverAgent(this.udid)
             .then((response) => {
+                this.waitForWda = false;
                 const data = response.data;
                 if (data.code === 0) {
-                    const url = data.text;
-                    this.wdaUrl = url;
-                    this.wdaConnection.setUrl(url);
+                    this.wdaConnection.setClient(this.managerClient);
                 } else {
                     console.error(TAG, `Failed to run WebDriverAgent. Reason: ${data.text}, code: ${data.code}`);
                 }
@@ -85,7 +97,7 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
             });
     }
 
-    private startStream(udid: string, url: string) {
+    private startStream(udid: string) {
         const player = new MsePlayerForQVHack(udid, MsePlayerForQVHack.createElement(`qvh_video`));
         this.setTouchListeners(player);
         player.pause();
@@ -139,7 +151,6 @@ export class StreamClientQVHack extends BaseClient<never> implements TouchHandle
                 player.pushFrame(new Uint8Array(data));
             }
         });
-        console.log(player.getName(), udid, url);
     }
 
     private static getMaxSize(controlButtons: HTMLElement): Size | undefined {

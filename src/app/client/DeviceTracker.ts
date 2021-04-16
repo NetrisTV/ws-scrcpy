@@ -1,7 +1,8 @@
 import '../../style/devicelist.css';
 import { BaseDeviceTracker } from './BaseDeviceTracker';
-import { ACTION, SERVER_PORT } from '../../common/Constants';
-import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
+import { SERVER_PORT } from '../../common/Constants';
+import { ACTION } from '../../common/Action';
+import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
 import querystring from 'querystring';
 import { ScrcpyStreamParams } from '../../types/ScrcpyStreamParams';
 import { ControlCenterCommand } from '../../common/ControlCenterCommand';
@@ -14,8 +15,10 @@ import Util from '../Util';
 import Url from 'url';
 import { Attribute } from '../Attribute';
 import { HostItem } from '../../types/Configuration';
+import { DeviceState } from '../../common/DeviceState';
+import { Message } from '../../types/Message';
 
-type Field = keyof DroidDeviceDescriptor | ((descriptor: DroidDeviceDescriptor) => string);
+type Field = keyof GoogDeviceDescriptor | ((descriptor: GoogDeviceDescriptor) => string);
 type DescriptionColumn = { title: string; field: Field };
 
 const DESC_COLUMNS: DescriptionColumn[] = [
@@ -29,28 +32,27 @@ const DESC_COLUMNS: DescriptionColumn[] = [
     },
 ];
 
-export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor, never> {
-    public static readonly ACTION = ACTION.DROID_DEVICE_LIST;
+export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never> {
+    public static readonly ACTION = ACTION.GOOG_DEVICE_LIST;
     public static readonly CREATE_DIRECT_LINKS = true;
     public static readonly AttributePrefixInterfaceSelectFor = 'interface_select_for_';
     public static readonly AttributePlayerFullName = 'data-player-full-name';
     public static readonly AttributePlayerCodeName = 'data-player-code-name';
     public static readonly AttributePrefixPlayerFor = 'player_for_';
-    private static instancesByUrl: Map<string, DeviceTrackerDroid> = new Map();
+    private static instancesByUrl: Map<string, DeviceTracker> = new Map();
     private readonly url: string;
-    private created = false;
     private secure: boolean;
     private hostname: string;
     private port: string;
 
-    public static start(itemOrUrl: HostItem | string): DeviceTrackerDroid {
+    public static start(itemOrUrl: HostItem | string): DeviceTracker {
         if (typeof itemOrUrl === 'string') {
             return this.getInstanceByUrl(itemOrUrl);
         }
         return this.getInstance(itemOrUrl);
     }
 
-    public static getInstanceByUrl(url: string): DeviceTrackerDroid {
+    public static getInstanceByUrl(url: string): DeviceTracker {
         let instance = this.instancesByUrl.get(url);
         if (!instance) {
             const parsed = Url.parse(url);
@@ -60,41 +62,28 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
             if (!port) {
                 port = secure ? '443' : '80';
             }
-            instance = new DeviceTrackerDroid({ type: 'android', secure, hostname, port });
+            instance = new DeviceTracker({ type: 'android', secure, hostname, port });
             this.instancesByUrl.set(url, instance);
         }
         return instance;
     }
 
-    public static getInstance(item: HostItem): DeviceTrackerDroid {
+    public static getInstance(item: HostItem): DeviceTracker {
         const url = this.buildUrl(item);
         let instance = this.instancesByUrl.get(url);
         if (!instance) {
-            instance = new DeviceTrackerDroid(item);
+            instance = new DeviceTracker(item);
             this.instancesByUrl.set(url, instance);
         }
         return instance;
     }
 
-    public static buildUrl(item: HostItem): string {
-        const { secure, port, hostname } = item;
-        const protocol = secure ? 'wss:' : 'ws:';
-        return Url.format({
-            protocol,
-            hostname,
-            port,
-            search: `action=${this.ACTION}`,
-            pathname: '/',
-            slashes: true,
-        });
-    }
-
     protected constructor(item: HostItem) {
-        super(DeviceTrackerDroid.ACTION);
+        super(ACTION.GOOG_DEVICE_LIST);
         this.secure = item.secure;
         this.hostname = item.hostname;
         this.port = item.port;
-        this.url = DeviceTrackerDroid.buildUrl(item);
+        this.url = DeviceTracker.buildUrl(item);
         this.openNewWebSocket();
     }
 
@@ -110,7 +99,7 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
 
     protected setIdAndHostName(id: string, hostName: string): void {
         super.setIdAndHostName(id, hostName);
-        for (const value of DeviceTrackerDroid.instancesByUrl.values()) {
+        for (const value of DeviceTracker.instancesByUrl.values()) {
             if (value.id === id && value !== this) {
                 console.warn(
                     `Tracker with url: "${this.url}" has the same id(${this.id}) as tracker with url "${value.url}"`,
@@ -135,7 +124,7 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
 
     onInterfaceSelected = (e: Event): void => {
         const selectElement = e.currentTarget as HTMLSelectElement;
-        DeviceTrackerDroid.updateLink(selectElement, true);
+        DeviceTracker.updateLink(selectElement, true);
     };
 
     private static updateLink(selectElement: HTMLSelectElement, store: boolean): void {
@@ -149,12 +138,12 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
             return;
         }
         if (store) {
-            const localStorageKey = DeviceTrackerDroid.getLocalStorageKey(fullName || '');
+            const localStorageKey = DeviceTracker.getLocalStorageKey(fullName || '');
             if (localStorage && name) {
                 localStorage.setItem(localStorageKey, name);
             }
         }
-        const action = 'stream';
+        const action = ACTION.STREAM_SCRCPY;
         playerTds.forEach((item) => {
             item.innerHTML = '';
             const playerFullName = item.getAttribute(this.AttributePlayerFullName);
@@ -179,13 +168,14 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
         const pidString = button.getAttribute(Attribute.PID) || '';
         const command = button.getAttribute(Attribute.COMMAND) as string;
         const pid = parseInt(pidString, 10);
-        const data: { command: string; udid?: string; pid?: number } = { command };
-        if (typeof udid === 'string') {
-            data.udid = udid;
-        }
-        if (!isNaN(pid)) {
-            data.pid = pid;
-        }
+        const data: Message = {
+            id: this.getNextId(),
+            type: command,
+            data: {
+                udid: typeof udid === 'string' ? udid : undefined,
+                pid: isNaN(pid) ? undefined : pid,
+            },
+        };
 
         if (this.hasConnection()) {
             (this.ws as WebSocket).send(JSON.stringify(data));
@@ -229,61 +219,11 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
         return title.toLowerCase().replace(/\s/g, '_');
     }
 
-    protected getOrBuildTableBody(parent: HTMLElement): Element {
-        const className = 'device-list';
-        let tbody = document.querySelector(`#devices #${this.tableId}.${className}`) as Element;
-        if (!tbody) {
-            const fragment = html`<div id="${this.tableId}" class="${className}"></div>`.content;
-            parent.appendChild(fragment);
-            const last = parent.children.item(parent.children.length - 1);
-            if (last) {
-                tbody = last;
-            }
-        }
-        return tbody;
-    }
-
-    protected buildDeviceTable(): void {
-        const data = this.descriptors;
-        const devices = this.getOrCreateTableHolder();
-        const tbody = this.getOrBuildTableBody(devices);
-
-        const block = this.getOrCreateTrackerBlock(tbody, this.hostName);
-        data.forEach((item) => {
-            this.buildDeviceRow(block, item);
-        });
-    }
-
-    private getOrCreateTrackerBlock(parent: Element, controlCenterName: string): Element {
-        const id = `tracker_${this.id}`;
-        let el = document.getElementById(id);
-        if (!el) {
-            el = document.createElement('div');
-            el.id = id;
-            parent.appendChild(el);
-            this.created = true;
-        } else {
-            while (el.children.length) {
-                el.removeChild(el.children[0]);
-            }
-        }
-        const nameBlockId = `${id}_name`;
-        let nameEl = document.getElementById(nameBlockId);
-        if (!nameEl) {
-            nameEl = document.createElement('div');
-            nameEl.id = nameBlockId;
-            nameEl.className = 'tracker-name';
-        }
-        nameEl.innerText = controlCenterName;
-        el.insertBefore(nameEl, el.firstChild);
-        return el;
-    }
-
-    private buildDeviceRow(tbody: Element, device: DroidDeviceDescriptor): void {
+    protected buildDeviceRow(tbody: Element, device: GoogDeviceDescriptor): void {
         const blockClass = 'desc-block';
         const fullName = `${this.id}_${Util.escapeUdid(device.udid)}`;
-        const isActive = device.state === 'device';
-        const localStorageKey = DeviceTrackerDroid.getLocalStorageKey(fullName);
+        const isActive = device.state === DeviceState.DEVICE;
+        const localStorageKey = DeviceTracker.getLocalStorageKey(fullName);
         const lastSelected = localStorage && localStorage.getItem(localStorageKey);
         let hasPid = false;
         let selectInterface: HTMLSelectElement | undefined;
@@ -331,7 +271,7 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                 value = item.field(device);
             }
             const td = document.createElement('div');
-            td.classList.add(DeviceTrackerDroid.titleToClassName(title), blockClass);
+            td.classList.add(DeviceTracker.titleToClassName(title), blockClass);
             services.appendChild(td);
             if (fieldName === 'pid') {
                 hasPid = value !== '-1';
@@ -373,10 +313,10 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                 selectElement.setAttribute(Attribute.FULL_NAME, fullName);
                 selectElement.setAttribute(
                     'name',
-                    encodeURIComponent(`${DeviceTrackerDroid.AttributePrefixInterfaceSelectFor}${fullName}`),
+                    encodeURIComponent(`${DeviceTracker.AttributePrefixInterfaceSelectFor}${fullName}`),
                 );
                 device[fieldName].forEach((value) => {
-                    const optionElement = DeviceTrackerDroid.createInterfaceOption(
+                    const optionElement = DeviceTracker.createInterfaceOption(
                         false,
                         value.ipv4,
                         SERVER_PORT.toString(10),
@@ -393,7 +333,7 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
                     }
                 });
                 if (isActive) {
-                    const adbProxyOption = DeviceTrackerDroid.createInterfaceOption(
+                    const adbProxyOption = DeviceTracker.createInterfaceOption(
                         this.secure,
                         this.hostname,
                         this.port,
@@ -421,22 +361,22 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
             }
         });
 
-        if (DeviceTrackerDroid.CREATE_DIRECT_LINKS) {
-            const name = `${DeviceTrackerDroid.AttributePrefixPlayerFor}${fullName}`;
+        if (DeviceTracker.CREATE_DIRECT_LINKS) {
+            const name = `${DeviceTracker.AttributePrefixPlayerFor}${fullName}`;
             StreamClientScrcpy.getPlayers().forEach((playerClass) => {
                 const { playerCodeName, playerFullName } = playerClass;
                 const playerTd = document.createElement('div');
                 playerTd.classList.add(blockClass);
                 playerTd.setAttribute('name', encodeURIComponent(name));
-                playerTd.setAttribute(DeviceTrackerDroid.AttributePlayerFullName, encodeURIComponent(playerFullName));
-                playerTd.setAttribute(DeviceTrackerDroid.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
+                playerTd.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
+                playerTd.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
                 services.appendChild(playerTd);
             });
         }
 
         tbody.appendChild(row);
-        if (DeviceTrackerDroid.CREATE_DIRECT_LINKS && hasPid && selectInterface) {
-            DeviceTrackerDroid.updateLink(selectInterface, false);
+        if (DeviceTracker.CREATE_DIRECT_LINKS && hasPid && selectInterface) {
+            DeviceTracker.updateLink(selectInterface, false);
         }
     }
 
@@ -446,14 +386,8 @@ export class DeviceTrackerDroid extends BaseDeviceTracker<DroidDeviceDescriptor,
 
     public destroy(): void {
         super.destroy();
-        if (this.created) {
-            const el = document.getElementById(`tracker_${this.id}`);
-            if (el && el.parentElement) {
-                el.parentElement.removeChild(el);
-            }
-        }
-        DeviceTrackerDroid.instancesByUrl.delete(this.url);
-        if (!DeviceTrackerDroid.instancesByUrl.size) {
+        DeviceTracker.instancesByUrl.delete(this.url);
+        if (!DeviceTracker.instancesByUrl.size) {
             const holder = document.getElementById(BaseDeviceTracker.HOLDER_ELEMENT_ID);
             if (holder && holder.parentElement) {
                 holder.parentElement.removeChild(holder);

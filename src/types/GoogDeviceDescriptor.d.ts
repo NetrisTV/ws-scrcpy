@@ -1,7 +1,7 @@
 import { NetInterface } from './NetInterface';
 import { BaseDeviceDescriptor } from './BaseDeviceDescriptor';
 
-export default interface DroidDeviceDescriptor extends BaseDeviceDescriptor {
+export default interface GoogDeviceDescriptor extends BaseDeviceDescriptor {
     'ro.build.version.release': string;
     'ro.build.version.sdk': string;
     'ro.product.cpu.abi': string;

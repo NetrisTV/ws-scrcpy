@@ -1,34 +1,33 @@
 import WebSocket from 'ws';
-import { Mw, RequestParameters } from './Mw';
-import { ControlCenterCommand } from '../../common/ControlCenterCommand';
-import { AndroidControlCenter } from '../services/AndroidControlCenter';
-import { ACTION } from '../../common/Constants';
-import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
-import { DeviceTrackerEvent } from '../../types/DeviceTrackerEvent';
-import { DeviceTrackerEventList } from '../../types/DeviceTrackerEventList';
-import { HostItem } from '../../types/Configuration';
+import { Mw, RequestParameters } from '../../mw/Mw';
+import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
+import { ACTION } from '../../../common/Action';
+import { DeviceTrackerEvent } from '../../../types/DeviceTrackerEvent';
+import { DeviceTrackerEventList } from '../../../types/DeviceTrackerEventList';
+import { HostItem } from '../../../types/Configuration';
+import { ControlCenter } from '../services/ControlCenter';
+import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
 
 export class DeviceTracker extends Mw {
-    public static readonly TAG = 'DeviceTracker';
-    private adt: AndroidControlCenter = AndroidControlCenter.getInstance();
+    public static readonly TAG = 'IosDeviceTracker';
+    private icc: ControlCenter = ControlCenter.getInstance();
     private readonly id: string;
 
     public static processRequest(ws: WebSocket, params: RequestParameters): DeviceTracker | undefined {
-        if (params.parsedQuery?.action !== ACTION.DROID_DEVICE_LIST) {
+        if (params.parsedQuery?.action !== ACTION.APPL_DEVICE_LIST) {
             return;
         }
         return new DeviceTracker(ws);
     }
 
     public static buildHostItem(params: RequestParameters): HostItem {
-        const type = 'android';
+        const type = 'ios';
+        const port = '8000';
         const host = params.request.headers.host || '127.0.0.1';
         const temp = host.split(':');
         let hostname = host;
-        let port = '80';
         if (temp.length > 1) {
             hostname = temp[0];
-            port = temp[1];
         }
         return {
             secure: false,
@@ -41,23 +40,23 @@ export class DeviceTracker extends Mw {
     constructor(ws: WebSocket) {
         super(ws);
 
-        this.id = this.adt.getId();
-        this.adt
+        this.id = this.icc.getId();
+        this.icc
             .init()
             .then(() => {
-                this.adt.on('device', this.sendDeviceMessage);
-                this.buildAndSendMessage(this.adt.getDevices());
+                this.icc.on('device', this.sendDeviceMessage);
+                this.buildAndSendMessage(this.icc.getDevices());
             })
             .catch((e: Error) => {
                 console.error(`[${DeviceTracker.TAG}] Error: ${e.message}`);
             });
     }
 
-    private sendDeviceMessage = (device: DroidDeviceDescriptor): void => {
-        const data: DeviceTrackerEvent<DroidDeviceDescriptor> = {
+    private sendDeviceMessage = (device: ApplDeviceDescriptor): void => {
+        const data: DeviceTrackerEvent<ApplDeviceDescriptor> = {
             device,
             id: this.id,
-            name: this.adt.getName(),
+            name: this.icc.getName(),
         };
         this.sendMessage({
             id: -1,
@@ -66,11 +65,11 @@ export class DeviceTracker extends Mw {
         });
     };
 
-    private buildAndSendMessage = (list: DroidDeviceDescriptor[]): void => {
-        const data: DeviceTrackerEventList<DroidDeviceDescriptor> = {
+    private buildAndSendMessage = (list: ApplDeviceDescriptor[]): void => {
+        const data: DeviceTrackerEventList<ApplDeviceDescriptor> = {
             list,
             id: this.id,
-            name: this.adt.getName(),
+            name: this.icc.getName(),
         };
         this.sendMessage({
             id: -1,
@@ -87,13 +86,13 @@ export class DeviceTracker extends Mw {
             console.error(`[${DeviceTracker.TAG}], Received message: ${event.data}. Error: ${e.message}`);
             return;
         }
-        this.adt.runCommand(command).catch((e) => {
+        this.icc.runCommand(command).catch((e) => {
             console.error(`[${DeviceTracker.TAG}], Received message: ${event.data}. Error: ${e.message}`);
         });
     }
 
     public release(): void {
         super.release();
-        this.adt.off('device', this.sendDeviceMessage);
+        this.icc.off('device', this.sendDeviceMessage);
     }
 }

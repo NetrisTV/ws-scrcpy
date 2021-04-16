@@ -6,7 +6,7 @@ import express, { Express } from 'express';
 
 const proto = 'http';
 const DEFAULT_PORT = 8000;
-const DEFAULT_STATIC_DIR = path.join(__dirname, '../public');
+const DEFAULT_STATIC_DIR = path.join(__dirname, './public');
 
 export class HttpServer implements Service {
     private static instance: HttpServer;

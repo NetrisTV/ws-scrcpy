@@ -1,5 +1,5 @@
 import '../../style/dialog.css';
-import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
+import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
 import { DisplayCombinedInfo, StreamReceiver } from './StreamReceiver';
 import VideoSettings from '../VideoSettings';
 import { BaseClient } from './BaseClient';
@@ -11,7 +11,7 @@ import { ToolBoxButton } from '../toolbox/ToolBoxButton';
 import SvgImage from '../ui/SvgImage';
 import { PlayerClass } from '../player/BasePlayer';
 import { ToolBoxCheckbox } from '../toolbox/ToolBoxCheckbox';
-import { DeviceTrackerDroid } from './DeviceTrackerDroid';
+import { DeviceTracker } from './DeviceTracker';
 import { Attribute } from '../Attribute';
 
 export type ConfigureScrcpyOptions = {
@@ -56,8 +56,8 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private connectionCount = 0;
 
     constructor(
-        private readonly tracker: DeviceTrackerDroid,
-        descriptor: DroidDeviceDescriptor,
+        private readonly tracker: DeviceTracker,
+        descriptor: GoogDeviceDescriptor,
         options: ConfigureScrcpyOptions,
     ) {
         super();
@@ -72,7 +72,7 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         this.background = this.createUI();
     }
 
-    public getTracker(): DeviceTrackerDroid {
+    public getTracker(): DeviceTracker {
         return this.tracker;
     }
 

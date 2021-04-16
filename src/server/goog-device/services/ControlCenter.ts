@@ -1,19 +1,20 @@
 import { TrackerChangeSet } from '@devicefarmer/adbkit/lib/TrackerChangeSet';
-import { Device } from '../android/Device';
-import { Service } from './Service';
+import { Device } from '../Device';
+import { Service } from '../../services/Service';
 import AdbKitClient from '@devicefarmer/adbkit/lib/adb/client';
 import AdbKit from '@devicefarmer/adbkit';
-import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
+import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import Tracker from '@devicefarmer/adbkit/lib/adb/tracker';
 import Timeout = NodeJS.Timeout;
-import { ControlCenter } from './ControlCenter';
-import { ControlCenterCommand } from '../../common/ControlCenterCommand';
+import { BaseControlCenter } from '../../services/BaseControlCenter';
+import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import * as os from 'os';
 import * as crypto from 'crypto';
+import { DeviceState } from '../../../common/DeviceState';
 
-export class AndroidControlCenter extends ControlCenter<DroidDeviceDescriptor> implements Service {
+export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> implements Service {
     private static readonly defaultWaitAfterError = 1000;
-    private static instance?: AndroidControlCenter;
+    private static instance?: ControlCenter;
 
     private initialized = false;
     private client: AdbKitClient = AdbKit.createClient();
@@ -21,24 +22,24 @@ export class AndroidControlCenter extends ControlCenter<DroidDeviceDescriptor> i
     private waitAfterError = 1000;
     private restartTimeoutId?: Timeout;
     private deviceMap: Map<string, Device> = new Map();
-    private descriptors: Map<string, DroidDeviceDescriptor> = new Map();
+    private descriptors: Map<string, GoogDeviceDescriptor> = new Map();
     private readonly id: string;
 
     protected constructor() {
         super();
-        const idString = `android|${os.hostname()}|${os.uptime()}`;
+        const idString = `goog|${os.hostname()}|${os.uptime()}`;
         this.id = crypto.createHash('md5').update(idString).digest('hex');
     }
 
-    public static getInstance(): AndroidControlCenter {
+    public static getInstance(): ControlCenter {
         if (!this.instance) {
-            this.instance = new AndroidControlCenter();
+            this.instance = new ControlCenter();
         }
         return this.instance;
     }
 
     public static hasInstance(): boolean {
-        return !!AndroidControlCenter.instance;
+        return !!ControlCenter.instance;
     }
 
     private restartTracker = (): void => {
@@ -54,7 +55,7 @@ export class AndroidControlCenter extends ControlCenter<DroidDeviceDescriptor> i
     };
 
     private onChangeSet = (changes: TrackerChangeSet): void => {
-        this.waitAfterError = AndroidControlCenter.defaultWaitAfterError;
+        this.waitAfterError = ControlCenter.defaultWaitAfterError;
         if (changes.added.length) {
             for (const item of changes.added) {
                 const { id, type } = item;
@@ -64,7 +65,7 @@ export class AndroidControlCenter extends ControlCenter<DroidDeviceDescriptor> i
         if (changes.removed.length) {
             for (const item of changes.removed) {
                 const { id } = item;
-                this.handleConnected(id, 'disconnected');
+                this.handleConnected(id, DeviceState.DISCONNECTED);
             }
         }
         if (changes.changed.length) {
@@ -128,7 +129,7 @@ export class AndroidControlCenter extends ControlCenter<DroidDeviceDescriptor> i
         this.initialized = false;
     }
 
-    public getDevices(): DroidDeviceDescriptor[] {
+    public getDevices(): GoogDeviceDescriptor[] {
         return Array.from(this.descriptors.values());
     }
 
@@ -141,7 +142,7 @@ export class AndroidControlCenter extends ControlCenter<DroidDeviceDescriptor> i
     }
 
     public getName(): string {
-        return `Android Device Tracker [${os.hostname()}]`;
+        return `aDevice Tracker [${os.hostname()}]`;
     }
 
     public start(): void {

@@ -1,6 +1,6 @@
-import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
+import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
 
-export const Properties: ReadonlyArray<keyof DroidDeviceDescriptor> = [
+export const Properties: ReadonlyArray<keyof GoogDeviceDescriptor> = [
     'ro.product.cpu.abi',
     'ro.product.manufacturer',
     'ro.product.model',

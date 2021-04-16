@@ -1,11 +1,11 @@
 import '../../style/devtools.css';
 import { ManagerClient } from './ManagerClient';
-import { ACTION } from '../../common/Constants';
+import { ACTION } from '../../common/Action';
 import { DevtoolsParams } from '../../types/DevtoolsParams';
 import { RemoteDevtoolsCommand } from '../../types/RemoteDevtoolsCommand';
 import { Message } from '../../types/Message';
 import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, TargetDescription } from '../../types/RemoteDevtools';
-import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
+import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
 import { BaseDeviceTracker } from './BaseDeviceTracker';
 
 const FRONTEND_RE = /^https?:\/\/chrome-devtools-frontend\.appspot\.com\/serve_rev\/(@.*)/;
@@ -338,7 +338,7 @@ export class DevtoolsClient extends ManagerClient<never> {
     }
 
     public static createEntryForDeviceList(
-        descriptor: DroidDeviceDescriptor,
+        descriptor: GoogDeviceDescriptor,
         blockClass: string,
         url?: { secure: boolean; hostname: string; port: string | number },
     ): HTMLElement | DocumentFragment | undefined {

@@ -1,9 +1,9 @@
 import { ManagerClient } from './ManagerClient';
 import { Message } from '../../types/Message';
 import { MessageError, MessageHosts, MessageType } from '../../common/HostTrackerMessage';
-import { ACTION } from '../../common/Constants';
-import { DeviceTrackerDroid } from './DeviceTrackerDroid';
-import { DeviceTrackerQVHack } from './DeviceTrackerQVHack';
+import { ACTION } from '../../common/Action';
+import { DeviceTracker } from './DeviceTracker';
+import { DeviceTrackerIos } from './DeviceTrackerIos';
 import { HostItem } from '../../types/Configuration';
 
 const TAG = '[HostTracker]';
@@ -28,7 +28,7 @@ export class HostTracker extends ManagerClient<HostTrackerEvents> {
         return this.instance;
     }
 
-    private trackers: Array<DeviceTrackerDroid | DeviceTrackerQVHack> = [];
+    private trackers: Array<DeviceTracker | DeviceTrackerIos> = [];
 
     constructor() {
         super(ACTION.LIST_HOSTS);
@@ -61,10 +61,15 @@ export class HostTracker extends ManagerClient<HostTrackerEvents> {
                 const msg = message as MessageHosts;
                 this.emit('hosts', msg.data);
                 msg.data.forEach((item) => {
-                    if (item.type === 'android') {
-                        this.trackers.push(DeviceTrackerDroid.start(DeviceTrackerDroid.buildUrl(item)));
-                    } else {
-                        console.warn(TAG, `Unsupported host type: "${item.type}"`);
+                    switch (item.type) {
+                        case 'android':
+                            this.trackers.push(DeviceTracker.start(DeviceTracker.buildUrl(item)));
+                            break;
+                        case 'ios':
+                            this.trackers.push(DeviceTrackerIos.start(DeviceTrackerIos.buildUrl(item)));
+                            break;
+                        default:
+                            console.warn(TAG, `Unsupported host type: "${item.type}"`);
                     }
                 });
                 break;

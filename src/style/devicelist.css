@@ -74,6 +74,10 @@ body.list #device_list_menu {
     font-size: 120%;
 }
 
+#devices .device-model {
+    font-size: 110%;
+}
+
 #devices .device-serial {
     color: var(--url-color);
     font-size: 80%;

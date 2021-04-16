@@ -7,15 +7,12 @@
     "build:dev:webpack": "webpack --config webpack/ws-scrcpy.dev.ts",
     "build:prod:webpack": "webpack --config webpack/ws-scrcpy.prod.ts",
     "copy:license": "node -e \"require('fs').copyFileSync('LICENSE', 'dist/LICENSE')\"",
-    "dist:dev": "npm run build:dev:webpack && npm run copy:package.json && npm run copy:license",
-    "dist:prod": "npm run build:prod:webpack && npm run copy:package.json && npm run copy:license",
+    "dist:dev": "npm run build:dev:webpack && npm run copy:license",
+    "dist:prod": "npm run build:prod:webpack && npm run copy:license",
     "dist": "npm run dist:prod",
-    "build:qvhack:frontend": "webpack --config webpack/ws-qvhack.dev.ts",
-    "dist:qvhack:frontend": "npm run build:qvhack:frontend && npm run copy:license",
-    "copy:package.json": "node -e \"const j=require('./package.json');const {name,version,description,author,license,dependencies,scripts}=j; const p={name, version, description,author,license,dependencies}; p.scripts={start: scripts['dist:start']};fs.writeFileSync('./dist/package.json', JSON.stringify(p, null, '  '))\"",
     "start": "npm run dist && npm run start:dist",
     "start:dist": "cd dist && npm start",
-    "dist:start": "cd server && node index.js",
+    "script:dist:start": "node ./index.js",
     "lint": "eslint src/ --ext .ts",
     "format": "eslint src/ --fix --ext .ts",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,6 +22,7 @@
   "dependencies": {
     "@devicefarmer/adbkit": "^2.11.3",
     "express": "^4.17.1",
+    "ios-device-lib": "0.9.0",
     "node-pty": "^0.9.0",
     "portfinder": "^1.0.28",
     "tslib": "^1.9.3",
@@ -47,8 +45,10 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-progress": "0.0.1",
     "file-loader": "^6.0.0",
+    "generate-package-json-webpack-plugin": "^2.1.2",
     "h264-converter": "^0.1.2",
     "html-webpack-plugin": "^4.5.0",
+    "ifdef-loader": "^2.3.0",
     "mini-css-extract-plugin": "^0.11.2",
     "mkdirp": "^0.5.1",
     "prettier": "^2.0.5",
@@ -67,5 +67,8 @@
     "xterm": "^4.5.0",
     "xterm-addon-attach": "^0.5.0",
     "xterm-addon-fit": "^0.3.0"
+  },
+  "optionalDependencies": {
+    "appium-xcuitest-driver": "^3.42.0"
   }
 }

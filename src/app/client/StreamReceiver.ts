@@ -113,7 +113,7 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     }
 
     protected onSocketClose(ev: CloseEvent): void {
-        console.log(TAG, 'WS closed');
+        console.log(`${TAG}. WS closed: ${ev.reason}`);
         this.emit('disconnected', ev);
     }
 

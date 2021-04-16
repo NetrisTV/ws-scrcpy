@@ -15,6 +15,7 @@ export interface MwFactory {
 }
 
 export abstract class Mw {
+    protected name = 'Mw';
     protected constructor(protected readonly ws: WebSocket) {
         this.ws.onmessage = this.onSocketMessage.bind(this);
         this.ws.onclose = this.onSocketClose.bind(this);

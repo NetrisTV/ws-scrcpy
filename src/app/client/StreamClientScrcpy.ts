@@ -13,9 +13,9 @@ import DragAndPushLogger from '../DragAndPushLogger';
 import { KeyEventListener, KeyInputHandler } from '../KeyInputHandler';
 import { KeyCodeControlMessage } from '../controlMessage/KeyCodeControlMessage';
 import { BasePlayer, PlayerClass } from '../player/BasePlayer';
-import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
+import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
 import { ConfigureScrcpy, ConfigureScrcpyOptions } from './ConfigureScrcpy';
-import { DeviceTrackerDroid } from './DeviceTrackerDroid';
+import { DeviceTracker } from './DeviceTracker';
 import { ControlCenterCommand } from '../../common/ControlCenterCommand';
 import { html } from '../ui/HtmlTag';
 import { FeaturedTouchHandler, TouchHandlerListener } from '../touchHandler/FeaturedTouchHandler';
@@ -368,7 +368,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     }
 
     public static createEntryForDeviceList(
-        descriptor: DroidDeviceDescriptor,
+        descriptor: GoogDeviceDescriptor,
         blockClass: string,
         url: string,
         fullName: string,
@@ -403,15 +403,13 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         if (!udid || !trackerUrl) {
             return;
         }
-        const tracker = DeviceTrackerDroid.getInstanceByUrl(trackerUrl);
+        const tracker = DeviceTracker.getInstanceByUrl(trackerUrl);
         const descriptor = tracker.getDescriptorByUdid(udid);
         if (!descriptor) {
             return;
         }
         e.preventDefault();
-        const elements = document.getElementsByName(
-            `${DeviceTrackerDroid.AttributePrefixInterfaceSelectFor}${fullName}`,
-        );
+        const elements = document.getElementsByName(`${DeviceTracker.AttributePrefixInterfaceSelectFor}${fullName}`);
         if (!elements || !elements.length) {
             return;
         }

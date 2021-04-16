@@ -4,7 +4,7 @@ import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
 import { spawn } from 'child_process';
 import { NetInterface } from '../../types/NetInterface';
 import { TypedEmitter } from '../../app/TypedEmitter';
-import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
+import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
 import { ScrcpyServer } from './ScrcpyServer';
 import { Properties } from './Properties';
 import Timeout = NodeJS.Timeout;
@@ -35,7 +35,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
     private throttleTimeoutId?: Timeout;
     private lastEmit = 0;
     public readonly TAG: string;
-    public readonly descriptor: DroidDeviceDescriptor;
+    public readonly descriptor: GoogDeviceDescriptor;
 
     constructor(public readonly udid: string, state: string) {
         super();
@@ -317,7 +317,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
                     return false;
                 }
                 let changed = false;
-                Properties.forEach((propName: keyof DroidDeviceDescriptor) => {
+                Properties.forEach((propName: keyof GoogDeviceDescriptor) => {
                     if (props[propName] !== this.descriptor[propName]) {
                         changed = true;
                         (this.descriptor[propName] as any) = props[propName];

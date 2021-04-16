@@ -4,9 +4,9 @@ import { Terminal } from 'xterm';
 import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
 import { MessageXtermClient } from '../../types/MessageXtermClient';
-import { ACTION } from '../../common/Constants';
+import { ACTION } from '../../common/Action';
 import { ShellParams } from '../../types/ShellParams';
-import DroidDeviceDescriptor from '../../types/DroidDeviceDescriptor';
+import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
 import { BaseDeviceTracker } from './BaseDeviceTracker';
 import Util from '../Util';
 
@@ -99,7 +99,7 @@ export class ShellClient extends ManagerClient<never> {
     }
 
     public static createEntryForDeviceList(
-        descriptor: DroidDeviceDescriptor,
+        descriptor: GoogDeviceDescriptor,
         blockClass: string,
         url?: { secure: boolean; hostname: string; port: string | number },
     ): HTMLElement | DocumentFragment | undefined {

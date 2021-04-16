@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
-import { Mw, RequestParameters } from './Mw';
-import { RemoteDevtoolsCommand } from '../../types/RemoteDevtoolsCommand';
+import { Mw, RequestParameters } from '../../mw/Mw';
+import { RemoteDevtoolsCommand } from '../../../types/RemoteDevtoolsCommand';
 import { AdbUtils } from '../AdbUtils';
-import { ACTION } from '../../common/Constants';
+import { ACTION } from '../../../common/Action';
 
 export class RemoteDevtools extends Mw {
     public static readonly TAG = 'RemoteDevtools';

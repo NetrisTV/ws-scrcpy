@@ -5,9 +5,9 @@ export interface ControlCenterEvents<T> {
     device: T;
 }
 
-export abstract class ControlCenter<T> extends TypedEmitter<ControlCenterEvents<T>> {
+export abstract class BaseControlCenter<T> extends TypedEmitter<ControlCenterEvents<T>> {
     abstract getId(): string;
     abstract getName(): string;
     abstract getDevices(): T[];
-    abstract runCommand(command: ControlCenterCommand): Promise<void>;
+    abstract runCommand(command: ControlCenterCommand): Promise<string | void>;
 }

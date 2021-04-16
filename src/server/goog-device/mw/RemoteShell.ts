@@ -1,11 +1,11 @@
-import { Mw, RequestParameters } from './Mw';
+import { Mw, RequestParameters } from '../../mw/Mw';
 import WebSocket from 'ws';
 import * as pty from 'node-pty';
 import * as os from 'os';
 import { IPty } from 'node-pty';
-import { Message } from '../../types/Message';
-import { XtermClientMessage, XtermServiceParameters } from '../../types/XtermMessage';
-import { ACTION } from '../../common/Constants';
+import { Message } from '../../../types/Message';
+import { XtermClientMessage, XtermServiceParameters } from '../../../types/XtermMessage';
+import { ACTION } from '../../../common/Action';
 
 const OS_WINDOWS = os.platform() === 'win32';
 const USE_BINARY = !OS_WINDOWS;

@@ -2,6 +2,7 @@ import * as process from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Configuration, HostItem } from '../types/Configuration';
+import { EnvName } from './EnvName';
 
 export class Config {
     private static instance?: Config;
@@ -12,12 +13,8 @@ export class Config {
         return this.instance;
     }
 
-    private readonly localAndroid: boolean;
-
     constructor(private fullConfig: Configuration = {}) {
-        this.localAndroid = true;
-
-        const configPath = process.env.WS_SCRCPY_CONFIG;
+        const configPath = process.env[EnvName.CONFIG_PATH];
         if (!configPath) {
             return;
         }
@@ -34,19 +31,12 @@ export class Config {
             console.error(`Failed to load configuration from file "${absolutePath}"`);
             console.error(`Error: ${e.message}`);
         }
-        if (typeof this.fullConfig.localAndroid === 'boolean') {
-            this.localAndroid = this.fullConfig.localAndroid;
-        }
     }
 
-    public isLocalAndroidTrackerEnabled(): boolean {
-        return this.localAndroid;
-    }
-
-    public getRemoteAndroidTrackers(): HostItem[] {
+    public getRemoteTrackers(): HostItem[] {
         if (!this.fullConfig.remote || !this.fullConfig.remote.length) {
             return [];
         }
-        return this.fullConfig.remote.filter((item) => item.type === 'android');
+        return this.fullConfig.remote.splice(0);
     }
 }

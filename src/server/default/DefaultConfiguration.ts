@@ -1,5 +1,6 @@
 import { Configuration } from '../../types/Configuration';
 
-export const defaultAndroidHostConfiguration: Configuration = {
+export const defaultConfiguration: Configuration = {
     localAndroid: true,
+    localIos: false,
 };

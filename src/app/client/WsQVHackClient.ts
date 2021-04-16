@@ -1,13 +1,13 @@
 import { ManagerClient } from './ManagerClient';
-import QVHackDeviceDescriptor from '../../types/QVHackDeviceDescriptor';
-import { MessageRunWda } from '../../types/MessageRunWda';
-
-const SERVER_PORT = 8080;
-const SERVER_HOST = location.hostname;
+import { MessageRunWdaResponse } from '../../types/MessageRunWdaResponse';
+import ApplDeviceDescriptor from '../../types/ApplDeviceDescriptor';
+import { Message } from '../../types/Message';
+import { ControlCenterCommand } from '../../common/ControlCenterCommand';
 
 export type WsQVHackClientEvents = {
-    'device-list': QVHackDeviceDescriptor[];
-    'run-wda': MessageRunWda;
+    'device-list': ApplDeviceDescriptor[];
+    'run-wda': MessageRunWdaResponse;
+    device: ApplDeviceDescriptor;
     connected: boolean;
 };
 
@@ -16,7 +16,11 @@ const TAG = '[WsQVHackClient]';
 export class WsQVHackClient extends ManagerClient<WsQVHackClientEvents> {
     private stopped = false;
     private commands: string[] = [];
-    constructor() {
+    private hasSession = false;
+    private messageId = 0;
+    private wait: Map<number, { resolve: (m: Message) => void; reject: () => void }> = new Map();
+
+    constructor(private readonly url: string) {
         super();
         this.openNewWebSocket();
     }
@@ -34,22 +38,25 @@ export class WsQVHackClient extends ManagerClient<WsQVHackClientEvents> {
         new Response(e.data)
             .text()
             .then((text: string) => {
-                const json = JSON.parse(text);
+                const json = JSON.parse(text) as Message;
                 const type = json['type'];
+                const id = json['id'];
+                const p = this.wait.get(id);
+                if (p) {
+                    p.resolve(json);
+                    return;
+                }
                 switch (type) {
-                    case 'qvhack-device-list': {
-                        const devices = json['data'] as QVHackDeviceDescriptor[];
+                    case 'devicelist':
+                        const devices = json['data'] as ApplDeviceDescriptor[];
                         this.emit('device-list', devices);
                         return;
-                    }
-                    case 'run-wda': {
-                        const response = json as MessageRunWda;
-                        this.emit('run-wda', response);
+                    case 'device':
+                        const device = json['data'] as ApplDeviceDescriptor;
+                        this.emit('device', device);
                         return;
-                    }
-                    default: {
+                    default:
                         throw Error('Unsupported message');
-                    }
                 }
             })
             .catch((error: Error) => {
@@ -69,11 +76,7 @@ export class WsQVHackClient extends ManagerClient<WsQVHackClientEvents> {
     }
 
     protected buildWebSocketUrl(): string {
-        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        const host = SERVER_HOST;
-        const port = SERVER_PORT;
-        const path = '/ws';
-        return `${proto}://${host}:${port}${path}`;
+        return this.url;
     }
 
     private sendCommand(str: string): void {
@@ -84,26 +87,43 @@ export class WsQVHackClient extends ManagerClient<WsQVHackClientEvents> {
         }
     }
 
-    public subscribeToDeviceList(listener: (devices: QVHackDeviceDescriptor[]) => void): void {
-        this.on('device-list', listener);
-        const command = 'list';
-        const str = JSON.stringify({ command, subscribe: true });
-        this.sendCommand(str);
+    private getNextId(): number {
+        return ++this.messageId;
     }
 
-    public runWebDriverAgent(udid: string): Promise<MessageRunWda> {
-        const command = 'run-wda';
-        this.sendCommand(JSON.stringify({ command, udid }));
-        return new Promise((resolve) => {
-            const onResponse = (response: MessageRunWda) => {
-                const data = response.data;
-                if (data.udid === udid) {
-                    this.off(command, onResponse);
-                    resolve(response);
-                }
-            };
-            this.on(command, onResponse);
+    public async sendMessage(message: Message): Promise<Message> {
+        this.sendCommand(JSON.stringify(message));
+        return new Promise<Message>((resolve, reject) => {
+            this.wait.set(message.id, { resolve, reject });
         });
+    }
+
+    public async runWebDriverAgent(udid: string): Promise<Message> {
+        const message: Message = {
+            id: this.getNextId(),
+            type: ControlCenterCommand.RUN_WDA,
+            data: {
+                udid,
+            },
+        };
+        const response = await this.sendMessage(message);
+        this.hasSession = true;
+        return response;
+    }
+
+    public async requestWebDriverAgent(method: string, args?: any): Promise<any> {
+        if (!this.hasSession) {
+            throw Error('No session');
+        }
+        const message: Message = {
+            id: this.getNextId(),
+            type: ControlCenterCommand.REQUEST_WDA,
+            data: {
+                method,
+                args,
+            },
+        };
+        return this.sendMessage(message);
     }
 
     public stop(): void {
