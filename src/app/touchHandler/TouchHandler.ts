@@ -480,8 +480,10 @@ export abstract class TouchHandler {
                 const event = TouchHandler.calculateCoordinates(item, screenInfo);
                 if (event) {
                     const { action, buttons, position, invalid } = event.touch;
-                    let pressure = 0;
-                    if (action !== MotionEvent.ACTION_UP) {
+                    let pressure = 1;
+                    if (action === MotionEvent.ACTION_UP) {
+                        pressure = 0;
+                    } else if (typeof touch.force === 'number') {
                         pressure = touch.force;
                     }
                     if (!invalid) {
