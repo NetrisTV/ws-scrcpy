@@ -75,10 +75,12 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     public async start(): Promise<void> {
         this.server = await WDARunner.getServer(this.udid);
         try {
+            const port = await portfinder.getPortPromise();
             this.session = await this.server.driver.createSession({
                 platformName: 'iOS',
                 deviceName: 'my iphone',
                 udid: this.udid,
+                wdaLocalPort: port,
             });
             this.started = true;
             this.emit('started', true);
