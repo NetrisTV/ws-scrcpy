@@ -1,7 +1,8 @@
-import { server as baseServer } from 'appium-base-driver';
+import { Server as HttpServer } from 'http';
+
 import { XCUITestDriver } from './driver';
 
-export class Server extends baseServer {
+export class Server extends HttpServer {
     public driver: XCUITestDriver;
 }
 

@@ -13,8 +13,8 @@ export interface WDARunnerEvents {
 
 export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     protected static TAG = 'WDARunner';
-    private static server?: Server;
     private static instances: Map<string, WDARunner> = new Map();
+    private static servers: Map<string, Server> = new Map();
     public static getInstance(udid: string): WDARunner {
         let instance = this.instances.get(udid);
         if (!instance) {
@@ -25,12 +25,13 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         instance.holders++;
         return instance;
     }
-    public static async getServer(): Promise<Server> {
-        if (!this.server) {
+    public static async getServer(udid: string): Promise<Server> {
+        let server = this.servers.get(udid);
+        if (!server) {
             const port = await portfinder.getPortPromise();
-            this.server = await XCUITest.startServer(port, '127.0.0.1');
+            server = await XCUITest.startServer(port, '127.0.0.1');
         }
-        return this.server;
+        return server;
     }
     protected name: string;
     protected started = false;
@@ -72,7 +73,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     }
 
     public async start(): Promise<void> {
-        this.server = await WDARunner.getServer();
+        this.server = await WDARunner.getServer(this.udid);
         try {
             this.session = await this.server.driver.createSession({
                 platformName: 'iOS',
@@ -95,6 +96,10 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         if (this.holders > 0) {
             return;
         }
+        if (this.server) {
+            this.server.close();
+        }
         WDARunner.instances.delete(this.udid);
+        WDARunner.servers.delete(this.udid);
     }
 }
