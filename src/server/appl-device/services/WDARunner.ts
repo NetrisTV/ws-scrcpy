@@ -1,9 +1,8 @@
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
-import * as XCUITest from 'appium-xcuitest-driver';
-import { Server } from 'appium-xcuitest-driver/lib/server';
 import { TypedEmitter } from '../../../app/TypedEmitter';
 import { Message } from '../../../types/Message';
 import * as portfinder from 'portfinder';
+import { Server } from '../../../types/WdaServer';
 
 export interface WDARunnerEvents {
     started: boolean;
@@ -31,10 +30,12 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         let server = this.servers.get(udid);
         if (!server) {
             const port = await portfinder.getPortPromise();
+            const XCUITest = await import('appium-xcuitest-driver');
             server = await XCUITest.startServer(port, '127.0.0.1');
         }
         return server;
     }
+
     protected name: string;
     protected started = false;
     public session: any;

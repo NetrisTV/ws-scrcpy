@@ -39,6 +39,12 @@ async function loadApplModules() {
     const { StreamProxy } = await import('./appl-device/mw/StreamProxy');
     const { WebDriverAgentProxy } = await import('./appl-device/mw/WebDriverAgentProxy');
 
+    // Hack to reduce log-level of appium libs
+    const npmlog = await import('npmlog');
+    npmlog.level = 'warn';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (global as any)._global_npmlog = npmlog;
+
     HostTracker.registerLocalTracker(DeviceTracker);
 
     servicesToStart.push(ControlCenter);
