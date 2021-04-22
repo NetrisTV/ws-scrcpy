@@ -2,7 +2,7 @@ import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { TypedEmitter } from '../../../app/TypedEmitter';
 import { Message } from '../../../types/Message';
 import * as portfinder from 'portfinder';
-import { Server } from '../../../types/WdaServer';
+import { Server, XCUITestDriver } from '../../../types/WdaServer';
 
 export interface WDARunnerEvents {
     started: boolean;
@@ -14,6 +14,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     protected static TAG = 'WDARunner';
     private static instances: Map<string, WDARunner> = new Map();
     private static servers: Map<string, Server> = new Map();
+    private static cachedScreenInfo: Map<string, any> = new Map();
     public static getInstance(udid: string): WDARunner {
         let instance = this.instances.get(udid);
         if (!instance) {
@@ -34,6 +35,15 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
             server = await XCUITest.startServer(port, '127.0.0.1');
         }
         return server;
+    }
+    public static async getScreenInfo(udid: string, driver: XCUITestDriver): Promise<any> {
+        const cached = this.cachedScreenInfo.get(udid);
+        if (cached) {
+            return cached;
+        }
+        const info = await driver.getScreenInfo();
+        this.cachedScreenInfo.set(udid, info);
+        return info;
     }
 
     protected name: string;
@@ -58,7 +68,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         const args = command.getArgs();
         switch (method) {
             case 'getScreen':
-                return driver.getScreenInfo();
+                return WDARunner.getScreenInfo(this.udid, driver);
             case 'click':
                 return driver.performTouch([{ action: 'tap', options: { x: args.x, y: args.y } }]);
             case 'pressButton':

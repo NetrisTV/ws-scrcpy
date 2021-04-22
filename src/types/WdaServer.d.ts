@@ -7,4 +7,4 @@ declare class Server extends http.Server {
     driver: XCUITestDriver;
 }
 
-export { Server };
+export { Server, XCUITestDriver };
