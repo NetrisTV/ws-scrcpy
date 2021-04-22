@@ -21,6 +21,8 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
             instance = new WDARunner(udid);
             this.instances.set(udid, instance);
             instance.start();
+        } else if (instance.releaseTimeoutId) {
+            clearTimeout(instance.releaseTimeoutId);
         }
         instance.holders++;
         return instance;
@@ -38,6 +40,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     public session: any;
     private server?: Server;
     private holders = 0;
+    protected releaseTimeoutId?: NodeJS.Timeout;
 
     constructor(private readonly udid: string) {
         super();
@@ -99,10 +102,13 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         if (this.holders > 0) {
             return;
         }
-        if (this.server) {
-            this.server.close();
-        }
-        WDARunner.instances.delete(this.udid);
-        WDARunner.servers.delete(this.udid);
+        const TIME = 15000;
+        this.releaseTimeoutId = setTimeout(() => {
+            if (this.server) {
+                this.server.close();
+            }
+            WDARunner.servers.delete(this.udid);
+            WDARunner.instances.delete(this.udid);
+        }, TIME);
     }
 }
