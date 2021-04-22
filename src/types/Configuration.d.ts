@@ -6,7 +6,5 @@ export interface HostItem {
 }
 
 export interface Configuration {
-    localAndroid?: boolean;
-    localIos?: boolean;
     remote?: HostItem[];
 }
