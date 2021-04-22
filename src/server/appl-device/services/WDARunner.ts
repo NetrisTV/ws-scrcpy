@@ -103,12 +103,15 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
             return;
         }
         const TIME = 15000;
-        this.releaseTimeoutId = setTimeout(() => {
-            if (this.server) {
-                this.server.close();
-            }
+        this.releaseTimeoutId = setTimeout(async () => {
             WDARunner.servers.delete(this.udid);
             WDARunner.instances.delete(this.udid);
+            if (this.server) {
+                if (this.server.driver) {
+                    await this.server.driver.deleteSession();
+                }
+                this.server.close();
+            }
         }, TIME);
     }
 }

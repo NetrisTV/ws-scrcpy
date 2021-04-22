@@ -15,6 +15,8 @@ declare class XCUITestDriver extends BaseDriver {
     public getScreenInfo(): Promise<any>;
     public performTouch(gestures: Gesture[]): Promise<any>;
     public mobilePressButton(args: {name: string}): Promise<any>;
+    public stop(): Promise<void>;
+    public deleteSession(): Promise<void>;
 }
 
 
