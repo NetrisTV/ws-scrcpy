@@ -11,7 +11,7 @@ export class WebsocketProxyOverAdb extends WebsocketProxy {
         let remote: string | string[] = '';
         let path: string | string[] = '';
         let isSuitable = false;
-        if (parsedQuery?.action === ACTION.PROXY) {
+        if (parsedQuery?.action === ACTION.PROXY_ADB) {
             isSuitable = true;
             remote = parsedQuery.remote;
             udid = parsedQuery.udid;
@@ -20,7 +20,7 @@ export class WebsocketProxyOverAdb extends WebsocketProxy {
         if (parsedUrl && parsedUrl.path) {
             const temp = parsedUrl.path.split('/');
             // Shortcut for action=proxy, without query string
-            if (temp.length >= 4 && temp[0] === '' && temp[1] === ACTION.PROXY) {
+            if (temp.length >= 4 && temp[0] === '' && temp[1] === ACTION.PROXY_ADB) {
                 isSuitable = true;
                 temp.splice(0, 2);
                 udid = decodeURIComponent(temp.shift() || '');

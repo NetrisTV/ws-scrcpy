@@ -1,8 +1,7 @@
 import '../../../style/dialog.css';
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
-import { DisplayCombinedInfo, StreamReceiver } from '../../client/StreamReceiver';
+import { DisplayCombinedInfo } from '../../client/StreamReceiver';
 import VideoSettings from '../../VideoSettings';
-import { BaseClient } from '../../client/BaseClient';
 import { StreamClientScrcpy } from './StreamClientScrcpy';
 import Size from '../../Size';
 import Util from '../../Util';
@@ -13,11 +12,9 @@ import { PlayerClass } from '../../player/BasePlayer';
 import { ToolBoxCheckbox } from '../../toolbox/ToolBoxCheckbox';
 import { DeviceTracker } from './DeviceTracker';
 import { Attribute } from '../../Attribute';
-
-export type ConfigureScrcpyOptions = {
-    name: string;
-    ws: string;
-};
+import { StreamReceiverScrcpy } from './StreamReceiverScrcpy';
+import { ParamsStreamScrcpy } from '../../../types/ParamsStreamScrcpy';
+import { BaseClient } from '../../client/BaseClient';
 
 interface ConfigureScrcpyEvents {
     closed: { dialog: ConfigureScrcpy; result: boolean };
@@ -30,14 +27,13 @@ type Range = {
     formatter?: (value: number) => string;
 };
 
-export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
+export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScrcpyEvents> {
     private readonly TAG: string;
     private readonly udid: string;
     private readonly escapedUdid: string;
     private readonly playerStorageKey: string;
     private deviceName: string;
-    private url: string;
-    private streamReceiver?: StreamReceiver;
+    private streamReceiver?: StreamReceiverScrcpy;
     private playerName?: string;
     private displayInfo?: DisplayInfo;
     private background: HTMLElement;
@@ -55,19 +51,14 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
     private statusText = '';
     private connectionCount = 0;
 
-    constructor(
-        private readonly tracker: DeviceTracker,
-        descriptor: GoogDeviceDescriptor,
-        options: ConfigureScrcpyOptions,
-    ) {
-        super();
+    constructor(private readonly tracker: DeviceTracker, descriptor: GoogDeviceDescriptor, params: ParamsStreamScrcpy) {
+        super(params);
         this.udid = descriptor.udid;
         this.escapedUdid = Util.escapeUdid(this.udid);
         this.playerStorageKey = `configure_stream::${this.escapedUdid}::player`;
         this.deviceName = descriptor['ro.product.model'];
-        this.url = options.ws;
         this.TAG = `ConfigureScrcpy[${this.udid}]`;
-        this.createStreamReceiver();
+        this.createStreamReceiver(params);
         this.setTitle(`${this.deviceName}. Configure stream`);
         this.background = this.createUI();
     }
@@ -76,23 +67,23 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         return this.tracker;
     }
 
-    private createStreamReceiver(): void {
+    private createStreamReceiver(params: ParamsStreamScrcpy): void {
         if (this.streamReceiver) {
             this.detachEventsListeners(this.streamReceiver);
             this.streamReceiver.stop();
         }
-        this.streamReceiver = new StreamReceiver(this.url);
+        this.streamReceiver = new StreamReceiverScrcpy(params);
         this.attachEventsListeners(this.streamReceiver);
     }
 
-    private attachEventsListeners(streamReceiver: StreamReceiver): void {
+    private attachEventsListeners(streamReceiver: StreamReceiverScrcpy): void {
         streamReceiver.on('encoders', this.onEncoders);
         streamReceiver.on('displayInfo', this.onDisplayInfo);
         streamReceiver.on('connected', this.onConnected);
         streamReceiver.on('disconnected', this.onDisconnected);
     }
 
-    private detachEventsListeners(streamReceiver: StreamReceiver): void {
+    private detachEventsListeners(streamReceiver: StreamReceiverScrcpy): void {
         streamReceiver.off('encoders', this.onEncoders);
         streamReceiver.off('displayInfo', this.onDisplayInfo);
         streamReceiver.off('connected', this.onConnected);
@@ -167,6 +158,10 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
             this.updateStatus();
         }
         this.displayIdSelectElement = select;
+        if (this.dialogBody) {
+            this.dialogBody.classList.remove('hidden');
+            this.dialogBody.classList.add('visible');
+        }
     };
 
     private onConnected = (): void => {
@@ -175,10 +170,6 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         this.updateStatus();
         if (this.okButton) {
             this.okButton.disabled = false;
-        }
-        if (this.dialogBody) {
-            this.dialogBody.classList.remove('hidden');
-            this.dialogBody.classList.add('visible');
         }
     };
 
@@ -640,12 +631,12 @@ export class ConfigureScrcpy extends BaseClient<ConfigureScrcpyEvents> {
         this.setPreviouslyUsedPlayer(this.playerName);
         // return;
         player.setVideoSettings(videoSettings, fitToScreen, false);
-        StreamClientScrcpy.createWithReceiver(this.streamReceiver, {
-            playerName: player,
+        const params: ParamsStreamScrcpy = {
+            ...this.params,
             udid: this.udid,
             fitToScreen,
-            videoSettings,
-        });
+        };
+        StreamClientScrcpy.start(params, this.streamReceiver, player, fitToScreen, videoSettings);
         this.streamReceiver.triggerInitialInfoEvents();
     };
 }

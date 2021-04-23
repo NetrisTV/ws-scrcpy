@@ -1,5 +1,4 @@
 import { BaseClient } from '../../client/BaseClient';
-import { QVHackStreamParams } from '../../../types/QVHackStreamParams';
 import { QVHackMoreBox } from '../toolbox/QVHackMoreBox';
 import { QVHackToolBox } from '../toolbox/QVHackToolBox';
 import WdaConnection from '../WdaConnection';
@@ -12,60 +11,53 @@ import { MsePlayerForQVHack } from '../../player/MsePlayerForQVHack';
 import { BasePlayer } from '../../player/BasePlayer';
 import { SimpleTouchHandler, TouchHandlerListener } from '../../touchHandler/SimpleTouchHandler';
 import { ACTION } from '../../../common/Action';
+import { ParsedUrlQuery } from 'querystring';
+import Util from '../../Util';
+import { ParamsStreamQVHack } from '../../../types/ParamsStreamQVHack';
 
 const WAIT_CLASS = 'wait';
 
 const TAG = '[StreamClientQVHack]';
 
-export class StreamClientQVHack extends BaseClient<never> implements TouchHandlerListener {
+export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> implements TouchHandlerListener {
     public static ACTION = ACTION.STREAM_WS_QVH;
     private deviceName = '';
     private managerClient: WsQVHackClient;
     private wdaConnection = new WdaConnection();
     private waitForWda?: boolean;
-    private readonly streamReceiver: StreamReceiver;
+    private readonly streamReceiver: StreamReceiver<ParamsStreamQVHack>;
     private videoWrapper?: HTMLElement;
     private touchHandler?: SimpleTouchHandler;
+    private readonly udid: string;
 
-    public static createFromParam(params: QVHackStreamParams): StreamClientQVHack {
-        let udid = params.udid;
+    public static start(params: ParsedUrlQuery | ParamsStreamQVHack): StreamClientQVHack {
+        return new StreamClientQVHack(params);
+    }
+
+    constructor(params: ParsedUrlQuery | ParamsStreamQVHack) {
+        super(params);
+
+        this.udid = this.params.udid;
+        let udid = this.udid;
         // Workaround for qvh v0.5-beta
         if (udid.indexOf('-') !== -1) {
             udid = udid.replace('-', '');
             udid = udid + '\0'.repeat(16);
         }
-        const streamReceiver = new StreamReceiver(this.buildWebSocketUrl(ACTION.STREAM_WS_QVH, udid));
-        const wsQVHackClient = new WsQVHackClient(this.buildWebSocketUrl(ACTION.PROXY_WDA, params.udid));
-        const client = new StreamClientQVHack(streamReceiver, wsQVHackClient, params.udid);
-        client.startStream(params.udid);
-        client.setTitle(`${params.udid} stream`);
-        return client;
-    }
-
-    public static buildWebSocketUrl(action: string, udid?: string): string {
-        const secure = location.protocol === 'https:';
-        const proto = secure ? 'wss' : 'ws';
-        const hostname = location.hostname;
-        const path = '/';
-        const search = `?action=${encodeURIComponent(action)}${udid ? `&udid=${encodeURIComponent(udid)}` : ''}`;
-        let port = location.port;
-        if (!port) {
-            if (secure) {
-                port = '443';
-            } else {
-                port = '80';
-            }
-        }
-        return `${proto}://${hostname}:${port}${path}${search}`;
-    }
-
-    constructor(streamReceiver: StreamReceiver, managerClient: WsQVHackClient, private readonly udid: string) {
-        super();
-
-        this.managerClient = managerClient;
-        this.streamReceiver = streamReceiver;
+        this.managerClient = new WsQVHackClient({ ...this.params, action: ACTION.PROXY_WDA });
+        this.streamReceiver = new StreamReceiver({ ...this.params });
+        this.startStream(this.udid);
+        this.setTitle(`${this.udid} stream`);
         this.setBodyClass('stream');
-        this.setTitle();
+    }
+
+    public parseParameters(params: ParsedUrlQuery): ParamsStreamQVHack {
+        const typedParams = super.parseParameters(params);
+        const { action } = typedParams;
+        if (action !== ACTION.STREAM_WS_QVH) {
+            throw Error('Incorrect action');
+        }
+        return { ...typedParams, action, udid: Util.parseStringEnv(params.udid) };
     }
 
     private onViewVideoResize = (): void => {

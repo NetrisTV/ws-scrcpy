@@ -1,5 +1,6 @@
 import { Mw, RequestParameters } from './Mw';
 import WebSocket from 'ws';
+import { ACTION } from '../../common/Action';
 
 export class WebsocketProxy extends Mw {
     public static readonly TAG = 'WebsocketProxy';
@@ -8,8 +9,19 @@ export class WebsocketProxy extends Mw {
     private storage: WebSocket.MessageEvent[] = [];
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static processRequest(_ws: WebSocket, _params: RequestParameters): WebsocketProxy | undefined {
-        return;
+    public static processRequest(ws: WebSocket, params: RequestParameters): WebsocketProxy | undefined {
+        const { parsedQuery } = params;
+        if (!parsedQuery) {
+            return;
+        }
+        if (parsedQuery.action !== ACTION.PROXY_WS) {
+            return;
+        }
+        if (typeof parsedQuery.ws !== 'string') {
+            ws.close(4003, `[${this.TAG}] Invalid value "${ws}" for "ws" parameter`);
+            return;
+        }
+        return this.createProxy(ws, parsedQuery.ws);
     }
 
     public static createProxy(ws: WebSocket, remoteUrl: string): WebsocketProxy {

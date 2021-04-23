@@ -1,7 +1,7 @@
 import { DragAndDropHandler, DragEventListener } from './DragAndDropHandler';
 import DeviceMessage from './DeviceMessage';
 import { CommandControlMessage, FilePushState } from '../controlMessage/CommandControlMessage';
-import { StreamReceiver } from '../client/StreamReceiver';
+import { StreamReceiverScrcpy } from './client/StreamReceiverScrcpy';
 
 const ALLOWED_TYPES = ['application/vnd.android.package-archive'];
 
@@ -38,7 +38,7 @@ export default class FilePushHandler implements DragEventListener {
     private responseWaiter: Map<number, Resolve | Resolve[]> = new Map();
     private listeners: Set<DragAndPushListener> = new Set();
 
-    constructor(private readonly element: HTMLElement, private readonly streamReceiver: StreamReceiver) {
+    constructor(private readonly element: HTMLElement, private readonly streamReceiver: StreamReceiverScrcpy) {
         DragAndDropHandler.addEventListener(this);
         streamReceiver.on('deviceMessage', this.onDeviceMessage);
     }

@@ -3,6 +3,7 @@ import { MessageRunWdaResponse } from '../../../types/MessageRunWdaResponse';
 import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
 import { Message } from '../../../types/Message';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
+import { ParamsWdaProxy } from '../../../types/ParamsWdaProxy';
 
 export type WsQVHackClientEvents = {
     'device-list': ApplDeviceDescriptor[];
@@ -13,17 +14,24 @@ export type WsQVHackClientEvents = {
 
 const TAG = '[WsQVHackClient]';
 
-export class WsQVHackClient extends ManagerClient<WsQVHackClientEvents> {
+export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClientEvents> {
     private stopped = false;
     private commands: string[] = [];
     private hasSession = false;
     private messageId = 0;
     private wait: Map<number, { resolve: (m: Message) => void; reject: () => void }> = new Map();
 
-    constructor(private readonly url: string) {
-        super();
+    constructor(params: ParamsWdaProxy) {
+        super(params);
         this.openNewWebSocket();
     }
+
+    protected buildDirectWebSocketUrl(): URL {
+        const localUrl = super.buildDirectWebSocketUrl();
+        localUrl.searchParams.set('udid', this.params.udid);
+        return localUrl;
+    }
+
     protected onSocketClose(e: CloseEvent): void {
         this.emit('connected', false);
         console.log(TAG, `Connection closed: ${e.reason}`);
@@ -73,10 +81,6 @@ export class WsQVHackClient extends ManagerClient<WsQVHackClientEvents> {
                 this.sendCommand(str);
             }
         }
-    }
-
-    protected buildWebSocketUrl(): string {
-        return this.url;
     }
 
     private sendCommand(str: string): void {

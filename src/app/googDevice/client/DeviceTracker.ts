@@ -3,8 +3,6 @@ import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
 import { SERVER_PORT } from '../../../common/Constants';
 import { ACTION } from '../../../common/Action';
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
-import querystring from 'querystring';
-import { ScrcpyStreamParams } from '../../../types/ScrcpyStreamParams';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { StreamClientScrcpy } from './StreamClientScrcpy';
 import SvgImage from '../../ui/SvgImage';
@@ -12,11 +10,11 @@ import { html } from '../../ui/HtmlTag';
 import { DevtoolsClient } from './DevtoolsClient';
 import { ShellClient } from './ShellClient';
 import Util from '../../Util';
-import Url from 'url';
 import { Attribute } from '../../Attribute';
-import { HostItem } from '../../../types/Configuration';
 import { DeviceState } from '../../../common/DeviceState';
 import { Message } from '../../../types/Message';
+import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
+import { HostItem } from '../../../types/Configuration';
 
 type Field = keyof GoogDeviceDescriptor | ((descriptor: GoogDeviceDescriptor) => string);
 type DescriptionColumn = { title: string; field: Field };
@@ -41,61 +39,28 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
     public static readonly AttributePrefixPlayerFor = 'player_for_';
     private static instancesByUrl: Map<string, DeviceTracker> = new Map();
     protected tableId = 'goog_device_list';
-    private readonly url: string;
-    private secure: boolean;
-    private hostname: string;
-    private port: string;
 
-    public static start(itemOrUrl: HostItem | string): DeviceTracker {
-        if (typeof itemOrUrl === 'string') {
-            return this.getInstanceByUrl(itemOrUrl);
-        }
-        return this.getInstance(itemOrUrl);
-    }
-
-    public static getInstanceByUrl(url: string): DeviceTracker {
+    public static start(hostItem: HostItem): DeviceTracker {
+        const url = this.buildUrlForTracker(hostItem).toString();
         let instance = this.instancesByUrl.get(url);
         if (!instance) {
-            const parsed = Url.parse(url);
-            const secure = parsed.protocol === 'wss';
-            const hostname = parsed.hostname || '';
-            let { port } = parsed;
-            if (!port) {
-                port = secure ? '443' : '80';
-            }
-            instance = new DeviceTracker({ type: 'android', secure, hostname, port });
-            this.instancesByUrl.set(url, instance);
+            instance = new DeviceTracker(hostItem, url);
         }
         return instance;
     }
 
-    public static getInstance(item: HostItem): DeviceTracker {
-        const url = this.buildUrl(item);
-        let instance = this.instancesByUrl.get(url);
-        if (!instance) {
-            instance = new DeviceTracker(item);
-            this.instancesByUrl.set(url, instance);
-        }
-        return instance;
+    public static getInstance(hostItem: HostItem): DeviceTracker {
+        return this.start(hostItem);
     }
 
-    protected constructor(item: HostItem) {
-        super(ACTION.GOOG_DEVICE_LIST);
-        this.secure = item.secure;
-        this.hostname = item.hostname;
-        this.port = item.port;
-        this.url = DeviceTracker.buildUrl(item);
+    protected constructor(params: HostItem, directUrl: string) {
+        super({ ...params, action: DeviceTracker.ACTION }, directUrl);
+        DeviceTracker.instancesByUrl.set(directUrl, this);
         this.openNewWebSocket();
     }
 
     protected onSocketOpen(): void {
-        // if (this.hasConnection()) {
-        //     this.ws.send(JSON.stringify({ command: 'list' }));
-        // }
-    }
-
-    protected buildTableHead(): HTMLTableSectionElement {
-        throw new Error('Method not implemented.');
+        // nothing here;
     }
 
     protected setIdAndHostName(id: string, hostName: string): void {
@@ -125,16 +90,18 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
 
     onInterfaceSelected = (e: Event): void => {
         const selectElement = e.currentTarget as HTMLSelectElement;
-        DeviceTracker.updateLink(selectElement, true);
+        this.updateLink(selectElement, true);
     };
 
-    private static updateLink(selectElement: HTMLSelectElement, store: boolean): void {
+    private updateLink(selectElement: HTMLSelectElement, store: boolean): void {
         const option = selectElement.selectedOptions[0];
         const url = decodeURI(option.getAttribute(Attribute.URL) || '');
         const name = option.getAttribute(Attribute.NAME);
         const fullName = decodeURIComponent(selectElement.getAttribute(Attribute.FULL_NAME) || '');
         const udid = selectElement.getAttribute(Attribute.UDID);
-        const playerTds = document.getElementsByName(encodeURIComponent(`${this.AttributePrefixPlayerFor}${fullName}`));
+        const playerTds = document.getElementsByName(
+            encodeURIComponent(`${DeviceTracker.AttributePrefixPlayerFor}${fullName}`),
+        );
         if (typeof udid !== 'string') {
             return;
         }
@@ -147,18 +114,21 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         const action = ACTION.STREAM_SCRCPY;
         playerTds.forEach((item) => {
             item.innerHTML = '';
-            const playerFullName = item.getAttribute(this.AttributePlayerFullName);
-            const playerCodeName = item.getAttribute(this.AttributePlayerCodeName);
+            const playerFullName = item.getAttribute(DeviceTracker.AttributePlayerFullName);
+            const playerCodeName = item.getAttribute(DeviceTracker.AttributePlayerCodeName);
             if (!playerFullName || !playerCodeName) {
                 return;
             }
-            const q: ScrcpyStreamParams = {
-                action,
-                udid,
-                player: decodeURIComponent(playerCodeName),
-                ws: url,
-            };
-            const link = BaseDeviceTracker.buildLink(q, decodeURIComponent(playerFullName));
+            const link = DeviceTracker.buildLink(
+                {
+                    action,
+                    udid,
+                    player: decodeURIComponent(playerCodeName),
+                    ws: url,
+                },
+                decodeURIComponent(playerFullName),
+                this.params,
+            );
             item.appendChild(link);
         });
     }
@@ -187,29 +157,18 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         return `device_list::${udid}::interface`;
     }
 
-    private static createInterfaceOption(
-        secure: boolean,
-        hostname: string,
-        port: string | number,
-        name: string,
-        udid = '',
-    ): HTMLOptionElement {
+    private static createInterfaceOption(params: ParamsDeviceTracker, name: string, udid = ''): HTMLOptionElement {
         const optionElement = document.createElement('option');
-        const search = udid
-            ? querystring.encode({
-                  action: 'proxy',
-                  remote: `tcp:${SERVER_PORT.toString(10)}`,
-                  udid: udid,
-              })
-            : '';
-        const url = Url.format({
-            protocol: secure ? 'wss:' : 'ws:',
-            hostname,
-            port,
-            search,
-            pathname: '/',
-            slashes: true,
-        });
+        const secure = !!params.secure;
+        const hostname = params.hostname || location.hostname;
+        const port = typeof params.port === 'number' ? params.port : secure ? 443 : 80;
+        const urlObject = this.buildUrl({ ...params, secure, hostname, port });
+        if (udid) {
+            urlObject.searchParams.set('action', ACTION.PROXY_ADB);
+            urlObject.searchParams.set('remote', `tcp:${SERVER_PORT.toString(10)}`);
+            urlObject.searchParams.set('udid', udid);
+        }
+        const url = urlObject.toString();
         optionElement.setAttribute(Attribute.URL, url);
         optionElement.setAttribute(Attribute.NAME, name);
         optionElement.innerText = `proxy over adb`;
@@ -246,20 +205,12 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
             return;
         }
 
-        const shellEntry = ShellClient.createEntryForDeviceList(device, blockClass, {
-            secure: this.secure,
-            hostname: this.hostname,
-            port: this.port,
-        });
+        const shellEntry = ShellClient.createEntryForDeviceList(device, blockClass, this.params);
         shellEntry && services.appendChild(shellEntry);
-        const devtoolsEntry = DevtoolsClient.createEntryForDeviceList(device, blockClass, {
-            secure: this.secure,
-            hostname: this.hostname,
-            port: this.port,
-        });
+        const devtoolsEntry = DevtoolsClient.createEntryForDeviceList(device, blockClass, this.params);
         devtoolsEntry && services.appendChild(devtoolsEntry);
 
-        const streamEntry = StreamClientScrcpy.createEntryForDeviceList(device, blockClass, this.url, fullName);
+        const streamEntry = StreamClientScrcpy.createEntryForDeviceList(device, blockClass, fullName, this.params);
         streamEntry && services.appendChild(streamEntry);
 
         DESC_COLUMNS.forEach((item) => {
@@ -318,9 +269,12 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                 );
                 device[fieldName].forEach((value) => {
                     const optionElement = DeviceTracker.createInterfaceOption(
-                        false,
-                        value.ipv4,
-                        SERVER_PORT.toString(10),
+                        {
+                            ...this.params,
+                            secure: false,
+                            hostname: value.ipv4,
+                            port: SERVER_PORT,
+                        },
                         value.name,
                     );
                     optionElement.innerText = `${value.name}: ${value.ipv4}`;
@@ -334,13 +288,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                     }
                 });
                 if (isActive) {
-                    const adbProxyOption = DeviceTracker.createInterfaceOption(
-                        this.secure,
-                        this.hostname,
-                        this.port,
-                        'proxy',
-                        device.udid,
-                    );
+                    const adbProxyOption = DeviceTracker.createInterfaceOption(this.params, 'proxy', device.udid);
                     if (lastSelected === 'proxy') {
                         adbProxyOption.selected = true;
                     }
@@ -377,17 +325,13 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
 
         tbody.appendChild(row);
         if (DeviceTracker.CREATE_DIRECT_LINKS && hasPid && selectInterface) {
-            DeviceTracker.updateLink(selectInterface, false);
+            this.updateLink(selectInterface, false);
         }
-    }
-
-    protected buildWebSocketUrl(): string {
-        return this.url;
     }
 
     public destroy(): void {
         super.destroy();
-        DeviceTracker.instancesByUrl.delete(this.url);
+        DeviceTracker.instancesByUrl.delete(this.url.toString());
         if (!DeviceTracker.instancesByUrl.size) {
             const holder = document.getElementById(BaseDeviceTracker.HOLDER_ELEMENT_ID);
             if (holder && holder.parentElement) {

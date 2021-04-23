@@ -5,35 +5,49 @@ import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
 import { MessageXtermClient } from '../../../types/MessageXtermClient';
 import { ACTION } from '../../../common/Action';
-import { ShellParams } from '../../../types/ShellParams';
+import { ParamsShell } from '../../../types/ParamsShell';
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
 import Util from '../../Util';
+import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
+import { ParsedUrlQuery } from 'querystring';
 
 const TAG = '[ShellClient]';
 
-export class ShellClient extends ManagerClient<never> {
+export class ShellClient extends ManagerClient<ParamsShell, never> {
     public static ACTION = ACTION.SHELL;
-    public static start(params: ShellParams): ShellClient {
-        return new ShellClient(params.action, params.udid);
+    public static start(params: ParsedUrlQuery): ShellClient {
+        return new ShellClient(params);
     }
+
     private readonly term: Terminal;
     private readonly fitAddon: FitAddon;
     private readonly escapedUdid: string;
+    private readonly udid: string;
 
-    constructor(action: string, private readonly udid: string) {
-        super(action);
+    constructor(params: ParsedUrlQuery) {
+        super(params);
+        this.udid = Util.parseStringEnv(params.udid);
         this.openNewWebSocket();
         const ws = this.ws as WebSocket;
-        this.setTitle(`Shell ${udid}`);
+        this.setTitle(`Shell ${this.udid}`);
         this.setBodyClass('shell');
         this.term = new Terminal();
         this.term.loadAddon(new AttachAddon(ws));
         this.fitAddon = new FitAddon();
         this.term.loadAddon(this.fitAddon);
-        this.escapedUdid = Util.escapeUdid(udid);
+        this.escapedUdid = Util.escapeUdid(this.udid);
         this.term.open(ShellClient.getOrCreateContainer(this.escapedUdid));
         this.updateTerminalSize();
+    }
+
+    public parseParameters(params: ParsedUrlQuery): ParamsShell {
+        const typedParams = super.parseParameters(params);
+        const { action } = typedParams;
+        if (action !== ACTION.SHELL) {
+            throw Error('Incorrect action');
+        }
+        return { ...typedParams, action, udid: Util.parseStringEnv(params.udid) };
     }
 
     protected onSocketOpen = (): void => {
@@ -67,11 +81,6 @@ export class ShellClient extends ManagerClient<never> {
         this.ws.send(JSON.stringify(message));
     }
 
-    protected buildWebSocketUrl(): string {
-        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        return `${proto}://${location.host}/?action=${this.action}&`;
-    }
-
     private static getOrCreateContainer(udid: string): HTMLElement {
         let container = document.getElementById(udid);
         if (!container) {
@@ -101,7 +110,7 @@ export class ShellClient extends ManagerClient<never> {
     public static createEntryForDeviceList(
         descriptor: GoogDeviceDescriptor,
         blockClass: string,
-        url?: { secure: boolean; hostname: string; port: string | number },
+        params: ParamsDeviceTracker,
     ): HTMLElement | DocumentFragment | undefined {
         if (descriptor.state !== 'device') {
             return;
@@ -115,7 +124,7 @@ export class ShellClient extends ManagerClient<never> {
                     udid: descriptor.udid,
                 },
                 'shell',
-                url,
+                params,
             ),
         );
         return entry;

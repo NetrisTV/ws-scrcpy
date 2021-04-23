@@ -10,7 +10,7 @@ const servicesToStart: ServiceClass[] = [HttpServer, WebSocketServer];
 const mwList: MwFactory[] = [HostTracker, WebsocketProxy];
 
 const runningServices: Service[] = [];
-const loadPlatfromModulesPromises: Promise<void>[] = [];
+const loadPlatformModulesPromises: Promise<void>[] = [];
 
 /// #if INCLUDE_GOOG
 async function loadGoogModules() {
@@ -29,7 +29,7 @@ async function loadGoogModules() {
     mwList.push(RemoteDevtools);
     mwList.push(WebsocketProxyOverAdb);
 }
-loadPlatfromModulesPromises.push(loadGoogModules());
+loadPlatformModulesPromises.push(loadGoogModules());
 /// #endif
 
 /// #if INCLUDE_APPL
@@ -53,10 +53,10 @@ async function loadApplModules() {
     mwList.push(StreamProxy);
     mwList.push(WebDriverAgentProxy);
 }
-loadPlatfromModulesPromises.push(loadApplModules());
+loadPlatformModulesPromises.push(loadApplModules());
 /// #endif
 
-Promise.all(loadPlatfromModulesPromises).then(() => {
+Promise.all(loadPlatformModulesPromises).then(() => {
     servicesToStart.forEach((serviceClass: ServiceClass) => {
         const service = serviceClass.getInstance();
         runningServices.push(service);

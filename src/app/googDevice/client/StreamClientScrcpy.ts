@@ -1,11 +1,11 @@
 import { BaseClient } from '../../client/BaseClient';
-import { ScrcpyStreamParams } from '../../../types/ScrcpyStreamParams';
+import { ParamsStreamScrcpy } from '../../../types/ParamsStreamScrcpy';
 import { DroidMoreBox } from '../toolbox/DroidMoreBox';
 import { DroidToolBox } from '../toolbox/DroidToolBox';
 import VideoSettings from '../../VideoSettings';
 import Size from '../../Size';
 import { ControlMessage } from '../../controlMessage/ControlMessage';
-import { ClientsStats, DisplayCombinedInfo, StreamReceiver } from '../../client/StreamReceiver';
+import { ClientsStats, DisplayCombinedInfo } from '../../client/StreamReceiver';
 import { CommandControlMessage } from '../../controlMessage/CommandControlMessage';
 import Util from '../../Util';
 import FilePushHandler from '../FilePushHandler';
@@ -14,7 +14,7 @@ import { KeyEventListener, KeyInputHandler } from '../KeyInputHandler';
 import { KeyCodeControlMessage } from '../../controlMessage/KeyCodeControlMessage';
 import { BasePlayer, PlayerClass } from '../../player/BasePlayer';
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
-import { ConfigureScrcpy, ConfigureScrcpyOptions } from './ConfigureScrcpy';
+import { ConfigureScrcpy } from './ConfigureScrcpy';
 import { DeviceTracker } from './DeviceTracker';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { html } from '../../ui/HtmlTag';
@@ -23,18 +23,25 @@ import DeviceMessage from '../DeviceMessage';
 import { DisplayInfo } from '../../DisplayInfo';
 import { Attribute } from '../../Attribute';
 import { HostTracker } from '../../client/HostTracker';
+import { ACTION } from '../../../common/Action';
+import { ParsedUrlQuery } from 'querystring';
+import { StreamReceiverScrcpy } from './StreamReceiverScrcpy';
+import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 
 type StartParams = {
     udid: string;
-    playerName: string | BasePlayer;
+    playerName?: string;
+    player?: BasePlayer;
     fitToScreen?: boolean;
     videoSettings?: VideoSettings;
 };
 
 const TAG = '[StreamClientScrcpy]';
 
-export class StreamClientScrcpy extends BaseClient<never> implements KeyEventListener, TouchHandlerListener {
-    public static ACTION: ScrcpyStreamParams['action'] = 'stream';
+export class StreamClientScrcpy
+    extends BaseClient<ParamsStreamScrcpy, never>
+    implements KeyEventListener, TouchHandlerListener {
+    public static ACTION = 'stream';
     private static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
 
     private controlButtons?: HTMLElement;
@@ -48,6 +55,7 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     private player?: BasePlayer;
     private filePushHandler?: FilePushHandler;
     private fitToScreen?: boolean;
+    private readonly streamReceiver: StreamReceiverScrcpy;
 
     public static registerPlayer(playerClass: PlayerClass): void {
         if (playerClass.isSupported()) {
@@ -85,19 +93,14 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         return playerClass.getFitToScreenStatus(udid, displayInfo);
     }
 
-    // TODO: remove deprecated method
-    public static createFromParam({ udid, player, decoder, ws }: ScrcpyStreamParams): StreamClientScrcpy {
-        const streamReceiver = new StreamReceiver(ws);
-        const playerName: string = typeof player === 'string' ? player : (decoder as string);
-        const client = new StreamClientScrcpy(streamReceiver);
-        client.startStream({ udid, playerName });
-        return client;
-    }
-
-    public static createWithReceiver(streamReceiver: StreamReceiver, params: StartParams): StreamClientScrcpy {
-        const client = new StreamClientScrcpy(streamReceiver);
-        client.startStream(params);
-        return client;
+    public static start(
+        params: ParsedUrlQuery | ParamsStreamScrcpy,
+        streamReceiver?: StreamReceiverScrcpy,
+        player?: BasePlayer,
+        fitToScreen?: boolean,
+        videoSettings?: VideoSettings,
+    ): StreamClientScrcpy {
+        return new StreamClientScrcpy(params, streamReceiver, player, fitToScreen, videoSettings);
     }
 
     private static createVideoSettingsWithBounds(old: VideoSettings, newBounds: Size): VideoSettings {
@@ -115,10 +118,38 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         });
     }
 
-    protected constructor(private readonly streamReceiver: StreamReceiver) {
-        super();
+    protected constructor(
+        params: ParsedUrlQuery | ParamsStreamScrcpy,
+        streamReceiver?: StreamReceiverScrcpy,
+        player?: BasePlayer,
+        fitToScreen?: boolean,
+        videoSettings?: VideoSettings,
+    ) {
+        super(params);
+        if (streamReceiver) {
+            this.streamReceiver = streamReceiver;
+        } else {
+            this.streamReceiver = new StreamReceiverScrcpy(this.params);
+        }
 
+        const { udid, player: playerName } = this.params;
+        this.startStream({ udid, player, playerName, fitToScreen, videoSettings });
         this.setBodyClass('stream');
+    }
+
+    public parseParameters(params: ParsedUrlQuery): ParamsStreamScrcpy {
+        const typedParams = super.parseParameters(params);
+        const { action } = typedParams;
+        if (action !== ACTION.STREAM_SCRCPY) {
+            throw Error('Incorrect action');
+        }
+        return {
+            ...typedParams,
+            action,
+            player: Util.parseStringEnv(params.player),
+            udid: Util.parseStringEnv(params.udid),
+            ws: Util.parseStringEnv(params.ws),
+        };
     }
 
     public OnDeviceMessage = (message: DeviceMessage): void => {
@@ -221,14 +252,16 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         this.touchHandler = undefined;
     };
 
-    public startStream({ udid, playerName, videoSettings, fitToScreen }: StartParams): void {
+    public startStream({ udid, player, playerName, videoSettings, fitToScreen }: StartParams): void {
         if (!udid) {
-            return;
+            throw Error(`Invalid udid value: "${udid}"`);
         }
 
         this.fitToScreen = fitToScreen;
-        let player: BasePlayer;
-        if (typeof playerName === 'string') {
+        if (!player) {
+            if (typeof playerName !== 'string') {
+                throw Error('Must provide BasePlayer instance or playerName');
+            }
             let displayInfo: DisplayInfo | undefined;
             if (this.streamReceiver && videoSettings) {
                 displayInfo = this.streamReceiver.getDisplayInfo(videoSettings.displayId);
@@ -241,8 +274,6 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
                 fitToScreen = StreamClientScrcpy.getFitToScreen(playerName, udid, displayInfo);
             }
             player = p;
-        } else {
-            player = playerName;
         }
         this.player = player;
         this.setTouchListeners(player);
@@ -267,7 +298,9 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
                 parent.removeChild(moreBox);
             }
             this.streamReceiver.stop();
-            player.stop();
+            if (this.player) {
+                this.player.stop();
+            }
         };
 
         const droidMoreBox = (this.droidMoreBox = new DroidMoreBox(udid, player, this));
@@ -370,8 +403,8 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
     public static createEntryForDeviceList(
         descriptor: GoogDeviceDescriptor,
         blockClass: string,
-        url: string,
         fullName: string,
+        params: ParamsDeviceTracker,
     ): HTMLElement | DocumentFragment | undefined {
         const hasPid = descriptor.pid !== -1;
         if (hasPid) {
@@ -381,7 +414,10 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
                     ${Attribute.UDID}="${descriptor.udid}"
                     ${Attribute.COMMAND}="${ControlCenterCommand.CONFIGURE_STREAM}"
                     ${Attribute.FULL_NAME}="${fullName}"
-                    ${Attribute.URL}="${url}"
+                    ${Attribute.SECURE}="${params.secure}"
+                    ${Attribute.HOSTNAME}="${params.hostname}"
+                    ${Attribute.PORT}="${params.port}"
+                    ${Attribute.USE_PROXY}="${params.useProxy}"
                     id="${configureButtonId}"
                     class="active action-button"
                 >
@@ -397,13 +433,25 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
 
     private static onConfigureStreamClick = (e: MouseEvent): void => {
         const button = e.currentTarget as HTMLAnchorElement;
-        const udid = button.getAttribute(Attribute.UDID);
+        const udid = Util.parseStringEnv(button.getAttribute(Attribute.UDID) || '');
         const fullName = button.getAttribute(Attribute.FULL_NAME);
-        const trackerUrl = button.getAttribute(Attribute.URL);
-        if (!udid || !trackerUrl) {
-            return;
+        const secure = Util.parseBooleanEnv(button.getAttribute(Attribute.SECURE) || undefined) || false;
+        const hostname = Util.parseStringEnv(button.getAttribute(Attribute.HOSTNAME) || undefined);
+        const port = Util.parseIntEnv(button.getAttribute(Attribute.PORT) || undefined);
+        const useProxy = Util.parseBooleanEnv(button.getAttribute(Attribute.USE_PROXY) || undefined);
+        if (!udid) {
+            throw Error(`Invalid udid value: "${udid}"`);
         }
-        const tracker = DeviceTracker.getInstanceByUrl(trackerUrl);
+        if (typeof port !== 'number') {
+            throw Error(`Invalid port type: ${typeof port}`);
+        }
+        const tracker = DeviceTracker.getInstance({
+            type: 'android',
+            secure,
+            hostname,
+            port,
+            useProxy,
+        });
         const descriptor = tracker.getDescriptorByUdid(udid);
         if (!descriptor) {
             return;
@@ -415,14 +463,20 @@ export class StreamClientScrcpy extends BaseClient<never> implements KeyEventLis
         }
         const select = elements[0] as HTMLSelectElement;
         const optionElement = select.options[select.selectedIndex];
-        const url = optionElement.getAttribute(Attribute.URL);
+        const ws = optionElement.getAttribute(Attribute.URL);
         const name = optionElement.getAttribute(Attribute.NAME);
-        if (!url || !name) {
+        if (!ws || !name) {
             return;
         }
-        const options: ConfigureScrcpyOptions = {
-            name,
-            ws: url,
+        const options: ParamsStreamScrcpy = {
+            udid,
+            ws,
+            player: '',
+            action: ACTION.STREAM_SCRCPY,
+            secure,
+            hostname,
+            port,
+            useProxy,
         };
         const dialog = new ConfigureScrcpy(tracker, descriptor, options);
         dialog.on('closed', StreamClientScrcpy.onConfigureDialogClosed);

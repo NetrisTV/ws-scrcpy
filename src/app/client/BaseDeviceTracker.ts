@@ -4,42 +4,57 @@ import { Message } from '../../types/Message';
 import { BaseDeviceDescriptor } from '../../types/BaseDeviceDescriptor';
 import { DeviceTrackerEvent } from '../../types/DeviceTrackerEvent';
 import { DeviceTrackerEventList } from '../../types/DeviceTrackerEventList';
-import { HostItem } from '../../types/Configuration';
-import Url from 'url';
 import { html } from '../ui/HtmlTag';
-import { ParsedUrlQueryInput } from 'querystring';
+import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
+import { ParamsDeviceTracker } from '../../types/ParamsDeviceTracker';
+import { HostItem } from '../../types/Configuration';
 
 const TAG = '[BaseDeviceTracker]';
 
-export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> extends ManagerClient<K> {
+export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> extends ManagerClient<
+    ParamsDeviceTracker,
+    TE
+> {
     public static readonly ACTION_LIST = 'devicelist';
     public static readonly ACTION_DEVICE = 'device';
     public static readonly HOLDER_ELEMENT_ID = 'devices';
     protected title = 'Device list';
     protected tableId = 'base_device_list';
-    protected descriptors: T[] = [];
+    protected descriptors: DD[] = [];
     protected trackerName = '';
     protected id = '';
     private created = false;
     private messageId = 0;
 
-    public static buildUrl(item: HostItem): string {
+    public static buildUrl(item: HostItem): URL {
         const { secure, port, hostname } = item;
         const protocol = secure ? 'wss:' : 'ws:';
-        return Url.format({
-            protocol,
-            hostname,
-            port,
-            search: `action=${this.ACTION}`,
-            pathname: '/',
-            slashes: true,
-        });
+        const url = new URL(`${protocol}//${hostname}`);
+        if (port) {
+            url.port = port.toString();
+        }
+        return url;
     }
 
-    protected constructor(action: string) {
-        super(action);
+    public static buildUrlForTracker(params: HostItem): URL {
+        const wsUrl = this.buildUrl(params);
+        wsUrl.searchParams.set('action', this.ACTION);
+        return wsUrl;
+    }
+
+    protected constructor(params: ParamsDeviceTracker, protected readonly directUrl: string) {
+        super(params);
         this.setBodyClass('list');
         this.setTitle();
+    }
+
+    public parseParameters(params: ParsedUrlQuery): ParamsDeviceTracker {
+        const typedParams = super.parseParameters(params);
+        const { type } = params;
+        if (type !== 'android' && type !== 'ios') {
+            throw Error('Incorrect type');
+        }
+        return { ...typedParams, type };
     }
 
     protected getNextId(): number {
@@ -81,7 +96,7 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         return el;
     }
 
-    protected abstract buildDeviceRow(tbody: Element, device: T): void;
+    protected abstract buildDeviceRow(tbody: Element, device: DD): void;
 
     protected onSocketClose(e: CloseEvent): void {
         console.log(TAG, `Connection closed: ${e.reason}`);
@@ -101,14 +116,14 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         }
         switch (message.type) {
             case BaseDeviceTracker.ACTION_LIST: {
-                const event = message.data as DeviceTrackerEventList<T>;
+                const event = message.data as DeviceTrackerEventList<DD>;
                 this.descriptors = event.list;
                 this.setIdAndHostName(event.id, event.name);
                 this.buildDeviceTable();
                 break;
             }
             case BaseDeviceTracker.ACTION_DEVICE: {
-                const event = message.data as DeviceTrackerEvent<T>;
+                const event = message.data as DeviceTrackerEvent<DD>;
                 this.setIdAndHostName(event.id, event.name);
                 this.updateDescriptor(event.device);
                 this.buildDeviceTable();
@@ -152,8 +167,8 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         return devices;
     }
 
-    protected updateDescriptor(descriptor: T): void {
-        const idx = this.descriptors.findIndex((item: T) => {
+    protected updateDescriptor(descriptor: DD): void {
+        const idx = this.descriptors.findIndex((item: DD) => {
             return item.udid === descriptor.udid;
         });
         if (idx !== -1) {
@@ -165,7 +180,9 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
 
     protected getOrBuildTableBody(parent: HTMLElement): Element {
         const className = 'device-list';
-        let tbody = document.querySelector(`#devices #${this.tableId}.${className}`) as Element;
+        let tbody = document.querySelector(
+            `#${BaseDeviceTracker.HOLDER_ELEMENT_ID} #${this.tableId}.${className}`,
+        ) as Element;
         if (!tbody) {
             const fragment = html`<div id="${this.tableId}" class="${className}"></div>`.content;
             parent.appendChild(fragment);
@@ -177,19 +194,22 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         return tbody;
     }
 
-    public static buildLink(
-        q: ParsedUrlQueryInput,
-        text: string,
-        url?: { secure: boolean; hostname: string; port: string | number },
-    ): HTMLAnchorElement {
+    public static buildLink(q: ParsedUrlQueryInput, text: string, params: ParamsDeviceTracker): HTMLAnchorElement {
+        let { hostname } = params;
+        let port: string | number | undefined = params.port;
+        let protocol = params.secure ? 'https:' : 'http:';
+        if (params.useProxy) {
+            q.hostname = hostname;
+            q.port = port;
+            q.secure = params.secure;
+            q.useProxy = true;
+            protocol = location.protocol;
+            hostname = location.hostname;
+            port = location.port;
+        }
         const hash = `#!${querystring.encode(q)}`;
         const a = document.createElement('a');
-        if (url) {
-            const protocol = url.secure ? 'https' : 'http';
-            a.setAttribute('href', `${protocol}://${url.hostname}:${url.port}/${hash}`);
-        } else {
-            a.setAttribute('href', `${location.origin}${location.pathname}${hash}`);
-        }
+        a.setAttribute('href', `${protocol}//${hostname}:${port}/${hash}`);
         a.setAttribute('rel', 'noopener noreferrer');
         a.setAttribute('target', '_blank');
         a.classList.add(`link-${q.action}`);
@@ -197,11 +217,11 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         return a;
     }
 
-    public getDescriptorByUdid(udid: string): T | undefined {
+    public getDescriptorByUdid(udid: string): DD | undefined {
         if (!this.descriptors.length) {
             return;
         }
-        return this.descriptors.find((descriptor: T) => {
+        return this.descriptors.find((descriptor: DD) => {
             return descriptor.udid === udid;
         });
     }
@@ -210,9 +230,17 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
         super.destroy();
         if (this.created) {
             const el = document.getElementById(`tracker_${this.id}`);
-            if (el && el.parentElement) {
-                el.parentElement.removeChild(el);
+            if (el) {
+                const { parentElement } = el;
+                el.remove();
+                if (parentElement && !parentElement.children.length) {
+                    parentElement.remove();
+                }
             }
+        }
+        const holder = document.getElementById(BaseDeviceTracker.HOLDER_ELEMENT_ID);
+        if (holder && !holder.children.length) {
+            holder.remove();
         }
     }
 }

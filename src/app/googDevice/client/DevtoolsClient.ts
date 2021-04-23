@@ -1,34 +1,38 @@
 import '../../../style/devtools.css';
 import { ManagerClient } from '../../client/ManagerClient';
 import { ACTION } from '../../../common/Action';
-import { DevtoolsParams } from '../../../types/DevtoolsParams';
+import { ParamsDevtools } from '../../../types/ParamsDevtools';
 import { RemoteDevtoolsCommand } from '../../../types/RemoteDevtoolsCommand';
 import { Message } from '../../../types/Message';
 import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, TargetDescription } from '../../../types/RemoteDevtools';
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
+import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
+import { ParsedUrlQuery } from 'querystring';
+import Util from '../../Util';
 
 const FRONTEND_RE = /^https?:\/\/chrome-devtools-frontend\.appspot\.com\/serve_rev\/(@.*)/;
 
 const TAG = '[DevtoolsClient]';
 
-export class DevtoolsClient extends ManagerClient<never> {
+export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
     public static readonly ACTION = ACTION.DEVTOOLS;
     public static readonly TIMEOUT = 1000;
 
-    public static start(params: DevtoolsParams): DevtoolsClient {
-        const { udid } = params;
-        return new DevtoolsClient(params.action, udid);
+    public static start(params: ParsedUrlQuery): DevtoolsClient {
+        return new DevtoolsClient(params);
     }
 
     private timeout?: number;
     private readonly hiddenInput: HTMLInputElement;
     private readonly tooltip: HTMLSpanElement;
     private hideTimeout?: number;
-    constructor(action: string, private readonly udid: string) {
-        super(action);
+    private readonly udid: string;
+    constructor(params: ParsedUrlQuery) {
+        super(params);
+        this.udid = this.params.udid;
         this.openNewWebSocket();
-        this.setTitle(`Devtools ${udid}`);
+        this.setTitle(`Devtools ${this.udid}`);
         this.setBodyClass('devtools');
         this.hiddenInput = document.createElement('input');
         this.hiddenInput.className = 'hidden';
@@ -39,6 +43,15 @@ export class DevtoolsClient extends ManagerClient<never> {
         this.tooltip.className = 'tooltip';
         this.tooltip.style.display = 'none';
         document.body.appendChild(this.tooltip);
+    }
+
+    public parseParameters(params: ParsedUrlQuery): ParamsDevtools {
+        const typedParams = super.parseParameters(params);
+        const { action } = typedParams;
+        if (action !== ACTION.DEVTOOLS) {
+            throw Error('Incorrect action');
+        }
+        return { ...typedParams, action, udid: Util.parseStringEnv(params.udid) };
     }
 
     private static compareBrowsers = (a: RemoteBrowserInfo, b: RemoteBrowserInfo): number => {
@@ -52,9 +65,12 @@ export class DevtoolsClient extends ManagerClient<never> {
         return 0;
     };
 
-    protected buildWebSocketUrl(): string {
-        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        return `${proto}://${location.host}/?action=${this.action}&udid=${encodeURIComponent(this.udid)}`;
+    protected buildDirectWebSocketUrl(): URL {
+        const localUrl = super.buildDirectWebSocketUrl();
+        if (typeof this.params.udid === 'string') {
+            localUrl.searchParams.set('udid', this.params.udid);
+        }
+        return localUrl;
     }
 
     protected onSocketClose(e: CloseEvent): void {
@@ -340,7 +356,7 @@ export class DevtoolsClient extends ManagerClient<never> {
     public static createEntryForDeviceList(
         descriptor: GoogDeviceDescriptor,
         blockClass: string,
-        url?: { secure: boolean; hostname: string; port: string | number },
+        params: ParamsDeviceTracker,
     ): HTMLElement | DocumentFragment | undefined {
         if (descriptor.state !== 'device') {
             return;
@@ -354,7 +370,7 @@ export class DevtoolsClient extends ManagerClient<never> {
                     udid: descriptor.udid,
                 },
                 'devtools',
-                url,
+                params,
             ),
         );
         return entry;

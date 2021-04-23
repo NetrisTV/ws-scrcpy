@@ -6,6 +6,7 @@ import { ACTION } from '../../../common/Action';
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import { DeviceTrackerEvent } from '../../../types/DeviceTrackerEvent';
 import { DeviceTrackerEventList } from '../../../types/DeviceTrackerEventList';
+import Util from '../../../app/Util';
 import { HostItem } from '../../../types/Configuration';
 
 export class DeviceTracker extends Mw {
@@ -20,15 +21,16 @@ export class DeviceTracker extends Mw {
         return new DeviceTracker(ws);
     }
 
-    public static buildHostItem(params: RequestParameters): HostItem {
+    // from TrackerClass interface in HostTracker.ts
+    public static buildParams(params: RequestParameters): HostItem {
         const type = 'android';
         const host = params.request.headers.host || '127.0.0.1';
         const temp = host.split(':');
         let hostname = host;
-        let port = '80';
+        let port = 80;
         if (temp.length > 1) {
             hostname = temp[0];
-            port = temp[1];
+            port = Util.parseIntEnv(temp[1]) || 80;
         }
         return {
             secure: false,
