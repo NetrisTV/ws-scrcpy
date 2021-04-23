@@ -32,15 +32,20 @@ export class SimpleTouchHandler extends TouchHandler {
             }
             const events = this.buildTouchEvent(e, screenInfo, this.storage);
             if (events.length > 1) {
-                console.log(TAG, 'Too many events', events);
+                console.warn(TAG, 'Too many events', events);
                 return;
             }
+            const downEventName = 'mousedown';
             if (events.length === 1) {
                 handled = true;
-                if (e.type === 'mousedown') {
+                if (e.type === downEventName) {
                     this.startPosition = events[0].position;
                 } else {
-                    this.endPosition = events[0].position;
+                    if (this.startPosition) {
+                        this.endPosition = events[0].position;
+                    } else {
+                        console.warn(TAG, `Received "${e.type}" before "${downEventName}"`);
+                    }
                 }
                 if (this.startPosition) {
                     this.drawPointer(this.startPosition.point);
