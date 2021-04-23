@@ -1,26 +1,24 @@
-import { BaseDeviceTracker } from './BaseDeviceTracker';
-import { HostItem } from '../../types/Configuration';
+import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
+import { HostItem } from '../../../types/Configuration';
 import Url from 'url';
-import { ACTION } from '../../common/Action';
-import ApplDeviceDescriptor from '../../types/ApplDeviceDescriptor';
-import Util from '../Util';
-import { html } from '../ui/HtmlTag';
-import { DeviceState } from '../../common/DeviceState';
+import { ACTION } from '../../../common/Action';
+import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
+import Util from '../../Util';
+import { html } from '../../ui/HtmlTag';
+import { DeviceState } from '../../../common/DeviceState';
 
-const TAG = '[DeviceTrackerQVHack]';
-
-export class DeviceTrackerIos extends BaseDeviceTracker<ApplDeviceDescriptor, never> {
+export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never> {
     public static ACTION = ACTION.APPL_DEVICE_LIST;
-    protected tableId = 'qvhack_devices_list';
-    private static instancesByUrl: Map<string, DeviceTrackerIos> = new Map();
-    public static start(itemOrUrl: HostItem | string): DeviceTrackerIos {
+    protected tableId = 'appl_devices_list';
+    private static instancesByUrl: Map<string, DeviceTracker> = new Map();
+    public static start(itemOrUrl: HostItem | string): DeviceTracker {
         if (typeof itemOrUrl === 'string') {
             return this.getInstanceByUrl(itemOrUrl);
         }
         return this.getInstance(itemOrUrl);
     }
 
-    public static getInstanceByUrl(url: string): DeviceTrackerIos {
+    public static getInstanceByUrl(url: string): DeviceTracker {
         let instance = this.instancesByUrl.get(url);
         if (!instance) {
             const parsed = Url.parse(url);
@@ -30,17 +28,17 @@ export class DeviceTrackerIos extends BaseDeviceTracker<ApplDeviceDescriptor, ne
             if (!port) {
                 port = secure ? '443' : '80';
             }
-            instance = new DeviceTrackerIos({ type: 'ios', secure, hostname, port });
+            instance = new DeviceTracker({ type: 'ios', secure, hostname, port });
             this.instancesByUrl.set(url, instance);
         }
         return instance;
     }
 
-    public static getInstance(item: HostItem): DeviceTrackerIos {
+    public static getInstance(item: HostItem): DeviceTracker {
         const url = this.buildUrl(item);
         let instance = this.instancesByUrl.get(url);
         if (!instance) {
-            instance = new DeviceTrackerIos(item);
+            instance = new DeviceTracker(item);
             this.instancesByUrl.set(url, instance);
         }
         return instance;
@@ -56,7 +54,7 @@ export class DeviceTrackerIos extends BaseDeviceTracker<ApplDeviceDescriptor, ne
         this.secure = item.secure;
         this.hostname = item.hostname;
         this.port = item.port;
-        this.url = DeviceTrackerIos.buildUrl(item);
+        this.url = DeviceTracker.buildUrl(item);
         this.setBodyClass('list');
         this.setTitle('Device list');
         this.openNewWebSocket();
@@ -64,13 +62,6 @@ export class DeviceTrackerIos extends BaseDeviceTracker<ApplDeviceDescriptor, ne
 
     protected onSocketOpen(): void {
         // do nothing;
-    }
-
-    protected onSocketClose(e: CloseEvent): void {
-        console.log(TAG, `Connection closed: ${e.reason}`);
-        setTimeout(() => {
-            this.openNewWebSocket();
-        }, 2000);
     }
 
     protected buildDeviceRow(tbody: Element, device: ApplDeviceDescriptor): void {
@@ -97,7 +88,7 @@ export class DeviceTrackerIos extends BaseDeviceTracker<ApplDeviceDescriptor, ne
 
         const playerTd = document.createElement('div');
         playerTd.className = blockClass;
-        const link = DeviceTrackerIos.buildLink(
+        const link = DeviceTracker.buildLink(
             {
                 action: ACTION.STREAM_WS_QVH,
                 udid: device.udid,

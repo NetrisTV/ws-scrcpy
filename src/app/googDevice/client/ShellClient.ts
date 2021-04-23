@@ -1,14 +1,14 @@
 import 'xterm/css/xterm.css';
-import { ManagerClient } from './ManagerClient';
+import { ManagerClient } from '../../client/ManagerClient';
 import { Terminal } from 'xterm';
 import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
-import { MessageXtermClient } from '../../types/MessageXtermClient';
-import { ACTION } from '../../common/Action';
-import { ShellParams } from '../../types/ShellParams';
-import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
-import { BaseDeviceTracker } from './BaseDeviceTracker';
-import Util from '../Util';
+import { MessageXtermClient } from '../../../types/MessageXtermClient';
+import { ACTION } from '../../../common/Action';
+import { ShellParams } from '../../../types/ShellParams';
+import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
+import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
+import Util from '../../Util';
 
 const TAG = '[ShellClient]';
 

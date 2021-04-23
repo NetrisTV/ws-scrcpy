@@ -1,6 +1,6 @@
-import Point from './Point';
-import Position from './Position';
-import ScreenInfo from './ScreenInfo';
+import Point from '../Point';
+import Position from '../Position';
+import ScreenInfo from '../ScreenInfo';
 import { WsQVHackClient } from './client/WsQVHackClient';
 
 interface WdaScreen {

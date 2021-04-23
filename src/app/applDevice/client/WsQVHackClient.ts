@@ -1,8 +1,8 @@
-import { ManagerClient } from './ManagerClient';
-import { MessageRunWdaResponse } from '../../types/MessageRunWdaResponse';
-import ApplDeviceDescriptor from '../../types/ApplDeviceDescriptor';
-import { Message } from '../../types/Message';
-import { ControlCenterCommand } from '../../common/ControlCenterCommand';
+import { ManagerClient } from '../../client/ManagerClient';
+import { MessageRunWdaResponse } from '../../../types/MessageRunWdaResponse';
+import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
+import { Message } from '../../../types/Message';
+import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 
 export type WsQVHackClientEvents = {
     'device-list': ApplDeviceDescriptor[];

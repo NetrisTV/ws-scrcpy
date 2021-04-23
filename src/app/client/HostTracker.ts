@@ -2,8 +2,8 @@ import { ManagerClient } from './ManagerClient';
 import { Message } from '../../types/Message';
 import { MessageError, MessageHosts, MessageType } from '../../common/HostTrackerMessage';
 import { ACTION } from '../../common/Action';
-import { DeviceTracker } from './DeviceTracker';
-import { DeviceTrackerIos } from './DeviceTrackerIos';
+import { DeviceTracker as GoogDeviceTracker } from '../googDevice/client/DeviceTracker';
+import { DeviceTracker as ApplDeviceTracker } from '../applDevice/client/DeviceTracker';
 import { HostItem } from '../../types/Configuration';
 
 const TAG = '[HostTracker]';
@@ -28,7 +28,7 @@ export class HostTracker extends ManagerClient<HostTrackerEvents> {
         return this.instance;
     }
 
-    private trackers: Array<DeviceTracker | DeviceTrackerIos> = [];
+    private trackers: Array<GoogDeviceTracker | ApplDeviceTracker> = [];
 
     constructor() {
         super(ACTION.LIST_HOSTS);
@@ -63,10 +63,10 @@ export class HostTracker extends ManagerClient<HostTrackerEvents> {
                 msg.data.forEach((item) => {
                     switch (item.type) {
                         case 'android':
-                            this.trackers.push(DeviceTracker.start(DeviceTracker.buildUrl(item)));
+                            this.trackers.push(GoogDeviceTracker.start(GoogDeviceTracker.buildUrl(item)));
                             break;
                         case 'ios':
-                            this.trackers.push(DeviceTrackerIos.start(DeviceTrackerIos.buildUrl(item)));
+                            this.trackers.push(ApplDeviceTracker.start(ApplDeviceTracker.buildUrl(item)));
                             break;
                         default:
                             console.warn(TAG, `Unsupported host type: "${item.type}"`);

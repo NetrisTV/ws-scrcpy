@@ -1,17 +1,17 @@
-import { BaseClient } from './BaseClient';
-import { QVHackStreamParams } from '../../types/QVHackStreamParams';
+import { BaseClient } from '../../client/BaseClient';
+import { QVHackStreamParams } from '../../../types/QVHackStreamParams';
 import { QVHackMoreBox } from '../toolbox/QVHackMoreBox';
 import { QVHackToolBox } from '../toolbox/QVHackToolBox';
 import WdaConnection from '../WdaConnection';
 import { WsQVHackClient } from './WsQVHackClient';
-import Size from '../Size';
-import ScreenInfo from '../ScreenInfo';
-import { StreamReceiver } from './StreamReceiver';
-import Position from '../Position';
-import { MsePlayerForQVHack } from '../player/MsePlayerForQVHack';
-import { BasePlayer } from '../player/BasePlayer';
-import { SimpleTouchHandler, TouchHandlerListener } from '../touchHandler/SimpleTouchHandler';
-import { ACTION } from '../../common/Action';
+import Size from '../../Size';
+import ScreenInfo from '../../ScreenInfo';
+import { StreamReceiver } from '../../client/StreamReceiver';
+import Position from '../../Position';
+import { MsePlayerForQVHack } from '../../player/MsePlayerForQVHack';
+import { BasePlayer } from '../../player/BasePlayer';
+import { SimpleTouchHandler, TouchHandlerListener } from '../../touchHandler/SimpleTouchHandler';
+import { ACTION } from '../../../common/Action';
 
 const WAIT_CLASS = 'wait';
 

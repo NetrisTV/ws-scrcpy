@@ -1,9 +1,9 @@
-import { ToolBox } from './ToolBox';
-import SvgImage from '../ui/SvgImage';
-import { BasePlayer } from '../player/BasePlayer';
-import { ToolBoxButton } from './ToolBoxButton';
-import { ToolBoxElement } from './ToolBoxElement';
-import { ToolBoxCheckbox } from './ToolBoxCheckbox';
+import { ToolBox } from '../../toolbox/ToolBox';
+import SvgImage from '../../ui/SvgImage';
+import { BasePlayer } from '../../player/BasePlayer';
+import { ToolBoxButton } from '../../toolbox/ToolBoxButton';
+import { ToolBoxElement } from '../../toolbox/ToolBoxElement';
+import { ToolBoxCheckbox } from '../../toolbox/ToolBoxCheckbox';
 import WdaConnection from '../WdaConnection';
 import { StreamClientQVHack } from '../client/StreamClientQVHack';
 

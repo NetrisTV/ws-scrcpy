@@ -16,7 +16,7 @@ export abstract class BaseDeviceTracker<T extends BaseDeviceDescriptor, K> exten
     public static readonly ACTION_DEVICE = 'device';
     public static readonly HOLDER_ELEMENT_ID = 'devices';
     protected title = 'Device list';
-    protected tableId = 'droid_device_list';
+    protected tableId = 'base_device_list';
     protected descriptors: T[] = [];
     protected trackerName = '';
     protected id = '';

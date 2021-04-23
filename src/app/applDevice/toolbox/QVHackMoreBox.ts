@@ -1,5 +1,5 @@
-import { BasePlayer } from '../player/BasePlayer';
-import Size from '../Size';
+import { BasePlayer } from '../../player/BasePlayer';
+import Size from '../../Size';
 
 const TAG = '[QVHackMoreBox]';
 

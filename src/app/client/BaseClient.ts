@@ -1,4 +1,4 @@
-import { TypedEmitter } from '../TypedEmitter';
+import { TypedEmitter } from '../../common/TypedEmitter';
 
 export class BaseClient<T> extends TypedEmitter<T> {
     protected title = 'BaseClient';

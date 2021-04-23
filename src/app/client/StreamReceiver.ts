@@ -1,6 +1,6 @@
 import { ManagerClient } from './ManagerClient';
 import { ControlMessage } from '../controlMessage/ControlMessage';
-import DeviceMessage from '../DeviceMessage';
+import DeviceMessage from '../googDevice/DeviceMessage';
 import VideoSettings from '../VideoSettings';
 import ScreenInfo from '../ScreenInfo';
 import Util from '../Util';

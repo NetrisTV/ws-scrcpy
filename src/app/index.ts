@@ -1,16 +1,16 @@
 import '../style/app.css';
 import * as querystring from 'querystring';
-import { StreamClientScrcpy } from './client/StreamClientScrcpy';
-import { ShellClient } from './client/ShellClient';
+import { StreamClientScrcpy } from './googDevice/client/StreamClientScrcpy';
+import { ShellClient } from './googDevice/client/ShellClient';
 import { ScrcpyStreamParams } from '../types/ScrcpyStreamParams';
 import { ShellParams } from '../types/ShellParams';
-import { DevtoolsClient } from './client/DevtoolsClient';
+import { DevtoolsClient } from './googDevice/client/DevtoolsClient';
 import { DevtoolsParams } from '../types/DevtoolsParams';
 import { BroadwayPlayer } from './player/BroadwayPlayer';
 import { MsePlayer } from './player/MsePlayer';
 import { TinyH264Player } from './player/TinyH264Player';
 import { HostTracker } from './client/HostTracker';
-import { StreamClientQVHack } from './client/StreamClientQVHack';
+import { StreamClientQVHack } from './applDevice/client/StreamClientQVHack';
 import { QVHackStreamParams } from '../types/QVHackStreamParams';
 
 window.onload = function (): void {

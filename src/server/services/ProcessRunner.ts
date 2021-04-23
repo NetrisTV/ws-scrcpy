@@ -1,5 +1,5 @@
 import { Service } from './Service';
-import { TypedEmitter } from '../../app/TypedEmitter';
+import { TypedEmitter } from '../../common/TypedEmitter';
 import * as process from 'process';
 import { ChildProcessByStdio, spawn } from 'child_process';
 import { EnvName } from '../EnvName';

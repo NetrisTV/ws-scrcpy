@@ -1,18 +1,18 @@
-import '../../style/dialog.css';
-import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
-import { DisplayCombinedInfo, StreamReceiver } from './StreamReceiver';
-import VideoSettings from '../VideoSettings';
-import { BaseClient } from './BaseClient';
+import '../../../style/dialog.css';
+import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
+import { DisplayCombinedInfo, StreamReceiver } from '../../client/StreamReceiver';
+import VideoSettings from '../../VideoSettings';
+import { BaseClient } from '../../client/BaseClient';
 import { StreamClientScrcpy } from './StreamClientScrcpy';
-import Size from '../Size';
-import Util from '../Util';
-import { DisplayInfo } from '../DisplayInfo';
-import { ToolBoxButton } from '../toolbox/ToolBoxButton';
-import SvgImage from '../ui/SvgImage';
-import { PlayerClass } from '../player/BasePlayer';
-import { ToolBoxCheckbox } from '../toolbox/ToolBoxCheckbox';
+import Size from '../../Size';
+import Util from '../../Util';
+import { DisplayInfo } from '../../DisplayInfo';
+import { ToolBoxButton } from '../../toolbox/ToolBoxButton';
+import SvgImage from '../../ui/SvgImage';
+import { PlayerClass } from '../../player/BasePlayer';
+import { ToolBoxCheckbox } from '../../toolbox/ToolBoxCheckbox';
 import { DeviceTracker } from './DeviceTracker';
-import { Attribute } from '../Attribute';
+import { Attribute } from '../../Attribute';
 
 export type ConfigureScrcpyOptions = {
     name: string;

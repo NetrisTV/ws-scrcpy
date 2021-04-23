@@ -1,11 +1,11 @@
-import '../../style/morebox.css';
-import { BasePlayer } from '../player/BasePlayer';
-import { TextControlMessage } from '../controlMessage/TextControlMessage';
-import { CommandControlMessage } from '../controlMessage/CommandControlMessage';
-import { ControlMessage } from '../controlMessage/ControlMessage';
-import Size from '../Size';
+import '../../../style/morebox.css';
+import { BasePlayer } from '../../player/BasePlayer';
+import { TextControlMessage } from '../../controlMessage/TextControlMessage';
+import { CommandControlMessage } from '../../controlMessage/CommandControlMessage';
+import { ControlMessage } from '../../controlMessage/ControlMessage';
+import Size from '../../Size';
 import DeviceMessage from '../DeviceMessage';
-import VideoSettings from '../VideoSettings';
+import VideoSettings from '../../VideoSettings';
 import { StreamClientScrcpy } from '../client/StreamClientScrcpy';
 
 const TAG = '[DroidMoreBox]';

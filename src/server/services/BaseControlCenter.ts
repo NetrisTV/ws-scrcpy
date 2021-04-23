@@ -1,5 +1,5 @@
 import { ControlCenterCommand } from '../../common/ControlCenterCommand';
-import { TypedEmitter } from '../../app/TypedEmitter';
+import { TypedEmitter } from '../../common/TypedEmitter';
 
 export interface ControlCenterEvents<T> {
     device: T;

@@ -1,5 +1,5 @@
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
-import { TypedEmitter } from '../../../app/TypedEmitter';
+import { TypedEmitter } from '../../../common/TypedEmitter';
 import { Message } from '../../../types/Message';
 import * as portfinder from 'portfinder';
 import { Server, XCUITestDriver } from '../../../types/WdaServer';

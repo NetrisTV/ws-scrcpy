@@ -1,5 +1,5 @@
 import KeyEvent from './android/KeyEvent';
-import UIEventsCode from './UIEventsCode';
+import UIEventsCode from '../UIEventsCode';
 
 export const KeyToCodeMap = new Map([
     [UIEventsCode.Backquote, KeyEvent.KEYCODE_GRAVE],

@@ -1,12 +1,12 @@
-import '../../style/devtools.css';
-import { ManagerClient } from './ManagerClient';
-import { ACTION } from '../../common/Action';
-import { DevtoolsParams } from '../../types/DevtoolsParams';
-import { RemoteDevtoolsCommand } from '../../types/RemoteDevtoolsCommand';
-import { Message } from '../../types/Message';
-import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, TargetDescription } from '../../types/RemoteDevtools';
-import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
-import { BaseDeviceTracker } from './BaseDeviceTracker';
+import '../../../style/devtools.css';
+import { ManagerClient } from '../../client/ManagerClient';
+import { ACTION } from '../../../common/Action';
+import { DevtoolsParams } from '../../../types/DevtoolsParams';
+import { RemoteDevtoolsCommand } from '../../../types/RemoteDevtoolsCommand';
+import { Message } from '../../../types/Message';
+import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, TargetDescription } from '../../../types/RemoteDevtools';
+import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
+import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
 
 const FRONTEND_RE = /^https?:\/\/chrome-devtools-frontend\.appspot\.com\/serve_rev\/(@.*)/;
 

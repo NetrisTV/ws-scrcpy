@@ -3,7 +3,7 @@ import ScreenInfo from '../ScreenInfo';
 import Rect from '../Rect';
 import Size from '../Size';
 import Util from '../Util';
-import { TypedEmitter } from '../TypedEmitter';
+import { TypedEmitter } from '../../common/TypedEmitter';
 import { DisplayInfo } from '../DisplayInfo';
 
 interface BitrateStat {

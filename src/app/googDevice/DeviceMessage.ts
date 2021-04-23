@@ -1,4 +1,4 @@
-import Util from './Util';
+import Util from '../Util';
 
 export default class DeviceMessage {
     public static TYPE_CLIPBOARD = 0;

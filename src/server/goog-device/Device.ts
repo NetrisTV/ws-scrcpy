@@ -3,7 +3,7 @@ import AdbKitClient from '@devicefarmer/adbkit/lib/adb/client';
 import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
 import { spawn } from 'child_process';
 import { NetInterface } from '../../types/NetInterface';
-import { TypedEmitter } from '../../app/TypedEmitter';
+import { TypedEmitter } from '../../common/TypedEmitter';
 import GoogDeviceDescriptor from '../../types/GoogDeviceDescriptor';
 import { ScrcpyServer } from './ScrcpyServer';
 import { Properties } from './Properties';
