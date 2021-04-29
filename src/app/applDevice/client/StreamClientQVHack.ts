@@ -14,6 +14,7 @@ import { ACTION } from '../../../common/Action';
 import { ParsedUrlQuery } from 'querystring';
 import Util from '../../Util';
 import { ParamsStreamQVHack } from '../../../types/ParamsStreamQVHack';
+import { StreamReceiverQVHack } from './StreamReceiverQVHack';
 
 const WAIT_CLASS = 'wait';
 
@@ -45,7 +46,7 @@ export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> im
             udid = udid + '\0'.repeat(16);
         }
         this.managerClient = new WsQVHackClient({ ...this.params, action: ACTION.PROXY_WDA });
-        this.streamReceiver = new StreamReceiver({ ...this.params });
+        this.streamReceiver = new StreamReceiverQVHack({ ...this.params });
         this.startStream(this.udid);
         this.setTitle(`${this.udid} stream`);
         this.setBodyClass('stream');
