@@ -1,5 +1,4 @@
 import * as portfinder from 'portfinder';
-import { EnvName } from '../../EnvName';
 import { ProcessRunner, ProcessRunnerEvents } from '../../services/ProcessRunner';
 
 export class QvhackRunner extends ProcessRunner<ProcessRunnerEvents> {
@@ -28,7 +27,7 @@ export class QvhackRunner extends ProcessRunner<ProcessRunnerEvents> {
     constructor(private readonly udid: string) {
         super();
         this.name = `${this.TAG}[udid: ${this.udid}]`;
-        this.cmd = this.getPathFromEnv(EnvName.WS_QVH_PATH);
+        this.cmd = 'ws-qvh';
     }
 
     public getWebSocketAddress(): string {

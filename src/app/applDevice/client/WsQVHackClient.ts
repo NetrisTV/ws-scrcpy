@@ -4,6 +4,9 @@ import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
 import { Message } from '../../../types/Message';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { ParamsWdaProxy } from '../../../types/ParamsWdaProxy';
+import { ParsedUrlQuery } from 'querystring';
+import { ACTION } from '../../../common/Action';
+import Util from '../../Util';
 
 export type WsQVHackClientEvents = {
     'device-list': ApplDeviceDescriptor[];
@@ -24,6 +27,15 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
     constructor(params: ParamsWdaProxy) {
         super(params);
         this.openNewWebSocket();
+    }
+
+    public parseParameters(params: ParsedUrlQuery): ParamsWdaProxy {
+        const typedParams = super.parseParameters(params);
+        const { action } = typedParams;
+        if (action !== ACTION.PROXY_WDA) {
+            throw Error('Incorrect action');
+        }
+        return { ...typedParams, action, udid: Util.parseStringEnv(params.udid) };
     }
 
     protected buildDirectWebSocketUrl(): URL {

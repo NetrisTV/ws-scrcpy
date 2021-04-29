@@ -1,10 +1,6 @@
 import { Service } from './Service';
 import { TypedEmitter } from '../../common/TypedEmitter';
-import * as process from 'process';
 import { ChildProcessByStdio, spawn } from 'child_process';
-import { EnvName } from '../EnvName';
-import * as path from 'path';
-import * as fs from 'fs';
 import { Readable, Writable } from 'stream';
 
 export interface ProcessRunnerEvents {
@@ -28,20 +24,6 @@ export abstract class ProcessRunner<T extends ProcessRunnerEvents> extends Typed
     }
 
     protected abstract async getArgs(): Promise<string[]>;
-
-    protected getPathFromEnv(envName: string): string {
-        const somePath = process.env[EnvName.WS_QVH_PATH] || '';
-        if (somePath) {
-            const isAbsolute = somePath.startsWith('/');
-            const absolutePath = isAbsolute ? somePath : path.resolve(process.cwd(), somePath);
-            if (!fs.existsSync(absolutePath)) {
-                console.error(`Can't find path "${absolutePath}" from env ${envName}`);
-            } else {
-                return absolutePath;
-            }
-        }
-        return '';
-    }
 
     protected async runProcess(): Promise<void> {
         if (!this.cmd) {
