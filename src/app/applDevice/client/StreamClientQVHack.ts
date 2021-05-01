@@ -46,7 +46,7 @@ export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> im
             udid = udid + '\0'.repeat(16);
         }
         this.managerClient = new WsQVHackClient({ ...this.params, action: ACTION.PROXY_WDA });
-        this.streamReceiver = new StreamReceiverQVHack({ ...this.params });
+        this.streamReceiver = new StreamReceiverQVHack({ ...this.params, udid });
         this.startStream(this.udid);
         this.setTitle(`${this.udid} stream`);
         this.setBodyClass('stream');

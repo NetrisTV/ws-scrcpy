@@ -19,7 +19,7 @@ export class QvhackRunner extends ProcessRunner<ProcessRunnerEvents> {
     }
     protected TAG = '[QvhackRunner]';
     protected name: string;
-    protected cmd: string;
+    protected cmd = 'ws-qvh';
     protected holders = 0;
     protected releaseTimeoutId?: NodeJS.Timeout;
     protected address = '';
@@ -27,7 +27,6 @@ export class QvhackRunner extends ProcessRunner<ProcessRunnerEvents> {
     constructor(private readonly udid: string) {
         super();
         this.name = `${this.TAG}[udid: ${this.udid}]`;
-        this.cmd = 'ws-qvh';
     }
 
     public getWebSocketAddress(): string {
