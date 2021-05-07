@@ -21,10 +21,9 @@ export class DeviceTracker extends Mw {
     }
 
     // from TrackerClass interface in HostTracker.ts
-    public static buildParams(params: RequestParameters): HostItem {
+    public static buildParams(host = '127.0.0.1'): HostItem {
         const type = 'ios';
         const port = 8000;
-        const host = params.request.headers.host || '127.0.0.1';
         const temp = host.split(':');
         let hostname = host;
         if (temp.length > 1) {

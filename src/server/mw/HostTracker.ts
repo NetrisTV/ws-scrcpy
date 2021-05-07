@@ -6,13 +6,14 @@ import { MessageError, MessageHosts, MessageType } from '../../common/HostTracke
 import { HostItem } from '../../types/Configuration';
 
 export interface TrackerClass {
-    buildParams(params: RequestParameters): HostItem;
+    buildParams(host?: string): HostItem;
 }
 
 export class HostTracker extends Mw {
     public static readonly TAG = 'HostTracker';
     private static localTrackers: Set<TrackerClass> = new Set<TrackerClass>();
-    private static list: HostItem[] = [];
+    private static remoteHostItems?: HostItem[];
+    private static cache: Map<string, HostItem[]> = new Map();
 
     public static processRequest(ws: WebSocket, params: RequestParameters): HostTracker | undefined {
         if (params.parsedQuery?.action !== ACTION.LIST_HOSTS) {
@@ -28,22 +29,32 @@ export class HostTracker extends Mw {
     constructor(ws: WebSocket, params: RequestParameters) {
         super(ws);
 
-        if (!HostTracker.list.length) {
+        const host = params.request.headers.host || '127.0.0.1';
+        let list = HostTracker.cache.get(host);
+        if (!list) {
             const config = Config.getInstance();
+            const temp: HostItem[] = [];
             HostTracker.localTrackers.forEach((tracker) => {
-                HostTracker.list.push(tracker.buildParams(params));
+                temp.push(tracker.buildParams(params.request.headers.host));
             });
-            const remoteList = config.getRemoteTrackers();
-            if (remoteList.length) {
-                remoteList.forEach((item) => {
-                    HostTracker.list.push(item);
-                });
+
+            if (!HostTracker.remoteHostItems) {
+                const remoteList = config.getRemoteTrackers();
+                const trackers: HostItem[] = [];
+                if (remoteList.length) {
+                    remoteList.forEach((item) => {
+                        trackers.push(item);
+                    });
+                }
+                HostTracker.remoteHostItems = trackers;
             }
+            list = temp.concat(HostTracker.remoteHostItems);
+            HostTracker.cache.set(host, list);
         }
         const message: MessageHosts = {
             id: -1,
             type: MessageType.HOSTS,
-            data: HostTracker.list,
+            data: list,
         };
         this.sendMessage(message);
     }
