@@ -18,9 +18,11 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
     public static readonly ACTION_LIST = 'devicelist';
     public static readonly ACTION_DEVICE = 'device';
     public static readonly HOLDER_ELEMENT_ID = 'devices';
+    protected static instanceId = 0;
     protected title = 'Device list';
     protected tableId = 'base_device_list';
     protected descriptors: DD[] = [];
+    protected elementId: string;
     protected trackerName = '';
     protected id = '';
     private created = false;
@@ -44,6 +46,8 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
 
     protected constructor(params: ParamsDeviceTracker, protected readonly directUrl: string) {
         super(params);
+        this.elementId = `tracker_instance${++BaseDeviceTracker.instanceId}`;
+        this.trackerName = `Unavailable. Host: ${params.hostname}, type: ${params.type}`;
         this.setBodyClass('list');
         this.setTitle();
     }
@@ -72,11 +76,10 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         });
     }
     private getOrCreateTrackerBlock(parent: Element, controlCenterName: string): Element {
-        const id = `tracker_${this.id}`;
-        let el = document.getElementById(id);
+        let el = document.getElementById(this.elementId);
         if (!el) {
             el = document.createElement('div');
-            el.id = id;
+            el.id = this.elementId;
             parent.appendChild(el);
             this.created = true;
         } else {
@@ -84,7 +87,7 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
                 el.removeChild(el.children[0]);
             }
         }
-        const nameBlockId = `${id}_name`;
+        const nameBlockId = `${this.elementId}_name`;
         let nameEl = document.getElementById(nameBlockId);
         if (!nameEl) {
             nameEl = document.createElement('div');
@@ -144,7 +147,7 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
     }
 
     protected removeList(): void {
-        const element = document.getElementById(`tracker_${this.id}`);
+        const element = document.getElementById(this.elementId);
         if (!element) {
             return;
         }
@@ -229,7 +232,7 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
     public destroy(): void {
         super.destroy();
         if (this.created) {
-            const el = document.getElementById(`tracker_${this.id}`);
+            const el = document.getElementById(this.elementId);
             if (el) {
                 const { parentElement } = el;
                 el.remove();

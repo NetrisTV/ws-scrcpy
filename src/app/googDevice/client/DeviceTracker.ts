@@ -56,6 +56,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
     protected constructor(params: HostItem, directUrl: string) {
         super({ ...params, action: DeviceTracker.ACTION }, directUrl);
         DeviceTracker.instancesByUrl.set(directUrl, this);
+        this.buildDeviceTable();
         this.openNewWebSocket();
     }
 
@@ -77,7 +78,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
     }
 
     protected removeList(): void {
-        const element = document.getElementById(`tracker_${this.id}`);
+        const element = document.getElementById(this.elementId);
         if (!element) {
             return;
         }

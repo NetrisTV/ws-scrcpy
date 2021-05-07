@@ -28,8 +28,7 @@ export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never
     constructor(params: HostItem, directUrl: string) {
         super({ ...params, action: DeviceTracker.ACTION }, directUrl);
         DeviceTracker.instancesByUrl.set(directUrl, this);
-        this.setBodyClass('list');
-        this.setTitle('Device list');
+        this.buildDeviceTable();
         this.openNewWebSocket();
     }
 
