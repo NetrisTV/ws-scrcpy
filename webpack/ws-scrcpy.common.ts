@@ -7,12 +7,19 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import GeneratePackageJsonPlugin from 'generate-package-json-webpack-plugin';
 
+function parseBooleanEnv(input?: string): boolean | undefined {
+    if (typeof input === 'undefined') {
+        return false;
+    }
+    return input === '1' || input.toLowerCase() === 'true';
+}
+
 export const PROJECT_ROOT = path.resolve(__dirname, '..');
 export const SERVER_DIST_PATH = path.join(PROJECT_ROOT, 'dist');
 export const CLIENT_DIST_PATH = path.join(PROJECT_ROOT, 'dist/public');
 const PACKAGE_JSON = path.join(PROJECT_ROOT, 'package.json');
-const INCLUDE_APPL = !!process.env.INCLUDE_APPL;
-const INCLUDE_GOOG = !!process.env.INCLUDE_GOOG;
+const INCLUDE_APPL = parseBooleanEnv(process.env.INCLUDE_APPL);
+const INCLUDE_GOOG = parseBooleanEnv(process.env.INCLUDE_GOOG);
 
 export const common: webpack.Configuration = {
     module: {

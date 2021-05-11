@@ -41,7 +41,9 @@ npm start
 
 ## Supported features
 
-### Screen casting
+### Android
+
+#### Screen casting
 The modified [version][fork] of [Genymobile/scrcpy][scrcpy] used to stream
 H264-video, which then decoded by one of included decoders:
 
@@ -58,7 +60,7 @@ Requires [WebAssembly][wasm] and preferably [WebGL][webgl] support.
 [udevbe/tinyh264][tinyh264].<br>
 Requires [WebAssembly][wasm], [WebWorkers][workers], [WebGL][webgl] support.
 
-### Remote control
+#### Remote control
 * Touch events (including multi-touch)
 * Multi-touch emulation: <kbd>CTRL</kbd> to start with center at the center of
 the screen, <kbd>SHIFT</kbd> + <kbd>CTRL</kbd> to start with center at the
@@ -68,16 +70,56 @@ current point
 * Copy to/from device clipboard
 * Device "rotation"
 
-### File push
+#### File push
 Drag & drop an APK file to push it to the `/data/local/tmp` directory. You can
 install it manually from the included [xtermjs/xterm.js][xterm.js] terminal
 emulator (see below).
 
-### Remote shell
+#### Remote shell
 Control your device from `adb shell` in your browser.
 
-### Debug WebPages/WebView
+#### Debug WebPages/WebView
 [/docs/Devtools.md](/docs/Devtools.md)
+
+### iOS
+
+***Experimental Feature***: *is not built by default*
+
+#### Screen Casting
+
+Requires [ws-qvh](https://github.com/NetrisTV/ws-qvh) available in `PATH`.
+
+#### Remote control
+
+To control device we use [appium/WebDriverAgent](https://github.com/appium/WebDriverAgent). Functionality is limited to:
+* Simple touch
+* Scroll
+* Home button click
+
+Make sure you did properly [setup WebDriverAgent](https://appium.io/docs/en/drivers/ios-xcuitest-real-devices/).
+WebDriverAgent project is located under `node_modules/appium-webdriveragent/`.
+
+## Custom Build
+
+You can customize project before build by specifying environment variables:
+* `INCLUDE_APPL` - include code for iOS device tracking and control
+* `INCLUDE_GOOG` - include code for Android device tracking and control
+
+Only `1` or `true` is considered a positive value, anything else is considered a negative.
+Default `dist` script in `package.json` includes `INCLUDE_GOOG=1`.
+
+i.e. If you want to build a "full" version you need to run:
+
+```shell
+INCLUDE_APPL=1 INCLUDE_GOOG=1 npm run dist:prod
+```
+
+## Run configuration
+
+You can specify a path to a configuration file in `WS_SCRCPY_CONFIG` environment variable.
+Configuration file format: [source](/src/types/Configuration.d.ts).
+
+Parameters explanation: **TBD**.
 
 ## Known issues
 
@@ -96,18 +138,6 @@ Be advised and keep in mind:
 for connections on all network interfaces.
 * The modified version of scrcpy will keep running after the last client
 disconnected.
-
-## WS QVH
-This project also contains front-end for
-[NetrisTV/ws-qvh](https://github.com/NetrisTV/ws-qvh) - application for screen
-streaming and control of iOS devices in a browser.
-
-Run this to build it:
-
-```shell script
-npm install
-npm run dist:qvhack:frontend
-```
 
 ## Related projects
 * [Genymobile/scrcpy][scrcpy]
