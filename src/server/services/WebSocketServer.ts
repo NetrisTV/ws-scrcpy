@@ -17,10 +17,14 @@ export class WebSocketServer implements Service {
     }
 
     public static getInstance(): WebSocketServer {
-        if (!WebSocketServer.instance) {
-            WebSocketServer.instance = new WebSocketServer();
+        if (!this.instance) {
+            this.instance = new WebSocketServer();
         }
-        return WebSocketServer.instance;
+        return this.instance;
+    }
+
+    public static hasInstance(): boolean {
+        return !!this.instance;
     }
 
     public registerMw(mwFactory: MwFactory): void {

@@ -1,4 +1,4 @@
-import { Message } from '../../common/Message';
+import { Message } from '../../types/Message';
 import WebSocket from 'ws';
 import * as http from 'http';
 import * as querystring from 'querystring';
@@ -15,6 +15,7 @@ export interface MwFactory {
 }
 
 export abstract class Mw {
+    protected name = 'Mw';
     protected constructor(protected readonly ws: WebSocket) {
         this.ws.onmessage = this.onSocketMessage.bind(this);
         this.ws.onclose = this.onSocketClose.bind(this);

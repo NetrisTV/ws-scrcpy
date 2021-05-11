@@ -1,40 +1,99 @@
+import '../../LICENSE';
 import * as readline from 'readline';
+import { Config } from './Config';
 import { HttpServer } from './services/HttpServer';
 import { WebSocketServer } from './services/WebSocketServer';
 import { Service, ServiceClass } from './services/Service';
-import { AndroidDeviceTracker } from './services/AndroidDeviceTracker';
-import { DeviceTracker } from './mw/DeviceTracker';
 import { MwFactory } from './mw/Mw';
-import { RemoteShell } from './mw/RemoteShell';
 import { WebsocketProxy } from './mw/WebsocketProxy';
-import { RemoteDevtools } from './mw/RemoteDevtools';
+import { HostTracker } from './mw/HostTracker';
 
-const servicesToStart: ServiceClass[] = [HttpServer, WebSocketServer, AndroidDeviceTracker];
+const servicesToStart: ServiceClass[] = [HttpServer, WebSocketServer];
+const mwList: MwFactory[] = [HostTracker, WebsocketProxy];
+
 const runningServices: Service[] = [];
+const loadPlatformModulesPromises: Promise<void>[] = [];
 
-servicesToStart.forEach((serviceClass: ServiceClass) => {
-    const service = serviceClass.getInstance();
-    runningServices.push(service);
-    service.start();
-});
+const config = Config.getInstance();
 
-const mwList: MwFactory[] = [DeviceTracker, RemoteShell, WebsocketProxy, RemoteDevtools];
-const wsService = WebSocketServer.getInstance();
-mwList.forEach((mwFactory: MwFactory) => {
-    wsService.registerMw(mwFactory);
-});
+/// #if INCLUDE_GOOG
+async function loadGoogModules() {
+    const { ControlCenter } = await import('./goog-device/services/ControlCenter');
+    const { DeviceTracker } = await import('./goog-device/mw/DeviceTracker');
+    const { RemoteShell } = await import('./goog-device/mw/RemoteShell');
+    const { RemoteDevtools } = await import('./goog-device/mw/RemoteDevtools');
+    const { WebsocketProxyOverAdb } = await import('./goog-device/mw/WebsocketProxyOverAdb');
 
-if (process.platform === 'win32') {
-    readline
-        .createInterface({
-            input: process.stdin,
-            output: process.stdout,
-        })
-        .on('SIGINT', exit);
+    if (config.getRunLocalGoogTracker()) {
+        mwList.push(DeviceTracker);
+    }
+
+    if (config.getAnnounceLocalGoogTracker()) {
+        HostTracker.registerLocalTracker(DeviceTracker);
+    }
+
+    servicesToStart.push(ControlCenter);
+
+    mwList.push(RemoteShell);
+    mwList.push(RemoteDevtools);
+    mwList.push(WebsocketProxyOverAdb);
 }
+loadPlatformModulesPromises.push(loadGoogModules());
+/// #endif
 
-process.on('SIGINT', exit);
-process.on('SIGTERM', exit);
+/// #if INCLUDE_APPL
+async function loadApplModules() {
+    const { ControlCenter } = await import('./appl-device/services/ControlCenter');
+    const { DeviceTracker } = await import('./appl-device/mw/DeviceTracker');
+    const { StreamProxy } = await import('./appl-device/mw/StreamProxy');
+    const { WebDriverAgentProxy } = await import('./appl-device/mw/WebDriverAgentProxy');
+
+    // Hack to reduce log-level of appium libs
+    const npmlog = await import('npmlog');
+    npmlog.level = 'warn';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (global as any)._global_npmlog = npmlog;
+
+    if (config.getRunLocalApplTracker()) {
+        mwList.push(DeviceTracker);
+    }
+
+    if (config.getAnnounceLocalApplTracker()) {
+        HostTracker.registerLocalTracker(DeviceTracker);
+    }
+
+    servicesToStart.push(ControlCenter);
+
+    mwList.push(StreamProxy);
+    mwList.push(WebDriverAgentProxy);
+}
+loadPlatformModulesPromises.push(loadApplModules());
+/// #endif
+
+Promise.all(loadPlatformModulesPromises).then(() => {
+    servicesToStart.forEach((serviceClass: ServiceClass) => {
+        const service = serviceClass.getInstance();
+        runningServices.push(service);
+        service.start();
+    });
+
+    const wsService = WebSocketServer.getInstance();
+    mwList.forEach((mwFactory: MwFactory) => {
+        wsService.registerMw(mwFactory);
+    });
+
+    if (process.platform === 'win32') {
+        readline
+            .createInterface({
+                input: process.stdin,
+                output: process.stdout,
+            })
+            .on('SIGINT', exit);
+    }
+
+    process.on('SIGINT', exit);
+    process.on('SIGTERM', exit);
+});
 
 let interrupted = false;
 function exit(signal: string) {

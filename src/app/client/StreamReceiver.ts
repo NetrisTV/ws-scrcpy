@@ -1,10 +1,11 @@
 import { ManagerClient } from './ManagerClient';
 import { ControlMessage } from '../controlMessage/ControlMessage';
-import DeviceMessage from '../DeviceMessage';
+import DeviceMessage from '../googDevice/DeviceMessage';
 import VideoSettings from '../VideoSettings';
 import ScreenInfo from '../ScreenInfo';
 import Util from '../Util';
 import { DisplayInfo } from '../DisplayInfo';
+import { ParamsStream } from '../../types/ParamsStream';
 
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC_BYTES_INITIAL = Util.stringToUtf8ByteArray('scrcpy_initial');
@@ -33,7 +34,7 @@ interface StreamReceiverEvents {
 
 const TAG = '[StreamReceiver]';
 
-export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
+export class StreamReceiver<P extends ParamsStream> extends ManagerClient<ParamsStream, StreamReceiverEvents> {
     private events: ControlMessage[] = [];
     private encodersSet: Set<string> = new Set<string>();
     private clientId = -1;
@@ -44,13 +45,8 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
     private readonly videoSettingsMap: Map<number, VideoSettings> = new Map();
     private hasInitialInfo = false;
 
-    constructor(
-        private readonly host: string,
-        private readonly port: number | string,
-        private readonly path = '/',
-        private readonly query = '',
-    ) {
-        super();
+    constructor(params: P) {
+        super(params);
         this.openNewWebSocket();
         (this.ws as WebSocket).binaryType = 'arraybuffer';
     }
@@ -117,8 +113,14 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
         return true;
     }
 
+    protected buildDirectWebSocketUrl(): URL {
+        const localUrl = super.buildDirectWebSocketUrl();
+        localUrl.searchParams.set('udid', this.params.udid);
+        return localUrl;
+    }
+
     protected onSocketClose(ev: CloseEvent): void {
-        console.log(TAG, 'WS closed');
+        console.log(`${TAG}. WS closed: ${ev.reason}`);
         this.emit('disconnected', ev);
     }
 
@@ -196,11 +198,5 @@ export class StreamReceiver extends ManagerClient<StreamReceiverEvents> {
 
     public getDisplayInfo(displayId: number): DisplayInfo | undefined {
         return this.displayInfoMap.get(displayId);
-    }
-
-    protected buildWebSocketUrl(): string {
-        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        const query = this.query ? this.query : this.action ? `?action=${this.action}` : '';
-        return `${proto}://${this.host}:${this.port}${this.path}${query}`;
     }
 }

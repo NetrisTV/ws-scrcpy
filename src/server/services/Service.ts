@@ -6,4 +6,5 @@ export interface Service {
 
 export interface ServiceClass {
     getInstance(): Service;
+    hasInstance(): boolean;
 }

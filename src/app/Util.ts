@@ -4,19 +4,22 @@ export default class Util {
         1: 'KiB',
         2: 'MiB',
         3: 'GiB',
-        4: 'TiB'
-    }
+        4: 'TiB',
+    };
     private static supportsPassiveValue: boolean | undefined;
 
     public static filterTrailingZeroes(bytes: Uint8Array): Uint8Array {
         let b = 0;
-        return bytes.reverse().filter(i => b || (b = i)).reverse();
+        return bytes
+            .reverse()
+            .filter((i) => b || (b = i))
+            .reverse();
     }
 
     public static prettyBytes(value: number): string {
         let suffix = 0;
         while (value >= 512) {
-            suffix ++;
+            suffix++;
             value /= 1024;
         }
         return `${value.toFixed(suffix ? 1 : 0)}${Util.SUFFIX[suffix]}`;
@@ -25,6 +28,46 @@ export default class Util {
     public static escapeUdid(udid: string): string {
         return 'udid_' + udid.replace(/[. :]/g, '_');
     }
+
+    public static parseBooleanEnv(input: string | string[] | boolean | undefined): boolean | undefined {
+        if (typeof input === 'boolean') {
+            return input;
+        }
+        if (typeof input === 'undefined') {
+            return undefined;
+        }
+        if (Array.isArray(input)) {
+            input = input[input.length - 1];
+        }
+        return input === '1' || input.toLowerCase() === 'true';
+    }
+
+    public static parseStringEnv(input: string | string[] | undefined): string {
+        if (typeof input === 'undefined') {
+            return '';
+        }
+        if (Array.isArray(input)) {
+            input = input[input.length - 1];
+        }
+        return input;
+    }
+    public static parseIntEnv(input: string | string[] | number | undefined): number | undefined {
+        if (typeof input === 'number') {
+            return input;
+        }
+        if (typeof input === 'undefined') {
+            return undefined;
+        }
+        if (Array.isArray(input)) {
+            input = input[input.length - 1];
+        }
+        const int = parseInt(input, 10);
+        if (isNaN(int)) {
+            return undefined;
+        }
+        return int;
+    }
+
 
     // https://github.com/google/closure-library/blob/51e5a5ac373aefa354a991816ec418d730e29a7e/closure/goog/crypt/crypt.js#L117
 /*

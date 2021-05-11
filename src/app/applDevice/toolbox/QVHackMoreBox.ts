@@ -1,0 +1,76 @@
+import { BasePlayer } from '../../player/BasePlayer';
+import Size from '../../Size';
+
+const TAG = '[QVHackMoreBox]';
+
+export class QVHackMoreBox {
+    private onStop?: () => void;
+    private readonly holder: HTMLElement;
+
+    constructor(udid: string, player: BasePlayer) {
+        const playerName = player.getName();
+        const moreBox = document.createElement('div');
+        moreBox.className = 'more-box';
+        const nameBox = document.createElement('p');
+        nameBox.innerText = `${udid} (${playerName})`;
+        nameBox.className = 'text-with-shadow';
+        moreBox.appendChild(nameBox);
+
+        const qualityId = `show_video_quality_${udid}_${playerName}`;
+        const qualityLabel = document.createElement('label');
+        const qualityCheck = document.createElement('input');
+        qualityCheck.type = 'checkbox';
+        qualityCheck.checked = BasePlayer.DEFAULT_SHOW_QUALITY_STATS;
+        qualityCheck.id = qualityId;
+        qualityLabel.htmlFor = qualityId;
+        qualityLabel.innerText = 'Show quality stats';
+        QVHackMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox);
+        qualityCheck.onchange = () => {
+            player.setShowQualityStats(qualityCheck.checked);
+        };
+
+        const stop = (ev?: string | Event) => {
+            if (ev && ev instanceof Event && ev.type === 'error') {
+                console.error(TAG, ev);
+            }
+            const parent = moreBox.parentElement;
+            if (parent) {
+                parent.removeChild(moreBox);
+            }
+            player.off('video-view-resize', this.onViewVideoResize);
+            if (this.onStop) {
+                this.onStop();
+                delete this.onStop;
+            }
+        };
+
+        const stopBtn = document.createElement('button') as HTMLButtonElement;
+        stopBtn.innerText = `Disconnect`;
+        stopBtn.onclick = stop;
+
+        QVHackMoreBox.wrap('p', [stopBtn], moreBox);
+        player.on('video-view-resize', this.onViewVideoResize);
+        this.holder = moreBox;
+    }
+
+    private onViewVideoResize = (size: Size): void => {
+        // padding: 10px
+        this.holder.style.width = `${size.width - 2 * 10}px`;
+    };
+
+    private static wrap(tagName: string, elements: HTMLElement[], parent: HTMLElement): void {
+        const wrap = document.createElement(tagName);
+        elements.forEach((e) => {
+            wrap.appendChild(e);
+        });
+        parent.appendChild(wrap);
+    }
+
+    public getHolderElement(): HTMLElement {
+        return this.holder;
+    }
+
+    public setOnStop(listener: () => void): void {
+        this.onStop = listener;
+    }
+}
