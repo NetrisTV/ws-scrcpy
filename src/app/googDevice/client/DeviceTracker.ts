@@ -77,18 +77,6 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         }
     }
 
-    protected removeList(): void {
-        const element = document.getElementById(this.elementId);
-        if (!element) {
-            return;
-        }
-        const parent = element.parentElement;
-        if (!parent) {
-            return;
-        }
-        parent.removeChild(element);
-    }
-
     onInterfaceSelected = (e: Event): void => {
         const selectElement = e.currentTarget as HTMLSelectElement;
         this.updateLink(selectElement, true);

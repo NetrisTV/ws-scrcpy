@@ -75,6 +75,22 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
             this.buildDeviceRow(block, item);
         });
     }
+
+    private setNameValue(parent: Element | null, name: string): void {
+        if (!parent) {
+            return;
+        }
+        const nameBlockId = `${this.elementId}_name`;
+        let nameEl = document.getElementById(nameBlockId);
+        if (!nameEl) {
+            nameEl = document.createElement('div');
+            nameEl.id = nameBlockId;
+            nameEl.className = 'tracker-name';
+        }
+        nameEl.innerText = name;
+        parent.insertBefore(nameEl, parent.firstChild);
+    }
+
     private getOrCreateTrackerBlock(parent: Element, controlCenterName: string): Element {
         let el = document.getElementById(this.elementId);
         if (!el) {
@@ -87,15 +103,7 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
                 el.removeChild(el.children[0]);
             }
         }
-        const nameBlockId = `${this.elementId}_name`;
-        let nameEl = document.getElementById(nameBlockId);
-        if (!nameEl) {
-            nameEl = document.createElement('div');
-            nameEl.id = nameBlockId;
-            nameEl.className = 'tracker-name';
-        }
-        nameEl.innerText = controlCenterName;
-        el.insertBefore(nameEl, el.firstChild);
+        this.setNameValue(el, controlCenterName);
         return el;
     }
 
@@ -141,21 +149,9 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         if (this.id === id && this.trackerName === trackerName) {
             return;
         }
-        this.removeList();
         this.id = id;
         this.trackerName = trackerName;
-    }
-
-    protected removeList(): void {
-        const element = document.getElementById(this.elementId);
-        if (!element) {
-            return;
-        }
-        const parent = element.parentElement;
-        if (!parent) {
-            return;
-        }
-        parent.removeChild(element);
+        this.setNameValue(document.getElementById(this.elementId), trackerName);
     }
 
     protected getOrCreateTableHolder(): HTMLElement {
