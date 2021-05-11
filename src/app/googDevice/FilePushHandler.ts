@@ -4,6 +4,7 @@ import { CommandControlMessage, FilePushState } from '../controlMessage/CommandC
 import { StreamReceiverScrcpy } from './client/StreamReceiverScrcpy';
 
 const ALLOWED_TYPES = ['application/vnd.android.package-archive'];
+const ALLOWED_NAME_RE = /\.apk$/i;
 
 type Resolve = (result: number) => void;
 
@@ -166,7 +167,7 @@ export default class FilePushHandler implements DragEventListener {
         });
         files.forEach((file: File) => {
             const { type, name } = file;
-            if (ALLOWED_TYPES.includes(type)) {
+            if ((type && ALLOWED_TYPES.includes(type)) || (!type && ALLOWED_NAME_RE.test(name))) {
                 this.pushFile(file);
             } else {
                 const errorParams = {
