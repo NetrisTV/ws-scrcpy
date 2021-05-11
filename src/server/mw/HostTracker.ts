@@ -39,14 +39,7 @@ export class HostTracker extends Mw {
             });
 
             if (!HostTracker.remoteHostItems) {
-                const remoteList = config.getRemoteTrackers();
-                const trackers: HostItem[] = [];
-                if (remoteList.length) {
-                    remoteList.forEach((item) => {
-                        trackers.push(item);
-                    });
-                }
-                HostTracker.remoteHostItems = trackers;
+                HostTracker.remoteHostItems = Array.from(config.getHostList());
             }
             list = temp.concat(HostTracker.remoteHostItems);
             HostTracker.cache.set(host, list);

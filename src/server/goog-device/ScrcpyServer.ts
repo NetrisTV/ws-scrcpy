@@ -1,5 +1,5 @@
 import '../../../vendor/Genymobile/scrcpy/scrcpy-server.jar';
-import '../../../vendor/Genymobile/scrcpy/LICENSE.txt';
+import '../../../vendor/Genymobile/scrcpy/LICENSE';
 
 import { Device } from './Device';
 import { ARGS_STRING, SERVER_PACKAGE, SERVER_PROCESS_NAME, SERVER_VERSION } from '../../common/Constants';

@@ -1,4 +1,6 @@
+import '../../LICENSE';
 import * as readline from 'readline';
+import { Config } from './Config';
 import { HttpServer } from './services/HttpServer';
 import { WebSocketServer } from './services/WebSocketServer';
 import { Service, ServiceClass } from './services/Service';
@@ -12,6 +14,8 @@ const mwList: MwFactory[] = [HostTracker, WebsocketProxy];
 const runningServices: Service[] = [];
 const loadPlatformModulesPromises: Promise<void>[] = [];
 
+const config = Config.getInstance();
+
 /// #if INCLUDE_GOOG
 async function loadGoogModules() {
     const { ControlCenter } = await import('./goog-device/services/ControlCenter');
@@ -20,11 +24,16 @@ async function loadGoogModules() {
     const { RemoteDevtools } = await import('./goog-device/mw/RemoteDevtools');
     const { WebsocketProxyOverAdb } = await import('./goog-device/mw/WebsocketProxyOverAdb');
 
-    HostTracker.registerLocalTracker(DeviceTracker);
+    if (config.getRunLocalGoogTracker()) {
+        mwList.push(DeviceTracker);
+    }
+
+    if (config.getAnnounceLocalGoogTracker()) {
+        HostTracker.registerLocalTracker(DeviceTracker);
+    }
 
     servicesToStart.push(ControlCenter);
 
-    mwList.push(DeviceTracker);
     mwList.push(RemoteShell);
     mwList.push(RemoteDevtools);
     mwList.push(WebsocketProxyOverAdb);
@@ -45,11 +54,16 @@ async function loadApplModules() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global as any)._global_npmlog = npmlog;
 
-    HostTracker.registerLocalTracker(DeviceTracker);
+    if (config.getRunLocalApplTracker()) {
+        mwList.push(DeviceTracker);
+    }
+
+    if (config.getAnnounceLocalApplTracker()) {
+        HostTracker.registerLocalTracker(DeviceTracker);
+    }
 
     servicesToStart.push(ControlCenter);
 
-    mwList.push(DeviceTracker);
     mwList.push(StreamProxy);
     mwList.push(WebDriverAgentProxy);
 }

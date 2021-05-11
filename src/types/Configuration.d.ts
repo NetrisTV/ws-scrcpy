@@ -7,5 +7,9 @@ export interface HostItem {
 }
 
 export interface Configuration {
-    remote?: HostItem[];
+    runApplTracker?: boolean;
+    announceApplTracker?: boolean;
+    runGoogTracker?: boolean;
+    announceGoogTracker?: boolean;
+    hostList?: HostItem[];
 }

@@ -6,14 +6,31 @@ import { EnvName } from './EnvName';
 
 export class Config {
     private static instance?: Config;
-    public static getInstance(defaultConfig: Configuration = {}): Config {
+    public static getInstance(defaultConfig?: Configuration): Config {
+        if (!defaultConfig) {
+            defaultConfig = {
+                runGoogTracker: false,
+                runApplTracker: false,
+                announceGoogTracker: false,
+                announceApplTracker: false,
+            };
+            /// #if INCLUDE_GOOG
+            defaultConfig.runGoogTracker = true;
+            defaultConfig.announceGoogTracker = true;
+            /// #endif
+
+            /// #if INCLUDE_APPL
+            defaultConfig.runApplTracker = true;
+            defaultConfig.announceApplTracker = true;
+            /// #endif
+        }
         if (!this.instance) {
             this.instance = new Config(defaultConfig);
         }
         return this.instance;
     }
 
-    constructor(private fullConfig: Configuration = {}) {
+    constructor(private fullConfig: Configuration) {
         const configPath = process.env[EnvName.CONFIG_PATH];
         if (!configPath) {
             return;
@@ -33,10 +50,32 @@ export class Config {
         }
     }
 
-    public getRemoteTrackers(): HostItem[] {
-        if (!this.fullConfig.remote || !this.fullConfig.remote.length) {
+    public getHostList(): HostItem[] {
+        if (!this.fullConfig.hostList || !this.fullConfig.hostList.length) {
             return [];
         }
-        return this.fullConfig.remote.splice(0);
+        return this.fullConfig.hostList.splice(0);
+    }
+
+    public getRunLocalGoogTracker(): boolean {
+        return !!this.fullConfig.runGoogTracker;
+    }
+
+    public getAnnounceLocalGoogTracker(): boolean {
+        if (typeof this.fullConfig.announceGoogTracker === 'boolean') {
+            return this.fullConfig.announceGoogTracker;
+        }
+        return this.fullConfig.runGoogTracker === true;
+    }
+
+    public getRunLocalApplTracker(): boolean {
+        return !!this.fullConfig.runApplTracker;
+    }
+
+    public getAnnounceLocalApplTracker(): boolean {
+        if (typeof this.fullConfig.announceApplTracker === 'boolean') {
+            return this.fullConfig.announceApplTracker;
+        }
+        return this.fullConfig.runApplTracker === true;
     }
 }

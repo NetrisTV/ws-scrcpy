@@ -63,12 +63,23 @@ export const common: webpack.Configuration = {
                 ],
             },
             {
-                include: path.resolve(PROJECT_ROOT, 'vendor/Genymobile'),
+                test: /\.jar$/,
                 use: [
                     {
                         loader: 'file-loader',
                         options: {
                             name: '[path][name].[ext]',
+                        },
+                    },
+                ],
+            },
+            {
+                test: /LICENSE/i,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[path][name]',
                         },
                     },
                 ],
