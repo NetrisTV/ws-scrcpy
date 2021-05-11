@@ -55,6 +55,15 @@ export default class FilePushHandler implements DragEventListener {
         this.sendUpdate({ pushId, fileName, logString: `error: "${msg}"`, error: true });
     }
 
+    private static async getStreamReader(
+        file: File,
+    ): Promise<{ reader: ReadableStreamDefaultReader<Uint8Array>; result: ReadableStreamReadResult<Uint8Array> }> {
+        const blob = await new Response(file).blob();
+        const reader = blob.stream().getReader() as ReadableStreamDefaultReader<Uint8Array>;
+        const result = await reader.read();
+        return { reader, result };
+    }
+
     private async pushFile(file: File): Promise<void> {
         const start = Date.now();
         const { name: fileName, size: fileSize } = file;
@@ -65,7 +74,7 @@ export default class FilePushHandler implements DragEventListener {
             return;
         }
         const id = FilePushHandler.REQUEST_NEW_PUSH_ID;
-        this.sendUpdate({ pushId: id, fileName, logString: 'begin...', error: false });
+        this.sendUpdate({ pushId: id, fileName, logString: 'begins...', error: false });
         const newParams = { id, state: FilePushState.NEW };
         this.streamReceiver.sendEvent(CommandControlMessage.createPushFileCommand(newParams));
         const pushId: number = await this.waitForResponse(id);
@@ -74,10 +83,12 @@ export default class FilePushHandler implements DragEventListener {
         }
 
         const startParams = { id: pushId, fileName, fileSize, state: FilePushState.START };
+        const waitPromise = this.waitForResponse(pushId);
         this.streamReceiver.sendEvent(CommandControlMessage.createPushFileCommand(startParams));
-        const stream = file.stream();
-        const reader = stream.getReader();
-        const [startResponseCode, result] = await Promise.all([this.waitForResponse(pushId), reader.read()]);
+        const [startResponseCode, { reader, result }] = await Promise.all([
+            waitPromise,
+            FilePushHandler.getStreamReader(file),
+        ]);
         if (startResponseCode !== 0) {
             this.logError(pushId, fileName, startResponseCode);
             return;

@@ -128,6 +128,7 @@ available from the outside. Select `proxy over adb` from the list of interfaces.
 * TinyH264Player may fail to start, try to reload the page.
 * MsePlayer reports too many dropped frames in quality statistics: needs
 further investigation.
+* On Safari file upload does not show progress (it works in one piece).
 
 ## Security warning
 Be advised and keep in mind:
