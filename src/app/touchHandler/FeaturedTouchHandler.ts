@@ -45,7 +45,7 @@ export class FeaturedTouchHandler extends TouchHandler {
             if (this.over) {
                 this.lastPosition = e;
             }
-        } else if (e instanceof TouchEvent) {
+        } else if (window['TouchEvent'] && e instanceof TouchEvent) {
             // TODO: Research drag from out of the target inside it
             if (e.target !== this.tag) {
                 return;

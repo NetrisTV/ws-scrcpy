@@ -290,7 +290,7 @@ export abstract class TouchHandler {
             if (!previous) {
                 if (
                     (originalEvent instanceof MouseEvent && originalEvent.buttons) ||
-                    originalEvent instanceof TouchEvent
+                    (window['TouchEvent'] && originalEvent instanceof TouchEvent)
                 ) {
                     console.warn(logPrefix, 'Received ACTION_MOVE while there are no DOWN stored');
                     const emulated = TouchHandler.createEmulatedMessage(MotionEvent.ACTION_DOWN, message);
