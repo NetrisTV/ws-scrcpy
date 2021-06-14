@@ -8,13 +8,13 @@ import { StreamClientScrcpy } from './StreamClientScrcpy';
 import SvgImage from '../../ui/SvgImage';
 import { html } from '../../ui/HtmlTag';
 import { DevtoolsClient } from './DevtoolsClient';
-import { ShellClient } from './ShellClient';
 import Util from '../../Util';
 import { Attribute } from '../../Attribute';
 import { DeviceState } from '../../../common/DeviceState';
 import { Message } from '../../../types/Message';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { HostItem } from '../../../types/Configuration';
+import { Tool } from './Tool';
 
 type Field = keyof GoogDeviceDescriptor | ((descriptor: GoogDeviceDescriptor) => string);
 type DescriptionColumn = { title: string; field: Field };
@@ -38,6 +38,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
     public static readonly AttributePlayerCodeName = 'data-player-code-name';
     public static readonly AttributePrefixPlayerFor = 'player_for_';
     private static instancesByUrl: Map<string, DeviceTracker> = new Map();
+    private static tools: Set<Tool> = new Set();
     protected tableId = 'goog_device_list';
 
     public static start(hostItem: HostItem): DeviceTracker {
@@ -51,6 +52,10 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
 
     public static getInstance(hostItem: HostItem): DeviceTracker {
         return this.start(hostItem);
+    }
+
+    public static registerTool(tool: Tool): void {
+        this.tools.add(tool);
     }
 
     protected constructor(params: HostItem, directUrl: string) {
@@ -194,8 +199,12 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
             return;
         }
 
-        const shellEntry = ShellClient.createEntryForDeviceList(device, blockClass, this.params);
-        shellEntry && services.appendChild(shellEntry);
+        DeviceTracker.tools.forEach((tool) => {
+            const entry = tool.createEntryForDeviceList(device, blockClass, this.params);
+            if (entry) {
+                services.appendChild(entry);
+            }
+        });
         const devtoolsEntry = DevtoolsClient.createEntryForDeviceList(device, blockClass, this.params);
         devtoolsEntry && services.appendChild(devtoolsEntry);
 
