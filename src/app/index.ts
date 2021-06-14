@@ -1,9 +1,6 @@
 import '../style/app.css';
 import * as querystring from 'querystring';
 import { StreamClientScrcpy } from './googDevice/client/StreamClientScrcpy';
-import { BroadwayPlayer } from './player/BroadwayPlayer';
-import { MsePlayer } from './player/MsePlayer';
-import { TinyH264Player } from './player/TinyH264Player';
 import { HostTracker } from './client/HostTracker';
 import { StreamClientQVHack } from './applDevice/client/StreamClientQVHack';
 import { Tool } from './googDevice/client/Tool';
@@ -13,9 +10,20 @@ window.onload = async function (): Promise<void> {
     const parsedQuery = querystring.parse(hash);
     const action = parsedQuery.action;
 
+    /// #if USE_BROADWAY
+    const { BroadwayPlayer } = await import('./player/BroadwayPlayer');
     StreamClientScrcpy.registerPlayer(BroadwayPlayer);
+    /// #endif
+
+    /// #if USE_H264_CONVERTER
+    const { MsePlayer } = await import('./player/MsePlayer');
     StreamClientScrcpy.registerPlayer(MsePlayer);
+    /// #endif
+
+    /// #if USE_TINY_H264
+    const { TinyH264Player } = await import('./player/TinyH264Player');
     StreamClientScrcpy.registerPlayer(TinyH264Player);
+    /// #endif
 
     if (action === StreamClientScrcpy.ACTION && typeof parsedQuery.udid === 'string') {
         StreamClientScrcpy.start(parsedQuery);

@@ -47,17 +47,24 @@ npm start
 The modified [version][fork] of [Genymobile/scrcpy][scrcpy] used to stream
 H264-video, which then decoded by one of included decoders:
 
-* MsePlayer, formerly "native" ([code](/src/app/player/MsePlayer.ts)). Based on
-[xevokk/h264-converter][xevokk/h264-converter]. TL;DR. HTML5 Video.<br>
+##### Mse Player
+
+Formerly "native". Based on [xevokk/h264-converter][xevokk/h264-converter].
+HTML5 Video.<br>
 Requires [Media Source API][MSE] and `video/mp4; codecs="avc1.42E01E"`
 [support][isTypeSupported]. Creates mp4 containers from NALU, received from a
 device, then feeds them to [MediaSource][MediaSource]. In theory, it can use
 hardware acceleration.
-* BroadwayPlayer ([code](/src/app/player/BroadwayPlayer.ts)). Based on
-[mbebenita/Broadway][broadway] and [131/h264-live-player][h264-live-player].<br>
+
+##### Broadway Player
+
+Based on [mbebenita/Broadway][broadway] and
+[131/h264-live-player][h264-live-player].<br>
 Requires [WebAssembly][wasm] and preferably [WebGL][webgl] support.
-* TinyH264Player ([code](/src/app/player/TinyH264Player.ts)). Based on
-[udevbe/tinyh264][tinyh264].<br>
+
+##### TinyH264 Player
+
+Based on [udevbe/tinyh264][tinyh264].<br>
 Requires [WebAssembly][wasm], [WebWorkers][workers], [WebGL][webgl] support.
 
 #### Remote control
@@ -83,7 +90,7 @@ Control your device from `adb shell` in your browser.
 
 ### iOS
 
-***Experimental Feature***: *is not built by default*
+***Experimental Feature***: *is not built by default* (see [custom build](#custom-build))
 
 #### Screen Casting
 
@@ -106,6 +113,9 @@ You can customize project before build by overriding [default config](/webpack/d
 * `INCLUDE_GOOG` - include code for Android device tracking and control
 * `INCLUDE_ADB_SHELL` - remote shell for android devices ([xterm.js](https://github.com/xtermjs/xterm.js), [node-pty](https://github.com/Tyriar/node-pty))
 * `INCLUDE_DEV_TOOLS` - dev tools for web pages and web views on android devices
+* `USE_BROADWAY` - include [Broadway Player](#broadway-player)
+* `USE_H264_CONVERTER` - include [Mse Player](#mse-player)
+* `USE_TINY_H264` - include [TinyH264 Player](#tinyh264-player)
 
 ## Run configuration
 

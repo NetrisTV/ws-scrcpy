@@ -1,4 +1,7 @@
 {
+  "USE_BROADWAY": true,
+  "USE_H264_CONVERTER": true,
+  "USE_TINY_H264": true,
   "INCLUDE_DEV_TOOLS": true,
   "INCLUDE_ADB_SHELL": true,
   "INCLUDE_APPL": false,
