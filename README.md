@@ -90,7 +90,8 @@ Control your device from `adb shell` in your browser.
 
 ### iOS
 
-***Experimental Feature***: *is not built by default* (see [custom build](#custom-build))
+***Experimental Feature***: *is not built by default*
+(see [custom build](#custom-build))
 
 #### Screen Casting
 
@@ -98,7 +99,8 @@ Requires [ws-qvh](https://github.com/NetrisTV/ws-qvh) available in `PATH`.
 
 #### Remote control
 
-To control device we use [appium/WebDriverAgent](https://github.com/appium/WebDriverAgent). Functionality is limited to:
+To control device we use [appium/WebDriverAgent][WebDriverAgent].
+Functionality limited to:
 * Simple touch
 * Scroll
 * Home button click
@@ -108,18 +110,23 @@ WebDriverAgent project is located under `node_modules/appium-webdriveragent/`.
 
 ## Custom Build
 
-You can customize project before build by overriding [default config](/webpack/default.build.config.json) in [build.config.override.json](/build.config.override.json):
+You can customize project before build by overriding the
+[default configuration](/webpack/default.build.config.json) in
+[build.config.override.json](/build.config.override.json):
 * `INCLUDE_APPL` - include code for iOS device tracking and control
 * `INCLUDE_GOOG` - include code for Android device tracking and control
-* `INCLUDE_ADB_SHELL` - remote shell for android devices ([xterm.js](https://github.com/xtermjs/xterm.js), [node-pty](https://github.com/Tyriar/node-pty))
-* `INCLUDE_DEV_TOOLS` - dev tools for web pages and web views on android devices
+* `INCLUDE_ADB_SHELL` - remote shell for android devices
+([xtermjs/xterm.js][xterm.js], [Tyriar/node-pty][node-pty])
+* `INCLUDE_DEV_TOOLS` - dev tools for web pages and web views on android
+devices
 * `USE_BROADWAY` - include [Broadway Player](#broadway-player)
 * `USE_H264_CONVERTER` - include [Mse Player](#mse-player)
 * `USE_TINY_H264` - include [TinyH264 Player](#tinyh264-player)
 
 ## Run configuration
 
-You can specify a path to a configuration file in `WS_SCRCPY_CONFIG` environment variable.
+You can specify a path to a configuration file in `WS_SCRCPY_CONFIG`
+environment variable.
 Configuration file format: [source](/src/types/Configuration.d.ts).
 
 Parameters explanation: **TBD**.
@@ -127,7 +134,7 @@ Parameters explanation: **TBD**.
 ## Known issues
 
 * The server on the Android Emulator listens on the internal interface and not
-available from the outside. Select `proxy over adb` from the list of interfaces.
+available from the outside. Select `proxy over adb` from the interfaces list.
 * TinyH264Player may fail to start, try to reload the page.
 * MsePlayer reports too many dropped frames in quality statistics: needs
 further investigation.
@@ -167,6 +174,8 @@ Currently, support of WebSocket protocol added to v1.17 of scrcpy
 [adbkit]: https://github.com/DeviceFarmer/adbkit
 [xterm.js]: https://github.com/xtermjs/xterm.js
 [tinyh264]: https://github.com/udevbe/tinyh264
+[node-pty]: https://github.com/Tyriar/node-pty
+[WebDriverAgent]: https://github.com/appium/WebDriverAgent
 
 [MSE]: https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API
 [isTypeSupported]: https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/isTypeSupported
