@@ -101,18 +101,9 @@ WebDriverAgent project is located under `node_modules/appium-webdriveragent/`.
 
 ## Custom Build
 
-You can customize project before build by specifying environment variables:
+You can customize project before build by overriding [default config](/webpack/default.build.config.json) in [build.config.override.json](/build.config.override.json):
 * `INCLUDE_APPL` - include code for iOS device tracking and control
 * `INCLUDE_GOOG` - include code for Android device tracking and control
-
-Only `1` or `true` is considered a positive value, anything else is considered a negative.
-Default `dist` script in `package.json` includes `INCLUDE_GOOG=1`.
-
-i.e. If you want to build a "full" version you need to run:
-
-```shell
-INCLUDE_APPL=1 INCLUDE_GOOG=1 npm run dist:prod
-```
 
 ## Run configuration
 

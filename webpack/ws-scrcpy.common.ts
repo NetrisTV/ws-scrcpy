@@ -1,101 +1,93 @@
 import nodeExternals from 'webpack-node-externals';
 import fs from 'fs';
 import path from 'path';
-import process from 'process';
-import webpack from 'webpack';
+import webpack, { ConfigurationFactory } from 'webpack';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import GeneratePackageJsonPlugin from 'generate-package-json-webpack-plugin';
-
-function parseBooleanEnv(input?: string): boolean | undefined {
-    if (typeof input === 'undefined') {
-        return false;
-    }
-    return input === '1' || input.toLowerCase() === 'true';
-}
+import { mergeWithDefaultConfig } from './build.config.utils';
 
 export const PROJECT_ROOT = path.resolve(__dirname, '..');
 export const SERVER_DIST_PATH = path.join(PROJECT_ROOT, 'dist');
 export const CLIENT_DIST_PATH = path.join(PROJECT_ROOT, 'dist/public');
 const PACKAGE_JSON = path.join(PROJECT_ROOT, 'package.json');
-const INCLUDE_APPL = parseBooleanEnv(process.env.INCLUDE_APPL);
-const INCLUDE_GOOG = parseBooleanEnv(process.env.INCLUDE_GOOG);
 
-export const common: webpack.Configuration = {
-    module: {
-        rules: [
-            {
-                test: /\.css$/i,
-                use: [MiniCssExtractPlugin.loader, 'css-loader'],
-            },
-            {
-                test: /\.tsx?$/,
-                use: [
-                    { loader: 'ts-loader' },
-                    {
-                        loader: 'ifdef-loader',
-                        options: {
-                            INCLUDE_APPL,
-                            INCLUDE_GOOG,
+export const common: ConfigurationFactory = (env) => {
+    const buildConfig =
+        env && typeof env === 'object' && typeof env.config_override === 'string' ? env.config_override : undefined;
+    return {
+        module: {
+            rules: [
+                {
+                    test: /\.css$/i,
+                    use: [MiniCssExtractPlugin.loader, 'css-loader'],
+                },
+                {
+                    test: /\.tsx?$/,
+                    use: [
+                        { loader: 'ts-loader' },
+                        {
+                            loader: 'ifdef-loader',
+                            options: mergeWithDefaultConfig(buildConfig),
                         },
-                    },
-                ],
-                exclude: /node_modules/,
-            },
-            {
-                test: /\.worker\.js$/,
-                use: { loader: 'worker-loader' },
-            },
-            {
-                test: /\.svg$/,
-                loader: 'svg-inline-loader',
-            },
-            {
-                test: /\.(png|jpe?g|gif)$/i,
-                use: [
-                    {
-                        loader: 'file-loader',
-                    },
-                ],
-            },
-            {
-                test: /\.(asset)$/i,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[name]',
+                    ],
+                    exclude: /node_modules/,
+                },
+                {
+                    test: /\.worker\.js$/,
+                    use: { loader: 'worker-loader' },
+                },
+                {
+                    test: /\.svg$/,
+                    loader: 'svg-inline-loader',
+                },
+                {
+                    test: /\.(png|jpe?g|gif)$/i,
+                    use: [
+                        {
+                            loader: 'file-loader',
                         },
-                    },
-                ],
-            },
-            {
-                test: /\.jar$/,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[path][name].[ext]',
+                    ],
+                },
+                {
+                    test: /\.(asset)$/i,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: '[name]',
+                            },
                         },
-                    },
-                ],
-            },
-            {
-                test: /LICENSE/i,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[path][name]',
+                    ],
+                },
+                {
+                    test: /\.jar$/,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: '[path][name].[ext]',
+                            },
                         },
-                    },
-                ],
-            },
-        ],
-    },
-    resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
-    },
+                    ],
+                },
+                {
+                    test: /LICENSE/i,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: '[path][name]',
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+        resolve: {
+            extensions: ['.tsx', '.ts', '.js'],
+        },
+    };
 };
 
 const front: webpack.Configuration = {
@@ -114,7 +106,9 @@ const front: webpack.Configuration = {
     },
 };
 
-export const frontend = Object.assign({}, common, front);
+export const frontend: ConfigurationFactory = (env, args) => {
+    return Object.assign({}, common(env, args), front);
+};
 
 const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON).toString());
 const { name, version, description, author, license, scripts } = packageJson;
@@ -145,4 +139,6 @@ const back: webpack.Configuration = {
     target: 'node',
 };
 
-export const backend = Object.assign({}, common, back);
+export const backend: ConfigurationFactory = (env, args) => {
+    return Object.assign({}, common(env, args), back);
+};

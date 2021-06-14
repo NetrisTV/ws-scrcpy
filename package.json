@@ -6,7 +6,7 @@
     "clean": "npx rimraf dist",
     "dist:dev": "webpack --config webpack/ws-scrcpy.dev.ts",
     "dist:prod": "webpack --config webpack/ws-scrcpy.prod.ts",
-    "dist": "cross-env INCLUDE_GOOG=1 webpack --config webpack/ws-scrcpy.prod.ts",
+    "dist": "webpack --config webpack/ws-scrcpy.prod.ts --env.config_override='./build.config.override.json'",
     "start": "npm run dist && cd dist && npm start",
     "script:dist:start": "node ./index.js",
     "lint": "eslint src/ --ext .ts",
