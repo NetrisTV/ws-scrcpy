@@ -105,6 +105,7 @@ You can customize project before build by overriding [default config](/webpack/d
 * `INCLUDE_APPL` - include code for iOS device tracking and control
 * `INCLUDE_GOOG` - include code for Android device tracking and control
 * `INCLUDE_ADB_SHELL` - remote shell for android devices ([xterm.js](https://github.com/xtermjs/xterm.js), [node-pty](https://github.com/Tyriar/node-pty))
+* `INCLUDE_DEV_TOOLS` - dev tools for web pages and web views on android devices
 
 ## Run configuration
 

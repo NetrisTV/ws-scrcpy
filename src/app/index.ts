@@ -1,7 +1,6 @@
 import '../style/app.css';
 import * as querystring from 'querystring';
 import { StreamClientScrcpy } from './googDevice/client/StreamClientScrcpy';
-import { DevtoolsClient } from './googDevice/client/DevtoolsClient';
 import { BroadwayPlayer } from './player/BroadwayPlayer';
 import { MsePlayer } from './player/MsePlayer';
 import { TinyH264Player } from './player/TinyH264Player';
@@ -38,10 +37,14 @@ window.onload = async function (): Promise<void> {
     tools.push(ShellClient);
     /// #endif
 
+    /// #if INCLUDE_DEV_TOOLS
+    const { DevtoolsClient } = await import('./googDevice/client/DevtoolsClient');
     if (action === DevtoolsClient.ACTION) {
         DevtoolsClient.start(parsedQuery);
         return;
     }
+    tools.push(DevtoolsClient);
+    /// #endif
 
     if (tools.length) {
         const { DeviceTracker } = await import('./googDevice/client/DeviceTracker');

@@ -20,7 +20,6 @@ const config = Config.getInstance();
 async function loadGoogModules() {
     const { ControlCenter } = await import('./goog-device/services/ControlCenter');
     const { DeviceTracker } = await import('./goog-device/mw/DeviceTracker');
-    const { RemoteDevtools } = await import('./goog-device/mw/RemoteDevtools');
     const { WebsocketProxyOverAdb } = await import('./goog-device/mw/WebsocketProxyOverAdb');
 
     if (config.getRunLocalGoogTracker()) {
@@ -38,7 +37,11 @@ async function loadGoogModules() {
     mwList.push(RemoteShell);
     /// #endif
 
+    /// #if INCLUDE_DEV_TOOLS
+    const { RemoteDevtools } = await import('./goog-device/mw/RemoteDevtools');
     mwList.push(RemoteDevtools);
+    /// #endif
+
     mwList.push(WebsocketProxyOverAdb);
 }
 loadPlatformModulesPromises.push(loadGoogModules());

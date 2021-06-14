@@ -7,7 +7,6 @@ import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { StreamClientScrcpy } from './StreamClientScrcpy';
 import SvgImage from '../../ui/SvgImage';
 import { html } from '../../ui/HtmlTag';
-import { DevtoolsClient } from './DevtoolsClient';
 import Util from '../../Util';
 import { Attribute } from '../../Attribute';
 import { DeviceState } from '../../../common/DeviceState';
@@ -205,8 +204,6 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                 services.appendChild(entry);
             }
         });
-        const devtoolsEntry = DevtoolsClient.createEntryForDeviceList(device, blockClass, this.params);
-        devtoolsEntry && services.appendChild(devtoolsEntry);
 
         const streamEntry = StreamClientScrcpy.createEntryForDeviceList(device, blockClass, fullName, this.params);
         streamEntry && services.appendChild(streamEntry);
