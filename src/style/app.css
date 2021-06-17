@@ -1,6 +1,6 @@
 :root {
     --main-bg-color: hsl(0, 0%, 100%);
-    --stream-bg-color: hsl(0, 0%, 85%);
+    --stream-bg-color: hsl(0, 0%, 0%);
     --shell-bg-color: hsl(0, 0%, 0%);
     --text-shadow-color: hsl(218, 67%, 95%);
     --header-bg-color: hsl(0, 0%, 95%);
@@ -76,6 +76,11 @@ body.shell {
 
 body.stream {
     background-color: var(--stream-bg-color);
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    min-width: 100vh;
+    padding-top: 3rem;
 }
 
 .terminal-container {
@@ -99,7 +104,7 @@ body.stream {
 
 .device-view {
     z-index: 1;
-    float: right;
+    float: left;
     display: inline-block;
 }
 
@@ -118,6 +123,7 @@ body.stream {
     max-height: 100%;
     max-width: 100%;
     background-color: #000000;
+    border: 2.5px solid white;
 }
 
 
