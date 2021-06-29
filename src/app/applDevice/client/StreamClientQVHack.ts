@@ -129,12 +129,12 @@ export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> im
         player.on('video-view-resize', this.onViewVideoResize);
         player.on('input-video-resize', this.onInputVideoResize);
         this.videoWrapper = video;
+
+        document.body.appendChild(deviceView);
         const bounds = StreamClientQVHack.getMaxSize(controlButtons);
         if (bounds) {
             player.setBounds(bounds);
         }
-
-        document.body.appendChild(deviceView);
         this.streamReceiver.on('video', (data) => {
             const STATE = BasePlayer.STATE;
             if (player.getState() === STATE.PAUSED) {

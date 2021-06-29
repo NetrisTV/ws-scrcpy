@@ -32,7 +32,7 @@ export default class WdaConnection {
             return;
         }
         const wdaScreen = this.wdaScreen || (await this.getWdaScreen());
-        const point = await this.calculatePhysicalPoint(this.screenInfo, wdaScreen, position);
+        const point = await WdaConnection.calculatePhysicalPoint(this.screenInfo, wdaScreen, position);
         if (!point) {
             return;
         }
@@ -47,8 +47,8 @@ export default class WdaConnection {
             return;
         }
         const wdaScreen = this.wdaScreen || (await this.getWdaScreen());
-        const fromPoint = this.calculatePhysicalPoint(this.screenInfo, wdaScreen, from);
-        const toPoint = this.calculatePhysicalPoint(this.screenInfo, wdaScreen, to);
+        const fromPoint = WdaConnection.calculatePhysicalPoint(this.screenInfo, wdaScreen, from);
+        const toPoint = WdaConnection.calculatePhysicalPoint(this.screenInfo, wdaScreen, to);
         if (!fromPoint || !toPoint) {
             return;
         }
@@ -75,12 +75,22 @@ export default class WdaConnection {
         throw Error('Invalid response');
     }
 
-    public calculatePhysicalPoint(screenInfo: ScreenInfo, wdaScreen: WdaScreen, position: Position): Point | undefined {
+    public static calculatePhysicalPoint(
+        screenInfo: ScreenInfo,
+        wdaScreen: WdaScreen,
+        position: Position,
+    ): Point | undefined {
         const { statusBarSize } = wdaScreen;
         // ignore the locked video orientation, the events will apply in coordinates considered in the physical device orientation
         const { videoSize, deviceRotation, contentRect } = screenInfo;
-        const { right, left } = contentRect;
-        const scale = (right - left) / statusBarSize.width;
+        const { right, left, bottom, top } = contentRect;
+        let shortSide: number;
+        if (videoSize.width >= videoSize.height) {
+            shortSide = bottom - top;
+        } else {
+            shortSide = right - left;
+        }
+        const scale = shortSide / statusBarSize.width;
 
         // reverse the video rotation to apply the events
         const devicePosition = position.rotate(deviceRotation);

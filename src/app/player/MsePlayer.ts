@@ -10,9 +10,9 @@ interface QualityStats {
     droppedFrames: number;
 }
 
-// sourceBuffer is private in h264-converter
-type ConverterFake = {
-    sourceBuffer: SourceBuffer;
+type Block = {
+    start: number;
+    end: number;
 };
 
 export class MsePlayer extends BasePlayer {
@@ -52,8 +52,9 @@ export class MsePlayer extends BasePlayer {
     public fpf: number = MsePlayer.DEFAULT_FRAMES_PER_FRAGMENT;
     public readonly supportsScreenshot: boolean = true;
     private sourceBuffer?: SourceBuffer;
-    private removeStart = -1;
-    private removeEnd = -1;
+    private waitUntilSegmentRemoved = false;
+    private blocks: Block[] = [];
+    private frames: Uint8Array[] = [];
     private jumpEnd = -1;
     private lastTime = -1;
     protected canPlay = false;
@@ -65,6 +66,8 @@ export class MsePlayer extends BasePlayer {
     private MAX_TIME_TO_RECOVER = 200; // ms
     private MAX_BUFFER = this.isSafari ? 2 : this.isChrome && this.isMac ? 0.9 : 0.2;
     private MAX_AHEAD = -0.2;
+    protected videoHeight = -1;
+    protected videoWidth = -1;
 
     public static isSupported(): boolean {
         return typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported(mimeType);
@@ -134,6 +137,12 @@ export class MsePlayer extends BasePlayer {
         this.canPlay = true;
         this.tag.play();
         this.tag.removeEventListener('canplay', this.onVideoCanPlay);
+        this.checkVideoResize();
+    }
+
+    protected handleVideoResize(videoWidth: number, videoHeight: number): void {
+        this.videoWidth = videoWidth;
+        this.videoHeight = videoHeight;
     }
 
     protected calculateMomentumStats(): void {
@@ -238,7 +247,15 @@ export class MsePlayer extends BasePlayer {
     public static getPreferredVideoSetting(): VideoSettings {
         return this.preferredVideoSettings;
     }
-
+    checkVideoResize = (): void => {
+        if (!this.tag) {
+            return;
+        }
+        const { videoHeight, videoWidth } = this.tag;
+        if (this.videoHeight !== videoHeight || this.videoWidth !== videoWidth) {
+            this.handleVideoResize(videoWidth, videoHeight);
+        }
+    };
     cleanSourceBuffer = (): void => {
         if (!this.sourceBuffer) {
             return;
@@ -246,12 +263,24 @@ export class MsePlayer extends BasePlayer {
         if (this.sourceBuffer.updating) {
             return;
         }
+        if (this.blocks.length < 10) {
+            return;
+        }
         try {
-            // console.log(this.name, `sourceBuffer.remove(${this.removeStart}, ${this.removeEnd})`);
-            // FIXME: will kill playback in Safari
-            this.sourceBuffer.remove(this.removeStart, this.removeEnd);
             this.sourceBuffer.removeEventListener('updateend', this.cleanSourceBuffer);
-            this.removeStart = this.removeEnd = -1;
+            this.waitUntilSegmentRemoved = false;
+            const removeStart = this.blocks[0].start;
+            const removeEnd = this.blocks[4].end;
+            this.blocks = this.blocks.slice(5);
+            this.sourceBuffer.remove(removeStart, removeEnd);
+            let frame = this.frames.shift();
+            while (frame) {
+                if (!this.checkForIFrame(frame)) {
+                    this.frames.unshift(frame);
+                    break;
+                }
+                frame = this.frames.shift();
+            }
         } catch (e) {
             console.error(`[${this.name}]`, 'Failed to clean source buffer');
         }
@@ -276,11 +305,11 @@ export class MsePlayer extends BasePlayer {
 
     public pushFrame(frame: Uint8Array): void {
         super.pushFrame(frame);
-        if (this.converter) {
-            this.converter.appendRawData(frame);
-            this.checkForIFrame(frame);
+        if (!this.checkForIFrame(frame)) {
+            this.frames.push(frame);
+        } else {
+            this.checkForBadState();
         }
-        this.checkForBadState();
     }
 
     protected checkForBadState(): void {
@@ -375,29 +404,42 @@ export class MsePlayer extends BasePlayer {
         }
     }
 
-    protected checkForIFrame(frame: Uint8Array): void {
-        if (this.isSafari) {
-            return;
+    protected checkForIFrame(frame: Uint8Array): boolean {
+        if (!this.converter) {
+            return false;
         }
+        this.sourceBuffer = this.converter.sourceBuffer;
         if (BasePlayer.isIFrame(frame)) {
             let start = 0;
             let end = 0;
             if (this.tag.buffered && this.tag.buffered.length) {
                 start = this.tag.buffered.start(0);
-                end = this.tag.buffered.end(0) | 0;
+                end = this.tag.buffered.end(0);
             }
             if (end !== 0 && start < end) {
-                const sourceBuffer: SourceBuffer = ((this.converter as unknown) as ConverterFake).sourceBuffer;
-                this.sourceBuffer = sourceBuffer;
-                if (this.removeEnd !== -1) {
-                    this.removeEnd = end;
-                } else {
-                    this.removeStart = start;
-                    this.removeEnd = end;
+                const block: Block = {
+                    start,
+                    end,
+                };
+                this.blocks.push(block);
+                if (this.blocks.length > 10) {
+                    this.waitUntilSegmentRemoved = true;
+
+                    this.sourceBuffer.addEventListener('updateend', this.cleanSourceBuffer);
+                    this.converter.appendRawData(frame);
+                    return true;
                 }
-                sourceBuffer.addEventListener('updateend', this.cleanSourceBuffer);
+            }
+            if (this.sourceBuffer) {
+                this.sourceBuffer.onupdateend = this.checkVideoResize;
             }
         }
+        if (this.waitUntilSegmentRemoved) {
+            return false;
+        }
+
+        this.converter.appendRawData(frame);
+        return true;
     }
 
     private stopConverter(): void {
