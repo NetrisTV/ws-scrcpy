@@ -2,6 +2,7 @@ import { BaseClient } from '../../client/BaseClient';
 import { ParamsStreamScrcpy } from '../../../types/ParamsStreamScrcpy';
 import { DroidMoreBox } from '../toolbox/DroidMoreBox';
 import { DroidToolBox } from '../toolbox/DroidToolBox';
+import { DroidToolBox2 } from '../toolbox/DroidToolBox2';
 import VideoSettings from '../../VideoSettings';
 import Size from '../../Size';
 import { ControlMessage } from '../../controlMessage/ControlMessage';
@@ -27,6 +28,7 @@ import { ACTION } from '../../../common/Action';
 import { ParsedUrlQuery } from 'querystring';
 import { StreamReceiverScrcpy } from './StreamReceiverScrcpy';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
+import KeyEvent from '../android/KeyEvent';
 
 type StartParams = {
     udid: string;
@@ -292,11 +294,10 @@ export class StreamClientScrcpy
         const controlHeaderView = document.createElement('div');
         controlHeaderView.className = 'control-header';
 
-        const controlHeaderText = document.createElement('div');
-        controlHeaderText.id = 'control-header-text';
-        controlHeaderText.className = 'control-header-text';
+        const droidToolBox2 = DroidToolBox2.createToolBox(this);
+        const controlButtons2 = droidToolBox2.getHolderElement();
+        controlHeaderView.appendChild(controlButtons2);
 
-        controlHeaderView.appendChild(controlHeaderText);
         document.body.appendChild(controlHeaderView);
 
         const deviceView = document.createElement('div');
@@ -353,7 +354,20 @@ export class StreamClientScrcpy
         streamReceiver.on('displayInfo', this.onDisplayInfo);
         streamReceiver.on('disconnected', this.onDisconnected);
         console.log(TAG, player.getName(), udid);
+
+        this.unlockScreen();
     }
+
+    private sendKeyEvent = (kk: number): void => {
+        const unlockEventActionDown = new KeyCodeControlMessage(KeyEvent.ACTION_DOWN, kk, 0, 0);
+        const unlockEventActionUp = new KeyCodeControlMessage(KeyEvent.ACTION_UP, kk, 0, 0);
+        this.sendMessage(unlockEventActionDown);
+        this.sendMessage(unlockEventActionUp);
+    };
+
+    private unlockScreen = (): void => {
+        setTimeout(() => this.sendKeyEvent(KeyEvent.KEYCODE_MENU), 1000);
+    };
 
     public sendMessage(e: ControlMessage): void {
         this.streamReceiver.sendEvent(e);
