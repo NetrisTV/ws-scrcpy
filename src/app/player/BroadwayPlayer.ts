@@ -18,7 +18,7 @@ export class BroadwayPlayer extends BaseCanvasBasedPlayer {
         bitrate: 524288,
         maxFps: 24,
         iFrameInterval: 5,
-        bounds: new Size(480, 480),
+        bounds: new Size(960, 960),
         sendFrameMeta: false,
     });
 
