@@ -78,9 +78,10 @@ body.stream {
     background-color: var(--stream-bg-color);
     display:flex;
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
     min-width: 100vh;
-    padding-top: 3rem;
+    align-self: center;
 }
 
 .terminal-container {
@@ -104,7 +105,6 @@ body.stream {
 
 .device-view {
     z-index: 1;
-    float: left;
     display: inline-block;
 }
 
@@ -126,8 +126,38 @@ body.stream {
     border: 2px solid white;
 }
 
+.control-header {
+    padding: 5px;
+    height: 60px;
+    width: 100%;
+}
+
+.control-header-button {
+    float: left;
+    padding: 0 0 0 0 !important;
+    border: none;
+    background-color: transparent;
+    width: 50px;
+    height: 50px;
+    opacity: 1;
+}
+
+.control-header-button:hover {
+    opacity: 0.5;
+}
+
+.control-header-text {
+    float: none;
+    border: none;
+    width: 100%;
+    height: 50px;
+    font-size: 50px;
+    text-align: center;
+    color: white;
+}
 
 .control-buttons-list {
+    display: none;
     float: right;
     width: 3.715rem;
     background-color: var(--control-buttons-bg-color);
