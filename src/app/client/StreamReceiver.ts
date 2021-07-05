@@ -47,8 +47,10 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
 
     constructor(params: P) {
         super(params);
-        this.openNewWebSocket();
-        (this.ws as WebSocket).binaryType = 'arraybuffer';
+        this.openNewConnection();
+        if (this.ws) {
+            this.ws.binaryType = 'arraybuffer';
+        }
     }
 
     private handleInitialInfo(data: ArrayBuffer): void {
@@ -154,16 +156,16 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
     }
 
     public sendEvent(event: ControlMessage): void {
-        if (this.hasConnection()) {
-            (this.ws as WebSocket).send(event.toBuffer());
+        if (this.ws && this.ws.readyState === this.ws.OPEN) {
+            this.ws.send(event.toBuffer());
         } else {
             this.events.push(event);
         }
     }
 
     public stop(): void {
-        if (this.hasConnection()) {
-            (this.ws as WebSocket).close();
+        if (this.ws && this.ws.readyState === this.ws.OPEN) {
+            this.ws.close();
         }
         this.events.length = 0;
     }

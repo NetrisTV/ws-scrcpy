@@ -6,6 +6,7 @@ import { html } from '../../ui/HtmlTag';
 import { DeviceState } from '../../../common/DeviceState';
 import { ParsedUrlQueryInput } from 'querystring';
 import { HostItem } from '../../../types/Configuration';
+import { ChannelCode } from '../../../common/ChannelCode';
 
 export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never> {
     public static ACTION = ACTION.APPL_DEVICE_LIST;
@@ -29,7 +30,7 @@ export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never
         super({ ...params, action: DeviceTracker.ACTION }, directUrl);
         DeviceTracker.instancesByUrl.set(directUrl, this);
         this.buildDeviceTable();
-        this.openNewWebSocket();
+        this.openNewConnection();
     }
 
     protected onSocketOpen(): void {
@@ -68,5 +69,9 @@ export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never
         playerTd.appendChild(link);
         services.appendChild(playerTd);
         tbody.appendChild(row);
+    }
+
+    protected getChannelCode(): string {
+        return ChannelCode.ATRC;
     }
 }

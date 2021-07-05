@@ -1,11 +1,13 @@
+import WS from 'ws';
 import { Mw, RequestParameters } from '../../mw/Mw';
-import WebSocket from 'ws';
 import * as pty from 'node-pty';
 import * as os from 'os';
 import { IPty } from 'node-pty';
 import { Message } from '../../../types/Message';
 import { XtermClientMessage, XtermServiceParameters } from '../../../types/XtermMessage';
 import { ACTION } from '../../../common/Action';
+import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
+import { ChannelCode } from '../../../common/ChannelCode';
 
 const OS_WINDOWS = os.platform() === 'win32';
 const USE_BINARY = !OS_WINDOWS;
@@ -16,14 +18,21 @@ export class RemoteShell extends Mw {
     private term?: IPty;
     private initialized = false;
 
-    public static processRequest(ws: WebSocket, params: RequestParameters): RemoteShell | undefined {
+    public static processChannel(ws: Multiplexer, code: string): Mw | undefined {
+        if (code !== ChannelCode.SHEL) {
+            return;
+        }
+        return new RemoteShell(ws);
+    }
+
+    public static processRequest(ws: WS, params: RequestParameters): RemoteShell | undefined {
         if (params.parsedQuery?.action !== ACTION.SHELL) {
             return;
         }
         return new RemoteShell(ws);
     }
 
-    constructor(ws: WebSocket) {
+    constructor(protected ws: WS | Multiplexer) {
         super(ws);
     }
 
@@ -52,7 +61,7 @@ export class RemoteShell extends Mw {
         return term;
     }
 
-    protected onSocketMessage(event: WebSocket.MessageEvent): void {
+    protected onSocketMessage(event: WS.MessageEvent): void {
         if (this.initialized) {
             if (!this.term) {
                 return;

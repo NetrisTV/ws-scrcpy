@@ -1,11 +1,11 @@
 import { WebsocketProxy } from '../../mw/WebsocketProxy';
 import { AdbUtils } from '../AdbUtils';
-import WebSocket from 'ws';
+import WS from 'ws';
 import { RequestParameters } from '../../mw/Mw';
 import { ACTION } from '../../../common/Action';
 
 export class WebsocketProxyOverAdb extends WebsocketProxy {
-    public static processRequest(ws: WebSocket, params: RequestParameters): WebsocketProxy | undefined {
+    public static processRequest(ws: WS, params: RequestParameters): WebsocketProxy | undefined {
         const { parsedQuery, parsedUrl } = params;
         let udid: string | string[] = '';
         let remote: string | string[] = '';
@@ -46,7 +46,7 @@ export class WebsocketProxyOverAdb extends WebsocketProxy {
         return this.createProxyOverAdb(ws, udid, remote, path);
     }
 
-    public static createProxyOverAdb(ws: WebSocket, udid: string, remote: string, path?: string): WebsocketProxy {
+    public static createProxyOverAdb(ws: WS, udid: string, remote: string, path?: string): WebsocketProxy {
         const service = new WebsocketProxy(ws);
         AdbUtils.forward(udid, remote)
             .then((port) => {

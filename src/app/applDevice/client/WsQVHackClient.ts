@@ -26,7 +26,7 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
 
     constructor(params: ParamsWdaProxy) {
         super(params);
-        this.openNewWebSocket();
+        this.openNewConnection();
     }
 
     public parseParameters(params: ParsedUrlQuery): ParamsWdaProxy {
@@ -49,7 +49,7 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
         console.log(TAG, `Connection closed: ${e.reason}`);
         if (!this.stopped) {
             setTimeout(() => {
-                this.openNewWebSocket();
+                this.openNewConnection();
             }, 2000);
         }
     }
@@ -96,8 +96,8 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
     }
 
     private sendCommand(str: string): void {
-        if (this.hasConnection()) {
-            (this.ws as WebSocket).send(str);
+        if (this.ws && this.ws.readyState === this.ws.OPEN) {
+            this.ws.send(str);
         } else {
             this.commands.push(str);
         }
@@ -147,8 +147,8 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
             return;
         }
         this.stopped = true;
-        if (this.hasConnection()) {
-            (this.ws as WebSocket).close();
+        if (this.ws && this.ws.readyState === this.ws.OPEN) {
+            this.ws.close();
         }
     }
 }

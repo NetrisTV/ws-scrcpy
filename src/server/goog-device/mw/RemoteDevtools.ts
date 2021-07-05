@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WS from 'ws';
 import { Mw, RequestParameters } from '../../mw/Mw';
 import { RemoteDevtoolsCommand } from '../../../types/RemoteDevtoolsCommand';
 import { AdbUtils } from '../AdbUtils';
@@ -6,7 +6,7 @@ import { ACTION } from '../../../common/Action';
 
 export class RemoteDevtools extends Mw {
     public static readonly TAG = 'RemoteDevtools';
-    public static processRequest(ws: WebSocket, params: RequestParameters): RemoteDevtools | undefined {
+    public static processRequest(ws: WS, params: RequestParameters): RemoteDevtools | undefined {
         const { request, parsedQuery } = params;
         if (parsedQuery.action !== ACTION.DEVTOOLS) {
             return;
@@ -23,10 +23,10 @@ export class RemoteDevtools extends Mw {
         }
         return new RemoteDevtools(ws, host, udid);
     }
-    constructor(ws: WebSocket, private readonly host: string, private readonly udid: string) {
+    constructor(protected ws: WS, private readonly host: string, private readonly udid: string) {
         super(ws);
     }
-    protected onSocketMessage(event: WebSocket.MessageEvent): void {
+    protected onSocketMessage(event: WS.MessageEvent): void {
         let data;
         try {
             data = JSON.parse(event.data.toString());

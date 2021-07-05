@@ -11,6 +11,7 @@ import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
 import Util from '../../Util';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { ParsedUrlQuery } from 'querystring';
+import { ChannelCode } from '../../../common/ChannelCode';
 
 const TAG = '[ShellClient]';
 
@@ -28,17 +29,23 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
     constructor(params: ParsedUrlQuery) {
         super(params);
         this.udid = Util.parseStringEnv(params.udid);
-        this.openNewWebSocket();
-        const ws = this.ws as WebSocket;
+        this.openNewConnection();
         this.setTitle(`Shell ${this.udid}`);
         this.setBodyClass('shell');
+        if (!this.ws) {
+            throw Error('No WebSocket');
+        }
         this.term = new Terminal();
-        this.term.loadAddon(new AttachAddon(ws));
+        this.term.loadAddon(new AttachAddon(this.ws));
         this.fitAddon = new FitAddon();
         this.term.loadAddon(this.fitAddon);
         this.escapedUdid = Util.escapeUdid(this.udid);
         this.term.open(ShellClient.getOrCreateContainer(this.escapedUdid));
         this.updateTerminalSize();
+    }
+
+    protected supportMultiplexing(): boolean {
+        return true;
     }
 
     public parseParameters(params: ParsedUrlQuery): ParamsShell {
@@ -128,5 +135,11 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
             ),
         );
         return entry;
+    }
+
+    protected getChannelInitData(): Buffer {
+        const buffer = Buffer.alloc(4);
+        buffer.write(ChannelCode.SHEL, 'ascii');
+        return buffer;
     }
 }

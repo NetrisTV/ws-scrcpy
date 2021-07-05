@@ -31,7 +31,7 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
     constructor(params: ParsedUrlQuery) {
         super(params);
         this.udid = this.params.udid;
-        this.openNewWebSocket();
+        this.openNewConnection();
         this.setTitle(`Devtools ${this.udid}`);
         this.setBodyClass('devtools');
         this.hiddenInput = document.createElement('input');
@@ -76,7 +76,7 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
     protected onSocketClose(e: CloseEvent): void {
         console.error(TAG, `Socket closed. Code: ${e.code}.${e.reason ? ' Reason: ' + e.reason : ''}`);
         setTimeout(() => {
-            this.openNewWebSocket();
+            this.openNewConnection();
         }, 2000);
     }
 
