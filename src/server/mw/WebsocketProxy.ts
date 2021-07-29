@@ -46,7 +46,11 @@ export class WebsocketProxy extends Mw {
         };
         remoteSocket.onmessage = (event) => {
             if (this.ws && this.ws.readyState === this.ws.OPEN) {
-                this.ws.send(event.data);
+                if (Array.isArray(event.data)) {
+                    event.data.forEach((data) => this.ws.send(data));
+                } else {
+                    this.ws.send(event.data);
+                }
             }
         };
         remoteSocket.onclose = (e) => {

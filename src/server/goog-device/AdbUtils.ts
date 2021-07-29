@@ -1,6 +1,7 @@
 import * as portfinder from 'portfinder';
 import * as http from 'http';
 import Adb from '@devicefarmer/adbkit/lib/adb';
+import { ACTION } from '../../common/Action';
 import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, VersionMetadata } from '../../types/RemoteDevtools';
 import { URL } from 'url';
 import { Forward } from '@devicefarmer/adbkit/lib/Forward';
@@ -120,7 +121,7 @@ export class AdbUtils {
         if (url) {
             const remote = `localabstract:${socket}`;
             const path = url.replace(/ws:\/\//, '').replace(fakeHostRe, '');
-            return `${host}/proxy/${serial}/${remote}/${path}`;
+            return `${host}/${ACTION.PROXY_ADB}/${serial}/${remote}/${path}`;
         }
         return url;
     }
