@@ -1,14 +1,15 @@
 import { DragAndDropHandler, DragEventListener } from '../DragAndDropHandler';
-import { FilePushStream } from './FilePushStream';
+import { FilePushStream, PushResponse } from './FilePushStream';
+import { FilePushResponseStatus } from './FilePushResponseStatus';
 
-type Resolve = (result: number) => void;
+type Resolve = (response: PushResponse) => void;
 
 export type PushUpdateParams = { pushId: number; logString: string; fileName: string; error: boolean };
 
 export interface DragAndPushListener {
-    onDragEnter: () => void;
-    onDragLeave: () => void;
-    onDrop: () => void;
+    onDragEnter: () => boolean;
+    onDragLeave: () => boolean;
+    onDrop: () => boolean;
     onFilePushUpdate: (data: PushUpdateParams) => void;
     onError: (error: Error | string) => void;
 }
@@ -17,26 +18,14 @@ const TAG = '[FilePushHandler]';
 
 export default class FilePushHandler implements DragEventListener {
     public static readonly REQUEST_NEW_PUSH_ID = 0; // ignored on server, when state is `NEW_PUSH_ID`
-    public static readonly NEW_PUSH_ID: number = 1;
-    public static readonly NO_ERROR: number = 0;
-    public static readonly ERROR_INVALID_NAME: number = -1;
-    public static readonly ERROR_NO_SPACE: number = -2;
-    public static readonly ERROR_FAILED_TO_DELETE: number = -3;
-    public static readonly ERROR_FAILED_TO_CREATE: number = -4;
-    public static readonly ERROR_FILE_NOT_FOUND: number = -5;
-    public static readonly ERROR_FAILED_TO_WRITE: number = -6;
-    public static readonly ERROR_FILE_IS_BUSY: number = -7;
-    public static readonly ERROR_INVALID_STATE: number = -8;
-    public static readonly ERROR_UNKNOWN_ID: number = -9;
-    public static readonly ERROR_NO_FREE_ID: number = -10;
-    public static readonly ERROR_INCORRECT_SIZE: number = -11;
 
     private responseWaiter: Map<number, Resolve | Resolve[]> = new Map();
     private listeners: Set<DragAndPushListener> = new Set();
 
     constructor(private readonly element: HTMLElement, private readonly filePushStream: FilePushStream) {
         DragAndDropHandler.addEventListener(this);
-        filePushStream.on('response', this.onResponse);
+        filePushStream.on('response', this.onStreamResponse);
+        filePushStream.on('error', this.onStreamError);
     }
 
     private sendUpdate(params: PushUpdateParams): void {
@@ -71,18 +60,18 @@ export default class FilePushHandler implements DragEventListener {
         const id = FilePushHandler.REQUEST_NEW_PUSH_ID;
         this.sendUpdate({ pushId: id, fileName, logString: 'begins...', error: false });
         this.filePushStream.sendEventNew({ id });
-        const pushId: number = await this.waitForResponse(id);
+        const { code: pushId } = await this.waitForResponse(id);
         if (pushId <= 0) {
             this.logError(pushId, fileName, pushId);
         }
 
         const waitPromise = this.waitForResponse(pushId);
         this.filePushStream.sendEventStart({ id: pushId, fileName, fileSize });
-        const [startResponseCode, { reader, result }] = await Promise.all([
+        const [{ code: startResponseCode }, { reader, result }] = await Promise.all([
             waitPromise,
             FilePushHandler.getStreamReader(file),
         ]);
-        if (startResponseCode !== 0) {
+        if (startResponseCode !== FilePushResponseStatus.NO_ERROR) {
             this.logError(pushId, fileName, startResponseCode);
             return;
         }
@@ -91,7 +80,7 @@ export default class FilePushHandler implements DragEventListener {
         const processData = async ({ done, value }: { done: boolean; value?: Uint8Array }): Promise<void> => {
             if (done || !value) {
                 this.filePushStream.sendEventFinish({ id: pushId });
-                const finishResponseCode = await this.waitForResponse(pushId);
+                const { code: finishResponseCode } = await this.waitForResponse(pushId);
                 if (finishResponseCode !== 0) {
                     this.logError(pushId, fileName, finishResponseCode);
                 } else {
@@ -104,7 +93,10 @@ export default class FilePushHandler implements DragEventListener {
             receivedBytes += value.length;
             this.filePushStream.sendEventAppend({ id: pushId, chunk: value });
 
-            const [appendResponseCode, result] = await Promise.all([this.waitForResponse(pushId), reader.read()]);
+            const [{ code: appendResponseCode }, result] = await Promise.all([
+                this.waitForResponse(pushId),
+                reader.read(),
+            ]);
             if (appendResponseCode !== 0) {
                 this.logError(pushId, fileName, appendResponseCode);
                 return;
@@ -116,7 +108,7 @@ export default class FilePushHandler implements DragEventListener {
         return processData(result);
     }
 
-    private waitForResponse(pushId: number): Promise<number> {
+    private waitForResponse(pushId: number): Promise<PushResponse> {
         return new Promise((resolve) => {
             const stored = this.responseWaiter.get(pushId);
             if (Array.isArray(stored)) {
@@ -131,15 +123,18 @@ export default class FilePushHandler implements DragEventListener {
         });
     }
 
-    onResponse = (stats: { id: number; result: number }): void => {
+    onStreamError = ({ id, error }: { id: number; error: Error }): void => {
+        console.error(TAG, `pushId: ${id}`, error);
+    };
+
+    onStreamResponse = (response: PushResponse): void => {
         let func: Resolve;
-        let value: number;
-        const result = stats.result;
-        const id = result === FilePushHandler.NEW_PUSH_ID ? FilePushHandler.REQUEST_NEW_PUSH_ID : stats.id;
-        const idInResponse = stats.id;
+        let value: PushResponse;
+        const { code, id: idInResponse } = response;
+        const id = code === FilePushResponseStatus.NEW_PUSH_ID ? FilePushHandler.REQUEST_NEW_PUSH_ID : response.id;
         const resolve = this.responseWaiter.get(id);
         if (!resolve) {
-            console.warn(`Unexpected push id: "${id}", ${JSON.stringify(stats)}`);
+            console.warn(TAG, `Unexpected push id: "${id}", ${JSON.stringify(response)}`);
             return;
         }
         if (Array.isArray(resolve)) {
@@ -151,14 +146,14 @@ export default class FilePushHandler implements DragEventListener {
             func = resolve;
             this.responseWaiter.delete(id);
         }
-        if (result === FilePushHandler.NEW_PUSH_ID) {
-            value = idInResponse;
+        if (code === FilePushResponseStatus.NEW_PUSH_ID) {
+            value = { id, code: idInResponse };
         } else {
-            value = result;
+            value = { id, code: code };
         }
         func(value);
     };
-    public onFilesDrop(files: File[]): void {
+    public onFilesDrop(files: File[]): boolean {
         this.listeners.forEach((listener) => {
             listener.onDrop();
         });
@@ -176,21 +171,36 @@ export default class FilePushHandler implements DragEventListener {
                 this.sendUpdate(errorParams);
             }
         });
+        return true;
     }
-    public onDragEnter(): void {
+
+    public static getErrorMessage(code: number, message?: string): string {
+        return message || RESPONSE_CODES.get(code) || 'Unknown error';
+    }
+
+    public onDragEnter(): boolean {
+        let handled = false;
         this.listeners.forEach((listener) => {
-            listener.onDragEnter();
+            handled = handled || listener.onDragEnter();
         });
+        return handled;
     }
-    public onDragLeave(): void {
+
+    public onDragLeave(): boolean {
+        let handled = false;
         this.listeners.forEach((listener) => {
-            listener.onDragLeave();
+            handled = handled || listener.onDragLeave();
         });
+        return handled;
     }
+
     public getElement(): HTMLElement {
         return this.element;
     }
+
     public release(): void {
+        this.filePushStream.off('response', this.onStreamResponse);
+        this.filePushStream.off('error', this.onStreamError);
         this.filePushStream.release();
         DragAndDropHandler.removeEventListener(this);
         this.listeners.clear();
@@ -205,18 +215,18 @@ export default class FilePushHandler implements DragEventListener {
 }
 
 const RESPONSE_CODES = new Map([
-    [FilePushHandler.NEW_PUSH_ID, 'New push id'],
-    [FilePushHandler.NO_ERROR, 'No error'],
+    [FilePushResponseStatus.NEW_PUSH_ID, 'New push id'],
+    [FilePushResponseStatus.NO_ERROR, 'No error'],
 
-    [FilePushHandler.ERROR_INVALID_NAME, 'Invalid name'],
-    [FilePushHandler.ERROR_NO_SPACE, 'No space'],
-    [FilePushHandler.ERROR_FAILED_TO_DELETE, 'Failed to delete existing'],
-    [FilePushHandler.ERROR_FAILED_TO_CREATE, 'Failed to create new file'],
-    [FilePushHandler.ERROR_FILE_NOT_FOUND, 'File not found'],
-    [FilePushHandler.ERROR_FAILED_TO_WRITE, 'Failed to write to file'],
-    [FilePushHandler.ERROR_FILE_IS_BUSY, 'File is busy'],
-    [FilePushHandler.ERROR_INVALID_STATE, 'Invalid state'],
-    [FilePushHandler.ERROR_UNKNOWN_ID, 'Unknown id'],
-    [FilePushHandler.ERROR_NO_FREE_ID, 'No free id'],
-    [FilePushHandler.ERROR_INCORRECT_SIZE, 'Incorrect size'],
+    [FilePushResponseStatus.ERROR_INVALID_NAME, 'Invalid name'],
+    [FilePushResponseStatus.ERROR_NO_SPACE, 'No space'],
+    [FilePushResponseStatus.ERROR_FAILED_TO_DELETE, 'Failed to delete existing'],
+    [FilePushResponseStatus.ERROR_FAILED_TO_CREATE, 'Failed to create new file'],
+    [FilePushResponseStatus.ERROR_FILE_NOT_FOUND, 'File not found'],
+    [FilePushResponseStatus.ERROR_FAILED_TO_WRITE, 'Failed to write to file'],
+    [FilePushResponseStatus.ERROR_FILE_IS_BUSY, 'File is busy'],
+    [FilePushResponseStatus.ERROR_INVALID_STATE, 'Invalid state'],
+    [FilePushResponseStatus.ERROR_UNKNOWN_ID, 'Unknown id'],
+    [FilePushResponseStatus.ERROR_NO_FREE_ID, 'No free id'],
+    [FilePushResponseStatus.ERROR_INCORRECT_SIZE, 'Incorrect size'],
 ]);

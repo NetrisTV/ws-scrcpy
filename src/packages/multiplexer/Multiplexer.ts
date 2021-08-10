@@ -1,6 +1,7 @@
 import { TypedEmitter } from '../../common/TypedEmitter';
 import { Message } from './Message';
 import { MessageType } from './MessageType';
+import { EventClass } from './Event';
 import { CloseEventClass } from './CloseEventClass';
 import { ErrorEventClass } from './ErrorEventClass';
 import { MessageEventClass } from './MessageEventClass';
@@ -39,10 +40,6 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
     private maxId = 4294967296;
     private storage: Array<string | ArrayBufferLike | Blob | ArrayBufferView> = [];
     private readonly messageEmitter: WebsocketEventEmitter;
-    private readonly onOpenHandler: (event: Event) => void;
-    private readonly onCloseHandler: (e: CloseEvent) => void;
-    private readonly onErrorHandler: (e: Event) => void;
-    private readonly onMessageHandler: (event: MessageEvent) => void;
 
     public onclose: ((this: WebSocket, ev: CloseEvent) => any) | null = null;
     public onerror: ((this: WebSocket, ev: Event) => any) | null = null;
@@ -50,39 +47,33 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
     public onopen: ((this: WebSocket, ev: Event) => any) | null = null;
     public url = '';
 
-    public constructor(public readonly ws: WebSocket, private id = 0, emitter?: WebsocketEventEmitter) {
+    public constructor(public readonly ws: WebSocket, private _id = 0, emitter?: WebsocketEventEmitter) {
         super();
-        this.readyState = ws.readyState;
-        if (this.id === 0) {
+        this.readyState = this.CONNECTING;
+        if (this._id === 0) {
             ws.binaryType = 'arraybuffer';
+            this.readyState = this.ws.readyState;
         }
         this.messageEmitter = emitter || ws;
 
-        this.onOpenHandler = (event: Event) => {
+        const onOpenHandler = (event: Event) => {
             this.readyState = this.ws.readyState;
-            const ws = this.ws;
-            if (ws instanceof Multiplexer) {
-                this.storage.forEach((data) => ws.sendData(data));
-            } else {
-                this.storage.forEach((data) => ws.send(data));
-            }
-            this.storage.length = 0;
             this.dispatchEvent(event);
         };
 
-        this.onCloseHandler = (e: CloseEvent) => {
+        const onCloseHandler = (e: CloseEvent) => {
             this.readyState = this.ws.readyState;
             this.dispatchEvent(e);
             this.channels.clear();
         };
 
-        this.onErrorHandler = (e: Event) => {
+        const onErrorHandler = (e: Event) => {
             this.readyState = this.ws.readyState;
             this.dispatchEvent(e);
             this.channels.clear();
         };
 
-        this.onMessageHandler = (event: MessageEvent) => {
+        const onMessageHandler = (event: MessageEvent) => {
             const { data } = event;
             const message = Message.parse(data);
             switch (message.type) {
@@ -93,6 +84,11 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
                     }
                     const emitter = new TypedEmitter<WebsocketChannelEvents>();
                     const channel = new Multiplexer(this, channelId, emitter);
+                    setImmediate(() => {
+                        channel.readyState = this.OPEN;
+                        channel.dispatchEvent(new EventClass('open'));
+                    });
+                    channel.readyState = channel.OPEN;
                     this.channels.set(channelId, { channel, emitter });
                     this.emit('channel', { channel, data });
                     break;
@@ -167,17 +163,35 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
             }
         };
 
-        ws.addEventListener('open', this.onOpenHandler);
-        ws.addEventListener('error', this.onErrorHandler);
-        ws.addEventListener('close', this.onCloseHandler);
-        this.messageEmitter.addEventListener('message', this.onMessageHandler);
+        const onThisOpenHandler = () => {
+            if (!this.storage.length) {
+                return;
+            }
+            const ws = this.ws;
+            if (ws instanceof Multiplexer) {
+                this.storage.forEach((data) => ws.sendData(data));
+            } else {
+                this.storage.forEach((data) => ws.send(data));
+            }
+            this.storage.length = 0;
+        };
 
-        this.on('close', () => {
-            ws.removeEventListener('open', this.onOpenHandler);
-            ws.removeEventListener('error', this.onErrorHandler);
-            ws.removeEventListener('close', this.onCloseHandler);
-            this.messageEmitter.removeEventListener('message', this.onMessageHandler);
-        });
+        const onThisCloseHandler = () => {
+            ws.removeEventListener('open', onOpenHandler);
+            ws.removeEventListener('error', onErrorHandler);
+            ws.removeEventListener('close', onCloseHandler);
+            this.messageEmitter.removeEventListener('message', onMessageHandler);
+            this.off('close', onThisCloseHandler);
+            this.off('open', onThisOpenHandler);
+        };
+
+        ws.addEventListener('open', onOpenHandler);
+        ws.addEventListener('error', onErrorHandler);
+        ws.addEventListener('close', onCloseHandler);
+        this.messageEmitter.addEventListener('message', onMessageHandler);
+
+        this.on('close', onThisCloseHandler);
+        this.on('open', onThisOpenHandler);
     }
 
     public get bufferedAmount(): number {
@@ -192,15 +206,19 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
         return '';
     }
 
+    public get id(): number {
+        return this._id;
+    }
+
     public close(code = 0, reason?: string): void {
         if (this.readyState === this.CLOSED || this.readyState === this.CLOSING) {
             return;
         }
-        if (this.id) {
+        if (this._id) {
             this.readyState = this.CLOSING;
 
             try {
-                const message = Message.fromCloseEvent(this.id, code, reason).toBuffer();
+                const message = Message.fromCloseEvent(this._id, code, reason).toBuffer();
                 if (this.ws instanceof Multiplexer) {
                     this.ws.sendData(message);
                 } else {
@@ -216,36 +234,35 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
     }
 
     public send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
-        const { readyState } = this.ws;
-        if (readyState === this.ws.OPEN) {
-            if (this.ws instanceof Multiplexer) {
-                if (typeof data === 'string') {
-                    this.ws.sendData(Message.createBuffer(MessageType.RawStringData, this.id, Buffer.from(data)));
-                } else {
-                    this.ws.sendData(Message.createBuffer(MessageType.RawBinaryData, this.id, Buffer.from(data)));
-                }
+        if (this.ws instanceof Multiplexer) {
+            if (typeof data === 'string') {
+                data = Message.createBuffer(MessageType.RawStringData, this._id, Buffer.from(data));
             } else {
-                this.ws.send(data);
+                data = Message.createBuffer(MessageType.RawBinaryData, this._id, Buffer.from(data));
             }
-        } else if (readyState === this.ws.CONNECTING) {
-            this.storage.push(data);
-        } else {
-            console.error('Incorrect socket state');
         }
+        this._send(data);
     }
 
     public sendData(data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
-        const { readyState } = this.ws;
-        if (readyState === this.ws.OPEN) {
+        if (this.ws instanceof Multiplexer) {
+            data = Message.createBuffer(MessageType.Data, this._id, Buffer.from(data));
+        }
+        this._send(data);
+    }
+
+    private _send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
+        const { readyState } = this;
+        if (readyState === this.OPEN) {
             if (this.ws instanceof Multiplexer) {
-                this.ws.sendData(Message.createBuffer(MessageType.Data, this.id, Buffer.from(data)));
+                this.ws.sendData(data);
             } else {
                 this.ws.send(data);
             }
         } else if (readyState === this.ws.CONNECTING) {
             this.storage.push(data);
         } else {
-            console.error('Incorrect socket state');
+            throw Error(`Socket is already in CLOSING or CLOSED state.`);
         }
     }
 
@@ -260,7 +277,8 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
         this.sendData(Message.createBuffer(MessageType.CreateChannel, id, data));
         if (this.readyState === this.OPEN) {
             setImmediate(() => {
-                channel.dispatchEvent(new Event('open'));
+                channel.readyState = this.OPEN;
+                channel.dispatchEvent(new EventClass('open'));
             });
         }
         return channel;

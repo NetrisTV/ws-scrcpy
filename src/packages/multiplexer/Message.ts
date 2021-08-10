@@ -54,6 +54,7 @@ export class Message {
         return new CloseEventClass('close', {
             code,
             reason,
+            wasClean: code === 0,
         });
     }
 

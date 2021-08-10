@@ -1,4 +1,4 @@
-export class Event {
+export class Event2 {
     static NONE = 0;
     static CAPTURING_PHASE = 1;
     static AT_TARGET = 2;
@@ -74,3 +74,5 @@ export class Event {
         }
     }
 }
+
+export const EventClass = typeof Event !== 'undefined' ? Event : Event2;

@@ -13,8 +13,10 @@ import { html } from '../../ui/HtmlTag';
 import * as path from 'path';
 import { ChannelCode } from '../../../common/ChannelCode';
 import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
+import FilePushHandler, { DragAndPushListener, PushUpdateParams } from '../filePush/FilePushHandler';
+import { AdbkitFilePushStream } from '../filePush/AdbkitFilePushStream';
 
-const TAG = 'FileListing';
+const TAG = '[FileListing]';
 
 const parentDirLinkBox = 'parentDirLinkBox';
 const rootDirLinkBox = 'rootDirLinkBox';
@@ -25,7 +27,7 @@ const rootPath = '/';
 const tempPath = '/data/local/tmp';
 const storagePath = '/storage';
 
-export class FileListingClient extends ManagerClient<ParamsFileListing, never> {
+export class FileListingClient extends ManagerClient<ParamsFileListing, never> implements DragAndPushListener {
     public static readonly ACTION = ACTION.FILE_LISTING;
     public static readonly PARENT_DIR = '..';
     public static readonly PROPERTY_NAME = 'data-name';
@@ -63,14 +65,20 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> {
     private readonly name: string;
     private readonly tableBodyId: string;
     private readonly wrapperId: string;
+    private readonly filePushHandler?: FilePushHandler;
+    private readonly parent: HTMLElement;
+    private enterCount = 0;
     private entries: Entry[] = [];
     private path: string;
     private requireClean = false;
     private requestedPath = '';
     private requestedEntry?: Entry;
     private chunks: Uint8Array[] = [];
+    private channel?: Multiplexer;
+    private nextPath?: string;
     constructor(params: ParsedUrlQuery) {
         super(params);
+        this.parent = document.body;
         this.serial = this.params.udid;
         this.path = this.params.path;
         this.openNewConnection();
@@ -79,7 +87,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> {
         this.name = `[${TAG}] ${this.serial}`;
         this.tableBodyId = `${Util.escapeUdid(this.serial)}_list`;
         this.wrapperId = `wrapper_${this.tableBodyId}`;
-        const fragment = html`<div id="${this.wrapperId}">
+        const fragment = html`<div id="${this.wrapperId}" class="listing">
             <h1 id="header">Contents ${this.path}</h1>
             <div id="${parentDirLinkBox}" class="quick-link-box">
                 <a class="icon up" href="#!" ${FileListingClient.PROPERTY_NAME}=".."> [parent] </a>
@@ -128,8 +136,55 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> {
                     this.loadContent(newPath);
                 }
             });
+
+            if (this.ws instanceof Multiplexer) {
+                this.filePushHandler = new FilePushHandler(this.parent, new AdbkitFilePushStream(this.ws, this));
+                this.filePushHandler.addEventListener(this);
+            }
         }
-        document.body.appendChild(fragment);
+        this.parent.appendChild(fragment);
+    }
+
+    public onDragEnter(): boolean {
+        if (this.enterCount === 0) {
+            this.addDropTarget();
+        }
+        this.enterCount++;
+        return true;
+    }
+    public onDragLeave(): boolean {
+        this.enterCount--;
+        if (this.enterCount < 0) {
+            this.enterCount = 0;
+        }
+        if (this.enterCount === 0) {
+            this.removeDropTarget();
+        }
+        return true;
+    }
+    public onDrop(): boolean {
+        this.removeDropTarget();
+        return true;
+    }
+    public onFilePushUpdate(data: PushUpdateParams): void {
+        console.log(TAG, 'FIXME: implement', 'onFilePushUpdate', data);
+    }
+    public onError(error: string | Error): void {
+        console.error(TAG, 'FIXME: implement', error);
+    }
+
+    private addDropTarget(): void {
+        const fragment = html`<div class="drop-target">
+            <div class="drop-target-message">Drop files here</div>
+        </div>`.content;
+        this.parent.appendChild(fragment);
+    }
+
+    private removeDropTarget(): void {
+        const els = this.parent.getElementsByClassName('drop-target');
+        Array.from(els).forEach((el) => {
+            this.parent.removeChild(el);
+        });
     }
 
     public parseParameters(params: ParsedUrlQuery): ParamsFileListing {
@@ -149,6 +204,9 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> {
     }
 
     protected onSocketClose(e: CloseEvent): void {
+        if (this.filePushHandler) {
+            this.filePushHandler.release();
+        }
         console.log(this.name, 'socket closed', e.reason);
     }
 
@@ -165,21 +223,31 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> {
         if (!this.ws || this.ws.readyState !== this.ws.OPEN || !(this.ws instanceof Multiplexer)) {
             return;
         }
+        if (this.channel) {
+            this.nextPath = path;
+            return;
+        }
         this.requireClean = true;
         this.requestedPath = path;
-        const cmd = 'LIST';
+        const cmd = Protocol.LIST;
         const len = Buffer.byteLength(path, 'utf-8');
         const payload = new Buffer(cmd.length + 4 + len);
         let pos = payload.write(cmd, 0);
         pos = payload.writeUInt32LE(len, pos);
         payload.write(path, pos);
-        const channel = this.ws.createChannel(payload);
+        const channel = (this.channel = this.ws.createChannel(payload));
         const onMessage = (e: MessageEvent): void => {
             this.handleReply(e);
         };
         const onClose = (): void => {
+            this.channel = undefined;
             channel.removeEventListener('message', onMessage);
             channel.removeEventListener('close', onClose);
+            const nextPath = this.nextPath;
+            if (nextPath) {
+                this.nextPath = undefined;
+                this.loadContent(nextPath);
+            }
         };
         channel.addEventListener('message', onMessage);
         channel.addEventListener('close', onClose);
@@ -319,6 +387,14 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> {
         a.href = URL.createObjectURL(file);
         a.download = `${name}`;
         a.click();
+    }
+
+    public getPath(): string {
+        return this.path;
+    }
+
+    public reload(): void {
+        this.loadContent(this.path);
     }
 
     protected supportMultiplexing(): boolean {

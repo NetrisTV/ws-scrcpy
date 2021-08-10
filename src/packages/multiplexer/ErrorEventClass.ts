@@ -1,6 +1,6 @@
-import { Event } from './Event';
+import { Event2 } from './Event';
 
-export class ErrorEvent2 extends Event implements ErrorEvent {
+export class ErrorEvent2 extends Event2 implements ErrorEvent {
     readonly colno: number;
     readonly error: any;
     readonly filename: string;

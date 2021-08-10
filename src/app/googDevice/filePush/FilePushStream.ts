@@ -1,7 +1,10 @@
 import { TypedEmitter } from '../../../common/TypedEmitter';
 
+export type PushResponse = { id: number; code: number };
+
 interface FilePushStreamEvents {
-    response: { id: number; result: number };
+    response: PushResponse;
+    error: { id: number; error: Error };
 }
 
 export abstract class FilePushStream extends TypedEmitter<FilePushStreamEvents> {

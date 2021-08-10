@@ -80,19 +80,22 @@ export default class DragAndPushLogger implements DragAndPushListener {
         }
     }
 
-    onDragEnter(): void {
+    public onDragEnter(): boolean {
         this.logText('Drop APK files here', 1);
+        return true;
     }
 
-    onDragLeave(): void {
+    public onDragLeave(): boolean {
         this.cleanDirtyLine(1);
+        return true;
     }
 
-    onDrop(): void {
+    public onDrop(): boolean {
         this.cleanDirtyLine(1);
+        return true;
     }
 
-    onError(error: Error | string): void {
+    public onError(error: Error | string): void {
         const text = typeof error === 'string' ? error : error.message;
         this.logText(text, 1, true);
     }

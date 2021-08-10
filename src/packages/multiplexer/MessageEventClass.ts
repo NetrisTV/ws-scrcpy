@@ -1,6 +1,6 @@
-import { Event } from './Event';
+import { Event2 } from './Event';
 
-export class MessageEvent2 extends Event implements MessageEvent {
+export class MessageEvent2 extends Event2 implements MessageEvent {
     public readonly data: any;
     public readonly origin: string;
     public readonly lastEventId: string;

@@ -153,7 +153,7 @@ export class CommandControlMessage extends ControlMessage {
         return event;
     }
 
-    private static createPushFileOtherCommand(id: number, state: FilePushState) {
+    private static createPushFileOtherCommand(id: number, state: FilePushState): CommandControlMessage {
         const event = new CommandControlMessage(ControlMessage.TYPE_PUSH_FILE);
         const typeField = 1;
         const idField = 2;
@@ -167,6 +167,36 @@ export class CommandControlMessage extends ControlMessage {
         buffer.writeInt8(state, offset);
         event.buffer = buffer;
         return event;
+    }
+
+    public static pushFileCommandFromBuffer(
+        buffer: Buffer,
+    ): { id: number; state: FilePushState; chunk?: Buffer; fileSize?: number; fileName?: string } {
+        let offset = 0;
+        const type = buffer.readUInt8(offset);
+        offset += 1;
+        if (type !== CommandControlMessage.TYPE_PUSH_FILE) {
+            throw TypeError(`Incorrect type: "${type}"`);
+        }
+        const id = buffer.readInt16BE(offset);
+        offset += 2;
+        const state = buffer.readInt8(offset);
+        offset += 1;
+        let chunk: Buffer | undefined;
+        let fileSize: number | undefined;
+        let fileName: string | undefined;
+        if (state === FilePushState.APPEND) {
+            const chunkLength = buffer.readUInt32BE(offset);
+            offset += 4;
+            chunk = buffer.slice(offset, offset + chunkLength);
+        } else if (state === FilePushState.START) {
+            fileSize = buffer.readUInt32BE(offset);
+            offset += 4;
+            const textLength = buffer.readUInt16BE(offset);
+            offset += 2;
+            fileName = Util.utf8ByteArrayToString(buffer.slice(offset, offset + textLength));
+        }
+        return { id, state, chunk, fileName, fileSize };
     }
 
     private buffer?: Buffer;

@@ -1,6 +1,6 @@
-import { Event } from './Event';
+import { Event2 } from './Event';
 
-export class CloseEvent2 extends Event implements CloseEvent {
+export class CloseEvent2 extends Event2 implements CloseEvent {
     readonly code: number;
     readonly reason: string;
     readonly wasClean: boolean;

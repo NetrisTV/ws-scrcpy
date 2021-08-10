@@ -7,6 +7,7 @@ import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
 import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
 import { Message } from '../../../types/Message';
 import { ChannelCode } from '../../../common/ChannelCode';
+import { FilePushReader } from '../filePush/FilePushReader';
 
 export class FileListing extends Mw {
     public static readonly TAG = 'FileListing';
@@ -21,14 +22,14 @@ export class FileListing extends Mw {
         }
         const buffer = Buffer.from(data);
         const length = buffer.readInt32LE(0);
-        const udid = Util.utf8ByteArrayToString(buffer.slice(4, 4 + length));
-        return new FileListing(ws, udid);
+        const serial = Util.utf8ByteArrayToString(buffer.slice(4, 4 + length));
+        return new FileListing(ws, serial);
     }
 
-    constructor(ws: Multiplexer, private readonly udid: string) {
+    constructor(ws: Multiplexer, private readonly serial: string) {
         super(ws);
         ws.on('channel', (params) => {
-            FileListing.handleRequest(this.udid, params.channel, params.data);
+            FileListing.handleNewChannel(this.serial, params.channel, params.data);
         });
     }
 
@@ -39,7 +40,7 @@ export class FileListing extends Mw {
         // this.ws.send(JSON.stringify(data));
     };
 
-    private static handleRequest(udid: string, channel: Multiplexer, arrayBuffer: ArrayBuffer): void {
+    private static handleNewChannel(serial: string, channel: Multiplexer, arrayBuffer: ArrayBuffer): void {
         const data = Buffer.from(arrayBuffer);
         if (data.length < 4) {
             console.error(`[${FileListing.TAG}]`, `Invalid message. Too short (${data.length})`);
@@ -48,40 +49,47 @@ export class FileListing extends Mw {
         let offset = 0;
         const cmd = Util.utf8ByteArrayToString(data.slice(offset, 4));
         offset += 4;
-        if (cmd !== 'LIST') {
-            console.error(`[${FileListing.TAG}]`, `Invalid message. Wrong command (${cmd})`);
-            return;
+        switch (cmd) {
+            case Protocol.LIST:
+                const length = data.readUInt32LE(offset);
+                offset += 4;
+                const pathBuffer = data.slice(offset, offset + length);
+                const pathString = Util.utf8ByteArrayToString(pathBuffer);
+                FileListing.handleMessage(serial, pathString, channel).catch((e: Error) => {
+                    console.error(`[${FileListing.TAG}]`, e.message);
+                });
+                break;
+            case Protocol.SEND:
+                FilePushReader.handle(serial, channel);
+                break;
+            default:
+                console.error(`[${FileListing.TAG}]`, `Invalid message. Wrong command (${cmd})`);
+                channel.close(4001, `Invalid message. Wrong command (${cmd})`);
+                break;
         }
-        const length = data.readUInt32LE(offset);
-        offset += 4;
-        const pathBuffer = data.slice(offset, offset + length);
-        const path = Util.utf8ByteArrayToString(pathBuffer);
-        FileListing.handleMessage(udid, path, channel).catch((e: Error) => {
-            console.error(`[${FileListing.TAG}]`, e.message);
-        });
     }
 
     protected onSocketMessage(_event: WS.MessageEvent): void {
         // this.handleRequest(Buffer.from(event.data));
     }
 
-    private static async handleMessage(udid: string, entry: string, channel: Multiplexer): Promise<void> {
+    private static async handleMessage(serial: string, pathString: string, channel: Multiplexer): Promise<void> {
         let stats: Stats;
         try {
-            stats = await AdbUtils.stats(udid, entry);
+            stats = await AdbUtils.stats(serial, pathString);
         } catch (e) {
             FileListing.sendError(e.message, channel);
             return;
         }
         if (stats.isDirectory()) {
             try {
-                await AdbUtils.pipeReadDirToStream(udid, entry, channel);
+                await AdbUtils.pipeReadDirToStream(serial, pathString, channel);
             } catch (e) {
                 FileListing.sendError(e.message, channel);
             }
         } else {
             try {
-                await AdbUtils.pipePullFileToStream(udid, entry, channel);
+                await AdbUtils.pipePullFileToStream(serial, pathString, channel);
             } catch (e) {
                 FileListing.sendError(e.message, channel);
             }

@@ -12,6 +12,8 @@ import PullTransfer from '@devicefarmer/adbkit/lib/adb/sync/pulltransfer';
 import { FileStats } from '../../types/FileStats';
 import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
 import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
+import { ReadStream } from 'fs';
+import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
 
 type IncomingMessage = {
     statusCode?: number;
@@ -32,6 +34,16 @@ export class AdbUtils {
             dateModified: entry.mtimeMs ? entry.mtimeMs : entry.mtime.getTime(),
         };
     }
+
+    public static async push(serial: string, stream: ReadStream, pathString: string): Promise<PushTransfer> {
+        const client = AdbExtended.createClient();
+        const transfer = await client.push(serial, stream, pathString);
+        client.on('error', (e: Error) => {
+            transfer.emit('error', e);
+        });
+        return transfer;
+    }
+
     public static async stats(serial: string, pathString: string, stats?: Stats, deep?: number): Promise<Stats> {
         if (!stats || (stats.isSymbolicLink() && pathString.endsWith('/'))) {
             const client = AdbExtended.createClient();
