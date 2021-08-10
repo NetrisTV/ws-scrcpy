@@ -1,4 +1,4 @@
-import FilePushHandler, { DragAndPushListener, PushUpdateParams } from './FilePushHandler';
+import FilePushHandler, { DragAndPushListener, PushUpdateParams } from './filePush/FilePushHandler';
 
 const TAG = '[DragAndPushLogger]';
 

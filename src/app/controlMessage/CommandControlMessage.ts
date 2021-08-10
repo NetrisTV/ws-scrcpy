@@ -87,7 +87,10 @@ export class CommandControlMessage extends ControlMessage {
             return this.createPushFileStartCommand(id, fileName as string, fileSize as number);
         }
         if (state === FilePushState.APPEND) {
-            return this.createPushFileChunkCommand(id, chunk as Uint8Array);
+            if (!chunk) {
+                throw TypeError('Invalid type');
+            }
+            return this.createPushFileChunkCommand(id, chunk);
         }
         if (state === FilePushState.CANCEL || state === FilePushState.FINISH || state === FilePushState.NEW) {
             return this.createPushFileOtherCommand(id, state);
