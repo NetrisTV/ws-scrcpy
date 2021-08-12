@@ -210,7 +210,7 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
         return this._id;
     }
 
-    public close(code = 0, reason?: string): void {
+    public close(code = 1000, reason?: string): void {
         if (this.readyState === this.CLOSED || this.readyState === this.CLOSING) {
             return;
         }

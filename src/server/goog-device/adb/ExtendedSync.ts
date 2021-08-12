@@ -52,7 +52,7 @@ export class ExtendedSync {
                     return readNext();
                 case Protocol.DONE:
                     await this.parser.readBytes(4);
-                    stream.close(0);
+                    stream.close(1000);
                     return;
                 case Protocol.FAIL:
                     return this._readError(stream);
@@ -78,7 +78,7 @@ export class ExtendedSync {
     private async _readError(stream: Multiplexer): Promise<void> {
         const length = await this.parser.readBytes(4);
         const message = await this.parser.readAscii(length.readUInt32LE(0));
-        stream.close(1, message);
+        stream.close(4000, message);
         await this.parser.end();
         return;
     }
