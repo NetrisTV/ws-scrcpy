@@ -130,6 +130,7 @@ export class AdbUtils {
             transfer.on('end', function () {
                 console.log('[%s] [%s] Pull complete', serial, pathString);
                 stream.send(Buffer.from(Protocol.DONE, 'ascii'));
+                stream.close();
                 resolve();
             });
             transfer.on('error', (e) => {
