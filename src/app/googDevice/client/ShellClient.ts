@@ -42,6 +42,7 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
         this.escapedUdid = Util.escapeUdid(this.udid);
         this.term.open(ShellClient.getOrCreateContainer(this.escapedUdid));
         this.updateTerminalSize();
+        this.term.focus();
     }
 
     protected supportMultiplexing(): boolean {
