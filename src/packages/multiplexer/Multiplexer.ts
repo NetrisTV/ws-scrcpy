@@ -7,7 +7,8 @@ import { ErrorEventClass } from './ErrorEventClass';
 import { MessageEventClass } from './MessageEventClass';
 import Util from '../../app/Util';
 
-interface WebsocketChannelEvents extends WebSocketEventMap {
+interface MultiplexerEvents extends WebSocketEventMap {
+    empty: Multiplexer;
     channel: { channel: Multiplexer; data: ArrayBuffer };
     open: Event;
     close: CloseEvent;
@@ -28,7 +29,7 @@ export interface WebsocketEventEmitter {
     ): void;
 }
 
-export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements WebSocket {
+export class Multiplexer extends TypedEmitter<MultiplexerEvents> implements WebSocket {
     readonly CONNECTING = 0;
     readonly OPEN = 1;
     readonly CLOSING = 2;
@@ -40,6 +41,7 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
     private maxId = 4294967296;
     private storage: Array<string | ArrayBufferLike | Blob | ArrayBufferView> = [];
     private readonly messageEmitter: WebsocketEventEmitter;
+    private emptyTimer: NodeJS.Immediate | null = null;
 
     public onclose: ((this: WebSocket, ev: CloseEvent) => any) | null = null;
     public onerror: ((this: WebSocket, ev: Event) => any) | null = null;
@@ -47,7 +49,11 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
     public onopen: ((this: WebSocket, ev: Event) => any) | null = null;
     public url = '';
 
-    public constructor(public readonly ws: WebSocket, private _id = 0, emitter?: WebsocketEventEmitter) {
+    public static wrap(ws: WebSocket): Multiplexer {
+        return new Multiplexer(ws);
+    }
+
+    protected constructor(public readonly ws: WebSocket, private _id = 0, emitter?: WebsocketEventEmitter) {
         super();
         this.readyState = this.CONNECTING;
         if (this._id === 0) {
@@ -82,14 +88,7 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
                     if (this.nextId < channelId) {
                         this.nextId = channelId;
                     }
-                    const emitter = new TypedEmitter<WebsocketChannelEvents>();
-                    const channel = new Multiplexer(this, channelId, emitter);
-                    setImmediate(() => {
-                        channel.readyState = this.OPEN;
-                        channel.dispatchEvent(new EventClass('open'));
-                    });
-                    channel.readyState = channel.OPEN;
-                    this.channels.set(channelId, { channel, emitter });
+                    const channel = this._createChannel(channelId, false);
                     this.emit('channel', { channel, data });
                     break;
                 }
@@ -145,7 +144,6 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
                     const data = this.channels.get(message.channelId);
                     if (data) {
                         const { channel } = data;
-                        this.channels.delete(message.channelId);
                         channel.readyState = channel.CLOSING;
                         try {
                             channel.dispatchEvent(message.toCloseEvent());
@@ -192,6 +190,7 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
 
         this.on('close', onThisCloseHandler);
         this.on('open', onThisOpenHandler);
+        this.scheduleEmptyEvent();
     }
 
     public get bufferedAmount(): number {
@@ -208,6 +207,20 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
 
     public get id(): number {
         return this._id;
+    }
+
+    private scheduleEmptyEvent(): void {
+        this.emptyTimer = setImmediate(() => {
+            this.emptyTimer = null;
+            this.emit('empty', this);
+        });
+    }
+
+    private clearEmptyEvent(): void {
+        if (this.emptyTimer) {
+            clearImmediate(this.emptyTimer);
+            this.emptyTimer = null;
+        }
     }
 
     public close(code = 1000, reason?: string): void {
@@ -266,21 +279,37 @@ export class Multiplexer extends TypedEmitter<WebsocketChannelEvents> implements
         }
     }
 
+    private _createChannel(id: number, sendOpenEvent: boolean): Multiplexer {
+        const emitter = new TypedEmitter<MultiplexerEvents>();
+        const channel = new Multiplexer(this, id, emitter);
+        this.channels.set(id, { channel, emitter });
+        if (sendOpenEvent) {
+            if (this.readyState === this.OPEN) {
+                setImmediate(() => {
+                    channel.readyState = this.OPEN;
+                    channel.dispatchEvent(new EventClass('open'));
+                });
+            }
+        } else {
+            channel.readyState = this.readyState;
+        }
+        channel.addEventListener('close', () => {
+            this.channels.delete(id);
+            if (!this.channels.size) {
+                this.scheduleEmptyEvent();
+            }
+        });
+        this.clearEmptyEvent();
+        return channel;
+    }
+
     public createChannel(data: Buffer): Multiplexer {
         if (this.readyState === this.CLOSING || this.readyState === this.CLOSED) {
             throw Error('Incorrect socket state');
         }
         const id = this.getNextId();
-        const emitter = new TypedEmitter<WebsocketChannelEvents>();
-        const channel = new Multiplexer(this, id, emitter);
-        this.channels.set(id, { channel, emitter });
+        const channel = this._createChannel(id, true);
         this.sendData(Message.createBuffer(MessageType.CreateChannel, id, data));
-        if (this.readyState === this.OPEN) {
-            setImmediate(() => {
-                channel.readyState = this.OPEN;
-                channel.dispatchEvent(new EventClass('open'));
-            });
-        }
         return channel;
     }
 

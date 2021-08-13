@@ -37,16 +37,20 @@ export abstract class ManagerClient<P extends ParamsBase, TE> extends BaseClient
         }
         const url = this.url.toString();
         if (this.supportMultiplexing()) {
-            let mpx = ManagerClient.sockets.get(url);
-            if (!mpx) {
+            let openedMultiplexer = ManagerClient.sockets.get(url);
+            if (!openedMultiplexer) {
                 const ws = new WebSocket(url);
                 ws.addEventListener('close', () => {
                     ManagerClient.sockets.delete(url);
                 });
-                mpx = new Multiplexer(ws);
-                ManagerClient.sockets.set(url, mpx);
+                const newMultiplexer = Multiplexer.wrap(ws);
+                newMultiplexer.on('empty', () => {
+                    newMultiplexer.close();
+                });
+                ManagerClient.sockets.set(url, newMultiplexer);
+                openedMultiplexer = newMultiplexer;
             }
-            const ws = mpx.createChannel(this.getChannelInitData());
+            const ws = openedMultiplexer.createChannel(this.getChannelInitData());
             ws.addEventListener('open', this.onSocketOpen.bind(this));
             ws.addEventListener('message', this.onSocketMessage.bind(this));
             ws.addEventListener('close', this.onSocketClose.bind(this));

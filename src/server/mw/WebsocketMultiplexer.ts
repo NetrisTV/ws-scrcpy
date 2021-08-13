@@ -34,7 +34,7 @@ export class WebsocketMultiplexer extends Mw {
 
     constructor(ws: WS) {
         super(ws);
-        this.multiplexer = new Multiplexer((ws as unknown) as WebSocket);
+        this.multiplexer = Multiplexer.wrap((ws as unknown) as WebSocket);
     }
 
     public async init(): Promise<void> {
