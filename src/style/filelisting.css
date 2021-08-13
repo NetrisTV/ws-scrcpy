@@ -78,3 +78,19 @@ body.file-listing {
     border: 4px dashed #ddd;
     pointer-events: none;
 }
+
+.file-listing .entry-name {
+    position: relative;
+}
+
+.file-listing .background-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: hsla(225, 100%, 50%, 0.2);
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border-spacing: 0;
+}

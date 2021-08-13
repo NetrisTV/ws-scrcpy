@@ -120,15 +120,11 @@ export class AdbUtils {
     public static async pipePullFileToStream(serial: string, pathString: string, stream: Multiplexer): Promise<void> {
         const client = AdbExtended.createClient();
         const transfer = await client.pull(serial, pathString);
-        transfer.on('progress', function (stats) {
-            console.log('[%s] [%s] Pulled %d bytes so far', serial, pathString, stats.bytesTransferred);
-        });
         transfer.on('data', (data) => {
             stream.send(Buffer.concat([Buffer.from(Protocol.DATA, 'ascii'), data]));
         });
         return new Promise((resolve, reject) => {
             transfer.on('end', function () {
-                console.log('[%s] [%s] Pull complete', serial, pathString);
                 stream.send(Buffer.from(Protocol.DONE, 'ascii'));
                 stream.close();
                 resolve();

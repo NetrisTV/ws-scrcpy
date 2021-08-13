@@ -73,7 +73,10 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
     private requireClean = false;
     private requestedPath = '';
     private requestedEntry?: Entry;
+    private anchorForRequestedEntry?: HTMLElement;
+    private downloadProgressElement?: HTMLElement;
     private chunks: Uint8Array[] = [];
+    private downloadSize = 0;
     private channel?: Multiplexer;
     private nextPath?: string;
     constructor(params: ParsedUrlQuery) {
@@ -84,7 +87,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         this.openNewConnection();
         this.setTitle(`Listing ${this.serial}`);
         this.setBodyClass('file-listing');
-        this.name = `[${TAG}] ${this.serial}`;
+        this.name = `${TAG} [${this.serial}]`;
         this.tableBodyId = `${Util.escapeUdid(this.serial)}_list`;
         this.wrapperId = `wrapper_${this.tableBodyId}`;
         const fragment = html`<div id="${this.wrapperId}" class="listing">
@@ -131,6 +134,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
                         const entryId = parseInt(entryIdString, 10);
                         if (!isNaN(entryId) && this.entries[entryId]) {
                             this.requestedEntry = this.entries[entryId];
+                            this.anchorForRequestedEntry = e.target;
                         }
                     }
                     this.loadContent(newPath);
@@ -167,10 +171,10 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         return true;
     }
     public onFilePushUpdate(data: PushUpdateParams): void {
-        console.log(TAG, 'FIXME: implement', 'onFilePushUpdate', data);
+        console.log(this.name, 'FIXME: implement', 'onFilePushUpdate', data);
     }
     public onError(error: string | Error): void {
-        console.error(TAG, 'FIXME: implement', error);
+        console.error(this.name, 'FIXME: implement', error);
     }
 
     private addDropTarget(): void {
@@ -318,6 +322,24 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
                 return;
             case Protocol.DATA:
                 this.chunks.push(data.slice(4));
+                this.downloadSize += data.length - 4;
+                if (this.anchorForRequestedEntry) {
+                    let progressElement = this.downloadProgressElement;
+                    if (!progressElement) {
+                        progressElement = document.createElement('span');
+                        progressElement.className = 'background-progress';
+                        this.downloadProgressElement = progressElement;
+                        const parent = this.anchorForRequestedEntry.parentElement;
+                        if (parent) {
+                            parent.appendChild(progressElement);
+                        }
+                    }
+                    if (this.requestedEntry) {
+                        const { size } = this.requestedEntry;
+                        const percent = (this.downloadSize * 100) / size;
+                        progressElement.style.width = `${percent}%`;
+                    }
+                }
                 return;
             default:
                 console.error(`Unexpected "${reply}"`);
@@ -348,7 +370,9 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
             return;
         }
         const row = document.createElement('tr');
+        row.classList.add('entry-row');
         const nameTd = document.createElement('td');
+        nameTd.classList.add('entry-name');
         const link = document.createElement('a');
         const type = entry.isDirectory() ? 'dir' : entry.isSymbolicLink() ? 'link' : entry.isFile() ? 'file' : 'else';
         link.classList.add('icon', type);
@@ -363,15 +387,29 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         nameTd.appendChild(link);
         row.appendChild(nameTd);
         const sizeTd = document.createElement('td');
+        sizeTd.classList.add('entry-size');
         sizeTd.innerText = entry.size.toString();
         row.appendChild(sizeTd);
         const mtimeTd = document.createElement('td');
+        mtimeTd.classList.add('entry-time');
         mtimeTd.innerText = entry.mtime.toLocaleString();
         row.appendChild(mtimeTd);
         document.getElementById(this.tableBodyId)?.appendChild(row);
     }
 
     protected finishDownload(): void {
+        if (this.downloadProgressElement) {
+            const el = this.downloadProgressElement;
+            this.downloadProgressElement = undefined;
+            el.classList.add('finished');
+            setTimeout(() => {
+                const parent = el.parentElement;
+                if (parent) {
+                    parent.removeChild(el);
+                }
+            });
+        }
+        this.anchorForRequestedEntry = undefined;
         let name: string;
         if (this.requestedEntry && this.requestedEntry.isFile()) {
             name = this.requestedEntry.name;
@@ -383,6 +421,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         }
         const file = new File(this.chunks, name, { type: 'application/octet-stream' });
         this.chunks.length = 0;
+        this.downloadSize = 0;
         const a = document.createElement('a');
         a.href = URL.createObjectURL(file);
         a.download = `${name}`;
