@@ -110,6 +110,9 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
     protected abstract buildDeviceRow(tbody: Element, device: DD): void;
 
     protected onSocketClose(e: CloseEvent): void {
+        if (this.destroyed) {
+            return;
+        }
         console.log(TAG, `Connection closed: ${e.reason}`);
         setTimeout(() => {
             this.openNewConnection();

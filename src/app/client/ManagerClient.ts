@@ -9,6 +9,7 @@ export abstract class ManagerClient<P extends ParamsBase, TE> extends BaseClient
     public static ACTION = 'unknown';
     public static CODE = 'NONE';
     public static sockets: Map<string, Multiplexer> = new Map();
+    protected destroyed = false;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     public static start(..._rest: any[]): void {
@@ -61,6 +62,11 @@ export abstract class ManagerClient<P extends ParamsBase, TE> extends BaseClient
     }
 
     public destroy(): void {
+        if (this.destroyed) {
+            console.error(new Error('Already disposed'));
+            return;
+        }
+        this.destroyed = true;
         if (this.ws) {
             if (this.ws.readyState === this.ws.OPEN) {
                 this.ws.close();
