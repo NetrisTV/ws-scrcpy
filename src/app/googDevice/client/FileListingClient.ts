@@ -27,6 +27,8 @@ const rootPath = '/';
 const tempPath = '/data/local/tmp';
 const storagePath = '/storage';
 
+type Download = { size: number; entry: Entry; progressElement?: HTMLElement; anchor: HTMLElement };
+
 export class FileListingClient extends ManagerClient<ParamsFileListing, never> implements DragAndPushListener {
     public static readonly ACTION = ACTION.FILE_LISTING;
     public static readonly PARENT_DIR = '..';
@@ -72,13 +74,8 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
     private path: string;
     private requireClean = false;
     private requestedPath = '';
-    private requestedEntry?: Entry;
-    private anchorForRequestedEntry?: HTMLElement;
-    private downloadProgressElement?: HTMLElement;
     private chunks: Uint8Array[] = [];
-    private downloadSize = 0;
-    private channel?: Multiplexer;
-    private nextPath?: string;
+    private downloads: Map<Multiplexer, Download> = new Map();
     constructor(params: ParsedUrlQuery) {
         super(params);
         this.parent = document.body;
@@ -125,19 +122,21 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
                 if (!name) {
                     return;
                 }
-                const newPath = path.resolve(this.path, name);
                 e.preventDefault();
                 e.cancelBubble = true;
+                const newPath = path.resolve(this.path, name);
                 if (newPath !== this.path) {
                     const entryIdString = e.target.getAttribute(FileListingClient.PROPERTY_ENTRY_ID);
+                    let entry: Entry | undefined;
+                    let anchor: HTMLElement | undefined;
                     if (entryIdString) {
                         const entryId = parseInt(entryIdString, 10);
                         if (!isNaN(entryId) && this.entries[entryId]) {
-                            this.requestedEntry = this.entries[entryId];
-                            this.anchorForRequestedEntry = e.target;
+                            entry = this.entries[entryId];
+                            anchor = e.target;
                         }
                     }
-                    this.loadContent(newPath);
+                    this.loadContent(newPath, entry, anchor);
                 }
             });
 
@@ -223,12 +222,8 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         this.loadContent(this.path);
     }
 
-    protected loadContent(path: string): void {
+    protected loadContent(path: string, entry?: Entry, anchor?: HTMLElement): void {
         if (!this.ws || this.ws.readyState !== this.ws.OPEN || !(this.ws instanceof Multiplexer)) {
-            return;
-        }
-        if (this.channel) {
-            this.nextPath = path;
             return;
         }
         this.requireClean = true;
@@ -239,19 +234,22 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         let pos = payload.write(cmd, 0);
         pos = payload.writeUInt32LE(len, pos);
         payload.write(path, pos);
-        const channel = (this.channel = this.ws.createChannel(payload));
+        const channel = this.ws.createChannel(payload);
+        if (entry && anchor) {
+            const download: Download = {
+                size: 0,
+                entry,
+                anchor,
+            };
+            this.downloads.set(channel, download);
+        }
         const onMessage = (e: MessageEvent): void => {
-            this.handleReply(e);
+            this.handleReply(channel, e);
         };
         const onClose = (): void => {
-            this.channel = undefined;
+            this.downloads.delete(channel);
             channel.removeEventListener('message', onMessage);
             channel.removeEventListener('close', onClose);
-            const nextPath = this.nextPath;
-            if (nextPath) {
-                this.nextPath = undefined;
-                this.loadContent(nextPath);
-            }
         };
         channel.addEventListener('message', onMessage);
         channel.addEventListener('close', onClose);
@@ -299,7 +297,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         }
     }
 
-    protected handleReply(e: MessageEvent): void {
+    protected handleReply(channel: Multiplexer, e: MessageEvent): void {
         const data = Buffer.from(e.data);
         const reply = data.slice(0, 4).toString('ascii');
         switch (reply) {
@@ -313,32 +311,31 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
                 this.addRow(new Entry(name, mode, size, mtime));
                 return;
             case Protocol.DONE:
-                this.finishDownload();
+                this.finishDownload(channel);
                 return;
             case Protocol.FAIL:
                 const length = data.readUInt32LE(4);
                 const message = Util.utf8ByteArrayToString(data.slice(8, 8 + length));
-                console.error(`Error: ${message}`);
+                console.error(TAG, `FAIL: ${message}`);
                 return;
             case Protocol.DATA:
                 this.chunks.push(data.slice(4));
-                this.downloadSize += data.length - 4;
-                if (this.anchorForRequestedEntry) {
-                    let progressElement = this.downloadProgressElement;
+                const download = this.downloads.get(channel);
+                if (download) {
+                    download.size += data.length - 4;
+                    let progressElement = download.progressElement;
                     if (!progressElement) {
                         progressElement = document.createElement('span');
                         progressElement.className = 'background-progress';
-                        this.downloadProgressElement = progressElement;
-                        const parent = this.anchorForRequestedEntry.parentElement;
+                        download.progressElement = progressElement;
+                        const parent = download.anchor.parentElement;
                         if (parent) {
                             parent.appendChild(progressElement);
                         }
                     }
-                    if (this.requestedEntry) {
-                        const { size } = this.requestedEntry;
-                        const percent = (this.downloadSize * 100) / size;
-                        progressElement.style.width = `${percent}%`;
-                    }
+                    const { size } = download.entry;
+                    const percent = (download.size * 100) / size;
+                    progressElement.style.width = `${percent}%`;
                 }
                 return;
             default:
@@ -397,10 +394,14 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         document.getElementById(this.tableBodyId)?.appendChild(row);
     }
 
-    protected finishDownload(): void {
-        if (this.downloadProgressElement) {
-            const el = this.downloadProgressElement;
-            this.downloadProgressElement = undefined;
+    protected finishDownload(channel: Multiplexer): void {
+        const download = this.downloads.get(channel);
+        if (!download) {
+            return;
+        }
+        this.downloads.delete(channel);
+        const el = download.progressElement;
+        if (el) {
             el.classList.add('finished');
             setTimeout(() => {
                 const parent = el.parentElement;
@@ -409,11 +410,9 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
                 }
             });
         }
-        this.anchorForRequestedEntry = undefined;
         let name: string;
-        if (this.requestedEntry && this.requestedEntry.isFile()) {
-            name = this.requestedEntry.name;
-            this.requestedEntry = undefined;
+        if (download.entry.isFile()) {
+            name = download.entry.name;
         } else {
             // Was opened link to a file, get its name and load its parent content
             name = path.basename(this.path);
@@ -421,7 +420,6 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         }
         const file = new File(this.chunks, name, { type: 'application/octet-stream' });
         this.chunks.length = 0;
-        this.downloadSize = 0;
         const a = document.createElement('a');
         a.href = URL.createObjectURL(file);
         a.download = `${name}`;

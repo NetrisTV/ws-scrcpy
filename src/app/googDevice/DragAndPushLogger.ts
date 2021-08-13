@@ -101,7 +101,7 @@ export default class DragAndPushLogger implements DragAndPushListener {
     }
 
     onFilePushUpdate(data: PushUpdateParams): void {
-        const { pushId, logString, fileName, error } = data;
+        const { pushId, message, fileName, error } = data;
         const key = `${pushId}/${fileName}`;
         const firstKey = `${FilePushHandler.REQUEST_NEW_PUSH_ID}/${fileName}`;
         let line: number | undefined = this.pushLineMap.get(key);
@@ -124,6 +124,6 @@ export default class DragAndPushLogger implements DragAndPushListener {
             this.pushLineMap.set(key, line);
             this.linePushMap.set(line, key);
         }
-        this.logText(`Upload "${fileName}": ${logString}`, line, true, error);
+        this.logText(`Upload "${fileName}": ${message}`, line, true, error);
     }
 }

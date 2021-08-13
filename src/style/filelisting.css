@@ -65,6 +65,7 @@ body.file-listing {
     right: 0;
     display: flex;
     z-index: 1000;
+    background-color: var(--controls-bg-color);
 }
 
 .file-listing .drop-target-message {
