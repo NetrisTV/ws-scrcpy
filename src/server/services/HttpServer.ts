@@ -3,7 +3,6 @@ import path from 'path';
 import { Service } from './Service';
 import { Utils } from '../Utils';
 import express, { Express } from 'express';
-import { FileListing } from './FileListing';
 
 const proto = 'http';
 const DEFAULT_PORT = 8000;
@@ -70,7 +69,6 @@ export class HttpServer implements Service {
         if (HttpServer.SERVE_STATIC && HttpServer.PUBLIC_DIR) {
             this.app.use(express.static(HttpServer.PUBLIC_DIR));
         }
-        FileListing.addRouteHandlers(this.app);
         this.server = http.createServer(this.app).listen(HttpServer.PORT, () => {
             Utils.printListeningMsg(proto, HttpServer.PORT);
         });
