@@ -78,6 +78,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
     private downloads: Map<Multiplexer, Download> = new Map();
     private uploads: Map<number, Upload> = new Map();
     private tableBody: HTMLElement;
+    private channels: Set<Multiplexer> = new Set();
     constructor(params: ParsedUrlQuery) {
         super(params);
         this.parent = document.body;
@@ -262,6 +263,9 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         if (!this.ws || this.ws.readyState !== this.ws.OPEN || !(this.ws instanceof Multiplexer)) {
             return;
         }
+        if (!entry && this.channels.size) {
+            return;
+        }
         this.requireClean = true;
         this.requestedPath = path;
         const cmd = Protocol.LIST;
@@ -271,6 +275,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         pos = payload.writeUInt32LE(len, pos);
         payload.write(path, pos);
         const channel = this.ws.createChannel(payload);
+        this.channels.add(channel);
         if (entry && anchor) {
             const download: Download = {
                 size: 0,
@@ -284,6 +289,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
             this.handleReply(channel, e);
         };
         const onClose = (): void => {
+            this.channels.delete(channel);
             this.downloads.delete(channel);
             channel.removeEventListener('message', onMessage);
             channel.removeEventListener('close', onClose);
