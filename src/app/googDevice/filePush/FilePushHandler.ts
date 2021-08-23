@@ -163,7 +163,7 @@ export default class FilePushHandler implements DragEventListener {
             if (this.filePushStream.isAllowedFile(file)) {
                 this.pushFile(file);
             } else {
-                const errorParams = {
+                const errorParams: PushUpdateParams = {
                     pushId: FilePushHandler.REQUEST_NEW_PUSH_ID,
                     fileName: name,
                     message: `Unsupported type "${type}"`,

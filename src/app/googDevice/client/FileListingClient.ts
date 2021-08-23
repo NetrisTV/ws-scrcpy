@@ -76,7 +76,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
     private requireClean = false;
     private requestedPath = '';
     private downloads: Map<Multiplexer, Download> = new Map();
-    private uploads: Map<number, Upload> = new Map();
+    private uploads: Map<string, Upload> = new Map();
     private tableBody: HTMLElement;
     private channels: Set<Multiplexer> = new Set();
     constructor(params: ParsedUrlQuery) {
@@ -177,29 +177,26 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         return true;
     }
 
-    private findOrCreateRow(fileName: string): HTMLElement {
-        const els = Array.from(this.tableBody.getElementsByTagName('a'));
-        const el = els.find((el) => el.innerText === fileName);
-        if (el) {
-            return el;
+    private findOrCreateEntryRow(fileName: string): HTMLElement {
+        const row = document.getElementById(`entry-${fileName}`);
+        if (row) {
+            return row;
         }
-        const row = this.addRow(true, fileName, 'file');
-        return row.getElementsByTagName('a')[0];
+        return this.addRow(true, fileName, 'file');
     }
 
     public onFilePushUpdate(data: PushUpdateParams): void {
-        if (data.pushId === FilePushHandler.REQUEST_NEW_PUSH_ID) {
-            return;
-        }
-        const { fileName, progress, pushId, error } = data;
-        let upload = this.uploads.get(pushId);
+        const { fileName, progress, error } = data;
+        let upload = this.uploads.get(fileName);
         if (!upload || document.getElementById(upload.anchor.id) !== upload.anchor) {
-            const anchor = this.findOrCreateRow(fileName);
+            const row = this.findOrCreateEntryRow(fileName);
+            const anchor = row.getElementsByTagName('a')[0];
             if (!anchor.id) {
-                anchor.id = `upload_${data.pushId}`;
+                anchor.id = `upload_${fileName}`;
             }
-            upload = { progressEl: this.appendProgressElement(anchor), anchor };
-            this.uploads.set(pushId, upload);
+            const progressEl = this.appendProgressElement(anchor);
+            upload = { progressEl, anchor };
+            this.uploads.set(fileName, upload);
         }
         const { progressEl } = upload;
         let clean = progress === 100;
@@ -212,7 +209,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         }
         if (clean) {
             this.cleanProgress(progressEl);
-            this.uploads.delete(pushId);
+            this.uploads.delete(fileName);
         }
     }
     public onError(error: string | Error): void {
@@ -424,6 +421,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
 
     protected addRow(top: boolean, name: string, typeClass: string, size = '', date = '', entryId = ''): HTMLElement {
         const row = document.createElement('tr');
+        row.id = `entry-${name}`;
         row.classList.add('entry-row');
         const nameTd = document.createElement('td');
         nameTd.classList.add('entry-name');
