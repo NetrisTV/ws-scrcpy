@@ -28,7 +28,7 @@ const tempPath = '/data/local/tmp';
 const storagePath = '/storage';
 
 type Download = { size: number; entry: Entry; progressEl?: HTMLElement; anchor: HTMLElement; chunks: Uint8Array[] };
-type Upload = { progressEl: HTMLElement };
+type Upload = { progressEl: HTMLElement; anchor: HTMLElement };
 
 export class FileListingClient extends ManagerClient<ParamsFileListing, never> implements DragAndPushListener {
     public static readonly ACTION = ACTION.FILE_LISTING;
@@ -188,11 +188,17 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
     }
 
     public onFilePushUpdate(data: PushUpdateParams): void {
+        if (data.pushId === FilePushHandler.REQUEST_NEW_PUSH_ID) {
+            return;
+        }
         const { fileName, progress, pushId, error } = data;
         let upload = this.uploads.get(pushId);
-        if (!upload) {
+        if (!upload || document.getElementById(upload.anchor.id) !== upload.anchor) {
             const anchor = this.findOrCreateRow(fileName);
-            upload = { progressEl: this.appendProgressElement(anchor) };
+            if (!anchor.id) {
+                anchor.id = `upload_${data.pushId}`;
+            }
+            upload = { progressEl: this.appendProgressElement(anchor), anchor };
             this.uploads.set(pushId, upload);
         }
         const { progressEl } = upload;
@@ -263,7 +269,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         if (!this.ws || this.ws.readyState !== this.ws.OPEN || !(this.ws instanceof Multiplexer)) {
             return;
         }
-        if (!entry && this.channels.size) {
+        if (!entry && (this.channels.size || this.uploads.size)) {
             return;
         }
         this.requireClean = true;
