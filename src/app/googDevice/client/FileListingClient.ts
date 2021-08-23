@@ -30,6 +30,16 @@ const storagePath = '/storage';
 type Download = { size: number; entry: Entry; progressEl?: HTMLElement; anchor: HTMLElement; chunks: Uint8Array[] };
 type Upload = { progressEl: HTMLElement; anchor: HTMLElement };
 
+enum Foreground {
+    Drop = 'drop-target',
+    Connect = 'connect',
+}
+
+const Message: Record<Foreground, string> = {
+    [Foreground.Drop]: 'Drop files here',
+    [Foreground.Connect]: 'Connection lost',
+};
+
 export class FileListingClient extends ManagerClient<ParamsFileListing, never> implements DragAndPushListener {
     public static readonly ACTION = ACTION.FILE_LISTING;
     public static readonly PARENT_DIR = '..';
@@ -154,7 +164,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
 
     public onDragEnter(): boolean {
         if (this.enterCount === 0) {
-            this.addDropTarget();
+            this.addForeground(Foreground.Drop);
         }
         this.enterCount++;
         return true;
@@ -166,14 +176,14 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
             this.enterCount = 0;
         }
         if (this.enterCount === 0) {
-            this.removeDropTarget();
+            this.removeForeground(Foreground.Drop);
         }
         return true;
     }
 
     public onDrop(): boolean {
         this.enterCount = 0;
-        this.removeDropTarget();
+        this.removeForeground(Foreground.Drop);
         return true;
     }
 
@@ -216,15 +226,15 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         console.error(this.name, 'FIXME: implement', error);
     }
 
-    private addDropTarget(): void {
-        const fragment = html`<div class="drop-target">
-            <div class="drop-target-message">Drop files here</div>
+    private addForeground(type: Foreground): void {
+        const fragment = html`<div class="foreground ${type}">
+            <div class="foreground-message ${type}-message">${Message[type]}</div>
         </div>`.content;
         this.parent.appendChild(fragment);
     }
 
-    private removeDropTarget(): void {
-        const els = this.parent.getElementsByClassName('drop-target');
+    private removeForeground(type: Foreground): void {
+        const els = this.parent.getElementsByClassName(type);
         Array.from(els).forEach((el) => {
             this.parent.removeChild(el);
         });
@@ -251,6 +261,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
             this.filePushHandler.release();
         }
         console.error(this.name, 'socket closed', e.reason);
+        this.addForeground(Foreground.Connect);
     }
 
     protected onSocketMessage(_e: MessageEvent): void {

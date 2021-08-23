@@ -57,7 +57,7 @@ body.file-listing {
     margin: 8px;
 }
 
-.file-listing .drop-target {
+.file-listing .foreground {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -68,7 +68,7 @@ body.file-listing {
     background-color: var(--controls-bg-color);
 }
 
-.file-listing .drop-target-message {
+.file-listing .foreground-message {
     flex: auto;
     font-size: 30px;
     color: #999;
@@ -76,8 +76,11 @@ body.file-listing {
     justify-content: center;
     align-items: center;
     margin: 20px;
-    border: 4px dashed #ddd;
     pointer-events: none;
+}
+
+.file-listing .foreground-message.drop-target-message {
+    border: 4px dashed #ddd;
 }
 
 .file-listing .entry-name {
