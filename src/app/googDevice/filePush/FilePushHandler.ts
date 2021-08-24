@@ -4,7 +4,14 @@ import { FilePushResponseStatus } from './FilePushResponseStatus';
 
 type Resolve = (response: PushResponse) => void;
 
-export type PushUpdateParams = { pushId: number; fileName: string; message: string; progress: number; error: boolean };
+export type PushUpdateParams = {
+    pushId: number;
+    fileName: string;
+    message: string;
+    progress: number;
+    error: boolean;
+    finished: boolean;
+};
 
 export interface DragAndPushListener {
     onDragEnter: () => boolean;
@@ -21,6 +28,7 @@ export default class FilePushHandler implements DragEventListener {
 
     private responseWaiter: Map<number, Resolve | Resolve[]> = new Map();
     private listeners: Set<DragAndPushListener> = new Set();
+    private pushIdFileNameMap: Map<number, string> = new Map();
 
     constructor(private readonly element: HTMLElement, private readonly filePushStream: FilePushStream) {
         DragAndDropHandler.addEventListener(this);
@@ -29,14 +37,17 @@ export default class FilePushHandler implements DragEventListener {
     }
 
     private sendUpdate(params: PushUpdateParams): void {
+        if (params.error) {
+            this.pushIdFileNameMap.delete(params.pushId);
+        }
         this.listeners.forEach((listener) => {
             listener.onFilePushUpdate(params);
         });
     }
 
     private logError(pushId: number, fileName: string, code: number): void {
-        const msg = RESPONSE_CODES.get(code) || 'Unknown error';
-        this.sendUpdate({ pushId, fileName, message: `error: "${msg}"`, progress: -1, error: true });
+        const msg = RESPONSE_CODES.get(code) || `Unknown error (${code})`;
+        this.sendUpdate({ pushId, fileName, message: `error: "${msg}"`, progress: -1, error: true, finished: true });
     }
 
     private static async getStreamReader(
@@ -58,13 +69,14 @@ export default class FilePushHandler implements DragEventListener {
             return;
         }
         const id = FilePushHandler.REQUEST_NEW_PUSH_ID;
-        this.sendUpdate({ pushId: id, fileName, message: 'begins...', progress: 0, error: false });
+        this.sendUpdate({ pushId: id, fileName, message: 'begins...', progress: 0, error: false, finished: false });
         this.filePushStream.sendEventNew({ id });
         const { code: pushId } = await this.waitForResponse(id);
         if (pushId <= 0) {
-            this.logError(pushId, fileName, pushId);
+            return this.logError(pushId, fileName, pushId);
         }
 
+        this.pushIdFileNameMap.set(pushId, fileName);
         const waitPromise = this.waitForResponse(pushId);
         this.filePushStream.sendEventStart({ id: pushId, fileName, fileSize });
         const [{ code: startResponseCode }, { reader, result }] = await Promise.all([
@@ -84,7 +96,14 @@ export default class FilePushHandler implements DragEventListener {
                 if (finishResponseCode !== 0) {
                     this.logError(pushId, fileName, finishResponseCode);
                 } else {
-                    this.sendUpdate({ pushId, fileName, message: 'success!', progress: 100, error: false });
+                    this.sendUpdate({
+                        pushId,
+                        fileName,
+                        message: 'success!',
+                        progress: 100,
+                        error: false,
+                        finished: true,
+                    });
                 }
                 console.log(TAG, `File "${fileName}" uploaded in ${Date.now() - start}ms`);
                 return;
@@ -103,7 +122,7 @@ export default class FilePushHandler implements DragEventListener {
             }
             const progress = (receivedBytes * 100) / fileSize;
             const message = `${progress.toFixed(2)}%`;
-            this.sendUpdate({ pushId, fileName, message, progress, error: false });
+            this.sendUpdate({ pushId, fileName, message, progress, error: false, finished: false });
             return processData(result);
         };
         return processData(result);
@@ -124,8 +143,9 @@ export default class FilePushHandler implements DragEventListener {
         });
     }
 
-    onStreamError = ({ id, error }: { id: number; error: Error }): void => {
-        console.error(TAG, `pushId: ${id}`, error);
+    onStreamError = ({ id: pushId, error }: { id: number; error: Error }): void => {
+        const fileName = this.pushIdFileNameMap.get(pushId) || 'Unknown file';
+        this.sendUpdate({ pushId, fileName, message: error.message, progress: -1, error: true, finished: true });
     };
 
     onStreamResponse = (response: PushResponse): void => {
@@ -169,6 +189,7 @@ export default class FilePushHandler implements DragEventListener {
                     message: `Unsupported type "${type}"`,
                     progress: -1,
                     error: true,
+                    finished: true,
                 };
                 this.sendUpdate(errorParams);
             }

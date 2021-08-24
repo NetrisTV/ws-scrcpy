@@ -28,7 +28,7 @@ const tempPath = '/data/local/tmp';
 const storagePath = '/storage';
 
 type Download = { size: number; entry: Entry; progressEl?: HTMLElement; anchor: HTMLElement; chunks: Uint8Array[] };
-type Upload = { progressEl: HTMLElement; anchor: HTMLElement };
+type Upload = { row: HTMLElement; progressEl: HTMLElement; anchor: HTMLElement; timeout: number | null };
 
 enum Foreground {
     Drop = 'drop-target',
@@ -45,6 +45,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
     public static readonly PARENT_DIR = '..';
     public static readonly PROPERTY_NAME = 'data-name';
     public static readonly PROPERTY_ENTRY_ID = 'data-entry-id';
+    public static REMOVE_ROW_TIMEOUT = 2000;
 
     public static start(params: ParsedUrlQuery): FileListingClient {
         return new FileListingClient(params);
@@ -196,7 +197,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
     }
 
     public onFilePushUpdate(data: PushUpdateParams): void {
-        const { fileName, progress, error } = data;
+        const { fileName, progress, error, message, finished } = data;
         let upload = this.uploads.get(fileName);
         if (!upload || document.getElementById(upload.anchor.id) !== upload.anchor) {
             const row = this.findOrCreateEntryRow(fileName);
@@ -205,21 +206,34 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
                 anchor.id = `upload_${fileName}`;
             }
             const progressEl = this.appendProgressElement(anchor);
-            upload = { progressEl, anchor };
+            upload = { row, progressEl, anchor, timeout: null };
             this.uploads.set(fileName, upload);
         }
-        const { progressEl } = upload;
-        let clean = progress === 100;
+        const { row, progressEl, anchor } = upload;
         if (error) {
-            clean = true;
+            this.uploads.delete(fileName);
             progressEl.style.width = `100%`;
             progressEl.classList.add('error');
+            if (!anchor.classList.contains('error')) {
+                anchor.classList.add('error');
+                anchor.innerText = `${fileName}. ${message}`;
+            }
+            if (!upload.timeout) {
+                upload.timeout = window.setTimeout(() => {
+                    const parent = row.parentElement;
+                    if (parent) {
+                        parent.removeChild(row);
+                        this.reload();
+                    }
+                }, FileListingClient.REMOVE_ROW_TIMEOUT);
+            }
         } else {
+            anchor.innerText = `${fileName}. ${message}`;
             progressEl.style.width = `${progress}%`;
         }
-        if (clean) {
-            this.cleanProgress(progressEl);
+        if (finished && !error) {
             this.uploads.delete(fileName);
+            this.reload();
         }
     }
     public onError(error: string | Error): void {
@@ -430,7 +444,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         this.addRow(false, entry.name, type, entry.size.toString(), date, entryId);
     }
 
-    protected addRow(top: boolean, name: string, typeClass: string, size = '', date = '', entryId = ''): HTMLElement {
+    protected addRow(push: boolean, name: string, typeClass: string, size = '', date = '', entryId = ''): HTMLElement {
         const row = document.createElement('tr');
         row.id = `entry-${name}`;
         row.classList.add('entry-row');
@@ -442,23 +456,28 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         if (entryId) {
             link.setAttribute(FileListingClient.PROPERTY_ENTRY_ID, entryId);
         }
-        const href = new URL(location.href);
-        const hash = new URLSearchParams(href.hash.replace(/^#!/, ''));
-        hash.set('path', path.join(this.path, name));
-        href.hash = `#!${hash.toString()}`;
-        link.href = href.toString();
         link.innerText = name;
         nameTd.appendChild(link);
         row.appendChild(nameTd);
-        const sizeTd = document.createElement('td');
-        sizeTd.classList.add('entry-size');
-        sizeTd.innerText = size;
-        row.appendChild(sizeTd);
-        const mtimeTd = document.createElement('td');
-        mtimeTd.classList.add('entry-time');
-        mtimeTd.innerText = date;
-        row.appendChild(mtimeTd);
-        if (top || !this.tableBody.children.length) {
+        if (push) {
+            nameTd.colSpan = 3;
+            link.classList.add('push');
+        } else {
+            const href = new URL(location.href);
+            const hash = new URLSearchParams(href.hash.replace(/^#!/, ''));
+            hash.set('path', path.join(this.path, name));
+            href.hash = `#!${hash.toString()}`;
+            link.href = href.toString();
+            const sizeTd = document.createElement('td');
+            sizeTd.classList.add('entry-size');
+            sizeTd.innerText = size;
+            row.appendChild(sizeTd);
+            const mtimeTd = document.createElement('td');
+            mtimeTd.classList.add('entry-time');
+            mtimeTd.innerText = date;
+            row.appendChild(mtimeTd);
+        }
+        if (push || !this.tableBody.children.length) {
             this.tableBody.insertBefore(row, this.tableBody.firstChild);
         } else {
             this.tableBody.appendChild(row);

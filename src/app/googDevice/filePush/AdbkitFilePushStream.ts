@@ -69,13 +69,12 @@ export class AdbkitFilePushStream extends FilePushStream {
         };
         const onClose = (e: CloseEvent): void => {
             if (!e.wasClean) {
-                const code = e.code - 4000;
-                this.emit('response', { id: pushId, code });
+                const code = 4000 - e.code;
+                // this.emit('response', { id: pushId, code });
                 this.emit('error', { id: pushId, error: new Error(FilePushHandler.getErrorMessage(code, e.reason)) });
             }
             channel.removeEventListener('message', onMessage);
             channel.removeEventListener('close', onClose);
-            this.fileListingClient.reload();
         };
         channel.addEventListener('message', onMessage);
         channel.addEventListener('close', onClose);

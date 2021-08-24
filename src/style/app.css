@@ -18,6 +18,8 @@
     --url-color: hsl(0, 0%, 60%);
     --button-text-color: hsl(214, 82%, 51%);
     --button-border-color: hsl(0, 0%, 70%);
+    --progress-background-color: hsla(225, 100%, 50%, 0.2);
+    --progress-background-error-color: hsla(0, 100%, 50%, 0.2);
     --font-size: 14px;
 }
 
@@ -44,6 +46,8 @@
         --device-list-default-color: hsl(0, 0%, 14%);
         --button-text-color: hsl(214, 82%, 76%);
         --button-border-color: hsl(213, 5%, 39%);
+        --progress-background-color: hsla(225, 100%, 50%, 0.2);
+        --progress-background-error-color: hsla(0, 100%, 50%, 0.2);
     }
 }
 

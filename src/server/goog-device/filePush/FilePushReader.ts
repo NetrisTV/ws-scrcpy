@@ -44,6 +44,8 @@ export class FilePushReader {
     private fileSize = 0;
     private pushId = -1;
     private state: State = State.INITIAL;
+    private createStreamPromiseMap: Map<number, Promise<void>> = new Map();
+    private disposed = false;
 
     constructor(private readonly serial: string, private readonly channel: WebSocket) {
         channel.addEventListener('message', this.onMessage);
@@ -66,7 +68,10 @@ export class FilePushReader {
     }
 
     private closeWithError(code: number, message?: string): void {
+        this.channel.removeEventListener('message', this.onMessage);
+        this.channel.removeEventListener('close', this.onClose);
         this.channel.close(4000 - code, message);
+        this.release();
     }
 
     private onMessage = async (e: MessageEvent): Promise<void> => {
@@ -115,7 +120,10 @@ export class FilePushReader {
                     return;
                 }
                 if (this.state === State.START) {
-                    await this.createStream(chunk);
+                    const promise = this.createStream(chunk);
+                    this.createStreamPromiseMap.set(id, promise);
+                    await promise;
+                    this.createStreamPromiseMap.delete(id);
                     this.state = State.APPEND;
                     return;
                 } else if (this.state !== State.APPEND) {
@@ -128,6 +136,10 @@ export class FilePushReader {
                 if (!this.verifyId(id)) {
                     return;
                 }
+                const promise = this.createStreamPromiseMap.get(id);
+                if (promise) {
+                    await promise;
+                }
                 if (this.state !== State.APPEND) {
                     this.closeWithError(FilePushResponseStatus.ERROR_INVALID_STATE);
                     return;
@@ -138,11 +150,6 @@ export class FilePushReader {
                     this.readStream.close();
                     this.readStream = undefined;
                 }
-                if (this.pushTransfer) {
-                    this.pushTransfer = undefined;
-                }
-                this.sendResponse(FilePushResponseStatus.NO_ERROR);
-                this.release();
                 break;
             case FilePushState.CANCEL:
                 if (!this.verifyId(id)) {
@@ -156,10 +163,7 @@ export class FilePushReader {
                 }
                 if (this.pushTransfer) {
                     this.pushTransfer.cancel();
-                    this.pushTransfer = undefined;
                 }
-                this.sendResponse(FilePushResponseStatus.NO_ERROR);
-                this.release();
                 break;
             default:
                 if (!this.verifyId(id)) {
@@ -192,23 +196,58 @@ export class FilePushReader {
             console.error(`Client error (${this.serial} | ${this.fileName}):`, e.message);
             this.closeWithError(FilePushResponseStatus.ERROR_OTHER, e.message);
         });
-        this.pushTransfer.on('error', (e: Error) => {
-            console.error(`PushTransfer error (${this.serial} | ${this.fileName}):`, e.message);
-            this.closeWithError(FilePushResponseStatus.ERROR_OTHER, e.message);
-        });
+        this.pushTransfer.on('error', this.onPushError);
+        this.pushTransfer.on('end', this.onPushEnd);
+        this.pushTransfer.on('cancel', this.onPushCancel);
     }
 
     private onClose = (): void => {
+        this.release();
+    };
+
+    private onPushError = (e: Error) => {
+        this.closeWithError(FilePushResponseStatus.ERROR_OTHER, e.message);
+    };
+
+    private onPushEnd = () => {
+        if (this.state === State.FINISH) {
+            this.sendResponse(FilePushResponseStatus.NO_ERROR);
+            this.release();
+        } else {
+            this.closeWithError(FilePushResponseStatus.ERROR_INVALID_STATE);
+        }
+    };
+
+    private onPushCancel = () => {
+        if (this.state === State.CANCEL) {
+            this.sendResponse(FilePushResponseStatus.NO_ERROR);
+            this.release();
+        } else {
+            this.closeWithError(FilePushResponseStatus.ERROR_INVALID_STATE);
+        }
+    };
+
+    public release(): void {
+        if (this.disposed) {
+            return;
+        }
+        this.disposed = true;
+        this.createStreamPromiseMap.clear();
         if (this.readStream) {
             this.readStream.close();
             this.readStream = undefined;
         }
         if (this.pushTransfer) {
+            this.pushTransfer.off('error', this.onPushError);
+            this.pushTransfer.off('end', this.onPushEnd);
+            this.pushTransfer.off('cancel', this.onPushCancel);
             this.pushTransfer = undefined;
         }
-    };
-
-    public release(): void {
-        this.channel.close();
+        this.channel.removeEventListener('message', this.onMessage);
+        this.channel.removeEventListener('close', this.onClose);
+        const { readyState, CLOSED, CLOSING } = this.channel;
+        if (readyState !== CLOSED && readyState !== CLOSING) {
+            this.channel.close();
+        }
     }
 }
