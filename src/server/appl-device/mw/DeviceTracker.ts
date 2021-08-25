@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WS from 'ws';
 import { Mw, RequestParameters } from '../../mw/Mw';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { ACTION } from '../../../common/Action';
@@ -6,38 +6,30 @@ import { DeviceTrackerEvent } from '../../../types/DeviceTrackerEvent';
 import { DeviceTrackerEventList } from '../../../types/DeviceTrackerEventList';
 import { ControlCenter } from '../services/ControlCenter';
 import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
-import { HostItem } from '../../../types/Configuration';
+import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
+import { ChannelCode } from '../../../common/ChannelCode';
 
 export class DeviceTracker extends Mw {
     public static readonly TAG = 'IosDeviceTracker';
+    public static readonly type = 'ios';
     private icc: ControlCenter = ControlCenter.getInstance();
     private readonly id: string;
 
-    public static processRequest(ws: WebSocket, params: RequestParameters): DeviceTracker | undefined {
+    public static processChannel(ws: Multiplexer, code: string): Mw | undefined {
+        if (code !== ChannelCode.ATRC) {
+            return;
+        }
+        return new DeviceTracker(ws);
+    }
+
+    public static processRequest(ws: WS, params: RequestParameters): DeviceTracker | undefined {
         if (params.parsedQuery?.action !== ACTION.APPL_DEVICE_LIST) {
             return;
         }
         return new DeviceTracker(ws);
     }
 
-    // from TrackerClass interface in HostTracker.ts
-    public static buildParams(host = '127.0.0.1'): HostItem {
-        const type = 'ios';
-        const port = 8000;
-        const temp = host.split(':');
-        let hostname = host;
-        if (temp.length > 1) {
-            hostname = temp[0];
-        }
-        return {
-            secure: false,
-            type,
-            hostname,
-            port,
-        };
-    }
-
-    constructor(ws: WebSocket) {
+    constructor(ws: WS | Multiplexer) {
         super(ws);
 
         this.id = this.icc.getId();
@@ -78,7 +70,7 @@ export class DeviceTracker extends Mw {
         });
     };
 
-    protected onSocketMessage(event: WebSocket.MessageEvent): void {
+    protected onSocketMessage(event: WS.MessageEvent): void {
         let command: ControlCenterCommand;
         try {
             command = ControlCenterCommand.fromJSON(event.data.toString());

@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WS from 'ws';
 import { Mw, RequestParameters } from '../../mw/Mw';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { ACTION } from '../../../common/Action';
@@ -8,7 +8,7 @@ import { WebsocketProxy } from '../../mw/WebsocketProxy';
 export class StreamProxy extends Mw {
     public static readonly TAG = 'IosStreamProxy';
 
-    public static processRequest(ws: WebSocket, params: RequestParameters): StreamProxy | undefined {
+    public static processRequest(ws: WS, params: RequestParameters): StreamProxy | undefined {
         if (params.parsedQuery?.action !== ACTION.STREAM_WS_QVH) {
             return;
         }
@@ -24,7 +24,7 @@ export class StreamProxy extends Mw {
     private qvhProcess: QvhackRunner;
     private wsProxy?: WebsocketProxy;
     protected name: string;
-    constructor(ws: WebSocket, private readonly udid: string) {
+    constructor(protected ws: WS, private readonly udid: string) {
         super(ws);
         this.name = `[${StreamProxy.TAG}][udid: ${this.udid}]`;
         this.qvhProcess = QvhackRunner.getInstance(udid);
@@ -34,7 +34,7 @@ export class StreamProxy extends Mw {
     private onStarted = (): void => {
         const remote = this.qvhProcess.getWebSocketAddress();
         this.wsProxy = WebsocketProxy.createProxy(this.ws, remote);
-        this.ws.onclose = this.onSocketClose.bind(this);
+        this.ws.addEventListener('close', this.onSocketClose.bind(this));
     };
 
     private attachEventListeners(): void {
@@ -45,7 +45,7 @@ export class StreamProxy extends Mw {
         }
     }
 
-    protected onSocketMessage(event: WebSocket.MessageEvent): void {
+    protected onSocketMessage(event: WS.MessageEvent): void {
         let command: ControlCenterCommand;
         try {
             command = ControlCenterCommand.fromJSON(event.data.toString());

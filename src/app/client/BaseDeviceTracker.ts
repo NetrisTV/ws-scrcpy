@@ -110,9 +110,12 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
     protected abstract buildDeviceRow(tbody: Element, device: DD): void;
 
     protected onSocketClose(e: CloseEvent): void {
+        if (this.destroyed) {
+            return;
+        }
         console.log(TAG, `Connection closed: ${e.reason}`);
         setTimeout(() => {
-            this.openNewWebSocket();
+            this.openNewConnection();
         }, 2000);
     }
 
@@ -241,5 +244,20 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         if (holder && !holder.children.length) {
             holder.remove();
         }
+    }
+
+    protected supportMultiplexing(): boolean {
+        return true;
+    }
+
+    protected getChannelCode(): string {
+        throw Error('Not implemented. Must override');
+    }
+
+    protected getChannelInitData(): Buffer {
+        const code = this.getChannelCode();
+        const buffer = Buffer.alloc(code.length);
+        buffer.write(code, 'ascii');
+        return buffer;
     }
 }

@@ -8,7 +8,10 @@ export enum MessageType {
 
 export interface MessageHosts extends Message {
     type: 'hosts';
-    data: HostItem[];
+    data: {
+        local?: { type: string }[];
+        remote?: HostItem[];
+    };
 }
 
 export interface MessageError extends Message {

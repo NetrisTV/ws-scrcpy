@@ -1,58 +1,53 @@
-import WebSocket from 'ws';
-import { Mw, RequestParameters } from './Mw';
-import { ACTION } from '../../common/Action';
+import WS from 'ws';
+import { Mw } from './Mw';
 import { Config } from '../Config';
 import { MessageError, MessageHosts, MessageType } from '../../common/HostTrackerMessage';
 import { HostItem } from '../../types/Configuration';
+import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
+import { ChannelCode } from '../../common/ChannelCode';
 
 export interface TrackerClass {
-    buildParams(host?: string): HostItem;
+    type: string;
 }
 
 export class HostTracker extends Mw {
     public static readonly TAG = 'HostTracker';
     private static localTrackers: Set<TrackerClass> = new Set<TrackerClass>();
     private static remoteHostItems?: HostItem[];
-    private static cache: Map<string, HostItem[]> = new Map();
 
-    public static processRequest(ws: WebSocket, params: RequestParameters): HostTracker | undefined {
-        if (params.parsedQuery?.action !== ACTION.LIST_HOSTS) {
+    public static processChannel(ws: Multiplexer, code: string): Mw | undefined {
+        if (code !== ChannelCode.HSTS) {
             return;
         }
-        return new HostTracker(ws, params);
+        return new HostTracker(ws);
     }
 
     public static registerLocalTracker(tracker: TrackerClass): void {
         this.localTrackers.add(tracker);
     }
 
-    constructor(ws: WebSocket, params: RequestParameters) {
+    constructor(ws: Multiplexer) {
         super(ws);
 
-        const host = params.request.headers.host || '127.0.0.1';
-        let list = HostTracker.cache.get(host);
-        if (!list) {
+        const local: { type: string }[] = Array.from(HostTracker.localTrackers.keys()).map((tracker) => {
+            return { type: tracker.type };
+        });
+        if (!HostTracker.remoteHostItems) {
             const config = Config.getInstance();
-            const temp: HostItem[] = [];
-            HostTracker.localTrackers.forEach((tracker) => {
-                temp.push(tracker.buildParams(params.request.headers.host));
-            });
-
-            if (!HostTracker.remoteHostItems) {
-                HostTracker.remoteHostItems = Array.from(config.getHostList());
-            }
-            list = temp.concat(HostTracker.remoteHostItems);
-            HostTracker.cache.set(host, list);
+            HostTracker.remoteHostItems = Array.from(config.getHostList());
         }
         const message: MessageHosts = {
             id: -1,
             type: MessageType.HOSTS,
-            data: list,
+            data: {
+                local,
+                remote: HostTracker.remoteHostItems,
+            },
         };
         this.sendMessage(message);
     }
 
-    protected onSocketMessage(event: WebSocket.MessageEvent): void {
+    protected onSocketMessage(event: WS.MessageEvent): void {
         const message: MessageError = {
             id: -1,
             type: MessageType.ERROR,

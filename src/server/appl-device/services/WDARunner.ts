@@ -33,6 +33,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
             const port = await portfinder.getPortPromise();
             const XCUITest = await import('appium-xcuitest-driver');
             server = await XCUITest.startServer(port, '127.0.0.1');
+            this.servers.set(udid, server);
         }
         return server;
     }

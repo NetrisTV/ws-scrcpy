@@ -29,7 +29,7 @@ export default class DeviceMessage {
         return Util.utf8ByteArrayToString(textBytes);
     }
 
-    public getPushStats(): { id: number; result: number } {
+    public getPushStats(): { id: number; code: number } {
         if (this.type !== DeviceMessage.TYPE_PUSH_RESPONSE) {
             throw TypeError(`Wrong message type: ${this.type}`);
         }
@@ -37,8 +37,8 @@ export default class DeviceMessage {
             throw Error('Empty buffer');
         }
         const id = this.buffer.readInt16BE(1);
-        const result = this.buffer.readInt8(3);
-        return { id, result };
+        const code = this.buffer.readInt8(3);
+        return { id, code };
     }
 
     public toString(): string {

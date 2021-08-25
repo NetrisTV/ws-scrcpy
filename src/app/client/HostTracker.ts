@@ -6,11 +6,12 @@ import { DeviceTracker as GoogDeviceTracker } from '../googDevice/client/DeviceT
 import { DeviceTracker as ApplDeviceTracker } from '../applDevice/client/DeviceTracker';
 import { ParamsBase } from '../../types/ParamsBase';
 import { HostItem } from '../../types/Configuration';
+import { ChannelCode } from '../../common/ChannelCode';
 
 const TAG = '[HostTracker]';
 
 export interface HostTrackerEvents {
-    hosts: HostItem[];
+    // hosts: HostItem[];
     disconnected: CloseEvent;
     error: string;
 }
@@ -33,8 +34,10 @@ export class HostTracker extends ManagerClient<ParamsBase, HostTrackerEvents> {
 
     constructor() {
         super({ action: ACTION.LIST_HOSTS });
-        this.openNewWebSocket();
-        (this.ws as WebSocket).binaryType = 'arraybuffer';
+        this.openNewConnection();
+        if (this.ws) {
+            this.ws.binaryType = 'arraybuffer';
+        }
     }
 
     protected onSocketClose(ev: CloseEvent): void {
@@ -45,6 +48,7 @@ export class HostTracker extends ManagerClient<ParamsBase, HostTrackerEvents> {
     protected onSocketMessage(e: MessageEvent): void {
         let message: Message;
         try {
+            // TODO: rewrite to binary
             message = JSON.parse(e.data);
         } catch (error) {
             console.error(TAG, error.message);
@@ -60,23 +64,40 @@ export class HostTracker extends ManagerClient<ParamsBase, HostTrackerEvents> {
             }
             case MessageType.HOSTS: {
                 const msg = message as MessageHosts;
-                this.emit('hosts', msg.data);
-                msg.data.forEach((item) => {
-                    switch (item.type) {
-                        case 'android':
-                            this.trackers.push(GoogDeviceTracker.start(item));
-                            break;
-                        case 'ios':
-                            this.trackers.push(ApplDeviceTracker.start(item));
-                            break;
-                        default:
-                            console.warn(TAG, `Unsupported host type: "${item.type}"`);
-                    }
-                });
+                // this.emit('hosts', msg.data);
+                if (msg.data.local) {
+                    msg.data.local.forEach(({ type }) => {
+                        const secure = location.protocol === 'https';
+                        const port = location.port ? parseInt(location.port, 10) : secure ? 443 : 80;
+                        const { hostname } = location;
+                        if (type !== 'android' && type !== 'ios') {
+                            console.warn(TAG, `Unsupported host type: "${type}"`);
+                            return;
+                        }
+                        const hostItem: HostItem = { useProxy: false, secure, port, hostname, type };
+                        this.startTracker(hostItem);
+                    });
+                }
+                if (msg.data.remote) {
+                    msg.data.remote.forEach((item) => this.startTracker(item));
+                }
                 break;
             }
             default:
                 console.log(TAG, `Unknown message type: ${message.type}`);
+        }
+    }
+
+    private startTracker(hostItem: HostItem): void {
+        switch (hostItem.type) {
+            case 'android':
+                this.trackers.push(GoogDeviceTracker.start(hostItem));
+                break;
+            case 'ios':
+                this.trackers.push(ApplDeviceTracker.start(hostItem));
+                break;
+            default:
+                console.warn(TAG, `Unsupported host type: "${hostItem.type}"`);
         }
     }
 
@@ -90,5 +111,15 @@ export class HostTracker extends ManagerClient<ParamsBase, HostTrackerEvents> {
             tracker.destroy();
         });
         this.trackers.length = 0;
+    }
+
+    protected supportMultiplexing(): boolean {
+        return true;
+    }
+
+    protected getChannelInitData(): Buffer {
+        const buffer = Buffer.alloc(4);
+        buffer.write(ChannelCode.HSTS, 'ascii');
+        return buffer;
     }
 }

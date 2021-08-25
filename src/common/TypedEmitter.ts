@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type EventMap = Record<string, any>;
-type EventKey<T extends EventMap> = string & keyof T;
-type EventReceiver<T> = (params: T) => void;
+export type EventMap = Record<string, any>;
+export type EventKey<T extends EventMap> = string & keyof T;
+export type EventReceiver<T> = (params: T) => void;
 
 interface Emitter<T extends EventMap> {
     on<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void;
@@ -13,6 +13,18 @@ interface Emitter<T extends EventMap> {
 
 export class TypedEmitter<T extends EventMap> implements Emitter<T> {
     private emitter = new EventEmitter();
+    addEventListener<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void {
+        this.emitter.on(eventName, fn);
+    }
+
+    removeEventListener<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void {
+        this.emitter.off(eventName, fn);
+    }
+
+    dispatchEvent(event: Event): boolean {
+        return this.emitter.emit(event.type, event);
+    }
+
     on<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void {
         this.emitter.on(eventName, fn);
     }
@@ -25,7 +37,7 @@ export class TypedEmitter<T extends EventMap> implements Emitter<T> {
         this.emitter.off(eventName, fn);
     }
 
-    emit<K extends EventKey<T>>(eventName: K, params: T[K]): void {
-        this.emitter.emit(eventName, params);
+    emit<K extends EventKey<T>>(eventName: K, params: T[K]): boolean {
+        return this.emitter.emit(eventName, params);
     }
 }

@@ -1,15 +1,15 @@
 import { Mw, RequestParameters } from './Mw';
-import WebSocket from 'ws';
+import WS from 'ws';
 import { ACTION } from '../../common/Action';
 
 export class WebsocketProxy extends Mw {
     public static readonly TAG = 'WebsocketProxy';
-    private remoteSocket?: WebSocket;
+    private remoteSocket?: WS;
     private released = false;
-    private storage: WebSocket.MessageEvent[] = [];
+    private storage: WS.MessageEvent[] = [];
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static processRequest(ws: WebSocket, params: RequestParameters): WebsocketProxy | undefined {
+    public static processRequest(ws: WS, params: RequestParameters): WebsocketProxy | undefined {
         const { parsedQuery } = params;
         if (!parsedQuery) {
             return;
@@ -24,7 +24,7 @@ export class WebsocketProxy extends Mw {
         return this.createProxy(ws, parsedQuery.ws);
     }
 
-    public static createProxy(ws: WebSocket, remoteUrl: string): WebsocketProxy {
+    public static createProxy(ws: WS, remoteUrl: string): WebsocketProxy {
         const service = new WebsocketProxy(ws);
         service.init(remoteUrl).catch((e) => {
             const msg = `[${this.TAG}] Failed to start service: ${e.message}`;
@@ -34,12 +34,12 @@ export class WebsocketProxy extends Mw {
         return service;
     }
 
-    constructor(ws: WebSocket) {
+    constructor(ws: WS) {
         super(ws);
     }
 
     public async init(remoteUrl: string): Promise<void> {
-        const remoteSocket = new WebSocket(remoteUrl);
+        const remoteSocket = new WS(remoteUrl);
         remoteSocket.onopen = () => {
             this.remoteSocket = remoteSocket;
             this.flush();
@@ -80,7 +80,7 @@ export class WebsocketProxy extends Mw {
         this.storage.length = 0;
     }
 
-    protected onSocketMessage(event: WebSocket.MessageEvent): void {
+    protected onSocketMessage(event: WS.MessageEvent): void {
         if (this.remoteSocket) {
             this.remoteSocket.send(event.data);
         } else {

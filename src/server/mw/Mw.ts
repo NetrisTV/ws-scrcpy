@@ -1,8 +1,9 @@
 import { Message } from '../../types/Message';
-import WebSocket from 'ws';
 import * as http from 'http';
 import * as querystring from 'querystring';
 import url from 'url';
+import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
+import WS from 'ws';
 
 export type RequestParameters = {
     request: http.IncomingMessage;
@@ -11,17 +12,29 @@ export type RequestParameters = {
 };
 
 export interface MwFactory {
-    processRequest(ws: WebSocket, params: RequestParameters): Mw | undefined;
+    processRequest(ws: WS, params: RequestParameters): Mw | undefined;
+    processChannel(ws: Multiplexer, code: string, data?: ArrayBuffer): Mw | undefined;
 }
 
 export abstract class Mw {
     protected name = 'Mw';
-    protected constructor(protected readonly ws: WebSocket) {
-        this.ws.onmessage = this.onSocketMessage.bind(this);
-        this.ws.onclose = this.onSocketClose.bind(this);
+
+    public static processChannel(_ws: Multiplexer, _code: string, _data?: ArrayBuffer): Mw | undefined {
+        return;
     }
 
-    protected abstract onSocketMessage(event: WebSocket.MessageEvent): void;
+    public static processRequest(_ws: WS, _params: RequestParameters): Mw | undefined {
+        return;
+    }
+
+    protected constructor(protected readonly ws: WS | Multiplexer) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.ws.addEventListener('message', this.onSocketMessage.bind(this));
+        this.ws.addEventListener('close', this.onSocketClose.bind(this));
+    }
+
+    protected abstract onSocketMessage(event: WS.MessageEvent): void;
 
     protected sendMessage = (data: Message): void => {
         if (this.ws.readyState !== this.ws.OPEN) {
@@ -35,7 +48,9 @@ export abstract class Mw {
     }
 
     public release(): void {
-        delete this.ws.onmessage;
-        this.ws.close();
+        const { readyState, CLOSED, CLOSING } = this.ws;
+        if (readyState !== CLOSED && readyState !== CLOSING) {
+            this.ws.close();
+        }
     }
 }

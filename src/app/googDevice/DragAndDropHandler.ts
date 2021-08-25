@@ -1,17 +1,15 @@
 export interface DragEventListener {
-    onDragEnter: () => void;
-    onDragLeave: () => void;
-    onFilesDrop: (files: File[]) => void;
+    onDragEnter: () => boolean;
+    onDragLeave: () => boolean;
+    onFilesDrop: (files: File[]) => boolean;
     getElement: () => HTMLElement;
 }
 
 export class DragAndDropHandler {
     private static readonly listeners: Set<DragEventListener> = new Set();
-    private static dropHandler = (ev: DragEvent): void => {
-        ev.preventDefault();
-
+    private static dropHandler = (ev: DragEvent): boolean => {
         if (!ev.dataTransfer) {
-            return;
+            return false;
         }
 
         const files: File[] = [];
@@ -30,33 +28,49 @@ export class DragAndDropHandler {
                 files.push(ev.dataTransfer.files[i]);
             }
         }
+        let handled = false;
         DragAndDropHandler.listeners.forEach((listener) => {
             const element = listener.getElement();
-            if (element === ev.target) {
-                listener.onFilesDrop(files);
+            if (element === ev.currentTarget) {
+                handled = handled || listener.onFilesDrop(files);
             }
         });
+        if (handled) {
+            ev.preventDefault();
+            return true;
+        }
+        return false;
     };
     private static dragOverHandler = (ev: DragEvent): void => {
         ev.preventDefault();
     };
-    private static dragLeaveHandler = (ev: DragEvent): void => {
-        ev.preventDefault();
+    private static dragLeaveHandler = (ev: DragEvent): boolean => {
+        let handled = false;
         DragAndDropHandler.listeners.forEach((listener) => {
             const element = listener.getElement();
-            if (element === ev.target) {
-                listener.onDragLeave();
+            if (element === ev.currentTarget) {
+                handled = handled || listener.onDragLeave();
             }
         });
+        if (handled) {
+            ev.preventDefault();
+            return true;
+        }
+        return false;
     };
-    private static dragEnterHandler = (ev: DragEvent): void => {
-        ev.preventDefault();
+    private static dragEnterHandler = (ev: DragEvent): boolean => {
+        let handled = false;
         DragAndDropHandler.listeners.forEach((listener) => {
             const element = listener.getElement();
-            if (element === ev.target) {
-                listener.onDragEnter();
+            if (element === ev.currentTarget) {
+                handled = handled || listener.onDragEnter();
             }
         });
+        if (handled) {
+            ev.preventDefault();
+            return true;
+        }
+        return false;
     };
     private static attachListeners(element: HTMLElement): void {
         element.addEventListener('drop', this.dropHandler);

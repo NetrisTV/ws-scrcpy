@@ -54,6 +54,15 @@ window.onload = async function (): Promise<void> {
     tools.push(DevtoolsClient);
     /// #endif
 
+    /// #if INCLUDE_FILE_LISTING
+    const { FileListingClient } = await import('./googDevice/client/FileListingClient');
+    if (action === FileListingClient.ACTION) {
+        FileListingClient.start(parsedQuery);
+        return;
+    }
+    tools.push(FileListingClient);
+    /// #endif
+
     if (tools.length) {
         const { DeviceTracker } = await import('./googDevice/client/DeviceTracker');
         tools.forEach((tool) => {

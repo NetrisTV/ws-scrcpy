@@ -1,5 +1,6 @@
 import * as http from 'http';
-import WebSocket from 'ws';
+import { Server as WSServer } from 'ws';
+import WS from 'ws';
 import querystring from 'querystring';
 import url from 'url';
 import { Service } from './Service';
@@ -8,7 +9,7 @@ import { MwFactory } from '../mw/Mw';
 
 export class WebSocketServer implements Service {
     private static instance?: WebSocketServer;
-    private server?: WebSocket.Server;
+    private server?: WSServer;
     private port = 0;
     private mwFactories: Set<MwFactory> = new Set();
 
@@ -31,9 +32,9 @@ export class WebSocketServer implements Service {
         this.mwFactories.add(mwFactory);
     }
 
-    public attachToServer(httpServer: http.Server): WebSocket.Server {
-        const wss = new WebSocket.Server({ server: httpServer });
-        wss.on('connection', async (ws: WebSocket, request) => {
+    public attachToServer(httpServer: http.Server): WSServer {
+        const wss = new WSServer({ server: httpServer });
+        wss.on('connection', async (ws: WS, request) => {
             if (!request.url) {
                 ws.close(4001, `[${this.getName()}] Invalid url`);
                 return;
@@ -59,7 +60,7 @@ export class WebSocketServer implements Service {
         return wss;
     }
 
-    public getServer(): WebSocket.Server | undefined {
+    public getServer(): WSServer | undefined {
         return this.server;
     }
 

@@ -14,6 +14,7 @@ import { Message } from '../../../types/Message';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { HostItem } from '../../../types/Configuration';
 import { Tool } from './Tool';
+import { ChannelCode } from '../../../common/ChannelCode';
 
 type Field = keyof GoogDeviceDescriptor | ((descriptor: GoogDeviceDescriptor) => string);
 type DescriptionColumn = { title: string; field: Field };
@@ -61,7 +62,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         super({ ...params, action: DeviceTracker.ACTION }, directUrl);
         DeviceTracker.instancesByUrl.set(directUrl, this);
         this.buildDeviceTable();
-        this.openNewWebSocket();
+        this.openNewConnection();
     }
 
     protected onSocketOpen(): void {
@@ -141,8 +142,8 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
             },
         };
 
-        if (this.hasConnection()) {
-            (this.ws as WebSocket).send(JSON.stringify(data));
+        if (this.ws && this.ws.readyState === this.ws.OPEN) {
+            this.ws.send(JSON.stringify(data));
         }
     };
 
@@ -322,6 +323,10 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         if (DeviceTracker.CREATE_DIRECT_LINKS && hasPid && selectInterface) {
             this.updateLink(selectInterface, false);
         }
+    }
+
+    protected getChannelCode(): string {
+        return ChannelCode.GTRC;
     }
 
     public destroy(): void {

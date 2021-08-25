@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WS from 'ws';
 import { Mw, RequestParameters } from '../../mw/Mw';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { ACTION } from '../../../common/Action';
@@ -10,7 +10,7 @@ export class WebDriverAgentProxy extends Mw {
     protected name: string;
     private wda?: WDARunner;
 
-    public static processRequest(ws: WebSocket, params: RequestParameters): WebDriverAgentProxy | undefined {
+    public static processRequest(ws: WS, params: RequestParameters): WebDriverAgentProxy | undefined {
         if (params.parsedQuery?.action !== ACTION.PROXY_WDA) {
             return;
         }
@@ -23,7 +23,7 @@ export class WebDriverAgentProxy extends Mw {
         return new WebDriverAgentProxy(ws, udid);
     }
 
-    constructor(ws: WebSocket, private readonly udid: string) {
+    constructor(protected ws: WS, private readonly udid: string) {
         super(ws);
         this.name = `[${WebDriverAgentProxy.TAG}][udid: ${this.udid}]`;
     }
@@ -94,7 +94,7 @@ export class WebDriverAgentProxy extends Mw {
             });
     }
 
-    protected onSocketMessage(event: WebSocket.MessageEvent): void {
+    protected onSocketMessage(event: WS.MessageEvent): void {
         let command: ControlCenterCommand;
         try {
             command = ControlCenterCommand.fromJSON(event.data.toString());

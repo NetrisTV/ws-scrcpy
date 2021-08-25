@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WS from 'ws';
 import { Mw, RequestParameters } from '../../mw/Mw';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { ControlCenter } from '../services/ControlCenter';
@@ -6,40 +6,30 @@ import { ACTION } from '../../../common/Action';
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import { DeviceTrackerEvent } from '../../../types/DeviceTrackerEvent';
 import { DeviceTrackerEventList } from '../../../types/DeviceTrackerEventList';
-import Util from '../../../app/Util';
-import { HostItem } from '../../../types/Configuration';
+import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
+import { ChannelCode } from '../../../common/ChannelCode';
 
 export class DeviceTracker extends Mw {
     public static readonly TAG = 'DeviceTracker';
+    public static readonly type = 'android';
     private adt: ControlCenter = ControlCenter.getInstance();
     private readonly id: string;
 
-    public static processRequest(ws: WebSocket, params: RequestParameters): DeviceTracker | undefined {
+    public static processChannel(ws: Multiplexer, code: string): Mw | undefined {
+        if (code !== ChannelCode.GTRC) {
+            return;
+        }
+        return new DeviceTracker(ws);
+    }
+
+    public static processRequest(ws: WS, params: RequestParameters): DeviceTracker | undefined {
         if (params.parsedQuery?.action !== ACTION.GOOG_DEVICE_LIST) {
             return;
         }
         return new DeviceTracker(ws);
     }
 
-    // from TrackerClass interface in HostTracker.ts
-    public static buildParams(host = '127.0.0.1'): HostItem {
-        const type = 'android';
-        const temp = host.split(':');
-        let hostname = host;
-        let port = 80;
-        if (temp.length > 1) {
-            hostname = temp[0];
-            port = Util.parseIntEnv(temp[1]) || 80;
-        }
-        return {
-            secure: false,
-            type,
-            hostname,
-            port,
-        };
-    }
-
-    constructor(ws: WebSocket) {
+    constructor(ws: WS | Multiplexer) {
         super(ws);
 
         this.id = this.adt.getId();
@@ -80,7 +70,7 @@ export class DeviceTracker extends Mw {
         });
     };
 
-    protected onSocketMessage(event: WebSocket.MessageEvent): void {
+    protected onSocketMessage(event: WS.MessageEvent): void {
         let command: ControlCenterCommand;
         try {
             command = ControlCenterCommand.fromJSON(event.data.toString());

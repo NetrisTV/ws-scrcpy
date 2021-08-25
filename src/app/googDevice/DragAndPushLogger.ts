@@ -1,4 +1,4 @@
-import FilePushHandler, { DragAndPushListener, PushUpdateParams } from './FilePushHandler';
+import FilePushHandler, { DragAndPushListener, PushUpdateParams } from './filePush/FilePushHandler';
 
 const TAG = '[DragAndPushLogger]';
 
@@ -80,25 +80,28 @@ export default class DragAndPushLogger implements DragAndPushListener {
         }
     }
 
-    onDragEnter(): void {
+    public onDragEnter(): boolean {
         this.logText('Drop APK files here', 1);
+        return true;
     }
 
-    onDragLeave(): void {
+    public onDragLeave(): boolean {
         this.cleanDirtyLine(1);
+        return true;
     }
 
-    onDrop(): void {
+    public onDrop(): boolean {
         this.cleanDirtyLine(1);
+        return true;
     }
 
-    onError(error: Error | string): void {
+    public onError(error: Error | string): void {
         const text = typeof error === 'string' ? error : error.message;
         this.logText(text, 1, true);
     }
 
     onFilePushUpdate(data: PushUpdateParams): void {
-        const { pushId, logString, fileName, error } = data;
+        const { pushId, message, fileName, error } = data;
         const key = `${pushId}/${fileName}`;
         const firstKey = `${FilePushHandler.REQUEST_NEW_PUSH_ID}/${fileName}`;
         let line: number | undefined = this.pushLineMap.get(key);
@@ -121,6 +124,6 @@ export default class DragAndPushLogger implements DragAndPushListener {
             this.pushLineMap.set(key, line);
             this.linePushMap.set(line, key);
         }
-        this.logText(`Upload "${fileName}": ${logString}`, line, true, error);
+        this.logText(`Upload "${fileName}": ${message}`, line, true, error);
     }
 }

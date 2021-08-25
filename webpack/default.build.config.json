@@ -4,6 +4,7 @@
   "USE_TINY_H264": true,
   "INCLUDE_DEV_TOOLS": true,
   "INCLUDE_ADB_SHELL": true,
+  "INCLUDE_FILE_LISTING": true,
   "INCLUDE_APPL": false,
   "INCLUDE_GOOG": true
 }

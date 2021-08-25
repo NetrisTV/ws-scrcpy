@@ -1,11 +1,13 @@
+import WS from 'ws';
 import { Mw, RequestParameters } from '../../mw/Mw';
-import WebSocket from 'ws';
 import * as pty from 'node-pty';
 import * as os from 'os';
 import { IPty } from 'node-pty';
 import { Message } from '../../../types/Message';
 import { XtermClientMessage, XtermServiceParameters } from '../../../types/XtermMessage';
 import { ACTION } from '../../../common/Action';
+import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
+import { ChannelCode } from '../../../common/ChannelCode';
 
 const OS_WINDOWS = os.platform() === 'win32';
 const USE_BINARY = !OS_WINDOWS;
@@ -15,15 +17,27 @@ export class RemoteShell extends Mw {
     public static readonly TAG = 'RemoteShell';
     private term?: IPty;
     private initialized = false;
+    private timeoutString: NodeJS.Timeout | null = null;
+    private timeoutBuffer: NodeJS.Timeout | null = null;
+    private terminated = false;
+    private closeCode = 1000;
+    private closeReason = '';
 
-    public static processRequest(ws: WebSocket, params: RequestParameters): RemoteShell | undefined {
+    public static processChannel(ws: Multiplexer, code: string): Mw | undefined {
+        if (code !== ChannelCode.SHEL) {
+            return;
+        }
+        return new RemoteShell(ws);
+    }
+
+    public static processRequest(ws: WS, params: RequestParameters): RemoteShell | undefined {
         if (params.parsedQuery?.action !== ACTION.SHELL) {
             return;
         }
         return new RemoteShell(ws);
     }
 
-    constructor(ws: WebSocket) {
+    constructor(protected ws: WS | Multiplexer) {
         super(ws);
     }
 
@@ -47,12 +61,22 @@ export class RemoteShell extends Mw {
         // @ts-ignore Documentation is incorrect for `encoding: null`
         term.on('data', send);
         term.on('exit', (code: number) => {
-            this.ws.close(1000, `[${[RemoteShell.TAG]}] terminal process exited with code: ${code}`);
+            if (code === 0) {
+                this.closeCode = 1000;
+            } else {
+                this.closeCode = 4500;
+            }
+            this.closeReason = `[${[RemoteShell.TAG]}] terminal process exited with code: ${code}`;
+            if (this.timeoutString || this.timeoutBuffer) {
+                this.terminated = true;
+            } else {
+                this.ws.close(this.closeCode, this.closeReason);
+            }
         });
         return term;
     }
 
-    protected onSocketMessage(event: WebSocket.MessageEvent): void {
+    protected onSocketMessage(event: WS.MessageEvent): void {
         if (this.initialized) {
             if (!this.term) {
                 return;
@@ -89,14 +113,16 @@ export class RemoteShell extends Mw {
     // string message buffering
     private buffer(timeout: number): (data: string) => void {
         let s = '';
-        let sender: NodeJS.Timeout | null = null;
         return (data: string) => {
             s += data;
-            if (!sender) {
-                sender = setTimeout(() => {
+            if (!this.timeoutString) {
+                this.timeoutString = setTimeout(() => {
                     this.ws.send(s);
                     s = '';
-                    sender = null;
+                    this.timeoutString = null;
+                    if (this.terminated) {
+                        this.ws.close(this.closeCode, this.closeReason);
+                    }
                 }, timeout);
             }
         };
@@ -104,17 +130,19 @@ export class RemoteShell extends Mw {
 
     private bufferUtf8(timeout: number): (data: Buffer) => void {
         let buffer: Buffer[] = [];
-        let sender: NodeJS.Timeout | null = null;
         let length = 0;
         return (data: Buffer) => {
             buffer.push(data);
             length += data.length;
-            if (!sender) {
-                sender = setTimeout(() => {
+            if (!this.timeoutBuffer) {
+                this.timeoutBuffer = setTimeout(() => {
                     this.ws.send(Buffer.concat(buffer, length));
                     buffer = [];
-                    sender = null;
+                    this.timeoutBuffer = null;
                     length = 0;
+                    if (this.terminated) {
+                        this.ws.close(this.closeCode, this.closeReason);
+                    }
                 }, timeout);
             }
         };
@@ -122,6 +150,12 @@ export class RemoteShell extends Mw {
 
     public release(): void {
         super.release();
+        if (this.timeoutBuffer) {
+            clearTimeout(this.timeoutBuffer);
+        }
+        if (this.timeoutString) {
+            clearTimeout(this.timeoutString);
+        }
         if (this.term) {
             this.term.kill();
         }

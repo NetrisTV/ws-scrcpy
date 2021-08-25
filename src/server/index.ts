@@ -7,9 +7,15 @@ import { Service, ServiceClass } from './services/Service';
 import { MwFactory } from './mw/Mw';
 import { WebsocketProxy } from './mw/WebsocketProxy';
 import { HostTracker } from './mw/HostTracker';
+import { WebsocketMultiplexer } from './mw/WebsocketMultiplexer';
 
 const servicesToStart: ServiceClass[] = [HttpServer, WebSocketServer];
-const mwList: MwFactory[] = [HostTracker, WebsocketProxy];
+
+// MWs that accept WebSocket
+const mwList: MwFactory[] = [WebsocketProxy, WebsocketMultiplexer];
+
+// MWs that accept Multiplexer
+const mw2List: MwFactory[] = [HostTracker];
 
 const runningServices: Service[] = [];
 const loadPlatformModulesPromises: Promise<void>[] = [];
@@ -23,7 +29,7 @@ async function loadGoogModules() {
     const { WebsocketProxyOverAdb } = await import('./goog-device/mw/WebsocketProxyOverAdb');
 
     if (config.getRunLocalGoogTracker()) {
-        mwList.push(DeviceTracker);
+        mw2List.push(DeviceTracker);
     }
 
     if (config.getAnnounceLocalGoogTracker()) {
@@ -34,12 +40,17 @@ async function loadGoogModules() {
 
     /// #if INCLUDE_ADB_SHELL
     const { RemoteShell } = await import('./goog-device/mw/RemoteShell');
-    mwList.push(RemoteShell);
+    mw2List.push(RemoteShell);
     /// #endif
 
     /// #if INCLUDE_DEV_TOOLS
     const { RemoteDevtools } = await import('./goog-device/mw/RemoteDevtools');
     mwList.push(RemoteDevtools);
+    /// #endif
+
+    /// #if INCLUDE_FILE_LISTING
+    const { FileListing } = await import('./goog-device/mw/FileListing');
+    mw2List.push(FileListing);
     /// #endif
 
     mwList.push(WebsocketProxyOverAdb);
@@ -61,7 +72,7 @@ async function loadApplModules() {
     (global as any)._global_npmlog = npmlog;
 
     if (config.getRunLocalApplTracker()) {
-        mwList.push(DeviceTracker);
+        mw2List.push(DeviceTracker);
     }
 
     if (config.getAnnounceLocalApplTracker()) {
@@ -86,6 +97,10 @@ Promise.all(loadPlatformModulesPromises).then(() => {
     const wsService = WebSocketServer.getInstance();
     mwList.forEach((mwFactory: MwFactory) => {
         wsService.registerMw(mwFactory);
+    });
+
+    mw2List.forEach((mwFactory: MwFactory) => {
+        WebsocketMultiplexer.registerMw(mwFactory);
     });
 
     if (process.platform === 'win32') {
