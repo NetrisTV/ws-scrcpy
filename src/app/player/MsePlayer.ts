@@ -244,9 +244,6 @@ export class MsePlayer extends BasePlayer {
         return MsePlayer.preferredVideoSettings;
     }
 
-    public static getPreferredVideoSetting(): VideoSettings {
-        return this.preferredVideoSettings;
-    }
     checkVideoResize = (): void => {
         if (!this.tag) {
             return;
@@ -456,27 +453,5 @@ export class MsePlayer extends BasePlayer {
 
     public loadVideoSettings(): VideoSettings {
         return MsePlayer.loadVideoSettings(this.udid, this.displayInfo);
-    }
-
-    public static getFitToScreenStatus(udid: string, displayInfo?: DisplayInfo): boolean {
-        return BasePlayer.getFitToScreenFromStorage(MsePlayer.storageKeyPrefix, udid, displayInfo);
-    }
-
-    public static loadVideoSettings(udid: string, displayInfo?: DisplayInfo): VideoSettings {
-        return BasePlayer.getVideoSettingFromStorage(
-            MsePlayer.preferredVideoSettings,
-            MsePlayer.storageKeyPrefix,
-            udid,
-            displayInfo,
-        );
-    }
-
-    public static saveVideoSettings(
-        udid: string,
-        videoSettings: VideoSettings,
-        fitToScreen: boolean,
-        displayInfo?: DisplayInfo,
-    ): void {
-        BasePlayer.putVideoSettingsToStorage(MsePlayer.storageKeyPrefix, udid, videoSettings, fitToScreen, displayInfo);
     }
 }

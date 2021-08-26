@@ -83,6 +83,18 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     private statLines: string[] = [];
     public readonly supportsScreenshot: boolean = false;
 
+    public static storageKeyPrefix = 'BaseDecoder';
+    public static playerFullName = 'BasePlayer';
+    public static playerCodeName = 'baseplayer';
+    public static preferredVideoSettings: VideoSettings = new VideoSettings({
+        lockedVideoOrientation: -1,
+        bitrate: 524288,
+        maxFps: 24,
+        iFrameInterval: 5,
+        bounds: new Size(480, 480),
+        sendFrameMeta: false,
+    });
+
     constructor(
         public readonly udid: string,
         protected displayInfo?: DisplayInfo,
@@ -494,4 +506,25 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     public abstract getFitToScreenStatus(): boolean;
 
     public abstract loadVideoSettings(): VideoSettings;
+
+    public static loadVideoSettings(udid: string, displayInfo?: DisplayInfo): VideoSettings {
+        return this.getVideoSettingFromStorage(this.preferredVideoSettings, this.storageKeyPrefix, udid, displayInfo);
+    }
+
+    public static getFitToScreenStatus(udid: string, displayInfo?: DisplayInfo): boolean {
+        return this.getFitToScreenFromStorage(this.storageKeyPrefix, udid, displayInfo);
+    }
+
+    public static getPreferredVideoSetting(): VideoSettings {
+        return this.preferredVideoSettings;
+    }
+
+    public static saveVideoSettings(
+        udid: string,
+        videoSettings: VideoSettings,
+        fitToScreen: boolean,
+        displayInfo?: DisplayInfo,
+    ): void {
+        this.putVideoSettingsToStorage(this.storageKeyPrefix, udid, videoSettings, fitToScreen, displayInfo);
+    }
 }

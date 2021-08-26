@@ -7,7 +7,6 @@ import Avc from '../../../vendor/Broadway/Decoder';
 import VideoSettings from '../VideoSettings';
 import Canvas from '../../../vendor/h264-live-player/Canvas';
 import { DisplayInfo } from '../DisplayInfo';
-import { BasePlayer } from './BasePlayer';
 
 export class BroadwayPlayer extends BaseCanvasBasedPlayer {
     public static readonly storageKeyPrefix = 'BroadwayDecoder';
@@ -66,37 +65,5 @@ export class BroadwayPlayer extends BaseCanvasBasedPlayer {
 
     public loadVideoSettings(): VideoSettings {
         return BroadwayPlayer.loadVideoSettings(this.udid, this.displayInfo);
-    }
-
-    public static getPreferredVideoSetting(): VideoSettings {
-        return this.preferredVideoSettings;
-    }
-
-    public static getFitToScreenStatus(udid: string, displayInfo?: DisplayInfo): boolean {
-        return BasePlayer.getFitToScreenFromStorage(BroadwayPlayer.storageKeyPrefix, udid, displayInfo);
-    }
-
-    public static loadVideoSettings(udid: string, displayInfo?: DisplayInfo): VideoSettings {
-        return BasePlayer.getVideoSettingFromStorage(
-            BroadwayPlayer.preferredVideoSettings,
-            BroadwayPlayer.storageKeyPrefix,
-            udid,
-            displayInfo,
-        );
-    }
-
-    public static saveVideoSettings(
-        udid: string,
-        videoSettings: VideoSettings,
-        fitToScreen: boolean,
-        displayInfo?: DisplayInfo,
-    ): void {
-        BasePlayer.putVideoSettingsToStorage(
-            BroadwayPlayer.storageKeyPrefix,
-            udid,
-            videoSettings,
-            fitToScreen,
-            displayInfo,
-        );
     }
 }
