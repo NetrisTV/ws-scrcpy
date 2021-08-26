@@ -22,4 +22,11 @@ export class ExtendedClient extends Client {
             sync.end();
         });
     }
+
+    public async pipeStat(serial: string, path: string, stream: Multiplexer): Promise<void> {
+        const sync = await this.pipeSyncService(serial);
+        return sync.pipeStat(path, stream).then(() => {
+            sync.end();
+        });
+    }
 }

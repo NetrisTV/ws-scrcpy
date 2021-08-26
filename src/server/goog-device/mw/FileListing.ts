@@ -1,11 +1,8 @@
-import WS from 'ws';
 import { Mw } from '../../mw/Mw';
-import Stats from '@devicefarmer/adbkit/lib/adb/sync/stats';
 import { AdbUtils } from '../AdbUtils';
 import Util from '../../../app/Util';
 import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
 import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
-import { Message } from '../../../types/Message';
 import { ChannelCode } from '../../../common/ChannelCode';
 import { FilePushReader } from '../filePush/FilePushReader';
 
@@ -33,12 +30,13 @@ export class FileListing extends Mw {
         });
     }
 
-    protected sendMessage = (_data: Message): void => {
-        // if (this.ws.readyState !== this.ws.OPEN) {
-        //     return;
-        // }
-        // this.ws.send(JSON.stringify(data));
+    protected sendMessage = (): void => {
+        throw Error('Do not use this method. You must send data over channels');
     };
+
+    protected onSocketMessage(): void {
+        // Nothing here. All communication are performed over the channels. See `handleNewChannel` below.
+    }
 
     private static handleNewChannel(serial: string, channel: Multiplexer, arrayBuffer: ArrayBuffer): void {
         const data = Buffer.from(arrayBuffer);
@@ -51,11 +49,13 @@ export class FileListing extends Mw {
         offset += 4;
         switch (cmd) {
             case Protocol.LIST:
+            case Protocol.STAT:
+            case Protocol.RECV:
                 const length = data.readUInt32LE(offset);
                 offset += 4;
                 const pathBuffer = data.slice(offset, offset + length);
                 const pathString = Util.utf8ByteArrayToString(pathBuffer);
-                FileListing.handleMessage(serial, pathString, channel).catch((e: Error) => {
+                FileListing.handle(cmd, serial, pathString, channel).catch((e: Error) => {
                     console.error(`[${FileListing.TAG}]`, e.message);
                 });
                 break;
@@ -69,30 +69,19 @@ export class FileListing extends Mw {
         }
     }
 
-    protected onSocketMessage(_event: WS.MessageEvent): void {
-        // this.handleRequest(Buffer.from(event.data));
-    }
-
-    private static async handleMessage(serial: string, pathString: string, channel: Multiplexer): Promise<void> {
-        let stats: Stats;
+    private static async handle(cmd: string, serial: string, pathString: string, channel: Multiplexer): Promise<void> {
         try {
-            stats = await AdbUtils.stats(serial, pathString);
+            if (cmd === Protocol.STAT) {
+                return AdbUtils.pipeStatToStream(serial, pathString, channel);
+            }
+            if (cmd === Protocol.LIST) {
+                return AdbUtils.pipeReadDirToStream(serial, pathString, channel);
+            }
+            if (cmd === Protocol.RECV) {
+                return AdbUtils.pipePullFileToStream(serial, pathString, channel);
+            }
         } catch (e) {
             FileListing.sendError(e.message, channel);
-            return;
-        }
-        if (stats.isDirectory()) {
-            try {
-                await AdbUtils.pipeReadDirToStream(serial, pathString, channel);
-            } catch (e) {
-                FileListing.sendError(e.message, channel);
-            }
-        } else {
-            try {
-                await AdbUtils.pipePullFileToStream(serial, pathString, channel);
-            } catch (e) {
-                FileListing.sendError(e.message, channel);
-            }
         }
     }
 
@@ -100,10 +89,11 @@ export class FileListing extends Mw {
         if (channel.readyState === channel.OPEN) {
             const length = Buffer.byteLength(message, 'utf-8');
             const buf = Buffer.alloc(4 + 4 + length);
-            buf.write(Protocol.FAIL, 'ascii');
-            buf.writeUInt32LE(length, 4);
-            buf.write(message, 8, 'utf-8');
+            let offset = buf.write(Protocol.FAIL, 'ascii');
+            offset = buf.writeUInt32LE(length, offset);
+            buf.write(message, offset, 'utf-8');
             channel.send(buf);
+            channel.close();
         }
     }
 }

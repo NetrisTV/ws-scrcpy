@@ -27,7 +27,15 @@ const rootPath = '/';
 const tempPath = '/data/local/tmp';
 const storagePath = '/storage';
 
-type Download = { size: number; entry: Entry; progressEl?: HTMLElement; anchor: HTMLElement; chunks: Uint8Array[] };
+type Download = {
+    receivedBytes: number;
+    entry?: Entry;
+    progressEl?: HTMLElement;
+    anchor?: HTMLElement;
+    chunks: Uint8Array[];
+    path: string;
+    pathToLoadAfter: string;
+};
 type Upload = { row: HTMLElement; progressEl: HTMLElement; anchor: HTMLElement; timeout: number | null };
 
 enum Foreground {
@@ -287,7 +295,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         this.loadContent(this.path);
     }
 
-    protected loadContent(path: string, entry?: Entry, anchor?: HTMLElement): void {
+    protected loadContent(path: string, entry?: Entry, anchor?: HTMLElement, pathToLoadAfter = ''): void {
         if (!this.ws || this.ws.readyState !== this.ws.OPEN || !(this.ws instanceof Multiplexer)) {
             return;
         }
@@ -296,7 +304,14 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         }
         this.requireClean = true;
         this.requestedPath = path;
-        const cmd = Protocol.LIST;
+        let cmd: string;
+        if (!entry) {
+            cmd = Protocol.STAT;
+        } else if (entry.isFile()) {
+            cmd = Protocol.RECV;
+        } else {
+            cmd = Protocol.LIST;
+        }
         const len = Buffer.byteLength(path, 'utf-8');
         const payload = new Buffer(cmd.length + 4 + len);
         let pos = payload.write(cmd, 0);
@@ -304,15 +319,15 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         payload.write(path, pos);
         const channel = this.ws.createChannel(payload);
         this.channels.add(channel);
-        if (entry && anchor) {
-            const download: Download = {
-                size: 0,
-                entry,
-                anchor,
-                chunks: [],
-            };
-            this.downloads.set(channel, download);
-        }
+        const download: Download = {
+            receivedBytes: 0,
+            path,
+            entry,
+            anchor,
+            chunks: [],
+            pathToLoadAfter,
+        };
+        this.downloads.set(channel, download);
         const onMessage = (e: MessageEvent): void => {
             this.handleReply(channel, e);
         };
@@ -381,6 +396,27 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
             case Protocol.DONE:
                 this.finishDownload(channel);
                 return;
+            case Protocol.STAT: {
+                const download = this.downloads.get(channel);
+                if (!download) {
+                    return;
+                }
+                const stat = data.slice(4);
+                const mode = stat.readUInt32LE(0);
+                const size = stat.readUInt32LE(4);
+                const mtime = stat.readUInt32LE(8);
+                const nameString = path.basename(download.path);
+                const entry = new Entry(nameString, mode, size, mtime);
+                let anchor: HTMLElement | undefined;
+                let nextPath = '';
+                if (!entry.isDirectory()) {
+                    nextPath = this.requestedPath = path.dirname(download.path);
+                    const row = this.addEntry(entry);
+                    anchor = row ? row.getElementsByTagName('a')[0] : undefined;
+                }
+                this.loadContent(download.path, entry, anchor, nextPath);
+                break;
+            }
             case Protocol.FAIL:
                 const length = data.readUInt32LE(4);
                 const message = Util.utf8ByteArrayToString(data.slice(8, 8 + length));
@@ -388,17 +424,22 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
                 return;
             case Protocol.DATA:
                 const download = this.downloads.get(channel);
-                if (download) {
-                    download.chunks.push(data.slice(4));
-                    download.size += data.length - 4;
+                if (!download) {
+                    return;
+                }
+                download.chunks.push(data.slice(4));
+                download.receivedBytes += data.length - 4;
+                if (download.anchor) {
                     let progressElement = download.progressEl;
                     if (!progressElement) {
                         progressElement = this.appendProgressElement(download.anchor);
                         download.progressEl = progressElement;
                     }
-                    const { size } = download.entry;
-                    const percent = (download.size * 100) / size;
-                    progressElement.style.width = `${percent}%`;
+                    if (download.entry) {
+                        const { size } = download.entry;
+                        const percent = (download.receivedBytes * 100) / size;
+                        progressElement.style.width = `${percent}%`;
+                    }
                 }
                 return;
             default:
@@ -416,7 +457,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         return progressElement;
     }
 
-    protected addEntry(entry: Entry): void {
+    protected addEntry(entry: Entry): HTMLElement | undefined {
         if (this.requireClean) {
             this.path = this.requestedPath;
             this.requestedPath = '';
@@ -441,7 +482,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         }
         const type = entry.isDirectory() ? 'dir' : entry.isSymbolicLink() ? 'link' : entry.isFile() ? 'file' : 'else';
         const date = entry.mtime.toLocaleString();
-        this.addRow(false, entry.name, type, entry.size.toString(), date, entryId);
+        return this.addRow(false, entry.name, type, entry.size.toString(), date, entryId);
     }
 
     protected addRow(push: boolean, name: string, typeClass: string, size = '', date = '', entryId = ''): HTMLElement {
@@ -496,12 +537,15 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
             this.cleanProgress(el);
         }
         let name: string;
-        if (download.entry.isFile()) {
+        if (download.entry && download.entry.isFile()) {
             name = download.entry.name;
         } else {
-            // Was opened link to a file, get its name and load its parent content
+            // we always should have `download.entry` and never be here
             name = path.basename(this.path);
-            this.loadContent(path.dirname(this.path));
+        }
+        if (download.pathToLoadAfter) {
+            this.channels.delete(channel);
+            this.loadContent(download.pathToLoadAfter);
         }
         const file = new File(download.chunks, name, { type: 'application/octet-stream' });
         const a = document.createElement('a');

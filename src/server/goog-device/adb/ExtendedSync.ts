@@ -40,6 +40,22 @@ export class ExtendedSync {
         return this._readData(stream);
     }
 
+    public async pipeStat(path: string, stream: Multiplexer): Promise<void> {
+        this._sendCommandWithArg(Protocol.STAT, `${path}`);
+        const reply = await this.parser.readAscii(4);
+        switch (reply) {
+            case Protocol.STAT:
+                const stat = await this.parser.readBytes(12);
+                stream.send(Buffer.concat([Buffer.from(reply), stat]));
+                stream.close(1000);
+                break;
+            case Protocol.FAIL:
+                return this._readError(stream);
+            default:
+                return this.parser.unexpected(reply, 'STAT or FAIL');
+        }
+    }
+
     private _readData(stream: Multiplexer): Promise<void> {
         const readNext = async (): Promise<void> => {
             const reply = await this.parser.readAscii(4);

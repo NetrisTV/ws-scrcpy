@@ -44,15 +44,12 @@ export class AdbUtils {
         return transfer;
     }
 
-    public static async stats(serial: string, pathString: string, stats?: Stats, deep?: number): Promise<Stats> {
+    public static async stats(serial: string, pathString: string, stats?: Stats, deep = 0): Promise<Stats> {
         if (!stats || (stats.isSymbolicLink() && pathString.endsWith('/'))) {
             const client = AdbExtended.createClient();
             stats = await client.stat(serial, pathString);
         }
         if (stats.isSymbolicLink()) {
-            if (!deep) {
-                deep = 0;
-            }
             if (deep === 5) {
                 throw Error('Too deep');
             }
@@ -110,6 +107,11 @@ export class AdbUtils {
                 reject(e);
             });
         });
+    }
+
+    public static async pipeStatToStream(serial: string, pathString: string, stream: Multiplexer): Promise<void> {
+        const client = AdbExtended.createClient();
+        return client.pipeStat(serial, pathString, stream);
     }
 
     public static async pipeReadDirToStream(serial: string, pathString: string, stream: Multiplexer): Promise<void> {
