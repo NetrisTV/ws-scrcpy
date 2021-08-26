@@ -406,6 +406,13 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
                 const size = stat.readUInt32LE(4);
                 const mtime = stat.readUInt32LE(8);
                 const nameString = path.basename(download.path);
+                if (mode === 0) {
+                    console.error('FIXME: show error in UI');
+                    console.error(`Error: no entity "${download.path}"`);
+                    this.channels.delete(channel);
+                    this.loadContent(tempPath);
+                    return;
+                }
                 const entry = new Entry(nameString, mode, size, mtime);
                 let anchor: HTMLElement | undefined;
                 let nextPath = '';
