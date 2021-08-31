@@ -209,13 +209,12 @@ export abstract class TouchHandler {
         if (typeof action === 'undefined' || !screenInfo) {
             return null;
         }
-        const htmlTag = document.getElementsByTagName('html')[0] as HTMLElement;
         const { width, height } = screenInfo.videoSize;
         const target: HTMLElement = e.target as HTMLElement;
-        const { scrollTop, scrollLeft } = htmlTag;
+        const rect = target.getBoundingClientRect();
         let { clientWidth, clientHeight } = target;
-        let touchX = e.clientX - target.offsetLeft + scrollLeft;
-        let touchY = e.clientY - target.offsetTop + scrollTop;
+        let touchX = e.clientX - rect.left;
+        let touchY = e.clientY - rect.top;
         let invalid = false;
         if (touchX < 0 || touchX > clientWidth || touchY < 0 || touchY > clientHeight) {
             invalid = true;
