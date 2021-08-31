@@ -44,7 +44,7 @@
     "eslint-plugin-progress": "0.0.1",
     "file-loader": "^6.0.0",
     "generate-package-json-webpack-plugin": "^2.1.2",
-    "h264-converter": "^0.1.3",
+    "h264-converter": "^0.1.4",
     "html-webpack-plugin": "^4.5.0",
     "ifdef-loader": "^2.3.0",
     "mini-css-extract-plugin": "^0.11.2",
