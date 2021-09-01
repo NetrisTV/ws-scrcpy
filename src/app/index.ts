@@ -10,6 +10,11 @@ window.onload = async function (): Promise<void> {
     const parsedQuery = querystring.parse(hash);
     const action = parsedQuery.action;
 
+    /// #if USE_WEBCODECS
+    const { WebCodecsPlayer } = await import('./player/WebCodecsPlayer');
+    StreamClientScrcpy.registerPlayer(WebCodecsPlayer);
+    /// #endif
+
     /// #if USE_BROADWAY
     const { BroadwayPlayer } = await import('./player/BroadwayPlayer');
     StreamClientScrcpy.registerPlayer(BroadwayPlayer);
