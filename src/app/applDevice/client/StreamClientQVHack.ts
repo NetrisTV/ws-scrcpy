@@ -90,7 +90,12 @@ export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> im
         if (action !== ACTION.STREAM_WS_QVH) {
             throw Error('Incorrect action');
         }
-        return { ...typedParams, action, udid: Util.parseStringEnv(params.udid) };
+        return {
+            ...typedParams,
+            action,
+            udid: Util.parseStringEnv(params.udid),
+            player: Util.parseStringEnv(params.player),
+        };
     }
 
     private onViewVideoResize = (): void => {

@@ -174,8 +174,8 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
         this.tag.oncontextmenu = (e: MouseEvent): void => {
             e.preventDefault();
         };
-        this.tag.width = width;
-        this.tag.height = height;
+        this.tag.width = Math.round(width);
+        this.tag.height = Math.round(height);
     }
 
     public play(): void {

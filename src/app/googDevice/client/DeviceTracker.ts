@@ -33,10 +33,6 @@ const DESC_COLUMNS: DescriptionColumn[] = [
 export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never> {
     public static readonly ACTION = ACTION.GOOG_DEVICE_LIST;
     public static readonly CREATE_DIRECT_LINKS = true;
-    public static readonly AttributePrefixInterfaceSelectFor = 'interface_select_for_';
-    public static readonly AttributePlayerFullName = 'data-player-full-name';
-    public static readonly AttributePlayerCodeName = 'data-player-code-name';
-    public static readonly AttributePrefixPlayerFor = 'player_for_';
     private static instancesByUrl: Map<string, DeviceTracker> = new Map();
     private static tools: Set<Tool> = new Set();
     protected tableId = 'goog_device_list';

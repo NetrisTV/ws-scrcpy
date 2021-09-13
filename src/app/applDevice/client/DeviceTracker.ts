@@ -7,6 +7,7 @@ import { DeviceState } from '../../../common/DeviceState';
 import { ParsedUrlQueryInput } from 'querystring';
 import { HostItem } from '../../../types/Configuration';
 import { ChannelCode } from '../../../common/ChannelCode';
+import { StreamClientQVHack } from './StreamClientQVHack';
 
 export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never> {
     public static ACTION = ACTION.APPL_DEVICE_LIST;
@@ -59,15 +60,24 @@ export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never
             return;
         }
 
-        const playerTd = document.createElement('div');
-        playerTd.className = blockClass;
-        const q: ParsedUrlQueryInput = {
-            action: ACTION.STREAM_WS_QVH,
-            udid: device.udid,
-        };
-        const link = DeviceTracker.buildLink(q, 'stream', this.params);
-        playerTd.appendChild(link);
-        services.appendChild(playerTd);
+        const name = `${DeviceTracker.AttributePrefixPlayerFor}${fullName}`;
+        const players = StreamClientQVHack.getPlayers();
+        players.forEach((playerClass) => {
+            const { playerCodeName, playerFullName } = playerClass;
+            const playerTd = document.createElement('div');
+            playerTd.classList.add(blockClass);
+            playerTd.setAttribute('name', encodeURIComponent(name));
+            playerTd.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
+            playerTd.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
+            const q: ParsedUrlQueryInput = {
+                action: ACTION.STREAM_WS_QVH,
+                player: playerCodeName,
+                udid: device.udid,
+            };
+            const link = DeviceTracker.buildLink(q, `Stream (${playerFullName})`, this.params);
+            playerTd.appendChild(link);
+            services.appendChild(playerTd);
+        });
         tbody.appendChild(row);
     }
 
