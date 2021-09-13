@@ -3,6 +3,7 @@ import ScreenInfo from '../ScreenInfo';
 import Rect from '../Rect';
 import Size from '../Size';
 import VideoSettings from '../VideoSettings';
+import { DisplayInfo } from '../DisplayInfo';
 
 export class MsePlayerForQVHack extends MsePlayer {
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
@@ -14,8 +15,13 @@ export class MsePlayerForQVHack extends MsePlayer {
         sendFrameMeta: false,
     });
 
-    constructor(udid: string, tag: HTMLVideoElement) {
-        super(udid, undefined, 'MSE_Player_For_QVHack', tag);
+    constructor(
+        udid: string,
+        displayInfo?: DisplayInfo,
+        name = 'MSE_Player_For_QVHack',
+        tag = MsePlayerForQVHack.createElement(),
+    ) {
+        super(udid, displayInfo, name, tag);
     }
 
     protected handleVideoResize(videoWidth: number, videoHeight: number): void {

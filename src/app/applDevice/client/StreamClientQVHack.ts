@@ -8,7 +8,7 @@ import ScreenInfo from '../../ScreenInfo';
 import { StreamReceiver } from '../../client/StreamReceiver';
 import Position from '../../Position';
 import { MsePlayerForQVHack } from '../../player/MsePlayerForQVHack';
-import { BasePlayer } from '../../player/BasePlayer';
+import { BasePlayer, PlayerClass } from '../../player/BasePlayer';
 import { SimpleTouchHandler, TouchHandlerListener } from '../../touchHandler/SimpleTouchHandler';
 import { ACTION } from '../../../common/Action';
 import { ParsedUrlQuery } from 'querystring';
@@ -22,6 +22,7 @@ const TAG = '[StreamClientQVHack]';
 
 export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> implements TouchHandlerListener {
     public static ACTION = ACTION.STREAM_WS_QVH;
+    private static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
     private deviceName = '';
     private managerClient: WsQVHackClient;
     private wdaConnection = new WdaConnection();
@@ -30,6 +31,37 @@ export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> im
     private videoWrapper?: HTMLElement;
     private touchHandler?: SimpleTouchHandler;
     private readonly udid: string;
+
+    public static registerPlayer(playerClass: PlayerClass): void {
+        if (playerClass.isSupported()) {
+            this.players.set(playerClass.playerFullName, playerClass);
+        }
+    }
+
+    public static getPlayers(): PlayerClass[] {
+        return Array.from(this.players.values());
+    }
+
+    private static getPlayerClass(playerName?: string): PlayerClass | undefined {
+        let playerClass: PlayerClass | undefined;
+        for (const value of this.players.values()) {
+            if (value.playerFullName === playerName || value.playerCodeName === playerName) {
+                playerClass = value;
+            }
+        }
+        if (!playerClass) {
+            return MsePlayerForQVHack;
+        }
+        return playerClass;
+    }
+
+    public static createPlayer(udid: string, playerName?: string): BasePlayer {
+        const playerClass = this.getPlayerClass(playerName);
+        if (!playerClass) {
+            return new MsePlayerForQVHack(udid);
+        }
+        return new playerClass(udid);
+    }
 
     public static start(params: ParsedUrlQuery | ParamsStreamQVHack): StreamClientQVHack {
         return new StreamClientQVHack(params);
@@ -47,7 +79,7 @@ export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> im
         }
         this.managerClient = new WsQVHackClient({ ...this.params, action: ACTION.PROXY_WDA });
         this.streamReceiver = new StreamReceiverQVHack({ ...this.params, udid });
-        this.startStream(this.udid);
+        this.startStream();
         this.setTitle(`${this.udid} stream`);
         this.setBodyClass('stream');
     }
@@ -90,8 +122,17 @@ export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> im
             });
     }
 
-    private startStream(udid: string) {
-        const player = new MsePlayerForQVHack(udid, MsePlayerForQVHack.createElement(`qvh_video`));
+    private startStream(inputPlayer?: BasePlayer) {
+        const { udid, player: playerName } = this.params;
+        if (!udid) {
+            throw Error(`Invalid udid value: "${udid}"`);
+        }
+        let player: BasePlayer;
+        if (inputPlayer) {
+            player = inputPlayer;
+        } else {
+            player = StreamClientQVHack.createPlayer(udid, playerName);
+        }
         this.setTouchListeners(player);
         player.pause();
 

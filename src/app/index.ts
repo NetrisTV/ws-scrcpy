@@ -23,6 +23,9 @@ window.onload = async function (): Promise<void> {
     /// #if USE_H264_CONVERTER
     const { MsePlayer } = await import('./player/MsePlayer');
     StreamClientScrcpy.registerPlayer(MsePlayer);
+
+    const { MsePlayerForQVHack } = await import('./player/MsePlayerForQVHack');
+    StreamClientQVHack.registerPlayer(MsePlayerForQVHack);
     /// #endif
 
     /// #if USE_TINY_H264
