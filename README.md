@@ -131,13 +131,17 @@ You can customize project before build by overriding the
 * `INCLUDE_GOOG` - include code for Android device tracking and control
 * `INCLUDE_ADB_SHELL` - [remote shell](#remote-shell) for android devices
 ([xtermjs/xterm.js][xterm.js], [Tyriar/node-pty][node-pty])
-* `INCLUDE_DEV_TOOLS` - [dev tools](#debug-webpageswebview) for web pages and web views on android
-devices
+* `INCLUDE_DEV_TOOLS` - [dev tools](#debug-webpageswebview) for web pages and
+web views on android devices
 * `INCLUDE_FILE_LISTING` - minimalistic [file management](#file-listing)
 * `USE_BROADWAY` - include [Broadway Player](#broadway-player)
 * `USE_H264_CONVERTER` - include [Mse Player](#mse-player)
 * `USE_TINY_H264` - include [TinyH264 Player](#tinyh264-player)
 * `USE_WEBCODECS` - include [WebCodecs Player](#webcodecs-player)
+* `SCRCPY_LISTENS_ON_ALL_INTERFACES` - WebSocket server in `scrcpy-server.jar`
+will listen for connections on all available interfaces. When `true`, it allows
+connecting to device directly from a browser. Otherwise, the connection must be
+established over adb.
 
 ## Run configuration
 

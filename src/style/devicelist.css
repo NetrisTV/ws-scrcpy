@@ -147,6 +147,10 @@ body.list #device_list_menu {
     display: inline-flex;
 }
 
+#devices .device-list div.desc-block.hidden {
+    display: none;
+}
+
 #devices .device-list div.desc-block.stream,
 #devices .device-list div.desc-block.server_pid,
 #devices .device-list div.desc-block.net_interface {

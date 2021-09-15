@@ -1,4 +1,5 @@
 {
+  "SCRCPY_LISTENS_ON_ALL_INTERFACES": true,
   "USE_WEBCODECS": true,
   "USE_BROADWAY": true,
   "USE_H264_CONVERTER": true,
