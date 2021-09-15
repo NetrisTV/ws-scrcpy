@@ -97,6 +97,11 @@ Control your device from `adb shell` in your browser.
 #### Debug WebPages/WebView
 [/docs/Devtools.md](/docs/Devtools.md)
 
+#### File listing
+* List files
+* Upload files by drag & drop
+* Download files
+
 ### iOS
 
 ***Experimental Feature***: *is not built by default*
@@ -124,10 +129,11 @@ You can customize project before build by overriding the
 [build.config.override.json](/build.config.override.json):
 * `INCLUDE_APPL` - include code for iOS device tracking and control
 * `INCLUDE_GOOG` - include code for Android device tracking and control
-* `INCLUDE_ADB_SHELL` - remote shell for android devices
+* `INCLUDE_ADB_SHELL` - [remote shell](#remote-shell) for android devices
 ([xtermjs/xterm.js][xterm.js], [Tyriar/node-pty][node-pty])
-* `INCLUDE_DEV_TOOLS` - dev tools for web pages and web views on android
+* `INCLUDE_DEV_TOOLS` - [dev tools](#debug-webpageswebview) for web pages and web views on android
 devices
+* `INCLUDE_FILE_LISTING` - minimalistic [file management](#file-listing)
 * `USE_BROADWAY` - include [Broadway Player](#broadway-player)
 * `USE_H264_CONVERTER` - include [Mse Player](#mse-player)
 * `USE_TINY_H264` - include [TinyH264 Player](#tinyh264-player)
