@@ -49,7 +49,7 @@ H264-video, which then decoded by one of included decoders:
 
 ##### Mse Player
 
-Formerly "native". Based on [xevokk/h264-converter][xevokk/h264-converter].
+Based on [xevokk/h264-converter][xevokk/h264-converter].
 HTML5 Video.<br>
 Requires [Media Source API][MSE] and `video/mp4; codecs="avc1.42E01E"`
 [support][isTypeSupported]. Creates mp4 containers from NALU, received from a
@@ -60,12 +60,21 @@ hardware acceleration.
 
 Based on [mbebenita/Broadway][broadway] and
 [131/h264-live-player][h264-live-player].<br>
+Software video-decoder compiled into wasm-module.
 Requires [WebAssembly][wasm] and preferably [WebGL][webgl] support.
 
 ##### TinyH264 Player
 
 Based on [udevbe/tinyh264][tinyh264].<br>
+Software video-decoder compiled into wasm-module. A slightly updated version of
+[mbebenita/Broadway][broadway].
 Requires [WebAssembly][wasm], [WebWorkers][workers], [WebGL][webgl] support.
+
+##### WebCodecs Player
+
+Decoding is done by browser built-in (software/hardware) media decoder.
+Requires [WebCodecs][webcodecs] support. At the moment, available only in
+[Chromium](https://www.chromestatus.com/feature/5669293909868544) and derivatives.
 
 #### Remote control
 * Touch events (including multi-touch)
@@ -122,6 +131,7 @@ devices
 * `USE_BROADWAY` - include [Broadway Player](#broadway-player)
 * `USE_H264_CONVERTER` - include [Mse Player](#mse-player)
 * `USE_TINY_H264` - include [TinyH264 Player](#tinyh264-player)
+* `USE_WEBCODECS` - include [WebCodecs Player](#webcodecs-player)
 
 ## Run configuration
 
@@ -183,3 +193,4 @@ Currently, support of WebSocket protocol added to v1.17 of scrcpy
 [wasm]: https://developer.mozilla.org/en-US/docs/WebAssembly
 [webgl]: https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API
 [workers]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API
+[webcodecs]: https://w3c.github.io/webcodecs/

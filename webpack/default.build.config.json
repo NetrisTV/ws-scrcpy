@@ -1,4 +1,5 @@
 {
+  "USE_WEBCODECS": true,
   "USE_BROADWAY": true,
   "USE_H264_CONVERTER": true,
   "USE_TINY_H264": true,

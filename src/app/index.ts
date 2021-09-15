@@ -18,11 +18,21 @@ window.onload = async function (): Promise<void> {
     /// #if USE_H264_CONVERTER
     const { MsePlayer } = await import('./player/MsePlayer');
     StreamClientScrcpy.registerPlayer(MsePlayer);
+
+    const { MsePlayerForQVHack } = await import('./player/MsePlayerForQVHack');
+    StreamClientQVHack.registerPlayer(MsePlayerForQVHack);
     /// #endif
 
     /// #if USE_TINY_H264
     const { TinyH264Player } = await import('./player/TinyH264Player');
     StreamClientScrcpy.registerPlayer(TinyH264Player);
+    /// #endif
+
+    /// #if USE_WEBCODECS
+    const { WebCodecsPlayer } = await import('./player/WebCodecsPlayer');
+    StreamClientScrcpy.registerPlayer(WebCodecsPlayer);
+
+    StreamClientQVHack.registerPlayer(WebCodecsPlayer);
     /// #endif
 
     if (action === StreamClientScrcpy.ACTION && typeof parsedQuery.udid === 'string') {

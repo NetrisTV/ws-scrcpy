@@ -6,7 +6,7 @@ import { DisplayInfo } from '../DisplayInfo';
 type DecodedFrame = {
     width: number;
     height: number;
-    buffer: Uint8Array;
+    frame: any;
 };
 
 interface CanvasDecoder {
@@ -15,7 +15,7 @@ interface CanvasDecoder {
 
 export abstract class BaseCanvasBasedPlayer extends BasePlayer {
     protected framesList: Uint8Array[] = [];
-    protected lastDecodedFrame?: DecodedFrame;
+    protected decodedFrames: DecodedFrame[] = [];
     protected videoStats: PlaybackQuality[] = [];
     protected animationFrameId?: number;
     protected canvas?: CanvasDecoder;
@@ -64,25 +64,35 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
             return;
         }
         if (this.receivedFirstFrame) {
-            if (this.lastDecodedFrame) {
-                const { buffer, width, height } = this.lastDecodedFrame;
-                this.canvas.decode(buffer, width, height);
+            const data = this.decodedFrames.shift();
+            if (data) {
+                const { frame, width, height } = data;
+                this.canvas.decode(frame, width, height);
             }
         }
-        this.lastDecodedFrame = undefined;
-        this.animationFrameId = undefined;
+        if (this.decodedFrames.length) {
+            this.animationFrameId = requestAnimationFrame(this.drawDecoded);
+        } else {
+            this.animationFrameId = undefined;
+        }
     };
 
-    protected onFrameDecoded(width: number, height: number, buffer: Uint8Array): void {
+    protected onFrameDecoded(width: number, height: number, frame: any): void {
         if (!this.receivedFirstFrame) {
             // decoded frame with previous video settings
             return;
         }
         let dropped = 0;
-        if (this.lastDecodedFrame) {
-            dropped = 1;
+        const maxStored = this.videoSettings.maxFps / 10; // for 100ms
+
+        while (this.decodedFrames.length > maxStored) {
+            const data = this.decodedFrames.shift();
+            if (data) {
+                this.dropFrame(data.frame);
+                dropped++;
+            }
         }
-        this.lastDecodedFrame = { width, height, buffer };
+        this.decodedFrames.push({ width, height, frame });
         this.videoStats.push({
             decodedFrames: 1,
             droppedFrames: dropped,
@@ -93,6 +103,10 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
         if (!this.animationFrameId) {
             this.animationFrameId = requestAnimationFrame(this.drawDecoded);
         }
+    }
+
+    protected dropFrame(_frame: any): void {
+        // dispose frame if required
     }
 
     private shiftFrame(): void {
@@ -160,8 +174,8 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
         this.tag.oncontextmenu = (e: MouseEvent): void => {
             e.preventDefault();
         };
-        this.tag.width = width;
-        this.tag.height = height;
+        this.tag.width = Math.round(width);
+        this.tag.height = Math.round(height);
     }
 
     public play(): void {
@@ -188,6 +202,10 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
         const { width, height } = screenInfo.videoSize;
         this.initCanvas(width, height);
         this.framesList = [];
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = undefined;
+        }
     }
 
     public pushFrame(frame: Uint8Array): void {
