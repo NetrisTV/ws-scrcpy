@@ -19,13 +19,14 @@ export class ScrollControlMessage extends ControlMessage {
      */
     public toBuffer(): Buffer {
         const buffer = new Buffer(ScrollControlMessage.PAYLOAD_LENGTH + 1);
-        buffer.writeUInt8(this.type, 0);
-        buffer.writeUInt32BE(this.position.point.x, 1);
-        buffer.writeUInt32BE(this.position.point.y, 5);
-        buffer.writeUInt16BE(this.position.screenSize.width, 9);
-        buffer.writeUInt16BE(this.position.screenSize.height, 11);
-        buffer.writeUInt32BE(this.hScroll, 13);
-        buffer.writeUInt32BE(this.vScroll, 17);
+        let offset = 0;
+        offset = buffer.writeUInt8(this.type, offset);
+        offset = buffer.writeUInt32BE(this.position.point.x, offset);
+        offset = buffer.writeUInt32BE(this.position.point.y, offset);
+        offset = buffer.writeUInt16BE(this.position.screenSize.width, offset);
+        offset = buffer.writeUInt16BE(this.position.screenSize.height, offset);
+        offset = buffer.writeInt32BE(this.hScroll, offset);
+        buffer.writeInt32BE(this.vScroll, offset);
         return buffer;
     }
 

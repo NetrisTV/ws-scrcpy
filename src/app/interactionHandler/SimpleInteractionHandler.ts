@@ -1,4 +1,4 @@
-import { TouchEventNames, TouchHandler } from './TouchHandler';
+import { InteractionEvents, InteractionHandler } from './InteractionHandler';
 import { BasePlayer } from '../player/BasePlayer';
 import ScreenInfo from '../ScreenInfo';
 import Position from '../Position';
@@ -10,17 +10,17 @@ export interface TouchHandlerListener {
 
 const TAG = '[SimpleTouchHandler]';
 
-export class SimpleTouchHandler extends TouchHandler {
+export class SimpleInteractionHandler extends InteractionHandler {
     private startPosition?: Position;
     private endPosition?: Position;
-    private static readonly touchEventsNames: TouchEventNames[] = ['mousedown', 'mouseup', 'mousemove'];
+    private static readonly touchEventsNames: InteractionEvents[] = ['mousedown', 'mouseup', 'mousemove'];
     private storage = new Map();
 
     constructor(player: BasePlayer, private readonly listener: TouchHandlerListener) {
-        super(player, SimpleTouchHandler.touchEventsNames, []);
+        super(player, SimpleInteractionHandler.touchEventsNames, []);
     }
 
-    protected onTouchEvent(e: MouseEvent | TouchEvent): void {
+    protected onInteraction(e: MouseEvent | TouchEvent): void {
         let handled = false;
         if (!(e instanceof MouseEvent)) {
             return;

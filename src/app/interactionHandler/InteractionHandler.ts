@@ -48,9 +48,11 @@ export type TouchEventNames =
     | 'mousedown'
     | 'mouseup'
     | 'mousemove';
+export type WheelEventNames = 'wheel';
+export type InteractionEvents = TouchEventNames | WheelEventNames;
 export type KeyEventNames = 'keydown' | 'keyup';
 
-export abstract class TouchHandler {
+export abstract class InteractionHandler {
     protected static readonly SIMULATE_MULTI_TOUCH = 'SIMULATE_MULTI_TOUCH';
     protected static readonly STROKE_STYLE: string = '#00BEA4';
     protected static EVENT_ACTION_MAP: Record<string, number> = {
@@ -61,7 +63,7 @@ export abstract class TouchHandler {
         mousedown: MotionEvent.ACTION_DOWN,
         mousemove: MotionEvent.ACTION_MOVE,
         mouseup: MotionEvent.ACTION_UP,
-        [TouchHandler.SIMULATE_MULTI_TOUCH]: -1,
+        [InteractionHandler.SIMULATE_MULTI_TOUCH]: -1,
     };
     private static options = Util.supportsPassive() ? { passive: false } : false;
     private static idToPointerMap: Map<number, number> = new Map();
@@ -71,7 +73,7 @@ export abstract class TouchHandler {
     private static touchPointImage?: HTMLImageElement;
     private static centerPointImage?: HTMLImageElement;
     private static pointImagesLoaded = false;
-    private static eventListeners: Map<string, Set<TouchHandler>> = new Map();
+    private static eventListeners: Map<string, Set<InteractionHandler>> = new Map();
     private multiTouchActive = false;
     private multiTouchCenter?: Point;
     private multiTouchShift = false;
@@ -83,53 +85,53 @@ export abstract class TouchHandler {
 
     protected constructor(
         public readonly player: BasePlayer,
-        public readonly touchEventsNames: TouchEventNames[],
+        public readonly touchEventsNames: InteractionEvents[],
         public readonly keyEventsNames: KeyEventNames[],
     ) {
         this.tag = player.getTouchableElement();
         this.ctx = this.tag.getContext('2d');
-        TouchHandler.loadImages();
-        TouchHandler.bindGlobalListeners(this);
+        InteractionHandler.loadImages();
+        InteractionHandler.bindGlobalListeners(this);
     }
 
-    protected abstract onTouchEvent(e: MouseEvent | TouchEvent): void;
+    protected abstract onInteraction(e: MouseEvent | TouchEvent): void;
     protected abstract onKey(e: KeyboardEvent): void;
 
-    protected static bindGlobalListeners(touchHandler: TouchHandler): void {
-        touchHandler.touchEventsNames.forEach((eventName) => {
-            let set: Set<TouchHandler> | undefined = TouchHandler.eventListeners.get(eventName);
+    protected static bindGlobalListeners(interactionHandler: InteractionHandler): void {
+        interactionHandler.touchEventsNames.forEach((eventName) => {
+            let set: Set<InteractionHandler> | undefined = InteractionHandler.eventListeners.get(eventName);
             if (!set) {
                 set = new Set();
-                document.body.addEventListener(eventName, this.onMouseOrTouchEvent, TouchHandler.options);
+                document.body.addEventListener(eventName, this.onInteractionEvent, InteractionHandler.options);
                 this.eventListeners.set(eventName, set);
             }
-            set.add(touchHandler);
+            set.add(interactionHandler);
         });
-        touchHandler.keyEventsNames.forEach((eventName) => {
-            let set = TouchHandler.eventListeners.get(eventName);
+        interactionHandler.keyEventsNames.forEach((eventName) => {
+            let set = InteractionHandler.eventListeners.get(eventName);
             if (!set) {
                 set = new Set();
                 document.body.addEventListener(eventName, this.onKeyEvent);
                 this.eventListeners.set(eventName, set);
             }
-            set.add(touchHandler);
+            set.add(interactionHandler);
         });
     }
 
-    protected static unbindListeners(touchHandler: TouchHandler): void {
+    protected static unbindListeners(touchHandler: InteractionHandler): void {
         touchHandler.touchEventsNames.forEach((eventName) => {
-            const set = TouchHandler.eventListeners.get(eventName);
+            const set = InteractionHandler.eventListeners.get(eventName);
             if (!set) {
                 return;
             }
             set.delete(touchHandler);
             if (set.size <= 0) {
                 this.eventListeners.delete(eventName);
-                document.body.removeEventListener(eventName, this.onMouseOrTouchEvent);
+                document.body.removeEventListener(eventName, this.onInteractionEvent);
             }
         });
         touchHandler.keyEventsNames.forEach((eventName) => {
-            const set = TouchHandler.eventListeners.get(eventName);
+            const set = InteractionHandler.eventListeners.get(eventName);
             if (!set) {
                 return;
             }
@@ -141,18 +143,18 @@ export abstract class TouchHandler {
         });
     }
 
-    protected static onMouseOrTouchEvent = (e: MouseEvent | TouchEvent): void => {
-        const set = TouchHandler.eventListeners.get(e.type as TouchEventNames);
+    protected static onInteractionEvent = (e: MouseEvent | TouchEvent): void => {
+        const set = InteractionHandler.eventListeners.get(e.type as TouchEventNames);
         if (!set) {
             return;
         }
         set.forEach((instance) => {
-            instance.onTouchEvent(e);
+            instance.onInteraction(e);
         });
     };
 
     protected static onKeyEvent = (e: KeyboardEvent): void => {
-        const set = TouchHandler.eventListeners.get(e.type as KeyEventNames);
+        const set = InteractionHandler.eventListeners.get(e.type as KeyEventNames);
         if (!set) {
             return;
         }
@@ -204,11 +206,8 @@ export abstract class TouchHandler {
         return pointerId;
     }
 
-    protected static calculateCoordinates(e: CommonTouchAndMouse, screenInfo: ScreenInfo): TouchOnClient | null {
+    protected static buildTouchOnClient(e: CommonTouchAndMouse, screenInfo: ScreenInfo): TouchOnClient | null {
         const action = this.mapTypeToAction(e.type);
-        if (typeof action === 'undefined' || !screenInfo) {
-            return null;
-        }
         const { width, height } = screenInfo.videoSize;
         const target: HTMLElement = e.target as HTMLElement;
         const rect = target.getBoundingClientRect();
@@ -292,7 +291,7 @@ export abstract class TouchHandler {
                     (window['TouchEvent'] && originalEvent instanceof TouchEvent)
                 ) {
                     console.warn(logPrefix, 'Received ACTION_MOVE while there are no DOWN stored');
-                    const emulated = TouchHandler.createEmulatedMessage(MotionEvent.ACTION_DOWN, message);
+                    const emulated = InteractionHandler.createEmulatedMessage(MotionEvent.ACTION_DOWN, message);
                     messages.push(emulated);
                     storage.set(pointerId, emulated);
                 }
@@ -323,7 +322,7 @@ export abstract class TouchHandler {
         ctrlKey: boolean,
         shiftKey: boolean,
     ): Touch[] | null {
-        const touchOnClient = TouchHandler.calculateCoordinates(e, screenInfo);
+        const touchOnClient = InteractionHandler.buildTouchOnClient(e, screenInfo);
         if (!touchOnClient) {
             return null;
         }
@@ -384,7 +383,7 @@ export abstract class TouchHandler {
             return;
         }
         this.ctx.save();
-        this.ctx.strokeStyle = TouchHandler.STROKE_STYLE;
+        this.ctx.strokeStyle = InteractionHandler.STROKE_STYLE;
         this.ctx.beginPath();
         this.ctx.moveTo(point1.x, point1.y);
         this.ctx.lineTo(point2.x, point2.y);
@@ -397,7 +396,7 @@ export abstract class TouchHandler {
             return;
         }
         let { lineWidth } = this.ctx;
-        if (TouchHandler.pointImagesLoaded && image) {
+        if (InteractionHandler.pointImagesLoaded && image) {
             radius = image.width / 2;
             lineWidth = 0;
             this.ctx.drawImage(image, point.x - radius, point.y - radius);
@@ -411,14 +410,14 @@ export abstract class TouchHandler {
     }
 
     public drawPointer(point: Point): void {
-        this.drawPoint(point, TouchHandler.touchPointRadius, TouchHandler.touchPointImage);
+        this.drawPoint(point, InteractionHandler.touchPointRadius, InteractionHandler.touchPointImage);
         if (this.multiTouchCenter) {
             this.drawLine(this.multiTouchCenter, point);
         }
     }
 
     public drawCenter(point: Point): void {
-        this.drawPoint(point, TouchHandler.centerPointRadius, TouchHandler.centerPointImage);
+        this.drawPoint(point, InteractionHandler.centerPointRadius, InteractionHandler.centerPointImage);
     }
 
     protected updateDirty(topLeft: Point, bottomRight: Point): void {
@@ -449,7 +448,7 @@ export abstract class TouchHandler {
             const w = Math.min(clientWidth, bottomRight.x - x);
             const h = Math.min(clientHeight, bottomRight.y - y);
             ctx.clearRect(x, y, w, h);
-            ctx.strokeStyle = TouchHandler.STROKE_STYLE;
+            ctx.strokeStyle = InteractionHandler.STROKE_STYLE;
         }
     }
 
@@ -464,7 +463,7 @@ export abstract class TouchHandler {
         if (touches && touches.length) {
             for (let i = 0, l = touches.length; i < l; i++) {
                 const touch = touches[i];
-                const pointerId = TouchHandler.getPointerId(e.type, touch.identifier);
+                const pointerId = InteractionHandler.getPointerId(e.type, touch.identifier);
                 if (touch.target !== this.tag) {
                     continue;
                 }
@@ -476,7 +475,7 @@ export abstract class TouchHandler {
                     buttons: MotionEvent.BUTTON_PRIMARY,
                     target: e.target,
                 };
-                const event = TouchHandler.calculateCoordinates(item, screenInfo);
+                const event = InteractionHandler.buildTouchOnClient(item, screenInfo);
                 if (event) {
                     const { action, buttons, position, invalid } = event.touch;
                     let pressure = 1;
@@ -487,10 +486,12 @@ export abstract class TouchHandler {
                     }
                     if (!invalid) {
                         const message = new TouchControlMessage(action, pointerId, position, pressure, buttons);
-                        messages.push(...TouchHandler.validateMessage(e, message, storage, `${logPrefix}[validate]`));
+                        messages.push(
+                            ...InteractionHandler.validateMessage(e, message, storage, `${logPrefix}[validate]`),
+                        );
                     } else {
                         if (previous) {
-                            messages.push(TouchHandler.createEmulatedMessage(MotionEvent.ACTION_UP, previous));
+                            messages.push(InteractionHandler.createEmulatedMessage(MotionEvent.ACTION_UP, previous));
                             storage.delete(pointerId);
                         }
                     }
@@ -526,7 +527,7 @@ export abstract class TouchHandler {
                     pressure = 0;
                 }
                 const message = new TouchControlMessage(action, pointerId, position, pressure, buttons);
-                messages.push(...TouchHandler.validateMessage(e, message, storage, `${logPrefix}[validate]`));
+                messages.push(...InteractionHandler.validateMessage(e, message, storage, `${logPrefix}[validate]`));
                 points.push(touch.position.point);
             } else {
                 if (previous) {
@@ -548,7 +549,7 @@ export abstract class TouchHandler {
         if (hasActionUp && storage.size) {
             console.warn(logPrefix, 'Looks like one of Multi-touch pointers was not raised up');
             storage.forEach((message) => {
-                messages.push(TouchHandler.createEmulatedMessage(MotionEvent.ACTION_UP, message));
+                messages.push(InteractionHandler.createEmulatedMessage(MotionEvent.ACTION_UP, message));
             });
             storage.clear();
         }
@@ -556,6 +557,6 @@ export abstract class TouchHandler {
     }
 
     public release(): void {
-        TouchHandler.unbindListeners(this);
+        InteractionHandler.unbindListeners(this);
     }
 }

@@ -9,7 +9,7 @@ import { StreamReceiver } from '../../client/StreamReceiver';
 import Position from '../../Position';
 import { MsePlayerForQVHack } from '../../player/MsePlayerForQVHack';
 import { BasePlayer, PlayerClass } from '../../player/BasePlayer';
-import { SimpleTouchHandler, TouchHandlerListener } from '../../touchHandler/SimpleTouchHandler';
+import { SimpleInteractionHandler, TouchHandlerListener } from '../../interactionHandler/SimpleInteractionHandler';
 import { ACTION } from '../../../common/Action';
 import { ParsedUrlQuery } from 'querystring';
 import Util from '../../Util';
@@ -29,7 +29,7 @@ export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> im
     private waitForWda?: boolean;
     private readonly streamReceiver: StreamReceiver<ParamsStreamQVHack>;
     private videoWrapper?: HTMLElement;
-    private touchHandler?: SimpleTouchHandler;
+    private touchHandler?: SimpleInteractionHandler;
     private readonly udid: string;
 
     public static registerPlayer(playerClass: PlayerClass): void {
@@ -210,7 +210,7 @@ export class StreamClientQVHack extends BaseClient<ParamsStreamQVHack, never> im
         if (this.touchHandler) {
             return;
         }
-        this.touchHandler = new SimpleTouchHandler(player, this);
+        this.touchHandler = new SimpleInteractionHandler(player, this);
     }
 
     public performClick(position: Position): void {
