@@ -21,23 +21,15 @@ type FilePushParams = {
 export class CommandControlMessage extends ControlMessage {
     public static PAYLOAD_LENGTH = 0;
 
-    public static CommandCodes: Record<string, number> = {
-        TYPE_EXPAND_NOTIFICATION_PANEL: ControlMessage.TYPE_EXPAND_NOTIFICATION_PANEL,
-        TYPE_COLLAPSE_NOTIFICATION_PANEL: ControlMessage.TYPE_COLLAPSE_NOTIFICATION_PANEL,
-        TYPE_GET_CLIPBOARD: ControlMessage.TYPE_GET_CLIPBOARD,
-        TYPE_SET_CLIPBOARD: ControlMessage.TYPE_SET_CLIPBOARD,
-        TYPE_ROTATE_DEVICE: ControlMessage.TYPE_ROTATE_DEVICE,
-        TYPE_CHANGE_STREAM_PARAMETERS: ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS,
-    };
-
-    public static CommandNames: Record<number, string> = {
-        5: 'Expand panel',
-        6: 'Collapse panel',
-        7: 'Get clipboard',
-        8: 'Set clipboard',
-        10: 'Rotate device',
-        101: 'Change video settings',
-    };
+    public static Commands: Map<number, string> = new Map([
+        [ControlMessage.TYPE_EXPAND_NOTIFICATION_PANEL, 'Expand notifications'],
+        [ControlMessage.TYPE_EXPAND_SETTINGS_PANEL, 'Expand settings'],
+        [ControlMessage.TYPE_COLLAPSE_PANELS, 'Collapse panels'],
+        [ControlMessage.TYPE_GET_CLIPBOARD, 'Get clipboard'],
+        [ControlMessage.TYPE_SET_CLIPBOARD, 'Set clipboard'],
+        [ControlMessage.TYPE_ROTATE_DEVICE, 'Rotate device'],
+        [ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS, 'Change video settings'],
+    ]);
 
     public static createSetVideoSettingsCommand(videoSettings: VideoSettings): CommandControlMessage {
         const temp = videoSettings.toBuffer();

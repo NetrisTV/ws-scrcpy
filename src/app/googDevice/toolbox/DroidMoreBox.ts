@@ -45,137 +45,134 @@ export class DroidMoreBox {
         };
 
         const commands: HTMLElement[] = [];
-        const codes = CommandControlMessage.CommandCodes;
-        for (const command in codes) {
-            if (codes.hasOwnProperty(command)) {
-                const action: number = codes[command];
-                const btn = document.createElement('button');
-                let bitrateInput: HTMLInputElement;
-                let maxFpsInput: HTMLInputElement;
-                let iFrameIntervalInput: HTMLInputElement;
-                let maxWidthInput: HTMLInputElement;
-                let maxHeightInput: HTMLInputElement;
-                if (action === ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS) {
-                    const spoiler = document.createElement('div');
-                    const spoilerLabel = document.createElement('label');
-                    const spoilerCheck = document.createElement('input');
+        const codes = CommandControlMessage.Commands;
+        for (const [action, command] of codes.entries()) {
+            const btn = document.createElement('button');
+            let bitrateInput: HTMLInputElement;
+            let maxFpsInput: HTMLInputElement;
+            let iFrameIntervalInput: HTMLInputElement;
+            let maxWidthInput: HTMLInputElement;
+            let maxHeightInput: HTMLInputElement;
+            if (action === ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS) {
+                const spoiler = document.createElement('div');
+                const spoilerLabel = document.createElement('label');
+                const spoilerCheck = document.createElement('input');
 
-                    const innerDiv = document.createElement('div');
-                    const id = `spoiler_video_${udid}_${playerName}_${displayId}_${action}`;
+                const innerDiv = document.createElement('div');
+                const id = `spoiler_video_${udid}_${playerName}_${displayId}_${action}`;
 
-                    spoiler.className = 'spoiler';
-                    spoilerCheck.type = 'checkbox';
-                    spoilerCheck.id = id;
-                    spoilerLabel.htmlFor = id;
-                    spoilerLabel.innerText = CommandControlMessage.CommandNames[action];
-                    innerDiv.className = 'box';
-                    spoiler.appendChild(spoilerCheck);
-                    spoiler.appendChild(spoilerLabel);
-                    spoiler.appendChild(innerDiv);
+                spoiler.className = 'spoiler';
+                spoilerCheck.type = 'checkbox';
+                spoilerCheck.id = id;
+                spoilerLabel.htmlFor = id;
+                spoilerLabel.innerText = command;
+                innerDiv.className = 'box';
+                spoiler.appendChild(spoilerCheck);
+                spoiler.appendChild(spoilerLabel);
+                spoiler.appendChild(innerDiv);
 
-                    const bitrateLabel = document.createElement('label');
-                    bitrateLabel.innerText = 'Bitrate:';
-                    bitrateInput = document.createElement('input');
-                    bitrateInput.placeholder = `${preferredSettings.bitrate} bps`;
-                    bitrateInput.value = videoSettings.bitrate.toString();
-                    DroidMoreBox.wrap('div', [bitrateLabel, bitrateInput], innerDiv);
-                    this.bitrateInput = bitrateInput;
+                const bitrateLabel = document.createElement('label');
+                bitrateLabel.innerText = 'Bitrate:';
+                bitrateInput = document.createElement('input');
+                bitrateInput.placeholder = `${preferredSettings.bitrate} bps`;
+                bitrateInput.value = videoSettings.bitrate.toString();
+                DroidMoreBox.wrap('div', [bitrateLabel, bitrateInput], innerDiv);
+                this.bitrateInput = bitrateInput;
 
-                    const maxFpsLabel = document.createElement('label');
-                    maxFpsLabel.innerText = 'Max fps:';
-                    maxFpsInput = document.createElement('input');
-                    maxFpsInput.placeholder = `${preferredSettings.maxFps} fps`;
-                    maxFpsInput.value = videoSettings.maxFps.toString();
-                    DroidMoreBox.wrap('div', [maxFpsLabel, maxFpsInput], innerDiv);
-                    this.maxFpsInput = maxFpsInput;
+                const maxFpsLabel = document.createElement('label');
+                maxFpsLabel.innerText = 'Max fps:';
+                maxFpsInput = document.createElement('input');
+                maxFpsInput.placeholder = `${preferredSettings.maxFps} fps`;
+                maxFpsInput.value = videoSettings.maxFps.toString();
+                DroidMoreBox.wrap('div', [maxFpsLabel, maxFpsInput], innerDiv);
+                this.maxFpsInput = maxFpsInput;
 
-                    const iFrameIntervalLabel = document.createElement('label');
-                    iFrameIntervalLabel.innerText = 'I-Frame Interval:';
-                    iFrameIntervalInput = document.createElement('input');
-                    iFrameIntervalInput.placeholder = `${preferredSettings.iFrameInterval} seconds`;
-                    iFrameIntervalInput.value = videoSettings.iFrameInterval.toString();
-                    DroidMoreBox.wrap('div', [iFrameIntervalLabel, iFrameIntervalInput], innerDiv);
-                    this.iFrameIntervalInput = iFrameIntervalInput;
+                const iFrameIntervalLabel = document.createElement('label');
+                iFrameIntervalLabel.innerText = 'I-Frame Interval:';
+                iFrameIntervalInput = document.createElement('input');
+                iFrameIntervalInput.placeholder = `${preferredSettings.iFrameInterval} seconds`;
+                iFrameIntervalInput.value = videoSettings.iFrameInterval.toString();
+                DroidMoreBox.wrap('div', [iFrameIntervalLabel, iFrameIntervalInput], innerDiv);
+                this.iFrameIntervalInput = iFrameIntervalInput;
 
-                    const { width, height } = videoSettings.bounds || client.getMaxSize() || DroidMoreBox.defaultSize;
-                    const pWidth = preferredSettings.bounds?.width || width;
-                    const pHeight = preferredSettings.bounds?.height || height;
+                const { width, height } = videoSettings.bounds || client.getMaxSize() || DroidMoreBox.defaultSize;
+                const pWidth = preferredSettings.bounds?.width || width;
+                const pHeight = preferredSettings.bounds?.height || height;
 
-                    const maxWidthLabel = document.createElement('label');
-                    maxWidthLabel.innerText = 'Max width:';
-                    maxWidthInput = document.createElement('input');
-                    maxWidthInput.placeholder = `${pWidth} px`;
-                    maxWidthInput.value = width.toString();
-                    DroidMoreBox.wrap('div', [maxWidthLabel, maxWidthInput], innerDiv);
-                    this.maxWidthInput = maxWidthInput;
+                const maxWidthLabel = document.createElement('label');
+                maxWidthLabel.innerText = 'Max width:';
+                maxWidthInput = document.createElement('input');
+                maxWidthInput.placeholder = `${pWidth} px`;
+                maxWidthInput.value = width.toString();
+                DroidMoreBox.wrap('div', [maxWidthLabel, maxWidthInput], innerDiv);
+                this.maxWidthInput = maxWidthInput;
 
-                    const maxHeightLabel = document.createElement('label');
-                    maxHeightLabel.innerText = 'Max height:';
-                    maxHeightInput = document.createElement('input');
-                    maxHeightInput.placeholder = `${pHeight} px`;
-                    maxHeightInput.value = height.toString();
-                    DroidMoreBox.wrap('div', [maxHeightLabel, maxHeightInput], innerDiv);
-                    this.maxHeightInput = maxHeightInput;
+                const maxHeightLabel = document.createElement('label');
+                maxHeightLabel.innerText = 'Max height:';
+                maxHeightInput = document.createElement('input');
+                maxHeightInput.placeholder = `${pHeight} px`;
+                maxHeightInput.value = height.toString();
+                DroidMoreBox.wrap('div', [maxHeightLabel, maxHeightInput], innerDiv);
+                this.maxHeightInput = maxHeightInput;
 
-                    innerDiv.appendChild(btn);
-                    const fitButton = document.createElement('button');
-                    fitButton.innerText = 'Fit';
-                    fitButton.onclick = this.fit;
-                    innerDiv.insertBefore(fitButton, innerDiv.firstChild);
-                    const resetButton = document.createElement('button');
-                    resetButton.innerText = 'Reset';
-                    resetButton.onclick = this.reset;
-                    innerDiv.insertBefore(resetButton, innerDiv.firstChild);
-                    commands.push(spoiler);
+                innerDiv.appendChild(btn);
+                const fitButton = document.createElement('button');
+                fitButton.innerText = 'Fit';
+                fitButton.onclick = this.fit;
+                innerDiv.insertBefore(fitButton, innerDiv.firstChild);
+                const resetButton = document.createElement('button');
+                resetButton.innerText = 'Reset';
+                resetButton.onclick = this.reset;
+                innerDiv.insertBefore(resetButton, innerDiv.firstChild);
+                commands.push(spoiler);
+            } else {
+                if (
+                    action === CommandControlMessage.TYPE_SET_CLIPBOARD ||
+                    action === CommandControlMessage.TYPE_GET_CLIPBOARD
+                ) {
+                    inputWrapper.appendChild(btn);
                 } else {
-                    if (
-                        action === CommandControlMessage.TYPE_SET_CLIPBOARD ||
-                        action === CommandControlMessage.TYPE_GET_CLIPBOARD
-                    ) {
-                        inputWrapper.appendChild(btn);
-                    } else {
-                        commands.push(btn);
+                    commands.push(btn);
+                }
+            }
+            btn.innerText = command;
+            if (action === ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS) {
+                btn.onclick = () => {
+                    const bitrate = parseInt(bitrateInput.value, 10);
+                    const maxFps = parseInt(maxFpsInput.value, 10);
+                    const iFrameInterval = parseInt(iFrameIntervalInput.value, 10);
+                    if (isNaN(bitrate) || isNaN(maxFps)) {
+                        return;
                     }
-                }
-                btn.innerText = CommandControlMessage.CommandNames[action];
-                if (action === ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS) {
-                    btn.onclick = () => {
-                        const bitrate = parseInt(bitrateInput.value, 10);
-                        const maxFps = parseInt(maxFpsInput.value, 10);
-                        const iFrameInterval = parseInt(iFrameIntervalInput.value, 10);
-                        if (isNaN(bitrate) || isNaN(maxFps)) {
-                            return;
-                        }
-                        const width = parseInt(maxWidthInput.value, 10) & ~15;
-                        const height = parseInt(maxHeightInput.value, 10) & ~15;
-                        const bounds = new Size(width, height);
-                        const current = player.getVideoSettings();
-                        const { lockedVideoOrientation, sendFrameMeta, displayId, codecOptions, encoderName } = current;
-                        const videoSettings = new VideoSettings({
-                            bounds,
-                            bitrate,
-                            maxFps,
-                            iFrameInterval,
-                            lockedVideoOrientation,
-                            sendFrameMeta,
-                            displayId,
-                            codecOptions,
-                            encoderName,
-                        });
-                        client.sendNewVideoSetting(videoSettings);
-                    };
-                } else if (action === CommandControlMessage.TYPE_SET_CLIPBOARD) {
-                    btn.onclick = () => {
-                        const text = input.value;
-                        if (text) {
-                            client.sendMessage(CommandControlMessage.createSetClipboardCommand(text));
-                        }
-                    };
-                } else {
-                    btn.onclick = () => {
-                        client.sendMessage(new CommandControlMessage(action));
-                    };
-                }
+                    const width = parseInt(maxWidthInput.value, 10) & ~15;
+                    const height = parseInt(maxHeightInput.value, 10) & ~15;
+                    const bounds = new Size(width, height);
+                    const current = player.getVideoSettings();
+                    const { lockedVideoOrientation, sendFrameMeta, displayId, codecOptions, encoderName } = current;
+                    const videoSettings = new VideoSettings({
+                        bounds,
+                        bitrate,
+                        maxFps,
+                        iFrameInterval,
+                        lockedVideoOrientation,
+                        sendFrameMeta,
+                        displayId,
+                        codecOptions,
+                        encoderName,
+                    });
+                    client.sendNewVideoSetting(videoSettings);
+                };
+            } else if (action === CommandControlMessage.TYPE_SET_CLIPBOARD) {
+                btn.onclick = () => {
+                    const text = input.value;
+                    if (text) {
+                        client.sendMessage(CommandControlMessage.createSetClipboardCommand(text));
+                    }
+                };
+            } else {
+                btn.onclick = () => {
+                    client.sendMessage(new CommandControlMessage(action));
+                };
             }
         }
         DroidMoreBox.wrap('p', commands, moreBox);
