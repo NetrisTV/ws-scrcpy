@@ -181,11 +181,11 @@ disconnected.
 
 ## scrcpy websocket fork
 
-Currently, support of WebSocket protocol added to v1.17 of scrcpy
+Currently, support of WebSocket protocol added to v1.19 of scrcpy
 * [Prebuilt package](/vendor/Genymobile/scrcpy/scrcpy-server.jar)
 * [Source code][fork]
 
-[fork]: https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.17.x
+[fork]: https://github.com/NetrisTV/scrcpy/tree/feature/websocket-v1.19.x
 
 [scrcpy]: https://github.com/Genymobile/scrcpy
 [xevokk/h264-converter]: https://github.com/xevokk/h264-converter
