@@ -81,6 +81,7 @@ Requires [WebCodecs][webcodecs] support. At the moment, available only in
 * Multi-touch emulation: <kbd>CTRL</kbd> to start with center at the center of
 the screen, <kbd>SHIFT</kbd> + <kbd>CTRL</kbd> to start with center at the
 current point
+* Mouse wheel and touchpad vertical/horizontal scrolling
 * Capturing keyboard events
 * Injecting text (ASCII only)
 * Copy to/from device clipboard
