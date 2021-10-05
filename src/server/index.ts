@@ -87,34 +87,39 @@ async function loadApplModules() {
 loadPlatformModulesPromises.push(loadApplModules());
 /// #endif
 
-Promise.all(loadPlatformModulesPromises).then(() => {
-    servicesToStart.forEach((serviceClass: ServiceClass) => {
-        const service = serviceClass.getInstance();
-        runningServices.push(service);
-        service.start();
+Promise.all(loadPlatformModulesPromises)
+    .then(() => {
+        servicesToStart.forEach((serviceClass: ServiceClass) => {
+            const service = serviceClass.getInstance();
+            runningServices.push(service);
+            service.start();
+        });
+
+        const wsService = WebSocketServer.getInstance();
+        mwList.forEach((mwFactory: MwFactory) => {
+            wsService.registerMw(mwFactory);
+        });
+
+        mw2List.forEach((mwFactory: MwFactory) => {
+            WebsocketMultiplexer.registerMw(mwFactory);
+        });
+
+        if (process.platform === 'win32') {
+            readline
+                .createInterface({
+                    input: process.stdin,
+                    output: process.stdout,
+                })
+                .on('SIGINT', exit);
+        }
+
+        process.on('SIGINT', exit);
+        process.on('SIGTERM', exit);
+    })
+    .catch((error) => {
+        console.error(error.message);
+        exit('1');
     });
-
-    const wsService = WebSocketServer.getInstance();
-    mwList.forEach((mwFactory: MwFactory) => {
-        wsService.registerMw(mwFactory);
-    });
-
-    mw2List.forEach((mwFactory: MwFactory) => {
-        WebsocketMultiplexer.registerMw(mwFactory);
-    });
-
-    if (process.platform === 'win32') {
-        readline
-            .createInterface({
-                input: process.stdin,
-                output: process.stdout,
-            })
-            .on('SIGINT', exit);
-    }
-
-    process.on('SIGINT', exit);
-    process.on('SIGTERM', exit);
-});
 
 let interrupted = false;
 function exit(signal: string) {

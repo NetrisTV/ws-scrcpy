@@ -1,19 +1,23 @@
 import * as http from 'http';
+import * as https from 'https';
 import path from 'path';
 import { Service } from './Service';
 import { Utils } from '../Utils';
 import express, { Express } from 'express';
+import { Config } from '../Config';
 
-const proto = 'http';
-const DEFAULT_PORT = 8000;
 const DEFAULT_STATIC_DIR = path.join(__dirname, './public');
+
+export type ServerAndPort = {
+    server: https.Server | http.Server;
+    port: number;
+};
 
 export class HttpServer implements Service {
     private static instance: HttpServer;
-    private static PORT = DEFAULT_PORT;
     private static PUBLIC_DIR = DEFAULT_STATIC_DIR;
     private static SERVE_STATIC = true;
-    private server?: http.Server;
+    private servers: ServerAndPort[] = [];
     private app?: Express;
 
     protected constructor() {
@@ -31,13 +35,6 @@ export class HttpServer implements Service {
         return !!this.instance;
     }
 
-    public static setPort(port: number): void {
-        if (HttpServer.instance) {
-            throw Error('Unable to change value after instantiation');
-        }
-        HttpServer.PORT = port;
-    }
-
     public static setPublicDir(dir: string): void {
         if (HttpServer.instance) {
             throw Error('Unable to change value after instantiation');
@@ -52,16 +49,12 @@ export class HttpServer implements Service {
         HttpServer.SERVE_STATIC = enabled;
     }
 
-    public getPort(): number {
-        return HttpServer.PORT;
-    }
-
-    public getServer(): http.Server | undefined {
-        return this.server;
+    public getServers(): ServerAndPort[] {
+        return [...this.servers];
     }
 
     public getName(): string {
-        return `HTTP Server {tcp:${HttpServer.PORT}}`;
+        return `HTTP(s) Server Service`;
     }
 
     public start(): void {
@@ -69,12 +62,47 @@ export class HttpServer implements Service {
         if (HttpServer.SERVE_STATIC && HttpServer.PUBLIC_DIR) {
             this.app.use(express.static(HttpServer.PUBLIC_DIR));
         }
-        this.server = http.createServer(this.app).listen(HttpServer.PORT, () => {
-            Utils.printListeningMsg(proto, HttpServer.PORT);
+        const config = Config.getInstance();
+        config.getServers().forEach((serverItem) => {
+            const { secure, port } = serverItem;
+            let proto: string;
+            let server: http.Server | https.Server;
+            if (secure) {
+                if (!serverItem.options) {
+                    throw Error('Must provide option for secure server configuration');
+                }
+                let { key, cert } = serverItem.options;
+                const { keyPath, certPath } = serverItem.options;
+                if (!key) {
+                    if (typeof keyPath !== 'string') {
+                        throw Error('Must provide parameter "key" or "keyPath"');
+                    }
+                    key = config.readFile(keyPath);
+                }
+                if (!cert) {
+                    if (typeof certPath !== 'string') {
+                        throw Error('Must provide parameter "cert" or "certPath"');
+                    }
+                    cert = config.readFile(certPath);
+                }
+                const options = { ...serverItem.options, cert, key };
+                server = https.createServer(options, this.app);
+                proto = 'https';
+            } else {
+                const options = serverItem.options ? { ...serverItem.options } : {};
+                server = http.createServer(options, this.app);
+                proto = 'http';
+            }
+            this.servers.push({ server, port });
+            server.listen(port, () => {
+                Utils.printListeningMsg(proto, port);
+            });
         });
     }
 
     public release(): void {
-        this.server?.close();
+        this.servers.forEach((item) => {
+            item.server.close();
+        });
     }
 }
