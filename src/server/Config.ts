@@ -44,7 +44,7 @@ export class Config {
         const isAbsolute = pathString.startsWith('/');
         const absolutePath = isAbsolute ? pathString : path.resolve(process.cwd(), pathString);
         if (!fs.existsSync(absolutePath)) {
-            throw Error(`Can't find configuration file "${absolutePath}"`);
+            throw Error(`Can't find file "${absolutePath}"`);
         }
         return fs.readFileSync(absolutePath).toString();
     }
