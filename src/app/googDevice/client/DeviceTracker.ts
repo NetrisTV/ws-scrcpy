@@ -241,10 +241,10 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                     }
                     actionButton.setAttribute(Attribute.COMMAND, command);
                 } else {
-                    const timestamp = device['last.seen.active.timestamp'];
+                    const timestamp = device['last.update.timestamp'];
                     if (timestamp) {
                         const date = new Date(timestamp);
-                        actionButton.title = `Last seen on ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
+                        actionButton.title = `Last update on ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
                     } else {
                         actionButton.title = `Not active`;
                     }

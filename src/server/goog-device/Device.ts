@@ -51,7 +51,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
             'ro.product.manufacturer': '',
             'ro.product.model': '',
             'ro.product.cpu.abi': '',
-            'last.seen.active.timestamp': 0,
+            'last.update.timestamp': 0,
         };
         this.client = AdbKit.createClient();
         this.setState(state);
@@ -60,7 +60,6 @@ export class Device extends TypedEmitter<DeviceEvents> {
     public setState(state: string): void {
         if (state === 'device') {
             this.connected = true;
-            this.descriptor['last.seen.active.timestamp'] = Date.now();
             this.properties = undefined;
         } else {
             this.connected = false;
@@ -364,12 +363,12 @@ export class Device extends TypedEmitter<DeviceEvents> {
         return;
     };
 
-    private emitUpdate(): void {
+    private emitUpdate(setUpdateTime = true): void {
         const THROTTLE = 300;
         const now = Date.now();
         const time = now - this.lastEmit;
-        if (this.connected) {
-            this.descriptor['last.seen.active.timestamp'] = now;
+        if (setUpdateTime) {
+            this.descriptor['last.update.timestamp'] = now;
         }
         if (time > THROTTLE) {
             this.lastEmit = now;
@@ -379,7 +378,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
         if (!this.throttleTimeoutId) {
             this.throttleTimeoutId = setTimeout(() => {
                 delete this.throttleTimeoutId;
-                this.emitUpdate();
+                this.emitUpdate(false);
             }, THROTTLE - time);
         }
     }

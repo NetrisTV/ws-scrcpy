@@ -46,7 +46,7 @@ export class ControlCenter extends BaseControlCenter<ApplDeviceDescriptor> imple
             model,
             version,
             state,
-            'last.seen.active.timestamp': Date.now(),
+            'last.update.timestamp': Date.now(),
         };
         this.descriptors.set(udid, descriptor);
         this.emit('device', descriptor);
