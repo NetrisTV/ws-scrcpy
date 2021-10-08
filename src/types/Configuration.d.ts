@@ -17,6 +17,12 @@ export interface ServerItem {
     secure: boolean;
     port: number;
     options?: ExtendedServerOption;
+    redirectToSecure?:
+        | {
+              port?: number;
+              host?: string;
+          }
+        | boolean;
 }
 
 export interface Configuration {

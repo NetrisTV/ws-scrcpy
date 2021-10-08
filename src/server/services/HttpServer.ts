@@ -18,7 +18,7 @@ export class HttpServer implements Service {
     private static PUBLIC_DIR = DEFAULT_STATIC_DIR;
     private static SERVE_STATIC = true;
     private servers: ServerAndPort[] = [];
-    private app?: Express;
+    private mainApp?: Express;
 
     protected constructor() {
         // nothing here
@@ -58,13 +58,13 @@ export class HttpServer implements Service {
     }
 
     public start(): void {
-        this.app = express();
+        this.mainApp = express();
         if (HttpServer.SERVE_STATIC && HttpServer.PUBLIC_DIR) {
-            this.app.use(express.static(HttpServer.PUBLIC_DIR));
+            this.mainApp.use(express.static(HttpServer.PUBLIC_DIR));
         }
         const config = Config.getInstance();
         config.getServers().forEach((serverItem) => {
-            const { secure, port } = serverItem;
+            const { secure, port, redirectToSecure } = serverItem;
             let proto: string;
             let server: http.Server | https.Server;
             if (secure) {
@@ -86,12 +86,37 @@ export class HttpServer implements Service {
                     cert = config.readFile(certPath);
                 }
                 const options = { ...serverItem.options, cert, key };
-                server = https.createServer(options, this.app);
+                server = https.createServer(options, this.mainApp);
                 proto = 'https';
             } else {
                 const options = serverItem.options ? { ...serverItem.options } : {};
-                server = http.createServer(options, this.app);
                 proto = 'http';
+                let currentApp = this.mainApp;
+                let host = '';
+                let port = 443;
+                let doRedirect = false;
+                if (redirectToSecure === true) {
+                    doRedirect = true;
+                } else if (typeof redirectToSecure === 'object') {
+                    doRedirect = true;
+                    if (typeof redirectToSecure.port === 'number') {
+                        port = redirectToSecure.port;
+                    }
+                    if (typeof redirectToSecure.host === 'string') {
+                        host = redirectToSecure.host;
+                    }
+                }
+                if (doRedirect) {
+                    currentApp = express();
+                    currentApp.use(function (req, res) {
+                        const url = new URL(`https://${host ? host : req.headers.host}${req.url}`);
+                        if (port && port !== 443) {
+                            url.port = port.toString();
+                        }
+                        return res.redirect(301, url.toString());
+                    });
+                }
+                server = http.createServer(options, currentApp);
             }
             this.servers.push({ server, port });
             server.listen(port, () => {
