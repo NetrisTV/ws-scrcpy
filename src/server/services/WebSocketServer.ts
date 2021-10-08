@@ -1,16 +1,14 @@
-import * as http from 'http';
 import { Server as WSServer } from 'ws';
 import WS from 'ws';
 import querystring from 'querystring';
 import url from 'url';
 import { Service } from './Service';
-import { HttpServer } from './HttpServer';
+import { HttpServer, ServerAndPort } from './HttpServer';
 import { MwFactory } from '../mw/Mw';
 
 export class WebSocketServer implements Service {
     private static instance?: WebSocketServer;
-    private server?: WSServer;
-    private port = 0;
+    private servers: WSServer[] = [];
     private mwFactories: Set<MwFactory> = new Set();
 
     protected constructor() {
@@ -32,11 +30,13 @@ export class WebSocketServer implements Service {
         this.mwFactories.add(mwFactory);
     }
 
-    public attachToServer(httpServer: http.Server): WSServer {
-        const wss = new WSServer({ server: httpServer });
+    public attachToServer(item: ServerAndPort): WSServer {
+        const { server, port } = item;
+        const TAG = `WebSocket Server {tcp:${port}}`;
+        const wss = new WSServer({ server });
         wss.on('connection', async (ws: WS, request) => {
             if (!request.url) {
-                ws.close(4001, `[${this.getName()}] Invalid url`);
+                ws.close(4001, `[${TAG}] Invalid url`);
                 return;
             }
             const parsedUrl = url.parse(request.url);
@@ -49,35 +49,35 @@ export class WebSocketServer implements Service {
                 }
             }
             if (!processed) {
-                ws.close(4002, `[${this.getName()}] Unsupported request`);
+                ws.close(4002, `[${TAG}] Unsupported request`);
             }
             return;
         });
         wss.on('close', () => {
-            console.log(`${this.getName()} stopped`);
+            console.log(`${TAG} stopped`);
         });
-        this.server = wss;
+        this.servers.push(wss);
         return wss;
     }
 
-    public getServer(): WSServer | undefined {
-        return this.server;
+    public getServers(): WSServer[] {
+        return this.servers;
     }
 
     public getName(): string {
-        return `WebSocket Server {tcp:${this.port}}`;
+        return `WebSocket Server Service`;
     }
 
     public start(): void {
         const service = HttpServer.getInstance();
-        const server = service.getServer();
-        this.port = service.getPort();
-        if (server) {
-            this.attachToServer(server);
-        }
+        service.getServers().forEach((item) => {
+            this.attachToServer(item);
+        });
     }
 
     public release(): void {
-        this.server?.close();
+        this.servers.forEach((server) => {
+            server.close();
+        });
     }
 }

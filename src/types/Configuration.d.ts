@@ -1,3 +1,5 @@
+import * as https from 'https';
+
 export interface HostItem {
     type: 'android' | 'ios';
     secure: boolean;
@@ -6,7 +8,25 @@ export interface HostItem {
     useProxy?: boolean;
 }
 
+export type ExtendedServerOption = https.ServerOptions & {
+    certPath?: string;
+    keyPath?: string;
+};
+
+export interface ServerItem {
+    secure: boolean;
+    port: number;
+    options?: ExtendedServerOption;
+    redirectToSecure?:
+        | {
+              port?: number;
+              host?: string;
+          }
+        | boolean;
+}
+
 export interface Configuration {
+    server?: ServerItem[];
     runApplTracker?: boolean;
     announceApplTracker?: boolean;
     runGoogTracker?: boolean;

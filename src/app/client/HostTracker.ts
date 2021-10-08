@@ -67,7 +67,7 @@ export class HostTracker extends ManagerClient<ParamsBase, HostTrackerEvents> {
                 // this.emit('hosts', msg.data);
                 if (msg.data.local) {
                     msg.data.local.forEach(({ type }) => {
-                        const secure = location.protocol === 'https';
+                        const secure = location.protocol === 'https:';
                         const port = location.port ? parseInt(location.port, 10) : secure ? 443 : 80;
                         const { hostname } = location;
                         if (type !== 'android' && type !== 'ios') {

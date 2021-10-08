@@ -1,8 +1,10 @@
 import * as process from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Configuration, HostItem } from '../types/Configuration';
+import { Configuration, HostItem, ServerItem } from '../types/Configuration';
 import { EnvName } from './EnvName';
+
+const DEFAULT_PORT = 8000;
 
 export class Config {
     private static instance?: Config;
@@ -35,19 +37,16 @@ export class Config {
         if (!configPath) {
             return;
         }
-        const isAbsolute = configPath.startsWith('/');
-        const absolutePath = isAbsolute ? configPath : path.resolve(process.cwd(), configPath);
+        this.fullConfig = JSON.parse(this.readFile(configPath));
+    }
+
+    public readFile(pathString: string): string {
+        const isAbsolute = pathString.startsWith('/');
+        const absolutePath = isAbsolute ? pathString : path.resolve(process.cwd(), pathString);
         if (!fs.existsSync(absolutePath)) {
-            console.error(`Can't find configuration file "${absolutePath}"`);
-            return;
+            throw Error(`Can't find file "${absolutePath}"`);
         }
-        try {
-            const configString = fs.readFileSync(absolutePath).toString();
-            this.fullConfig = JSON.parse(configString);
-        } catch (e) {
-            console.error(`Failed to load configuration from file "${absolutePath}"`);
-            console.error(`Error: ${e.message}`);
-        }
+        return fs.readFileSync(absolutePath).toString();
     }
 
     public getHostList(): HostItem[] {
@@ -77,5 +76,17 @@ export class Config {
             return this.fullConfig.announceApplTracker;
         }
         return this.fullConfig.runApplTracker === true;
+    }
+
+    public getServers(): ServerItem[] {
+        if (!Array.isArray(this.fullConfig.server)) {
+            return [
+                {
+                    secure: false,
+                    port: DEFAULT_PORT,
+                },
+            ];
+        }
+        return this.fullConfig.server;
     }
 }
