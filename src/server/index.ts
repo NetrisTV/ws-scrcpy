@@ -53,6 +53,11 @@ async function loadGoogModules() {
     mw2List.push(FileListing);
     /// #endif
 
+    /// #if INCLUDE_CONNECTION_FORWARD
+    const { ConnectionForward } = await import('./goog-device/mw/ConnectionForward');
+    mw2List.push(ConnectionForward);
+    /// #endif
+
     mwList.push(WebsocketProxyOverAdb);
 }
 loadPlatformModulesPromises.push(loadGoogModules());

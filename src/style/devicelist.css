@@ -153,6 +153,7 @@ body.list #device_list_menu {
 
 #devices .device-list div.desc-block.stream,
 #devices .device-list div.desc-block.server_pid,
+#devices .device-list div.desc-block.connection-forward,
 #devices .device-list div.desc-block.net_interface {
     border: 1px solid var(--device-border-color);
     border-radius: .3em;
@@ -160,7 +161,7 @@ body.list #device_list_menu {
     white-space: nowrap;
 }
 
-#devices .device-list div.device div.desc-block.stream button.action-button {
+#devices .device-list div.device div.desc-block button.action-button {
     color: var(--button-text-color);
 }
 
