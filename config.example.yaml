@@ -1,0 +1,31 @@
+# Run configuration example. See full config file spec in src/types/Configuration.d.ts
+
+# Device trackers (default: true)
+runGoogTracker: false
+runApplTracker: false;
+
+# HTTP[s] servers configuration
+server:
+  - secure: false
+    port: 8000
+    redirectToSecure:
+      port: 8443
+      host: first-mobile-stand.example.com
+  - secure: true
+    port: 8443
+    options:
+      certPath: /Users/example/ssl/STAR_example_com.crt
+      keyPath: /Users/example/ssl/STAR_example_com.key
+
+# Announce remote device trackers. The server doesn't check their availability.
+remoteHostList:
+  - useProxy: true   # optional, default: false
+    type: android    # required, "android" | "ios"
+    secure: true     # required, false for HTTP, true for HTTPS
+    hostname: second-mobile-stand.example.com
+    port: 8443
+  - useProxy: true
+    type: ios
+    secure: true
+    hostname: second-mobile-stand.example.com
+    port: 8443

@@ -3,8 +3,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Configuration, HostItem, ServerItem } from '../types/Configuration';
 import { EnvName } from './EnvName';
+import YAML from 'yaml';
 
 const DEFAULT_PORT = 8000;
+
+const YAML_RE = /^.+\.(yaml|yml)$/i;
+const JSON_RE = /^.+\.(json|js)$/i;
 
 export class Config {
     private static instance?: Config;
@@ -37,7 +41,13 @@ export class Config {
         if (!configPath) {
             return;
         }
-        this.fullConfig = JSON.parse(this.readFile(configPath));
+        if (configPath.match(YAML_RE)) {
+            this.fullConfig = YAML.parse(this.readFile(configPath));
+        } else if (configPath.match(JSON_RE)) {
+            this.fullConfig = JSON.parse(this.readFile(configPath));
+        } else {
+            throw Error(`Unknown file type: ${configPath}`);
+        }
     }
 
     public readFile(pathString: string): string {
@@ -50,10 +60,10 @@ export class Config {
     }
 
     public getHostList(): HostItem[] {
-        if (!this.fullConfig.hostList || !this.fullConfig.hostList.length) {
+        if (!this.fullConfig.remoteHostList || !this.fullConfig.remoteHostList.length) {
             return [];
         }
-        return this.fullConfig.hostList.splice(0);
+        return this.fullConfig.remoteHostList.splice(0);
     }
 
     public getRunLocalGoogTracker(): boolean {

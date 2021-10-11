@@ -148,9 +148,10 @@ established over adb.
 
 You can specify a path to a configuration file in `WS_SCRCPY_CONFIG`
 environment variable.
-Configuration file format: [source](/src/types/Configuration.d.ts).
 
-Parameters explanation: **TBD**.
+Configuration file format: [Configuration.d.ts](/src/types/Configuration.d.ts).
+
+Configuration file example: [config.example.yaml](/config.example.yaml).
 
 ## Known issues
 

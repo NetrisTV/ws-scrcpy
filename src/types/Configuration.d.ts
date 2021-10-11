@@ -25,11 +25,12 @@ export interface ServerItem {
         | boolean;
 }
 
+// The configuration file must contain a single object with this structure
 export interface Configuration {
     server?: ServerItem[];
     runApplTracker?: boolean;
     announceApplTracker?: boolean;
     runGoogTracker?: boolean;
     announceGoogTracker?: boolean;
-    hostList?: HostItem[];
+    remoteHostList?: HostItem[];
 }

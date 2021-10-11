@@ -22,7 +22,8 @@
     "node-pty": "^0.10.1",
     "portfinder": "^1.0.28",
     "tslib": "^1.9.3",
-    "ws": "^7.4.6"
+    "ws": "^7.4.6",
+    "yaml": "^1.10.2"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.32",
