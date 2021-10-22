@@ -39,6 +39,7 @@ export class WebsocketProxy extends Mw {
     }
 
     public async init(remoteUrl: string): Promise<void> {
+        this.name = `[${WebsocketProxy.TAG}{$${remoteUrl}}]`;
         const remoteSocket = new WS(remoteUrl);
         remoteSocket.onopen = () => {
             this.remoteSocket = remoteSocket;
@@ -89,6 +90,9 @@ export class WebsocketProxy extends Mw {
     }
 
     public release(): void {
+        if (this.released) {
+            return;
+        }
         super.release();
         this.released = true;
         this.flush();

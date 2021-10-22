@@ -4,6 +4,7 @@ import { ChildProcessByStdio, spawn } from 'child_process';
 import { Readable, Writable } from 'stream';
 
 export interface ProcessRunnerEvents {
+    spawned: boolean;
     started: boolean;
     stdout: string;
     stderr: string;
@@ -42,11 +43,10 @@ export abstract class ProcessRunner<T extends ProcessRunnerEvents> extends Typed
 
         this.proc.on('spawn', () => {
             this.spawned = true;
-            this.emit('started', true);
+            this.emit('spawned', true);
         });
 
         this.proc.on('exit', (code, signal) => {
-            console.log(this.name, `"exit" event. code ${code}, signal: ${signal}`);
             this.emit('exit', { code, signal });
         });
 
@@ -56,7 +56,6 @@ export abstract class ProcessRunner<T extends ProcessRunnerEvents> extends Typed
         });
 
         this.proc.on('close', (code, signal) => {
-            console.log(this.name, `"close" event. code ${code}, signal: ${signal}`);
             this.emit('close', { code, signal });
         });
     }

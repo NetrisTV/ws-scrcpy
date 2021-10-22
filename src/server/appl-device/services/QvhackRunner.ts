@@ -3,26 +3,24 @@ import { ProcessRunner, ProcessRunnerEvents } from '../../services/ProcessRunner
 
 export class QvhackRunner extends ProcessRunner<ProcessRunnerEvents> {
     private static instances: Map<string, QvhackRunner> = new Map();
+    public static SHUTDOWN_TIMEOUT = 15000;
     public static getInstance(udid: string): QvhackRunner {
         let instance = this.instances.get(udid);
         if (!instance) {
             instance = new QvhackRunner(udid);
             this.instances.set(udid, instance);
             instance.start();
-        } else {
-            if (instance.releaseTimeoutId) {
-                clearTimeout(instance.releaseTimeoutId);
-            }
         }
-        instance.holders++;
+        instance.lock();
         return instance;
     }
     protected TAG = '[QvhackRunner]';
     protected name: string;
     protected cmd = 'ws-qvh';
-    protected holders = 0;
     protected releaseTimeoutId?: NodeJS.Timeout;
     protected address = '';
+    protected started = false;
+    private holders = 0;
 
     constructor(private readonly udid: string) {
         super();
@@ -31,6 +29,24 @@ export class QvhackRunner extends ProcessRunner<ProcessRunnerEvents> {
 
     public getWebSocketAddress(): string {
         return this.address;
+    }
+
+    protected lock(): void {
+        if (this.releaseTimeoutId) {
+            clearTimeout(this.releaseTimeoutId);
+        }
+        this.holders++;
+    }
+
+    protected unlock(): void {
+        this.holders--;
+        if (this.holders > 0) {
+            return;
+        }
+        this.releaseTimeoutId = setTimeout(() => {
+            super.release();
+            QvhackRunner.instances.delete(this.udid);
+        }, QvhackRunner.SHUTDOWN_TIMEOUT);
     }
 
     protected async getArgs(): Promise<string[]> {
@@ -43,9 +59,9 @@ export class QvhackRunner extends ProcessRunner<ProcessRunnerEvents> {
     public start(): void {
         this.runProcess()
             .then(() => {
-                // FIXME: for some reason `ws-qvh` does not emit `spawn` event
+                // Wait for server to start listen on a port
                 this.once('stderr', () => {
-                    this.spawned = true;
+                    this.started = true;
                     this.emit('started', true);
                 });
             })
@@ -54,15 +70,11 @@ export class QvhackRunner extends ProcessRunner<ProcessRunnerEvents> {
             });
     }
 
+    public isStarted(): boolean {
+        return this.started;
+    }
+
     public release(): void {
-        this.holders--;
-        if (this.holders > 0) {
-            return;
-        }
-        const TIME = 15000;
-        this.releaseTimeoutId = setTimeout(() => {
-            super.release();
-            QvhackRunner.instances.delete(this.udid);
-        }, TIME);
+        this.unlock();
     }
 }

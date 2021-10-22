@@ -13,6 +13,7 @@ export interface WDARunnerEvents {
 export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     protected static TAG = 'WDARunner';
     private static instances: Map<string, WDARunner> = new Map();
+    public static SHUTDOWN_TIMEOUT = 15000;
     private static servers: Map<string, Server> = new Map();
     private static cachedScreenInfo: Map<string, any> = new Map();
     public static getInstance(udid: string): WDARunner {
@@ -21,10 +22,8 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
             instance = new WDARunner(udid);
             this.instances.set(udid, instance);
             instance.start();
-        } else if (instance.releaseTimeoutId) {
-            clearTimeout(instance.releaseTimeoutId);
         }
-        instance.holders++;
+        instance.lock();
         return instance;
     }
     public static async getServer(udid: string): Promise<Server> {
@@ -57,6 +56,31 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     constructor(private readonly udid: string) {
         super();
         this.name = `[${WDARunner.TAG}][udid: ${this.udid}]`;
+    }
+
+    protected lock(): void {
+        if (this.releaseTimeoutId) {
+            clearTimeout(this.releaseTimeoutId);
+        }
+        this.holders++;
+    }
+
+    protected unlock(): void {
+        this.holders--;
+        if (this.holders > 0) {
+            return;
+        }
+        this.releaseTimeoutId = setTimeout(async () => {
+            WDARunner.servers.delete(this.udid);
+            WDARunner.instances.delete(this.udid);
+            if (this.server) {
+                if (this.server.driver) {
+                    await this.server.driver.deleteSession();
+                }
+                this.server.close();
+                delete this.server;
+            }
+        }, WDARunner.SHUTDOWN_TIMEOUT);
     }
 
     public async request(command: ControlCenterCommand): Promise<any> {
@@ -110,20 +134,6 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     }
 
     public release(): void {
-        this.holders--;
-        if (this.holders > 0) {
-            return;
-        }
-        const TIME = 15000;
-        this.releaseTimeoutId = setTimeout(async () => {
-            WDARunner.servers.delete(this.udid);
-            WDARunner.instances.delete(this.udid);
-            if (this.server) {
-                if (this.server.driver) {
-                    await this.server.driver.deleteSession();
-                }
-                this.server.close();
-            }
-        }, TIME);
+        this.unlock();
     }
 }

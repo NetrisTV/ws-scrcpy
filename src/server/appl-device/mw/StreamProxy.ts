@@ -50,15 +50,16 @@ export class StreamProxy extends Mw {
         try {
             command = ControlCenterCommand.fromJSON(event.data.toString());
         } catch (e) {
-            console.error(`[${StreamProxy.TAG}], Received message: ${event.data}. Error: ${e.message}`);
+            console.error(`${this.name}, Received message: ${event.data}. Error: ${e.message}`);
             return;
         }
-        console.log(`[${StreamProxy.TAG}], Received message: type:"${command.getType()}", data:${command.getData()}.`);
+        console.log(`${this.name}, Received message: type:"${command.getType()}", data:${command.getData()}.`);
     }
 
     protected onSocketClose(): void {
         if (this.wsProxy) {
             this.wsProxy.release();
+            delete this.wsProxy;
         }
         this.release();
     }
