@@ -3,6 +3,10 @@ import { TypedEmitter } from '../../../common/TypedEmitter';
 import { Message } from '../../../types/Message';
 import * as portfinder from 'portfinder';
 import { Server, XCUITestDriver } from '../../../types/WdaServer';
+import * as XCUITest from 'appium-xcuitest-driver';
+import { DEVICE_CONNECTIONS_FACTORY } from 'appium-xcuitest-driver/build/lib/device-connections-factory';
+
+const MJPEG_SERVER_PORT = 9100;
 
 export interface WDARunnerEvents {
     started: boolean;
@@ -30,7 +34,6 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         let server = this.servers.get(udid);
         if (!server) {
             const port = await portfinder.getPortPromise();
-            const XCUITest = await import('appium-xcuitest-driver');
             server = await XCUITest.startServer(port, '127.0.0.1');
             this.servers.set(udid, server);
         }
@@ -50,6 +53,8 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     protected started = false;
     public session: any;
     private server?: Server;
+    private mjpegServerPort = 0;
+    private wdaLocalPort = 0;
     private holders = 0;
     protected releaseTimeoutId?: NodeJS.Timeout;
 
@@ -114,13 +119,21 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     public async start(): Promise<void> {
         this.server = await WDARunner.getServer(this.udid);
         try {
-            const port = await portfinder.getPortPromise();
+            const remoteMjpegServerPort = MJPEG_SERVER_PORT;
+            const ports = await Promise.all([portfinder.getPortPromise(), portfinder.getPortPromise()]);
+            this.wdaLocalPort = ports[0];
+            this.mjpegServerPort = ports[1];
             this.session = await this.server.driver.createSession({
                 platformName: 'iOS',
                 deviceName: 'my iphone',
                 udid: this.udid,
-                wdaLocalPort: port,
+                wdaLocalPort: this.wdaLocalPort,
                 usePrebuiltWDA: true,
+                mjpegServerPort: remoteMjpegServerPort,
+            });
+            await DEVICE_CONNECTIONS_FACTORY.requestConnection(this.udid, this.mjpegServerPort, {
+                usePortForwarding: true,
+                devicePort: remoteMjpegServerPort,
             });
             this.started = true;
             this.emit('started', true);

@@ -1,5 +1,5 @@
-import { XCUITestDriver } from './lib/driver';
-import { startServer } from './lib/server';
+import { XCUITestDriver } from './build/lib/driver';
+import { startServer } from './build/lib/server';
 
 export { XCUITestDriver, startServer };
 export default XCUITestDriver;
