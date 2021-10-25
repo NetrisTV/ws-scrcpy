@@ -88,6 +88,10 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         }, WDARunner.SHUTDOWN_TIMEOUT);
     }
 
+    public get mjpegPort(): number {
+        return this.mjpegServerPort;
+    }
+
     public async request(command: ControlCenterCommand): Promise<any> {
         const driver = this.server?.driver;
         if (!driver) {
@@ -131,10 +135,12 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
                 usePrebuiltWDA: true,
                 mjpegServerPort: remoteMjpegServerPort,
             });
+            /// #if WDA_RUN_MJPEG_SERVER
             await DEVICE_CONNECTIONS_FACTORY.requestConnection(this.udid, this.mjpegServerPort, {
                 usePortForwarding: true,
                 devicePort: remoteMjpegServerPort,
             });
+            /// #endif
             this.started = true;
             this.emit('started', true);
         } catch (e) {

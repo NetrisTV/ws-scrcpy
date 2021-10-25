@@ -89,12 +89,13 @@ loadPlatformModulesPromises.push(loadApplModules());
 
 Promise.all(loadPlatformModulesPromises)
     .then(() => {
-        servicesToStart.forEach((serviceClass: ServiceClass) => {
+        return servicesToStart.map((serviceClass: ServiceClass) => {
             const service = serviceClass.getInstance();
             runningServices.push(service);
-            service.start();
+            return service.start();
         });
-
+    })
+    .then(() => {
         const wsService = WebSocketServer.getInstance();
         mwList.forEach((mwFactory: MwFactory) => {
             wsService.registerMw(mwFactory);

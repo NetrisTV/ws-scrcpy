@@ -145,8 +145,8 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
         return `aDevice Tracker [${os.hostname()}]`;
     }
 
-    public start(): void {
-        this.init().catch((e) => {
+    public start(): Promise<void> {
+        return this.init().catch((e) => {
             console.error(`Error: Failed to init "${this.getName()}". ${e.message}`);
         });
     }
