@@ -1,29 +1,31 @@
 import WS from 'ws';
-import { Mw, RequestParameters } from '../../mw/Mw';
+import { Mw } from '../../mw/Mw';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
-import { ACTION } from '../../../common/Action';
 import { WDARunner } from '../services/WDARunner';
 import { MessageRunWdaResponse } from '../../../types/MessageRunWdaResponse';
+import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
+import { ChannelCode } from '../../../common/ChannelCode';
+import Util from '../../../app/Util';
 
 export class WebDriverAgentProxy extends Mw {
     public static readonly TAG = 'WebDriverAgentProxy';
     protected name: string;
     private wda?: WDARunner;
 
-    public static processRequest(ws: WS, params: RequestParameters): WebDriverAgentProxy | undefined {
-        if (params.parsedQuery?.action !== ACTION.PROXY_WDA) {
+    public static processChannel(ws: Multiplexer, code: string, data: ArrayBuffer): Mw | undefined {
+        if (code !== ChannelCode.WDAP) {
             return;
         }
-        const { parsedQuery } = params;
-        const list = parsedQuery.udid;
-        if (!list) {
+        if (!data || data.byteLength < 4) {
             return;
         }
-        const udid = typeof list === 'string' ? list : list[0];
+        const buffer = Buffer.from(data);
+        const length = buffer.readInt32LE(0);
+        const udid = Util.utf8ByteArrayToString(buffer.slice(4, 4 + length));
         return new WebDriverAgentProxy(ws, udid);
     }
 
-    constructor(protected ws: WS, private readonly udid: string) {
+    constructor(protected ws: Multiplexer, private readonly udid: string) {
         super(ws);
         this.name = `[${WebDriverAgentProxy.TAG}][udid: ${this.udid}]`;
     }

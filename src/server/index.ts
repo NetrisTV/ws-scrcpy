@@ -82,7 +82,7 @@ async function loadApplModules() {
     servicesToStart.push(ControlCenter);
 
     mwList.push(StreamProxy);
-    mwList.push(WebDriverAgentProxy);
+    mw2List.push(WebDriverAgentProxy);
 }
 loadPlatformModulesPromises.push(loadApplModules());
 /// #endif

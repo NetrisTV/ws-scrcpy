@@ -7,6 +7,7 @@ import { ParamsWdaProxy } from '../../../types/ParamsWdaProxy';
 import { ParsedUrlQuery } from 'querystring';
 import { ACTION } from '../../../common/Action';
 import Util from '../../Util';
+import { ChannelCode } from '../../../common/ChannelCode';
 
 export type WsQVHackClientEvents = {
     'device-list': ApplDeviceDescriptor[];
@@ -36,12 +37,6 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
             throw Error('Incorrect action');
         }
         return { ...typedParams, action, udid: Util.parseStringEnv(params.udid) };
-    }
-
-    protected buildDirectWebSocketUrl(): URL {
-        const localUrl = super.buildDirectWebSocketUrl();
-        localUrl.searchParams.set('udid', this.params.udid);
-        return localUrl;
     }
 
     protected onSocketClose(e: CloseEvent): void {
@@ -140,6 +135,19 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
             },
         };
         return this.sendMessage(message);
+    }
+
+    protected supportMultiplexing(): boolean {
+        return true;
+    }
+
+    protected getChannelInitData(): Buffer {
+        const udid = Util.stringToUtf8ByteArray(this.params.udid);
+        const buffer = Buffer.alloc(4 + 4 + udid.byteLength);
+        buffer.write(ChannelCode.WDAP, 'ascii');
+        buffer.writeUInt32LE(udid.length, 4);
+        buffer.set(udid, 8);
+        return buffer;
     }
 
     public stop(): void {
