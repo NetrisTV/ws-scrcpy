@@ -3,8 +3,12 @@ import Size from '../../Size';
 
 const TAG = '[QVHackMoreBox]';
 
+interface StopListener {
+    onStop: () => void;
+}
+
 export class QVHackMoreBox {
-    private onStop?: () => void;
+    private stopListener?: StopListener;
     private readonly holder: HTMLElement;
 
     constructor(udid: string, player: BasePlayer) {
@@ -38,9 +42,9 @@ export class QVHackMoreBox {
                 parent.removeChild(moreBox);
             }
             player.off('video-view-resize', this.onViewVideoResize);
-            if (this.onStop) {
-                this.onStop();
-                delete this.onStop;
+            if (this.stopListener) {
+                this.stopListener.onStop();
+                delete this.stopListener;
             }
         };
 
@@ -70,7 +74,7 @@ export class QVHackMoreBox {
         return this.holder;
     }
 
-    public setOnStop(listener: () => void): void {
-        this.onStop = listener;
+    public setOnStop(listener: StopListener): void {
+        this.stopListener = listener;
     }
 }

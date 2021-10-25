@@ -1,6 +1,4 @@
 import { MsePlayer } from './MsePlayer';
-import ScreenInfo from '../ScreenInfo';
-import Rect from '../Rect';
 import Size from '../Size';
 import VideoSettings from '../VideoSettings';
 import { DisplayInfo } from '../DisplayInfo';
@@ -15,6 +13,7 @@ export class MsePlayerForQVHack extends MsePlayer {
         sendFrameMeta: false,
     });
 
+    public readonly resizeVideoToBounds: boolean = true;
     constructor(
         udid: string,
         displayInfo?: DisplayInfo,
@@ -22,42 +21,6 @@ export class MsePlayerForQVHack extends MsePlayer {
         tag = MsePlayerForQVHack.createElement(),
     ) {
         super(udid, displayInfo, name, tag);
-    }
-
-    protected handleVideoResize(videoWidth: number, videoHeight: number): void {
-        super.handleVideoResize(videoWidth, videoHeight);
-        let w = videoWidth;
-        let h = videoHeight;
-        if (this.bounds) {
-            let { w: boundsWidth, h: boundsHeight } = this.bounds;
-            if (w > boundsWidth || h > boundsHeight) {
-                let scaledHeight;
-                let scaledWidth;
-                if (boundsWidth > w) {
-                    scaledHeight = h;
-                } else {
-                    scaledHeight = (boundsWidth * h) / w;
-                }
-                if (boundsHeight > scaledHeight) {
-                    boundsHeight = scaledHeight;
-                }
-                if (boundsHeight == h) {
-                    scaledWidth = w;
-                } else {
-                    scaledWidth = (boundsHeight * w) / h;
-                }
-                if (boundsWidth > scaledWidth) {
-                    boundsWidth = scaledWidth;
-                }
-                w = boundsWidth | 0;
-                h = boundsHeight | 0;
-                this.tag.style.maxWidth = `${w}px`;
-                this.tag.style.maxHeight = `${h}px`;
-            }
-        }
-        const realScreen = new ScreenInfo(new Rect(0, 0, videoWidth, videoHeight), new Size(w, h), 0);
-        this.emit('input-video-resize', realScreen);
-        this.setScreenInfo(new ScreenInfo(new Rect(0, 0, w, h), new Size(w, h), 0));
     }
 
     protected needScreenInfoBeforePlay(): boolean {
