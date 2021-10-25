@@ -117,6 +117,9 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
 
     protected buildDirectWebSocketUrl(): URL {
         const localUrl = super.buildDirectWebSocketUrl();
+        if (this.supportMultiplexing()) {
+            return localUrl;
+        }
         localUrl.searchParams.set('udid', this.params.udid);
         return localUrl;
     }
