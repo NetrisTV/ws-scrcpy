@@ -123,6 +123,8 @@ Functionality limited to:
 Make sure you did properly [setup WebDriverAgent](https://appium.io/docs/en/drivers/ios-xcuitest-real-devices/).
 WebDriverAgent project is located under `node_modules/appium-webdriveragent/`.
 
+You might want to enable `AssistiveTouch` on your device: `Settings/General/Accessibility`.
+
 ## Custom Build
 
 You can customize project before build by overriding the
