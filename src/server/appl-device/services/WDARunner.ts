@@ -44,9 +44,10 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         if (cached) {
             return cached;
         }
-        const info = await driver.getScreenInfo();
-        this.cachedScreenInfo.set(udid, info);
-        return info;
+        const el = await driver.findElement('xpath', '//XCUIElementTypeApplication');
+        const size = await driver.getSize(el);
+        this.cachedScreenInfo.set(udid, size);
+        return size;
     }
 
     protected name: string;

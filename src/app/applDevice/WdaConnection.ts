@@ -4,8 +4,8 @@ import ScreenInfo from '../ScreenInfo';
 import { WsQVHackClient } from './client/WsQVHackClient';
 
 interface WdaScreen {
-    statusBarSize: { width: number; height: number };
-    scale: number;
+    width: number;
+    height: number;
 }
 
 export default class WdaConnection {
@@ -80,7 +80,7 @@ export default class WdaConnection {
         wdaScreen: WdaScreen,
         position: Position,
     ): Point | undefined {
-        const { statusBarSize } = wdaScreen;
+        const { width } = wdaScreen;
         // ignore the locked video orientation, the events will apply in coordinates considered in the physical device orientation
         const { videoSize, deviceRotation, contentRect } = screenInfo;
         const { right, left, bottom, top } = contentRect;
@@ -90,7 +90,7 @@ export default class WdaConnection {
         } else {
             shortSide = right - left;
         }
-        const scale = shortSide / statusBarSize.width;
+        const scale = shortSide / width;
 
         // reverse the video rotation to apply the events
         const devicePosition = position.rotate(deviceRotation);
