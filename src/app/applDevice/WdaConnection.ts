@@ -2,16 +2,12 @@ import Point from '../Point';
 import Position from '../Position';
 import ScreenInfo from '../ScreenInfo';
 import { WsQVHackClient } from './client/WsQVHackClient';
-
-interface WdaScreen {
-    width: number;
-    height: number;
-}
+import { WDAMethod } from '../../common/WDAMethod';
 
 export default class WdaConnection {
     private screenInfo?: ScreenInfo;
     private client?: WsQVHackClient;
-    private wdaScreen?: WdaScreen;
+    private screenWidth = 0;
 
     public setScreenInfo(screenInfo: ScreenInfo): void {
         this.screenInfo = screenInfo;
@@ -22,7 +18,7 @@ export default class WdaConnection {
     }
 
     public async wdaPressButton(name: string): Promise<void> {
-        return this.client?.requestWebDriverAgent('pressButton', {
+        return this.client?.requestWebDriverAgent(WDAMethod.PRESS_BUTTON, {
             name,
         });
     }
@@ -31,12 +27,12 @@ export default class WdaConnection {
         if (!this.screenInfo) {
             return;
         }
-        const wdaScreen = this.wdaScreen || (await this.getWdaScreen());
-        const point = await WdaConnection.calculatePhysicalPoint(this.screenInfo, wdaScreen, position);
+        const screenWidth = this.screenWidth || (await this.getScreenWidth());
+        const point = await WdaConnection.calculatePhysicalPoint(this.screenInfo, screenWidth, position);
         if (!point) {
             return;
         }
-        return this.client?.requestWebDriverAgent('click', {
+        return this.client?.requestWebDriverAgent(WDAMethod.CLICK, {
             x: point.x,
             y: point.y,
         });
@@ -46,13 +42,13 @@ export default class WdaConnection {
         if (!this.screenInfo) {
             return;
         }
-        const wdaScreen = this.wdaScreen || (await this.getWdaScreen());
+        const wdaScreen = this.screenWidth || (await this.getScreenWidth());
         const fromPoint = WdaConnection.calculatePhysicalPoint(this.screenInfo, wdaScreen, from);
         const toPoint = WdaConnection.calculatePhysicalPoint(this.screenInfo, wdaScreen, to);
         if (!fromPoint || !toPoint) {
             return;
         }
-        return this.client?.requestWebDriverAgent('scroll', {
+        return this.client?.requestWebDriverAgent(WDAMethod.SCROLL, {
             from: {
                 x: fromPoint.x,
                 y: fromPoint.y,
@@ -64,23 +60,22 @@ export default class WdaConnection {
         });
     }
 
-    private async getWdaScreen(): Promise<WdaScreen> {
-        if (this.wdaScreen) {
-            return this.wdaScreen;
+    private async getScreenWidth(): Promise<number> {
+        if (this.screenWidth) {
+            return this.screenWidth;
         }
-        const temp = await this.client?.requestWebDriverAgent('getScreen');
-        if (temp.data.success) {
-            return (this.wdaScreen = temp.data.response as WdaScreen);
+        const temp = await this.client?.requestWebDriverAgent(WDAMethod.GET_SCREEN_WIDTH);
+        if (temp.data.success && typeof temp.data.response === 'number') {
+            return (this.screenWidth = temp.data.response);
         }
         throw Error('Invalid response');
     }
 
     public static calculatePhysicalPoint(
         screenInfo: ScreenInfo,
-        wdaScreen: WdaScreen,
+        screenWidth: number,
         position: Position,
     ): Point | undefined {
-        const { width } = wdaScreen;
         // ignore the locked video orientation, the events will apply in coordinates considered in the physical device orientation
         const { videoSize, deviceRotation, contentRect } = screenInfo;
         const { right, left, bottom, top } = contentRect;
@@ -90,7 +85,7 @@ export default class WdaConnection {
         } else {
             shortSide = right - left;
         }
-        const scale = shortSide / width;
+        const scale = shortSide / screenWidth;
 
         // reverse the video rotation to apply the events
         const devicePosition = position.rotate(deviceRotation);

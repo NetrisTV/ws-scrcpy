@@ -5,6 +5,7 @@ import * as portfinder from 'portfinder';
 import { Server, XCUITestDriver } from '../../../types/WdaServer';
 import * as XCUITest from 'appium-xcuitest-driver';
 import { DEVICE_CONNECTIONS_FACTORY } from 'appium-xcuitest-driver/build/lib/device-connections-factory';
+import { WDAMethod } from '../../../common/WDAMethod';
 
 const MJPEG_SERVER_PORT = 9100;
 
@@ -19,7 +20,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     private static instances: Map<string, WDARunner> = new Map();
     public static SHUTDOWN_TIMEOUT = 15000;
     private static servers: Map<string, Server> = new Map();
-    private static cachedScreenInfo: Map<string, any> = new Map();
+    private static cachedScreenWidth: Map<string, any> = new Map();
     public static getInstance(udid: string): WDARunner {
         let instance = this.instances.get(udid);
         if (!instance) {
@@ -39,15 +40,26 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         }
         return server;
     }
-    public static async getScreenInfo(udid: string, driver: XCUITestDriver): Promise<any> {
-        const cached = this.cachedScreenInfo.get(udid);
+
+    public static async getScreenWidth(udid: string, driver: XCUITestDriver): Promise<number> {
+        const cached = this.cachedScreenWidth.get(udid);
         if (cached) {
             return cached;
         }
+        const info = await driver.getScreenInfo();
+        if (info && info.statusBarSize.width > 0) {
+            const screenWidth = info.statusBarSize.width;
+            this.cachedScreenWidth.set(udid, screenWidth);
+            return screenWidth;
+        }
         const el = await driver.findElement('xpath', '//XCUIElementTypeApplication');
         const size = await driver.getSize(el);
-        this.cachedScreenInfo.set(udid, size);
-        return size;
+        if (size) {
+            const screenWidth = size.width;
+            this.cachedScreenWidth.set(udid, screenWidth);
+            return screenWidth;
+        }
+        return 0;
     }
 
     protected name: string;
@@ -102,13 +114,13 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         const method = command.getMethod();
         const args = command.getArgs();
         switch (method) {
-            case 'getScreen':
-                return WDARunner.getScreenInfo(this.udid, driver);
-            case 'click':
+            case WDAMethod.GET_SCREEN_WIDTH:
+                return WDARunner.getScreenWidth(this.udid, driver);
+            case WDAMethod.CLICK:
                 return driver.performTouch([{ action: 'tap', options: { x: args.x, y: args.y } }]);
-            case 'pressButton':
+            case WDAMethod.PRESS_BUTTON:
                 return driver.mobilePressButton({ name: args.name });
-            case 'scroll':
+            case WDAMethod.SCROLL:
                 const { from, to } = args;
                 return driver.performTouch([
                     { action: 'press', options: { x: from.x, y: from.y } },

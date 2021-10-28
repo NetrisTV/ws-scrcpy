@@ -1,5 +1,10 @@
 import { BaseDriver } from 'appium-base-driver';
 
+declare interface ScreenInfo {
+    statusBarSize: { width: number; height: number };
+    scale: number;
+}
+
 declare interface Gesture {
     action: string;
     options: {
@@ -14,7 +19,7 @@ declare class XCUITestDriver extends BaseDriver {
     public createSession(...args: any): Promise<any>;
     public findElement(strategy: string, selector: string): Promise<any>;
     public getSize(element: any): Promise<{ width: number; height: number } | undefined>;
-    public getScreenInfo(): Promise<any>;
+    public getScreenInfo(): Promise<ScreenInfo>;
     public performTouch(gestures: Gesture[]): Promise<any>;
     public mobilePressButton(args: { name: string }): Promise<any>;
     public stop(): Promise<void>;

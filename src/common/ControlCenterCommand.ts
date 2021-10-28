@@ -1,3 +1,5 @@
+import { WDAMethod } from './WDAMethod';
+
 export class ControlCenterCommand {
     public static KILL_SERVER = 'kill_server';
     public static START_SERVER = 'start_server';
@@ -63,7 +65,7 @@ export class ControlCenterCommand {
     public getId(): number {
         return this.id;
     }
-    public getMethod(): string {
+    public getMethod(): WDAMethod | string {
         return this.method;
     }
     public getData(): any {

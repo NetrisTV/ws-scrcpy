@@ -8,6 +8,7 @@ import { ParsedUrlQuery } from 'querystring';
 import { ACTION } from '../../../common/Action';
 import Util from '../../Util';
 import { ChannelCode } from '../../../common/ChannelCode';
+import { WDAMethod } from '../../../common/WDAMethod';
 
 export type WsQVHackClientEvents = {
     'device-list': ApplDeviceDescriptor[];
@@ -122,7 +123,7 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
         return response;
     }
 
-    public async requestWebDriverAgent(method: string, args?: any): Promise<any> {
+    public async requestWebDriverAgent(method: WDAMethod, args?: any): Promise<any> {
         if (!this.hasSession) {
             throw Error('No session');
         }
