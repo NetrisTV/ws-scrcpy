@@ -1,6 +1,5 @@
 import { ManagerClient } from '../../client/ManagerClient';
 import { MessageRunWdaResponse } from '../../../types/MessageRunWdaResponse';
-import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
 import { Message } from '../../../types/Message';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { ParamsWdaProxy } from '../../../types/ParamsWdaProxy';
@@ -9,17 +8,58 @@ import { ACTION } from '../../../common/Action';
 import Util from '../../Util';
 import { ChannelCode } from '../../../common/ChannelCode';
 import { WDAMethod } from '../../../common/WDAMethod';
+import ScreenInfo from '../../ScreenInfo';
+import Position from '../../Position';
+import Point from '../../Point';
+import { TouchHandlerListener } from '../../interactionHandler/SimpleInteractionHandler';
 
-export type WsQVHackClientEvents = {
-    'device-list': ApplDeviceDescriptor[];
+export type WdaProxyClientEvents = {
     'run-wda': MessageRunWdaResponse;
-    device: ApplDeviceDescriptor;
     connected: boolean;
 };
 
-const TAG = '[WsQVHackClient]';
+const TAG = '[WdaProxyClient]';
 
-export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClientEvents> {
+export class WdaProxyClient
+    extends ManagerClient<ParamsWdaProxy, WdaProxyClientEvents>
+    implements TouchHandlerListener {
+    public static calculatePhysicalPoint(
+        screenInfo: ScreenInfo,
+        screenWidth: number,
+        position: Position,
+    ): Point | undefined {
+        // ignore the locked video orientation, the events will apply in coordinates considered in the physical device orientation
+        const { videoSize, deviceRotation, contentRect } = screenInfo;
+        const { right, left, bottom, top } = contentRect;
+        let shortSide: number;
+        if (videoSize.width >= videoSize.height) {
+            shortSide = bottom - top;
+        } else {
+            shortSide = right - left;
+        }
+        const scale = shortSide / screenWidth;
+
+        // reverse the video rotation to apply the events
+        const devicePosition = position.rotate(deviceRotation);
+
+        if (!videoSize.equals(devicePosition.screenSize)) {
+            // The client sends a click relative to a video with wrong dimensions,
+            // the device may have been rotated since the event was generated, so ignore the event
+            return;
+        }
+        const { point } = devicePosition;
+        const convertedX = contentRect.left + (point.x * contentRect.getWidth()) / videoSize.width;
+        const convertedY = contentRect.top + (point.y * contentRect.getHeight()) / videoSize.height;
+
+        const scaledX = Math.round(convertedX / scale);
+        const scaledY = Math.round(convertedY / scale);
+
+        return new Point(scaledX, scaledY);
+    }
+
+    private screenInfo?: ScreenInfo;
+    private screenWidth = 0;
+    private udid: string;
     private stopped = false;
     private commands: string[] = [];
     private hasSession = false;
@@ -29,6 +69,7 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
     constructor(params: ParamsWdaProxy) {
         super(params);
         this.openNewConnection();
+        this.udid = params.udid;
     }
 
     public parseParameters(params: ParsedUrlQuery): ParamsWdaProxy {
@@ -55,25 +96,13 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
             .text()
             .then((text: string) => {
                 const json = JSON.parse(text) as Message;
-                const type = json['type'];
                 const id = json['id'];
                 const p = this.wait.get(id);
                 if (p) {
                     p.resolve(json);
                     return;
                 }
-                switch (type) {
-                    case 'devicelist':
-                        const devices = json['data'] as ApplDeviceDescriptor[];
-                        this.emit('device-list', devices);
-                        return;
-                    case 'device':
-                        const device = json['data'] as ApplDeviceDescriptor;
-                        this.emit('device', device);
-                        return;
-                    default:
-                        throw Error('Unsupported message');
-                }
+                throw Error('Unsupported message');
             })
             .catch((error: Error) => {
                 console.error(TAG, error.message);
@@ -110,12 +139,74 @@ export class WsQVHackClient extends ManagerClient<ParamsWdaProxy, WsQVHackClient
         });
     }
 
-    public async runWebDriverAgent(udid: string): Promise<Message> {
+    public setScreenInfo(screenInfo: ScreenInfo): void {
+        this.screenInfo = screenInfo;
+    }
+
+    public getScreenInfo(): ScreenInfo | undefined {
+        return this.screenInfo;
+    }
+
+    private async getScreenWidth(): Promise<number> {
+        if (this.screenWidth) {
+            return this.screenWidth;
+        }
+        const temp = await this.requestWebDriverAgent(WDAMethod.GET_SCREEN_WIDTH);
+        if (temp.data.success && typeof temp.data.response === 'number') {
+            return (this.screenWidth = temp.data.response);
+        }
+        throw Error('Invalid response');
+    }
+
+    public async pressButton(name: string): Promise<void> {
+        return this.requestWebDriverAgent(WDAMethod.PRESS_BUTTON, {
+            name,
+        });
+    }
+
+    public async performClick(position: Position): Promise<void> {
+        if (!this.screenInfo) {
+            return;
+        }
+        const screenWidth = this.screenWidth || (await this.getScreenWidth());
+        const point = WdaProxyClient.calculatePhysicalPoint(this.screenInfo, screenWidth, position);
+        if (!point) {
+            return;
+        }
+        return this.requestWebDriverAgent(WDAMethod.CLICK, {
+            x: point.x,
+            y: point.y,
+        });
+    }
+
+    public async performScroll(from: Position, to: Position): Promise<void> {
+        if (!this.screenInfo) {
+            return;
+        }
+        const wdaScreen = this.screenWidth || (await this.getScreenWidth());
+        const fromPoint = WdaProxyClient.calculatePhysicalPoint(this.screenInfo, wdaScreen, from);
+        const toPoint = WdaProxyClient.calculatePhysicalPoint(this.screenInfo, wdaScreen, to);
+        if (!fromPoint || !toPoint) {
+            return;
+        }
+        return this.requestWebDriverAgent(WDAMethod.SCROLL, {
+            from: {
+                x: fromPoint.x,
+                y: fromPoint.y,
+            },
+            to: {
+                x: toPoint.x,
+                y: toPoint.y,
+            },
+        });
+    }
+
+    public async runWebDriverAgent(): Promise<Message> {
         const message: Message = {
             id: this.getNextId(),
             type: ControlCenterCommand.RUN_WDA,
             data: {
-                udid,
+                udid: this.udid,
             },
         };
         const response = await this.sendMessage(message);

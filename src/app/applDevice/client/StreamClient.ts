@@ -1,11 +1,9 @@
 import { BaseClient } from '../../client/BaseClient';
 import { ParamsStream } from '../../../types/ParamsStream';
-import { SimpleInteractionHandler, TouchHandlerListener } from '../../interactionHandler/SimpleInteractionHandler';
-import Position from '../../Position';
-import WdaConnection from '../WdaConnection';
+import { SimpleInteractionHandler } from '../../interactionHandler/SimpleInteractionHandler';
 import { BasePlayer, PlayerClass } from '../../player/BasePlayer';
 import ScreenInfo from '../../ScreenInfo';
-import { WsQVHackClient } from './WsQVHackClient';
+import { WdaProxyClient } from './WdaProxyClient';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import { ACTION } from '../../../common/Action';
 import { QVHackMoreBox } from '../toolbox/QVHackMoreBox';
@@ -19,9 +17,7 @@ import { DeviceTracker } from './DeviceTracker';
 const WAIT_CLASS = 'wait';
 const TAG = 'StreamClient';
 
-export abstract class StreamClient<T extends ParamsStream>
-    extends BaseClient<T, never>
-    implements TouchHandlerListener {
+export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T, never> {
     public static ACTION = 'MUST_OVERRIDE';
     protected static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
 
@@ -91,9 +87,9 @@ export abstract class StreamClient<T extends ParamsStream>
         return new Size(width, height);
     }
 
-    protected readonly wdaConnection = new WdaConnection();
+    // protected readonly wdaConnection = new WdaConnection();
     protected touchHandler?: SimpleInteractionHandler;
-    protected readonly managerClient: WsQVHackClient;
+    protected readonly wdaProxy: WdaProxyClient;
     protected name: string;
     protected udid: string;
     protected deviceName = '';
@@ -105,7 +101,7 @@ export abstract class StreamClient<T extends ParamsStream>
     protected constructor(params: ParsedUrlQuery | T) {
         super(params);
         this.udid = this.params.udid;
-        this.managerClient = new WsQVHackClient({ ...this.params, action: ACTION.PROXY_WDA });
+        this.wdaProxy = new WdaProxyClient({ ...this.params, action: ACTION.PROXY_WDA });
         this.name = `[${TAG}:${this.udid}]`;
     }
 
@@ -136,13 +132,11 @@ export abstract class StreamClient<T extends ParamsStream>
     }
 
     protected async runWebDriverAgent(): Promise<void> {
-        this.managerClient
-            .runWebDriverAgent(this.udid)
+        this.wdaProxy
+            .runWebDriverAgent()
             .then((response) => {
                 const data = response.data;
-                if (data.code === 0) {
-                    this.wdaConnection.setClient(this.managerClient);
-                } else {
+                if (data.code !== 0) {
                     const error = new Error(`Failed to run WebDriverAgent. Reason: ${data.text}, code: ${data.code}`);
                     console.error(this.name, error);
                     throw error;
@@ -157,11 +151,11 @@ export abstract class StreamClient<T extends ParamsStream>
         if (this.touchHandler) {
             return;
         }
-        this.touchHandler = new SimpleInteractionHandler(player, this);
+        this.touchHandler = new SimpleInteractionHandler(player, this.wdaProxy);
     }
 
     protected onInputVideoResize = (screenInfo: ScreenInfo): void => {
-        this.wdaConnection.setScreenInfo(screenInfo);
+        this.wdaProxy.setScreenInfo(screenInfo);
     };
 
     public onStop(ev?: string | Event): void {
@@ -180,7 +174,7 @@ export abstract class StreamClient<T extends ParamsStream>
                 parent.removeChild(this.moreBox);
             }
         }
-        this.managerClient.stop();
+        this.wdaProxy.stop();
         this.player?.stop();
     }
 
@@ -204,7 +198,7 @@ export abstract class StreamClient<T extends ParamsStream>
         const qvhackMoreBox = new QVHackMoreBox(udid, player);
         qvhackMoreBox.setOnStop(this);
         const moreBox: HTMLElement = qvhackMoreBox.getHolderElement();
-        const qvhackToolBox = QVHackToolBox.createToolBox(udid, player, this, this.wdaConnection, moreBox);
+        const qvhackToolBox = QVHackToolBox.createToolBox(udid, player, this, this.wdaProxy, moreBox);
         const controlButtons = qvhackToolBox.getHolderElement();
         deviceView.appendChild(controlButtons);
         const video = document.createElement('div');
@@ -221,14 +215,6 @@ export abstract class StreamClient<T extends ParamsStream>
             player.setBounds(bounds);
         }
         this.player = player;
-    }
-
-    public performClick(position: Position): void {
-        this.wdaConnection.wdaPerformClick(position);
-    }
-
-    public performScroll(from: Position, to: Position): void {
-        this.wdaConnection.wdaPerformScroll(from, to);
     }
 
     public getDeviceName(): string {
