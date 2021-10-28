@@ -40,17 +40,17 @@ export class MjpegPlayer extends BasePlayer {
 
     public play(): void {
         super.play();
-        this.tag.src = `${location.protocol}//${location.host}/mjpeg/${this.udid}`;
+        this.tag.setAttribute('src', `${location.protocol}//${location.host}/mjpeg/${this.udid}`);
     }
 
     public pause(): void {
         super.pause();
-        delete this.tag.src;
+        this.tag.removeAttribute('src');
     }
 
     public stop(): void {
         super.stop();
-        delete this.tag.src;
+        this.tag.removeAttribute('src');
     }
 
     protected needScreenInfoBeforePlay(): boolean {

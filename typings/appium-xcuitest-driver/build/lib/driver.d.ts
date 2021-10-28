@@ -24,6 +24,7 @@ declare class XCUITestDriver extends BaseDriver {
     public mobilePressButton(args: { name: string }): Promise<any>;
     public stop(): Promise<void>;
     public deleteSession(): Promise<void>;
+    public wda: any;
 }
 
 export default XCUITestDriver;

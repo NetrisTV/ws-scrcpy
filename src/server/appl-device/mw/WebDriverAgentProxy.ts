@@ -1,16 +1,17 @@
 import WS from 'ws';
 import { Mw } from '../../mw/Mw';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
-import { WDARunner } from '../services/WDARunner';
+import { WdaRunner } from '../services/WDARunner';
 import { MessageRunWdaResponse } from '../../../types/MessageRunWdaResponse';
 import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
 import { ChannelCode } from '../../../common/ChannelCode';
 import Util from '../../../app/Util';
+import { WdaStatus } from '../../../common/WdaStatus';
 
 export class WebDriverAgentProxy extends Mw {
     public static readonly TAG = 'WebDriverAgentProxy';
     protected name: string;
-    private wda?: WDARunner;
+    private wda?: WdaRunner;
 
     public static processChannel(ws: Multiplexer, code: string, data: ArrayBuffer): Mw | undefined {
         if (code !== ChannelCode.WDAP) {
@@ -32,12 +33,14 @@ export class WebDriverAgentProxy extends Mw {
 
     private runWda(command: ControlCenterCommand): void {
         const udid = command.getUdid();
+        const id = command.getId();
         if (this.wda) {
             const message: MessageRunWdaResponse = {
-                id: command.getId(),
+                id,
                 type: 'run-wda',
                 data: {
                     udid: udid,
+                    status: 'started',
                     code: -1,
                     text: 'WDA already started',
                 },
@@ -45,24 +48,29 @@ export class WebDriverAgentProxy extends Mw {
             this.sendMessage(message);
             return;
         }
-        this.wda = WDARunner.getInstance(udid);
+        this.wda = WdaRunner.getInstance(udid);
+        this.wda.on('status-change', ({ status, code, text }) => {
+            this.onStatusChange(command, status, code, text);
+        });
         if (this.wda.isStarted()) {
-            this.onStarted(command);
+            this.onStatusChange(command, 'started');
         } else {
-            this.wda.once('started', () => {
-                this.onStarted(command);
-            });
+            this.wda.start();
         }
-        this.wda.on('response', this.sendMessage);
     }
 
-    private onStarted = (command: ControlCenterCommand): void => {
+    private onStatusChange = (command: ControlCenterCommand, status: WdaStatus, code?: number, text?: string): void => {
+        const id = command.getId();
+        const udid = command.getUdid();
+        const type = 'run-wda';
         const message: MessageRunWdaResponse = {
-            id: command.getId(),
-            type: 'run-wda',
+            id,
+            type,
             data: {
-                udid: command.getUdid(),
-                code: 0,
+                udid,
+                status,
+                code,
+                text,
             },
         };
         this.sendMessage(message);
@@ -120,7 +128,6 @@ export class WebDriverAgentProxy extends Mw {
     public release(): void {
         super.release();
         if (this.wda) {
-            this.wda.off('response', this.sendMessage);
             this.wda.release();
         }
     }

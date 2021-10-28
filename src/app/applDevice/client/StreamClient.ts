@@ -13,11 +13,17 @@ import Util from '../../Util';
 import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { DeviceTracker } from './DeviceTracker';
+import { WdaStatus } from '../../../common/WdaStatus';
+import { MessageRunWdaResponse } from '../../../types/MessageRunWdaResponse';
 
 const WAIT_CLASS = 'wait';
 const TAG = 'StreamClient';
 
-export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T, never> {
+export interface StreamClientEvents {
+    'wda:status': WdaStatus;
+}
+
+export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T, StreamClientEvents> {
     public static ACTION = 'MUST_OVERRIDE';
     protected static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
 
@@ -87,7 +93,7 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         return new Size(width, height);
     }
 
-    // protected readonly wdaConnection = new WdaConnection();
+    private waitForWda?: Promise<void>;
     protected touchHandler?: SimpleInteractionHandler;
     protected readonly wdaProxy: WdaProxyClient;
     protected name: string;
@@ -132,20 +138,30 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
     }
 
     protected async runWebDriverAgent(): Promise<void> {
-        this.wdaProxy
-            .runWebDriverAgent()
-            .then((response) => {
-                const data = response.data;
-                if (data.code !== 0) {
-                    const error = new Error(`Failed to run WebDriverAgent. Reason: ${data.text}, code: ${data.code}`);
-                    console.error(this.name, error);
-                    throw error;
-                }
-            })
-            .finally(() => {
-                this.videoWrapper?.classList.remove(WAIT_CLASS);
-            });
+        if (!this.waitForWda) {
+            this.wdaProxy.on('wda-status', this.handleWdaStatus);
+            this.waitForWda = this.wdaProxy
+                .runWebDriverAgent()
+                .then(this.handleWdaStatus)
+                .finally(() => {
+                    this.videoWrapper?.classList.remove(WAIT_CLASS);
+                });
+        }
+        return this.waitForWda;
     }
+
+    protected handleWdaStatus = (message: MessageRunWdaResponse): void => {
+        const data = message.data;
+        switch (data.status) {
+            case 'starting':
+            case 'started':
+            case 'stopped':
+                this.emit('wda:status', data.status);
+                break;
+            default:
+                throw Error(`Unknown WDA status: '${status}'`);
+        }
+    };
 
     protected setTouchListeners(player: BasePlayer): void {
         if (this.touchHandler) {

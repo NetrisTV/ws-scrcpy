@@ -1,32 +1,31 @@
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { TypedEmitter } from '../../../common/TypedEmitter';
-import { Message } from '../../../types/Message';
 import * as portfinder from 'portfinder';
 import { Server, XCUITestDriver } from '../../../types/WdaServer';
 import * as XCUITest from 'appium-xcuitest-driver';
 import { DEVICE_CONNECTIONS_FACTORY } from 'appium-xcuitest-driver/build/lib/device-connections-factory';
 import { WDAMethod } from '../../../common/WDAMethod';
+import { timing } from 'appium-support';
+import { WdaStatus } from '../../../common/WdaStatus';
 
 const MJPEG_SERVER_PORT = 9100;
 
-export interface WDARunnerEvents {
-    started: boolean;
+export interface WdaRunnerEvents {
+    'status-change': { status: WdaStatus; text?: string; code?: number };
     error: Error;
-    response: Message;
 }
 
-export class WDARunner extends TypedEmitter<WDARunnerEvents> {
+export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
     protected static TAG = 'WDARunner';
-    private static instances: Map<string, WDARunner> = new Map();
+    private static instances: Map<string, WdaRunner> = new Map();
     public static SHUTDOWN_TIMEOUT = 15000;
     private static servers: Map<string, Server> = new Map();
     private static cachedScreenWidth: Map<string, any> = new Map();
-    public static getInstance(udid: string): WDARunner {
+    public static getInstance(udid: string): WdaRunner {
         let instance = this.instances.get(udid);
         if (!instance) {
-            instance = new WDARunner(udid);
+            instance = new WdaRunner(udid);
             this.instances.set(udid, instance);
-            instance.start();
         }
         instance.lock();
         return instance;
@@ -36,6 +35,12 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         if (!server) {
             const port = await portfinder.getPortPromise();
             server = await XCUITest.startServer(port, '127.0.0.1');
+            server.on('error', (...args: any[]) => {
+                console.error('Server Error:', args);
+            });
+            server.on('close', (...args: any[]) => {
+                console.error('Server Close:', args);
+            });
             this.servers.set(udid, server);
         }
         return server;
@@ -64,7 +69,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
 
     protected name: string;
     protected started = false;
-    public session: any;
+    protected starting = false;
     private server?: Server;
     private mjpegServerPort = 0;
     private wdaLocalPort = 0;
@@ -73,7 +78,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
 
     constructor(private readonly udid: string) {
         super();
-        this.name = `[${WDARunner.TAG}][udid: ${this.udid}]`;
+        this.name = `[${WdaRunner.TAG}][udid: ${this.udid}]`;
     }
 
     protected lock(): void {
@@ -89,8 +94,8 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
             return;
         }
         this.releaseTimeoutId = setTimeout(async () => {
-            WDARunner.servers.delete(this.udid);
-            WDARunner.instances.delete(this.udid);
+            WdaRunner.servers.delete(this.udid);
+            WdaRunner.instances.delete(this.udid);
             if (this.server) {
                 if (this.server.driver) {
                     await this.server.driver.deleteSession();
@@ -98,7 +103,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
                 this.server.close();
                 delete this.server;
             }
-        }, WDARunner.SHUTDOWN_TIMEOUT);
+        }, WdaRunner.SHUTDOWN_TIMEOUT);
     }
 
     public get mjpegPort(): number {
@@ -115,7 +120,7 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
         const args = command.getArgs();
         switch (method) {
             case WDAMethod.GET_SCREEN_WIDTH:
-                return WDARunner.getScreenWidth(this.udid, driver);
+                return WdaRunner.getScreenWidth(this.udid, driver);
             case WDAMethod.CLICK:
                 return driver.performTouch([{ action: 'tap', options: { x: args.x, y: args.y } }]);
             case WDAMethod.PRESS_BUTTON:
@@ -134,13 +139,18 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
     }
 
     public async start(): Promise<void> {
-        this.server = await WDARunner.getServer(this.udid);
+        if (this.started || this.starting) {
+            return;
+        }
+        this.emit('status-change', { status: 'starting' });
+        this.starting = true;
+        const server = await WdaRunner.getServer(this.udid);
         try {
             const remoteMjpegServerPort = MJPEG_SERVER_PORT;
             const ports = await Promise.all([portfinder.getPortPromise(), portfinder.getPortPromise()]);
             this.wdaLocalPort = ports[0];
             this.mjpegServerPort = ports[1];
-            this.session = await this.server.driver.createSession({
+            await server.driver.createSession({
                 platformName: 'iOS',
                 deviceName: 'my iphone',
                 udid: this.udid,
@@ -148,6 +158,24 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
                 usePrebuiltWDA: true,
                 mjpegServerPort: remoteMjpegServerPort,
             });
+            await server.driver.wda.xcodebuild.waitForStart(new timing.Timer().start());
+            if (server.driver?.wda?.xcodebuild?.xcodebuild) {
+                server.driver.wda.xcodebuild.xcodebuild.on('exit', (code: number) => {
+                    this.started = false;
+                    this.starting = false;
+                    server.driver.deleteSession();
+                    delete this.server;
+                    this.emit('status-change', { status: 'stopped', code });
+                    if (this.holders > 0) {
+                        this.start();
+                    }
+                });
+            } else {
+                this.started = false;
+                this.starting = false;
+                delete this.server;
+                throw new Error('xcodebuild process not found');
+            }
             /// #if WDA_RUN_MJPEG_SERVER
             await DEVICE_CONNECTIONS_FACTORY.requestConnection(this.udid, this.mjpegServerPort, {
                 usePortForwarding: true,
@@ -155,10 +183,13 @@ export class WDARunner extends TypedEmitter<WDARunnerEvents> {
             });
             /// #endif
             this.started = true;
-            this.emit('started', true);
+            this.emit('status-change', { status: 'started' });
         } catch (e) {
+            this.started = false;
+            this.starting = false;
             this.emit('error', e);
         }
+        this.server = server;
     }
 
     public isStarted(): boolean {

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import MjpegProxy from 'node-mjpeg-proxy';
-import { WDARunner } from '../appl-device/services/WDARunner';
+import { WdaRunner } from '../appl-device/services/WDARunner';
+import { WdaStatus } from '../../common/WdaStatus';
 
 export class MjpegProxyFactory {
     private static instances: Map<string, MjpegProxy> = new Map();
@@ -12,11 +13,20 @@ export class MjpegProxyFactory {
         }
         let proxy = MjpegProxyFactory.instances.get(udid);
         if (!proxy) {
-            const wda = await WDARunner.getInstance(udid);
+            const wda = await WdaRunner.getInstance(udid);
             if (!wda.isStarted()) {
-                await new Promise((resolve) => {
-                    wda.on('started', resolve);
+                // FIXME: `wda.start()` should resolve on 'started'
+                const startPromise = new Promise((resolve) => {
+                    const onStatusChange = ({ status }: { status: WdaStatus }) => {
+                        if (status === 'started') {
+                            wda.off('status-change', onStatusChange);
+                            resolve();
+                        }
+                    };
+                    wda.on('status-change', onStatusChange);
                 });
+                await wda.start();
+                await startPromise;
             }
             const port = wda.mjpegPort;
             const url = `http://127.0.0.1:${port}`;

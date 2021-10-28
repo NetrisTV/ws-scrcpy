@@ -14,7 +14,7 @@ import Point from '../../Point';
 import { TouchHandlerListener } from '../../interactionHandler/SimpleInteractionHandler';
 
 export type WdaProxyClientEvents = {
-    'run-wda': MessageRunWdaResponse;
+    'wda-status': MessageRunWdaResponse;
     connected: boolean;
 };
 
@@ -99,10 +99,17 @@ export class WdaProxyClient
                 const id = json['id'];
                 const p = this.wait.get(id);
                 if (p) {
+                    this.wait.delete(id);
                     p.resolve(json);
                     return;
                 }
-                throw Error('Unsupported message');
+                switch (json['type']) {
+                    case ControlCenterCommand.RUN_WDA:
+                        this.emit('wda-status', json as MessageRunWdaResponse);
+                        return;
+                    default:
+                        throw Error('Unsupported message');
+                }
             })
             .catch((error: Error) => {
                 console.error(TAG, error.message);
@@ -201,7 +208,7 @@ export class WdaProxyClient
         });
     }
 
-    public async runWebDriverAgent(): Promise<Message> {
+    public async runWebDriverAgent(): Promise<MessageRunWdaResponse> {
         const message: Message = {
             id: this.getNextId(),
             type: ControlCenterCommand.RUN_WDA,
@@ -211,7 +218,7 @@ export class WdaProxyClient
         };
         const response = await this.sendMessage(message);
         this.hasSession = true;
-        return response;
+        return response as MessageRunWdaResponse;
     }
 
     public async requestWebDriverAgent(method: WDAMethod, args?: any): Promise<any> {

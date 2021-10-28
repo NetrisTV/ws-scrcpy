@@ -1,6 +1,5 @@
 import { StreamReceiver } from '../../client/StreamReceiver';
 import { BasePlayer, PlayerClass } from '../../player/BasePlayer';
-import { TouchHandlerListener } from '../../interactionHandler/SimpleInteractionHandler';
 import { ACTION } from '../../../common/Action';
 import { ParsedUrlQuery } from 'querystring';
 import { StreamReceiverQVHack } from './StreamReceiverQVHack';
@@ -9,7 +8,7 @@ import { ParamsStream } from '../../../types/ParamsStream';
 
 const TAG = '[StreamClientQVHack]';
 
-export class StreamClientQVHack extends StreamClient<ParamsStream> implements TouchHandlerListener {
+export class StreamClientQVHack extends StreamClient<ParamsStream> {
     public static ACTION = ACTION.STREAM_WS_QVH;
     protected static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
 
@@ -17,7 +16,6 @@ export class StreamClientQVHack extends StreamClient<ParamsStream> implements To
         return new StreamClientQVHack(params);
     }
 
-    private waitForWda?: Promise<void>;
     private readonly streamReceiver: StreamReceiver<ParamsStream>;
 
     constructor(params: ParsedUrlQuery | ParamsStream) {
@@ -52,13 +50,6 @@ export class StreamClientQVHack extends StreamClient<ParamsStream> implements To
     public onStop(ev?: string | Event): void {
         super.onStop(ev);
         this.streamReceiver.stop();
-    }
-
-    protected async runWebDriverAgent(): Promise<void> {
-        if (!this.waitForWda) {
-            this.waitForWda = super.runWebDriverAgent();
-        }
-        return this.waitForWda;
     }
 
     protected startStream(inputPlayer?: BasePlayer): void {

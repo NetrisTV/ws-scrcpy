@@ -22,6 +22,13 @@ export class StreamClientMJPEG extends StreamClient<ParamsStream> {
             this.startStream();
             this.player?.play();
         });
+        this.on('wda:status', (status) => {
+            if (status === 'stopped') {
+                this.player?.stop();
+            } else if (status === 'started') {
+                this.player?.play();
+            }
+        })
     }
 
     public get action(): string {
