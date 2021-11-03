@@ -112,6 +112,15 @@ Control your device from `adb shell` in your browser.
 
 Requires [ws-qvh](https://github.com/NetrisTV/ws-qvh) available in `PATH`.
 
+#### MJPEG Server
+
+Enable `WDA_RUN_MJPEG_SERVER` in the build configuration file
+(see [custom build](#custom-build)).
+
+Alternative way to stream screen content. It does not
+require additional software as `ws-qvh`, but may require more resources as each
+frame encoded as jpeg image.
+
 #### Remote control
 
 To control device we use [appium/WebDriverAgent][WebDriverAgent].
@@ -141,6 +150,7 @@ web views on android devices
 * `USE_H264_CONVERTER` - include [Mse Player](#mse-player)
 * `USE_TINY_H264` - include [TinyH264 Player](#tinyh264-player)
 * `USE_WEBCODECS` - include [WebCodecs Player](#webcodecs-player)
+* `WDA_RUN_MJPEG_SERVER` - configure WebDriverAgent to start MJPEG server
 * `SCRCPY_LISTENS_ON_ALL_INTERFACES` - WebSocket server in `scrcpy-server.jar`
 will listen for connections on all available interfaces. When `true`, it allows
 connecting to device directly from a browser. Otherwise, the connection must be
