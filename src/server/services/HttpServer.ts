@@ -45,6 +45,11 @@ export class HttpServer implements Service {
             }
             const parsedUrl = url.parse(req.url);
             let pathname = path.join(publicDir, (parsedUrl.pathname || '.').replace(/^(\.)+/, '.'));
+            if (pathname.indexOf(publicDir) !== 0) {
+                res.statusCode = 403;
+                res.end();
+                return;
+            }
             fs.stat(pathname, (statErr, stat) => {
                 if (statErr) {
                     if (statErr.code === 'ENOENT') {
