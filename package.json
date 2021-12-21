@@ -11,6 +11,7 @@
     "script:dist:start": "node ./index.js",
     "lint": "eslint src/ --ext .ts",
     "format": "eslint src/ --fix --ext .ts",
+    "docker": "docker build -t wsscrcpy:latest .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Sergey Volkov <s.volkov@netris.ru>",
