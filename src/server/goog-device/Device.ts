@@ -1,4 +1,4 @@
-import AdbKit from '@devicefarmer/adbkit';
+import { AdbExtended } from './adb';
 import AdbKitClient from '@devicefarmer/adbkit/lib/adb/client';
 import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
 import { spawn } from 'child_process';
@@ -53,7 +53,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
             'ro.product.cpu.abi': '',
             'last.update.timestamp': 0,
         };
-        this.client = AdbKit.createClient();
+        this.client = AdbExtended.createClient();
         this.setState(state);
     }
 
@@ -128,7 +128,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
     public async runShellCommandAdbKit(command: string): Promise<string> {
         return this.client
             .shell(this.udid, command)
-            .then(AdbKit.util.readAll)
+            .then(AdbExtended.util.readAll)
             .then((output: Buffer) => output.toString().trim());
     }
 

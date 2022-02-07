@@ -2,7 +2,7 @@ import { TrackerChangeSet } from '@devicefarmer/adbkit/lib/TrackerChangeSet';
 import { Device } from '../Device';
 import { Service } from '../../services/Service';
 import AdbKitClient from '@devicefarmer/adbkit/lib/adb/client';
-import AdbKit from '@devicefarmer/adbkit';
+import { AdbExtended } from '../adb';
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import Tracker from '@devicefarmer/adbkit/lib/adb/tracker';
 import Timeout = NodeJS.Timeout;
@@ -17,7 +17,7 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
     private static instance?: ControlCenter;
 
     private initialized = false;
-    private client: AdbKitClient = AdbKit.createClient();
+    private client: AdbKitClient = AdbExtended.createClient();
     private tracker?: Tracker;
     private waitAfterError = 1000;
     private restartTimeoutId?: Timeout;
