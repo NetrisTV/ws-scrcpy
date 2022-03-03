@@ -163,7 +163,7 @@ export default class VideoSettings {
             encoderNameBytes = Util.stringToUtf8ByteArray(this.encoderName);
             additionalLength += encoderNameBytes.length;
         }
-        const buffer = new Buffer(VideoSettings.BASE_BUFFER_LENGTH + additionalLength);
+        const buffer = Buffer.alloc(VideoSettings.BASE_BUFFER_LENGTH + additionalLength);
         const { width = 0, height = 0 } = this.bounds || {};
         const { left = 0, top = 0, right = 0, bottom = 0 } = this.crop || {};
         let offset = 0;

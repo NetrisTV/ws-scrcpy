@@ -18,7 +18,7 @@ export class ScrollControlMessage extends ControlMessage {
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer = new Buffer(ScrollControlMessage.PAYLOAD_LENGTH + 1);
+        const buffer = Buffer.alloc(ScrollControlMessage.PAYLOAD_LENGTH + 1);
         let offset = 0;
         offset = buffer.writeUInt8(this.type, offset);
         offset = buffer.writeUInt32BE(this.position.point.x, offset);

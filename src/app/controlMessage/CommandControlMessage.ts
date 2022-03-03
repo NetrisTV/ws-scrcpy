@@ -35,7 +35,7 @@ export class CommandControlMessage extends ControlMessage {
         const temp = videoSettings.toBuffer();
         const event = new CommandControlMessage(ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS);
         const offset = CommandControlMessage.PAYLOAD_LENGTH + 1;
-        const buffer = new Buffer(offset + temp.length);
+        const buffer = Buffer.alloc(offset + temp.length);
         buffer.writeUInt8(event.type, 0);
         temp.forEach((byte, index) => {
             buffer.writeUInt8(byte, index + offset);
@@ -49,7 +49,7 @@ export class CommandControlMessage extends ControlMessage {
         const textBytes: Uint8Array | null = text ? Util.stringToUtf8ByteArray(text) : null;
         const textLength = textBytes ? textBytes.length : 0;
         let offset = 0;
-        const buffer = new Buffer(1 + 1 + 4 + textLength);
+        const buffer = Buffer.alloc(1 + 1 + 4 + textLength);
         offset = buffer.writeInt8(event.type, offset);
         offset = buffer.writeInt8(paste ? 1 : 0, offset);
         offset = buffer.writeInt32BE(textLength, offset);
@@ -102,7 +102,7 @@ export class CommandControlMessage extends ControlMessage {
         const textLength = text.length;
         let offset = CommandControlMessage.PAYLOAD_LENGTH;
 
-        const buffer = new Buffer(offset + typeField + idField + stateField + sizeField + textLengthField + textLength);
+        const buffer = Buffer.alloc(offset + typeField + idField + stateField + sizeField + textLengthField + textLength);
         buffer.writeUInt8(event.type, offset);
         offset += typeField;
         buffer.writeInt16BE(id, offset);
@@ -129,7 +129,7 @@ export class CommandControlMessage extends ControlMessage {
         const chunkLength = chunk.byteLength;
         let offset = CommandControlMessage.PAYLOAD_LENGTH;
 
-        const buffer = new Buffer(offset + typeField + idField + stateField + chunkLengthField + chunkLength);
+        const buffer = Buffer.alloc(offset + typeField + idField + stateField + chunkLengthField + chunkLength);
         buffer.writeUInt8(event.type, offset);
         offset += typeField;
         buffer.writeInt16BE(id, offset);
@@ -151,7 +151,7 @@ export class CommandControlMessage extends ControlMessage {
         const idField = 2;
         const stateField = 1;
         let offset = CommandControlMessage.PAYLOAD_LENGTH;
-        const buffer = new Buffer(offset + typeField + idField + stateField);
+        const buffer = Buffer.alloc(offset + typeField + idField + stateField);
         buffer.writeUInt8(event.type, offset);
         offset += typeField;
         buffer.writeInt16BE(id, offset);
@@ -202,7 +202,7 @@ export class CommandControlMessage extends ControlMessage {
      */
     public toBuffer(): Buffer {
         if (!this.buffer) {
-            const buffer = new Buffer(CommandControlMessage.PAYLOAD_LENGTH + 1);
+            const buffer = Buffer.alloc(CommandControlMessage.PAYLOAD_LENGTH + 1);
             buffer.writeUInt8(this.type, 0);
             this.buffer = buffer;
         }

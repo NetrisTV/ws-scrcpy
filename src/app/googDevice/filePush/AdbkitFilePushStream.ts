@@ -57,7 +57,7 @@ export class AdbkitFilePushStream extends FilePushStream {
         const channel = this.socket.createChannel(Buffer.from(Protocol.SEND));
         const onMessage = (e: MessageEvent): void => {
             let offset = 0;
-            const buffer = new Buffer(e.data);
+            const buffer = Buffer.from(e.data);
             const id = buffer.readInt16BE(offset);
             offset += 2;
             const code = buffer.readInt8(offset);

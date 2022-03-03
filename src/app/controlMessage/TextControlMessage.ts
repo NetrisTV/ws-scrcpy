@@ -20,7 +20,7 @@ export class TextControlMessage extends ControlMessage {
      */
     public toBuffer(): Buffer {
         const length = this.text.length;
-        const buffer = new Buffer(length + 1 + TextControlMessage.TEXT_SIZE_FIELD_LENGTH);
+        const buffer = Buffer.alloc(length + 1 + TextControlMessage.TEXT_SIZE_FIELD_LENGTH);
         let offset = 0;
         offset = buffer.writeUInt8(this.type, offset);
         offset = buffer.writeUInt32BE(length, offset);
