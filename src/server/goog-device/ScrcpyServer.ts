@@ -119,7 +119,7 @@ export class ScrcpyServer {
         await this.copyServer(device);
 
         const params: WaitForPidParams = { tryCounter: 0, processExited: false, lookPidFile: true };
-        const runPromise = device.runShellCommandAdb(RUN_COMMAND);
+        const runPromise = device.runShellCommandAdbKit(RUN_COMMAND);
         runPromise
             .then((out) => {
                 if (device.isConnected()) {
