@@ -6,8 +6,8 @@ import ScreenInfo from '../../ScreenInfo';
 import { WdaProxyClient } from './WdaProxyClient';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import { ACTION } from '../../../common/Action';
-import { QVHackMoreBox } from '../toolbox/QVHackMoreBox';
-import { QVHackToolBox } from '../toolbox/QVHackToolBox';
+import { ApplMoreBox } from '../toolbox/ApplMoreBox';
+import { ApplToolBox } from '../toolbox/ApplToolBox';
 import Size from '../../Size';
 import Util from '../../Util';
 import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
@@ -219,11 +219,11 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         const deviceView = document.createElement('div');
         deviceView.className = 'device-view';
 
-        const qvhackMoreBox = new QVHackMoreBox(udid, player);
-        qvhackMoreBox.setOnStop(this);
-        const moreBox: HTMLElement = qvhackMoreBox.getHolderElement();
-        const qvhackToolBox = QVHackToolBox.createToolBox(udid, player, this, this.wdaProxy, moreBox);
-        const controlButtons = qvhackToolBox.getHolderElement();
+        const applMoreBox = new ApplMoreBox(udid, player);
+        applMoreBox.setOnStop(this);
+        const moreBox: HTMLElement = applMoreBox.getHolderElement();
+        const applToolBox = ApplToolBox.createToolBox(udid, player, this, this.wdaProxy, moreBox);
+        const controlButtons = applToolBox.getHolderElement();
         deviceView.appendChild(controlButtons);
         deviceView.appendChild(this.videoWrapper);
         deviceView.appendChild(moreBox);

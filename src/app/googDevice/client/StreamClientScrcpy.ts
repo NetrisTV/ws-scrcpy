@@ -1,7 +1,7 @@
 import { BaseClient } from '../../client/BaseClient';
 import { ParamsStreamScrcpy } from '../../../types/ParamsStreamScrcpy';
-import { DroidMoreBox } from '../toolbox/DroidMoreBox';
-import { DroidToolBox } from '../toolbox/DroidToolBox';
+import { GoogMoreBox } from '../toolbox/GoogMoreBox';
+import { GoogToolBox } from '../toolbox/GoogToolBox';
 import VideoSettings from '../../VideoSettings';
 import Size from '../../Size';
 import { ControlMessage } from '../../controlMessage/ControlMessage';
@@ -18,7 +18,10 @@ import { ConfigureScrcpy } from './ConfigureScrcpy';
 import { DeviceTracker } from './DeviceTracker';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { html } from '../../ui/HtmlTag';
-import { FeaturedInteractionHandler, InteractionHandlerListener } from '../../interactionHandler/FeaturedInteractionHandler';
+import {
+    FeaturedInteractionHandler,
+    InteractionHandlerListener,
+} from '../../interactionHandler/FeaturedInteractionHandler';
 import DeviceMessage from '../DeviceMessage';
 import { DisplayInfo } from '../../DisplayInfo';
 import { Attribute } from '../../Attribute';
@@ -52,7 +55,7 @@ export class StreamClientScrcpy
     private joinedStream = false;
     private requestedVideoSettings?: VideoSettings;
     private touchHandler?: FeaturedInteractionHandler;
-    private droidMoreBox?: DroidMoreBox;
+    private moreBox?: GoogMoreBox;
     private player?: BasePlayer;
     private filePushHandler?: FilePushHandler;
     private fitToScreen?: boolean;
@@ -154,8 +157,8 @@ export class StreamClientScrcpy
     }
 
     public OnDeviceMessage = (message: DeviceMessage): void => {
-        if (this.droidMoreBox) {
-            this.droidMoreBox.OnDeviceMessage(message);
+        if (this.moreBox) {
+            this.moreBox.OnDeviceMessage(message);
         }
     };
 
@@ -304,11 +307,11 @@ export class StreamClientScrcpy
             }
         };
 
-        const droidMoreBox = (this.droidMoreBox = new DroidMoreBox(udid, player, this));
-        const moreBox = droidMoreBox.getHolderElement();
-        droidMoreBox.setOnStop(stop);
-        const droidToolBox = DroidToolBox.createToolBox(udid, player, this, moreBox);
-        this.controlButtons = droidToolBox.getHolderElement();
+        const googMoreBox = (this.moreBox = new GoogMoreBox(udid, player, this));
+        const moreBox = googMoreBox.getHolderElement();
+        googMoreBox.setOnStop(stop);
+        const googToolBox = GoogToolBox.createToolBox(udid, player, this, moreBox);
+        this.controlButtons = googToolBox.getHolderElement();
         deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');
         video.className = 'video';

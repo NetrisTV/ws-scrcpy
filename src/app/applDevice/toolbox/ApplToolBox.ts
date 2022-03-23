@@ -18,7 +18,7 @@ export interface StreamClient {
     getDeviceName(): string;
 }
 
-export class QVHackToolBox extends ToolBox {
+export class ApplToolBox extends ToolBox {
     protected constructor(list: ToolBoxElement<any>[]) {
         super(list);
     }
@@ -29,7 +29,7 @@ export class QVHackToolBox extends ToolBox {
         client: StreamClient,
         wdaConnection: WdaProxyClient,
         moreBox?: HTMLElement,
-    ): QVHackToolBox {
+    ): ApplToolBox {
         const playerName = player.getName();
         const list = BUTTONS.slice();
         const handler = <K extends keyof HTMLElementEventMap, T extends HTMLElement>(
@@ -65,6 +65,6 @@ export class QVHackToolBox extends ToolBox {
             });
             elements.unshift(more);
         }
-        return new QVHackToolBox(elements);
+        return new ApplToolBox(elements);
     }
 }

@@ -41,7 +41,7 @@ const BUTTONS = [
     },
 ];
 
-export class DroidToolBox extends ToolBox {
+export class GoogToolBox extends ToolBox {
     protected constructor(list: ToolBoxElement<any>[]) {
         super(list);
     }
@@ -51,7 +51,7 @@ export class DroidToolBox extends ToolBox {
         player: BasePlayer,
         client: StreamClientScrcpy,
         moreBox?: HTMLElement,
-    ): DroidToolBox {
+    ): GoogToolBox {
         const playerName = player.getName();
         const list = BUTTONS.slice();
         const handler = <K extends keyof HTMLElementEventMap, T extends HTMLElement>(
@@ -103,6 +103,6 @@ export class DroidToolBox extends ToolBox {
             });
             elements.unshift(more);
         }
-        return new DroidToolBox(elements);
+        return new GoogToolBox(elements);
     }
 }

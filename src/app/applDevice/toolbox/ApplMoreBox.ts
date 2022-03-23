@@ -1,13 +1,13 @@
 import { BasePlayer } from '../../player/BasePlayer';
 import Size from '../../Size';
 
-const TAG = '[QVHackMoreBox]';
+const TAG = '[ApplMoreBox]';
 
 interface StopListener {
     onStop: () => void;
 }
 
-export class QVHackMoreBox {
+export class ApplMoreBox {
     private stopListener?: StopListener;
     private readonly holder: HTMLElement;
 
@@ -28,7 +28,7 @@ export class QVHackMoreBox {
         qualityCheck.id = qualityId;
         qualityLabel.htmlFor = qualityId;
         qualityLabel.innerText = 'Show quality stats';
-        QVHackMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox);
+        ApplMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox);
         qualityCheck.onchange = () => {
             player.setShowQualityStats(qualityCheck.checked);
         };
@@ -52,7 +52,7 @@ export class QVHackMoreBox {
         stopBtn.innerText = `Disconnect`;
         stopBtn.onclick = stop;
 
-        QVHackMoreBox.wrap('p', [stopBtn], moreBox);
+        ApplMoreBox.wrap('p', [stopBtn], moreBox);
         player.on('video-view-resize', this.onViewVideoResize);
         this.holder = moreBox;
     }
