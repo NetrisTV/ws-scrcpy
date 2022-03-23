@@ -25,6 +25,7 @@ declare class XCUITestDriver extends BaseDriver {
     public stop(): Promise<void>;
     public deleteSession(): Promise<void>;
     public updateSettings(opts: any): Promise<void>;
+    public keys(value: string): Promise<void>;
     public wda: any;
 }
 

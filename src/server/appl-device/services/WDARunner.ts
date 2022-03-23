@@ -134,6 +134,8 @@ export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
                 ]);
             case WDAMethod.APPIUM_SETTINGS:
                 return driver.updateSettings(args.options);
+            case WDAMethod.SEND_KEYS:
+                return driver.keys(args.keys);
             default:
                 return `Unknown command: ${method}`;
         }

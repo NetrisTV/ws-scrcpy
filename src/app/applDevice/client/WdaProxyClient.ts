@@ -205,6 +205,12 @@ export class WdaProxyClient
         return this.requestWebDriverAgent(WDAMethod.APPIUM_SETTINGS, { options });
     }
 
+    public async sendKeys(keys: string): Promise<void> {
+        return this.requestWebDriverAgent(WDAMethod.SEND_KEYS, {
+            keys,
+        });
+    }
+
     public async pressButton(name: string): Promise<void> {
         return this.requestWebDriverAgent(WDAMethod.PRESS_BUTTON, {
             name,
