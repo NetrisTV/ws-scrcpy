@@ -4,6 +4,7 @@ import { ParsedUrlQuery } from 'querystring';
 import { StreamClient } from './StreamClient';
 import { BasePlayer, PlayerClass } from '../../player/BasePlayer';
 import { WdaStatus } from '../../../common/WdaStatus';
+import { ApplMjpegMoreBox } from '../toolbox/ApplMjpegMoreBox';
 
 const TAG = '[StreamClientMJPEG]';
 
@@ -42,5 +43,9 @@ export class StreamClientMJPEG extends StreamClient<ParamsStream> {
 
     public getDeviceName(): string {
         return this.deviceName;
+    }
+
+    protected createMoreBox(udid: string, player: BasePlayer): ApplMjpegMoreBox {
+        return new ApplMjpegMoreBox(udid, player, this.wdaProxy);
     }
 }

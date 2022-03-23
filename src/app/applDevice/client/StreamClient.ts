@@ -202,6 +202,10 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         }
     }
 
+    protected createMoreBox(udid: string, player: BasePlayer): ApplMoreBox {
+        return new ApplMoreBox(udid, player);
+    }
+
     protected startStream(inputPlayer?: BasePlayer): void {
         const { udid, player: playerName } = this.params;
         if (!udid) {
@@ -219,7 +223,7 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         const deviceView = document.createElement('div');
         deviceView.className = 'device-view';
 
-        const applMoreBox = new ApplMoreBox(udid, player);
+        const applMoreBox = this.createMoreBox(udid, player);
         applMoreBox.setOnStop(this);
         const moreBox: HTMLElement = applMoreBox.getHolderElement();
         const applToolBox = ApplToolBox.createToolBox(udid, player, this, this.wdaProxy, moreBox);

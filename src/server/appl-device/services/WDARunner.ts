@@ -133,6 +133,8 @@ export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
                     { action: 'moveTo', options: { x: to.x, y: to.y } },
                     { action: 'release', options: {} },
                 ]);
+            case WDAMethod.APPIUM_SETTINGS:
+                return driver.updateSettings(args.options);
             default:
                 return `Unknown command: ${method}`;
         }

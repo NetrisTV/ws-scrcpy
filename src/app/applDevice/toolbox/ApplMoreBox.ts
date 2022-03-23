@@ -1,3 +1,4 @@
+import '../../../style/morebox.css';
 import { BasePlayer } from '../../player/BasePlayer';
 import Size from '../../Size';
 
@@ -62,7 +63,7 @@ export class ApplMoreBox {
         this.holder.style.width = `${size.width - 2 * 10}px`;
     };
 
-    private static wrap(tagName: string, elements: HTMLElement[], parent: HTMLElement): void {
+    protected static wrap(tagName: string, elements: HTMLElement[], parent: HTMLElement): void {
         const wrap = document.createElement(tagName);
         elements.forEach((e) => {
             wrap.appendChild(e);
