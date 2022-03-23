@@ -20,7 +20,7 @@ server:
 # Announce remote device trackers. The server doesn't check their availability.
 remoteHostList:
   - useProxy: true   # optional, default: false
-    type: android    # required, "android" | "ios"
+    type: android    # required, "android" | "ios" | ["android", "ios"]
     secure: true     # required, false for HTTP, true for HTTPS
     hostname: second-mobile-stand.example.com
     port: 8443
@@ -28,4 +28,11 @@ remoteHostList:
     type: ios
     secure: true
     hostname: second-mobile-stand.example.com
+    port: 8443
+  - useProxy: true
+    type:           # short variant
+      - ios
+      - android
+    secure: true
+    hostname: third-mobile-stand.example.com
     port: 8443

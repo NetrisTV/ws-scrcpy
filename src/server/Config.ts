@@ -63,7 +63,24 @@ export class Config {
         if (!this.fullConfig.remoteHostList || !this.fullConfig.remoteHostList.length) {
             return [];
         }
-        return this.fullConfig.remoteHostList.splice(0);
+        const hostList: HostItem[] = [];
+        this.fullConfig.remoteHostList.forEach((item) => {
+            const { hostname, port, secure, useProxy } = item;
+            if (Array.isArray(item.type)) {
+                item.type.forEach((type) => {
+                    hostList.push({
+                        hostname,
+                        port,
+                        secure,
+                        useProxy,
+                        type,
+                    });
+                });
+            } else {
+                hostList.push({ hostname, port, secure, useProxy, type: item.type });
+            }
+        });
+        return hostList;
     }
 
     public getRunLocalGoogTracker(): boolean {

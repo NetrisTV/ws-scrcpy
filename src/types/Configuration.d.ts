@@ -1,7 +1,17 @@
 import * as https from 'https';
 
+export type OperatingSystem = 'android' | 'ios';
+
 export interface HostItem {
-    type: 'android' | 'ios';
+    type: OperatingSystem;
+    secure: boolean;
+    hostname: string;
+    port: number;
+    useProxy?: boolean;
+}
+
+export interface HostsItem {
+    type: OperatingSystem | OperatingSystem[];
     secure: boolean;
     hostname: string;
     port: number;
@@ -32,5 +42,5 @@ export interface Configuration {
     announceApplTracker?: boolean;
     runGoogTracker?: boolean;
     announceGoogTracker?: boolean;
-    remoteHostList?: HostItem[];
+    remoteHostList?: HostsItem[];
 }
