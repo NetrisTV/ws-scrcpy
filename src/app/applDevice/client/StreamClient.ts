@@ -203,7 +203,7 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
     }
 
     protected createMoreBox(udid: string, player: BasePlayer): ApplMoreBox {
-        return new ApplMoreBox(udid, player);
+        return new ApplMoreBox(udid, player, this.wdaProxy);
     }
 
     protected startStream(inputPlayer?: BasePlayer): void {

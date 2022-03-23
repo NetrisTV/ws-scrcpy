@@ -1,6 +1,7 @@
 import '../../../style/morebox.css';
 import { BasePlayer } from '../../player/BasePlayer';
 import Size from '../../Size';
+import { WdaProxyClient } from '../client/WdaProxyClient';
 
 const TAG = '[ApplMoreBox]';
 
@@ -12,7 +13,7 @@ export class ApplMoreBox {
     private stopListener?: StopListener;
     private readonly holder: HTMLElement;
 
-    constructor(udid: string, player: BasePlayer) {
+    constructor(udid: string, player: BasePlayer, wdaConnection: WdaProxyClient) {
         const playerName = player.getName();
         const moreBox = document.createElement('div');
         moreBox.className = 'more-box';
@@ -20,6 +21,17 @@ export class ApplMoreBox {
         nameBox.innerText = `${udid} (${playerName})`;
         nameBox.className = 'text-with-shadow';
         moreBox.appendChild(nameBox);
+        const input = document.createElement('textarea');
+        input.classList.add('text-area');
+        const sendButton = document.createElement('button');
+        sendButton.innerText = 'Send as keys';
+
+        ApplMoreBox.wrap('p', [input, sendButton], moreBox);
+        sendButton.onclick = () => {
+            if (input.value) {
+                wdaConnection.sendKeys(input.value);
+            }
+        };
 
         const qualityId = `show_video_quality_${udid}_${playerName}`;
         const qualityLabel = document.createElement('label');

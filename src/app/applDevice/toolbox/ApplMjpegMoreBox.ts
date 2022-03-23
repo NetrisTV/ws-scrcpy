@@ -8,7 +8,7 @@ export class ApplMjpegMoreBox extends ApplMoreBox {
     private readonly qualityInput: HTMLInputElement;
 
     constructor(udid: string, player: BasePlayer, wdaConnection: WdaProxyClient) {
-        super(udid, player);
+        super(udid, player, wdaConnection);
 
         const action = 'CHANGE_PARAMS';
         const text = 'Change stream parameters';
