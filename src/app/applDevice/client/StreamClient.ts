@@ -99,7 +99,7 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
     protected name: string;
     protected udid: string;
     protected deviceName = '';
-    protected videoWrapper?: HTMLElement;
+    protected videoWrapper: HTMLElement;
     protected deviceView?: HTMLDivElement;
     protected moreBox?: HTMLElement;
     protected player?: BasePlayer;
@@ -109,6 +109,9 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         this.udid = this.params.udid;
         this.wdaProxy = new WdaProxyClient({ ...this.params, action: ACTION.PROXY_WDA });
         this.name = `[${TAG}:${this.udid}]`;
+        this.videoWrapper = document.createElement('div');
+        this.videoWrapper.className = `video`;
+        this.setWdaStatusNotification(WdaStatus.STARTING);
     }
 
     public get action(): string {
@@ -140,22 +143,18 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
     protected async runWebDriverAgent(): Promise<void> {
         if (!this.waitForWda) {
             this.wdaProxy.on('wda-status', this.handleWdaStatus);
-            this.waitForWda = this.wdaProxy
-                .runWebDriverAgent()
-                .then(this.handleWdaStatus)
-                .finally(() => {
-                    this.videoWrapper?.classList.remove(WAIT_CLASS);
-                });
+            this.waitForWda = this.wdaProxy.runWebDriverAgent().then(this.handleWdaStatus);
         }
         return this.waitForWda;
     }
 
     protected handleWdaStatus = (message: MessageRunWdaResponse): void => {
         const data = message.data;
+        this.setWdaStatusNotification(data.status);
         switch (data.status) {
-            case 'starting':
-            case 'started':
-            case 'stopped':
+            case WdaStatus.STARTING:
+            case WdaStatus.STARTED:
+            case WdaStatus.STOPPED:
                 this.emit('wda:status', data.status);
                 break;
             default:
@@ -194,6 +193,15 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         this.player?.stop();
     }
 
+    public setWdaStatusNotification(status: WdaStatus): void {
+        // TODO: use proper notification instead of `cursor: wait`
+        if (status === WdaStatus.STARTED || status === WdaStatus.STOPPED) {
+            this.videoWrapper.classList.remove(WAIT_CLASS);
+        } else {
+            this.videoWrapper.classList.add(WAIT_CLASS);
+        }
+    }
+
     protected startStream(inputPlayer?: BasePlayer): void {
         const { udid, player: playerName } = this.params;
         if (!udid) {
@@ -217,13 +225,10 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         const qvhackToolBox = QVHackToolBox.createToolBox(udid, player, this, this.wdaProxy, moreBox);
         const controlButtons = qvhackToolBox.getHolderElement();
         deviceView.appendChild(controlButtons);
-        const video = document.createElement('div');
-        video.className = `video ${WAIT_CLASS}`;
-        deviceView.appendChild(video);
+        deviceView.appendChild(this.videoWrapper);
         deviceView.appendChild(moreBox);
-        player.setParent(video);
+        player.setParent(this.videoWrapper);
         player.on('input-video-resize', this.onInputVideoResize);
-        this.videoWrapper = video;
 
         document.body.appendChild(deviceView);
         const bounds = this.getMaxSize(controlButtons);

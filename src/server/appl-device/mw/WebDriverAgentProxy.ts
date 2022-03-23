@@ -40,7 +40,7 @@ export class WebDriverAgentProxy extends Mw {
                 type: 'run-wda',
                 data: {
                     udid: udid,
-                    status: 'started',
+                    status: WdaStatus.STARTED,
                     code: -1,
                     text: 'WDA already started',
                 },
@@ -53,7 +53,7 @@ export class WebDriverAgentProxy extends Mw {
             this.onStatusChange(command, status, code, text);
         });
         if (this.wda.isStarted()) {
-            this.onStatusChange(command, 'started');
+            this.onStatusChange(command, WdaStatus.STARTED);
         } else {
             this.wda.start();
         }

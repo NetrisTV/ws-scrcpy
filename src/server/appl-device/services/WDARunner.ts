@@ -142,7 +142,7 @@ export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
         if (this.started || this.starting) {
             return;
         }
-        this.emit('status-change', { status: 'starting' });
+        this.emit('status-change', { status: WdaStatus.STARTING });
         this.starting = true;
         const server = await WdaRunner.getServer(this.udid);
         try {
@@ -165,7 +165,7 @@ export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
                     this.starting = false;
                     server.driver.deleteSession();
                     delete this.server;
-                    this.emit('status-change', { status: 'stopped', code });
+                    this.emit('status-change', { status: WdaStatus.STOPPED, code });
                     if (this.holders > 0) {
                         this.start();
                     }
@@ -183,7 +183,7 @@ export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
             });
             /// #endif
             this.started = true;
-            this.emit('status-change', { status: 'started' });
+            this.emit('status-change', { status: WdaStatus.STARTED });
         } catch (e) {
             this.started = false;
             this.starting = false;

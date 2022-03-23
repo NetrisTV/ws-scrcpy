@@ -1,1 +1,5 @@
-export type WdaStatus = 'starting' | 'started' | 'stopped';
+export enum WdaStatus {
+    STARTING = 'STARTING',
+    STARTED = 'STARTED',
+    STOPPED = 'STOPPED',
+}

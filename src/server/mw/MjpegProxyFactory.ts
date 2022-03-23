@@ -18,7 +18,7 @@ export class MjpegProxyFactory {
                 // FIXME: `wda.start()` should resolve on 'started'
                 const startPromise = new Promise((resolve) => {
                     const onStatusChange = ({ status }: { status: WdaStatus }) => {
-                        if (status === 'started') {
+                        if (status === WdaStatus.STARTED) {
                             wda.off('status-change', onStatusChange);
                             resolve();
                         }
