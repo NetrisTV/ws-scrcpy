@@ -43,7 +43,7 @@ export class TouchControlMessage extends ControlMessage {
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer: Buffer = new Buffer(TouchControlMessage.PAYLOAD_LENGTH + 1);
+        const buffer: Buffer = Buffer.alloc(TouchControlMessage.PAYLOAD_LENGTH + 1);
         let offset = 0;
         offset = buffer.writeUInt8(this.type, offset);
         offset = buffer.writeUInt8(this.action, offset);
