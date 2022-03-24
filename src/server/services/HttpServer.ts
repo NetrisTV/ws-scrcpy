@@ -75,7 +75,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
         if (HttpServer.SERVE_STATIC && HttpServer.PUBLIC_DIR) {
             this.mainApp.use(express.static(HttpServer.PUBLIC_DIR));
 
-            /// #if WDA_RUN_MJPEG_SERVER
+            /// #if USE_WDA_MJPEG_SERVER
 
             const { MjpegProxyFactory } = await import('../mw/MjpegProxyFactory');
             this.mainApp.get('/mjpeg/:udid', new MjpegProxyFactory().proxyRequest);

@@ -3,7 +3,6 @@ import { TypedEmitter } from '../../../common/TypedEmitter';
 import * as portfinder from 'portfinder';
 import { Server, XCUITestDriver } from '../../../types/WdaServer';
 import * as XCUITest from 'appium-xcuitest-driver';
-import { DEVICE_CONNECTIONS_FACTORY } from 'appium-xcuitest-driver/build/lib/device-connections-factory';
 import { WDAMethod } from '../../../common/WDAMethod';
 import { timing } from 'appium-support';
 import { WdaStatus } from '../../../common/WdaStatus';
@@ -178,7 +177,11 @@ export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
                 delete this.server;
                 throw new Error('xcodebuild process not found');
             }
-            /// #if WDA_RUN_MJPEG_SERVER
+            /// #if USE_WDA_MJPEG_SERVER
+            const { DEVICE_CONNECTIONS_FACTORY } = await import(
+                'appium-xcuitest-driver/build/lib/device-connections-factory'
+            );
+
             await DEVICE_CONNECTIONS_FACTORY.requestConnection(this.udid, this.mjpegServerPort, {
                 usePortForwarding: true,
                 devicePort: remoteMjpegServerPort,

@@ -110,11 +110,11 @@ Control your device from `adb shell` in your browser.
 
 #### Screen Casting
 
-Requires [ws-qvh](https://github.com/NetrisTV/ws-qvh) available in `PATH`.
+Requires [ws-qvh][ws-qvh] available in `PATH`.
 
 #### MJPEG Server
 
-Enable `WDA_RUN_MJPEG_SERVER` in the build configuration file
+Enable `USE_WDA_MJPEG_SERVER` in the build configuration file
 (see [custom build](#custom-build)).
 
 Alternative way to stream screen content. It does not
@@ -150,7 +150,8 @@ web views on android devices
 * `USE_H264_CONVERTER` - include [Mse Player](#mse-player)
 * `USE_TINY_H264` - include [TinyH264 Player](#tinyh264-player)
 * `USE_WEBCODECS` - include [WebCodecs Player](#webcodecs-player)
-* `WDA_RUN_MJPEG_SERVER` - configure WebDriverAgent to start MJPEG server
+* `USE_WDA_MJPEG_SERVER` - configure WebDriverAgent to start MJPEG server
+* `USE_QVH_SERVER` - include support for [ws-qvh][ws-qvh]
 * `SCRCPY_LISTENS_ON_ALL_INTERFACES` - WebSocket server in `scrcpy-server.jar`
 will listen for connections on all available interfaces. When `true`, it allows
 connecting to device directly from a browser. Otherwise, the connection must be
@@ -176,11 +177,11 @@ further investigation.
 
 ## Security warning
 Be advised and keep in mind:
-* There is no encryption between browser and node.js server (plain HTTP).
-* There is no encryption between browser and WebSocket server (plain WS).
+* There is no encryption between browser and node.js server (you can [configure](#run-configuration) HTTPS).
+* There is no encryption between browser and WebSocket server on android device.
 * There is no authorization on any level.
 * The modified version of scrcpy with integrated WebSocket server is listening
-for connections on all network interfaces.
+for connections on all network interfaces (see [custom build](#custom-build)).
 * The modified version of scrcpy will keep running after the last client
 disconnected.
 
@@ -192,6 +193,7 @@ disconnected.
 * [DeviceFarmer/adbkit][adbkit]
 * [xtermjs/xterm.js][xterm.js]
 * [udevbe/tinyh264][tinyh264]
+* [danielpaulus/quicktime_video_hack][qvh]
 
 ## scrcpy websocket fork
 
@@ -210,6 +212,8 @@ Currently, support of WebSocket protocol added to v1.19 of scrcpy
 [tinyh264]: https://github.com/udevbe/tinyh264
 [node-pty]: https://github.com/Tyriar/node-pty
 [WebDriverAgent]: https://github.com/appium/WebDriverAgent
+[qvh]: https://github.com/danielpaulus/quicktime_video_hack
+[ws-qvh]: https://github.com/NetrisTV/ws-qvh
 
 [MSE]: https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API
 [isTypeSupported]: https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/isTypeSupported
