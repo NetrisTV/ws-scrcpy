@@ -18,7 +18,10 @@ import { ConfigureScrcpy } from './ConfigureScrcpy';
 import { DeviceTracker } from './DeviceTracker';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { html } from '../../ui/HtmlTag';
-import { FeaturedInteractionHandler, InteractionHandlerListener } from '../../interactionHandler/FeaturedInteractionHandler';
+import {
+    FeaturedInteractionHandler,
+    InteractionHandlerListener,
+} from '../../interactionHandler/FeaturedInteractionHandler';
 import DeviceMessage from '../DeviceMessage';
 import { DisplayInfo } from '../../DisplayInfo';
 import { Attribute } from '../../Attribute';

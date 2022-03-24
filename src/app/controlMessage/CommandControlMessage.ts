@@ -102,7 +102,9 @@ export class CommandControlMessage extends ControlMessage {
         const textLength = text.length;
         let offset = CommandControlMessage.PAYLOAD_LENGTH;
 
-        const buffer = Buffer.alloc(offset + typeField + idField + stateField + sizeField + textLengthField + textLength);
+        const buffer = Buffer.alloc(
+            offset + typeField + idField + stateField + sizeField + textLengthField + textLength,
+        );
         buffer.writeUInt8(event.type, offset);
         offset += typeField;
         buffer.writeInt16BE(id, offset);
