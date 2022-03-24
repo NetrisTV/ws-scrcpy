@@ -147,8 +147,6 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
 
     public start(): void {
         this.init().catch((e) => {
-            console.log(e);
-            
             console.error(`Error: Failed to init "${this.getName()}". ${e.message}`);
         });
     }
