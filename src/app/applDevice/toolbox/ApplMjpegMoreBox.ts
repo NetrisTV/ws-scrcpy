@@ -45,7 +45,9 @@ export class ApplMjpegMoreBox extends ApplMoreBox {
         const scalingFactorInput = document.createElement('input');
         scalingFactorInput.placeholder = `1 .. 100`;
         scalingFactorInput.value = `${defaultOptions.mjpegScalingFactor}`;
-        ApplMjpegMoreBox.wrap('div', [scalingFactorLabel, scalingFactorInput], innerDiv);
+        const scalingWrapper = ApplMjpegMoreBox.wrap('div', [scalingFactorLabel, scalingFactorInput], innerDiv);
+        // FIXME: scaling factor changes are not handled
+        scalingWrapper.style.display = 'none';
         this.scalingFactorInput = scalingFactorInput;
 
         const qualityLabel = document.createElement('label');
