@@ -62,7 +62,6 @@ loadPlatformModulesPromises.push(loadGoogModules());
 async function loadApplModules() {
     const { ControlCenter } = await import('./appl-device/services/ControlCenter');
     const { DeviceTracker } = await import('./appl-device/mw/DeviceTracker');
-    const { StreamProxy } = await import('./appl-device/mw/StreamProxy');
     const { WebDriverAgentProxy } = await import('./appl-device/mw/WebDriverAgentProxy');
 
     // Hack to reduce log-level of appium libs
@@ -81,20 +80,24 @@ async function loadApplModules() {
 
     servicesToStart.push(ControlCenter);
 
-    mwList.push(StreamProxy);
-    mwList.push(WebDriverAgentProxy);
+    /// #if USE_QVH_SERVER
+    const { QVHStreamProxy } = await import('./appl-device/mw/QVHStreamProxy');
+    mw2List.push(QVHStreamProxy);
+    /// #endif
+    mw2List.push(WebDriverAgentProxy);
 }
 loadPlatformModulesPromises.push(loadApplModules());
 /// #endif
 
 Promise.all(loadPlatformModulesPromises)
     .then(() => {
-        servicesToStart.forEach((serviceClass: ServiceClass) => {
+        return servicesToStart.map((serviceClass: ServiceClass) => {
             const service = serviceClass.getInstance();
             runningServices.push(service);
-            service.start();
+            return service.start();
         });
-
+    })
+    .then(() => {
         const wsService = WebSocketServer.getInstance();
         mwList.forEach((mwFactory: MwFactory) => {
             wsService.registerMw(mwFactory);

@@ -71,9 +71,10 @@ export abstract class ProcessRunner<T extends ProcessRunnerEvents> extends Typed
         }
     }
 
-    public start(): void {
-        this.runProcess().catch((e) => {
+    public start(): Promise<void> {
+        return this.runProcess().catch((e) => {
             console.error(this.name, e.message);
+            // throw e;
         });
     }
 

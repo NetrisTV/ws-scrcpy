@@ -1,41 +1,46 @@
 import WS from 'ws';
-import { Mw, RequestParameters } from '../../mw/Mw';
+import { Mw } from '../../mw/Mw';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
-import { ACTION } from '../../../common/Action';
-import { WDARunner } from '../services/WDARunner';
+import { WdaRunner } from '../services/WDARunner';
 import { MessageRunWdaResponse } from '../../../types/MessageRunWdaResponse';
+import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
+import { ChannelCode } from '../../../common/ChannelCode';
+import Util from '../../../app/Util';
+import { WdaStatus } from '../../../common/WdaStatus';
 
 export class WebDriverAgentProxy extends Mw {
     public static readonly TAG = 'WebDriverAgentProxy';
     protected name: string;
-    private wda?: WDARunner;
+    private wda?: WdaRunner;
 
-    public static processRequest(ws: WS, params: RequestParameters): WebDriverAgentProxy | undefined {
-        if (params.parsedQuery?.action !== ACTION.PROXY_WDA) {
+    public static processChannel(ws: Multiplexer, code: string, data: ArrayBuffer): Mw | undefined {
+        if (code !== ChannelCode.WDAP) {
             return;
         }
-        const { parsedQuery } = params;
-        const list = parsedQuery.udid;
-        if (!list) {
+        if (!data || data.byteLength < 4) {
             return;
         }
-        const udid = typeof list === 'string' ? list : list[0];
+        const buffer = Buffer.from(data);
+        const length = buffer.readInt32LE(0);
+        const udid = Util.utf8ByteArrayToString(buffer.slice(4, 4 + length));
         return new WebDriverAgentProxy(ws, udid);
     }
 
-    constructor(protected ws: WS, private readonly udid: string) {
+    constructor(protected ws: Multiplexer, private readonly udid: string) {
         super(ws);
         this.name = `[${WebDriverAgentProxy.TAG}][udid: ${this.udid}]`;
     }
 
     private runWda(command: ControlCenterCommand): void {
         const udid = command.getUdid();
+        const id = command.getId();
         if (this.wda) {
             const message: MessageRunWdaResponse = {
-                id: command.getId(),
+                id,
                 type: 'run-wda',
                 data: {
                     udid: udid,
+                    status: WdaStatus.STARTED,
                     code: -1,
                     text: 'WDA already started',
                 },
@@ -43,24 +48,29 @@ export class WebDriverAgentProxy extends Mw {
             this.sendMessage(message);
             return;
         }
-        this.wda = WDARunner.getInstance(udid);
+        this.wda = WdaRunner.getInstance(udid);
+        this.wda.on('status-change', ({ status, code, text }) => {
+            this.onStatusChange(command, status, code, text);
+        });
         if (this.wda.isStarted()) {
-            this.onStarted(command);
+            this.onStatusChange(command, WdaStatus.STARTED);
         } else {
-            this.wda.once('started', () => {
-                this.onStarted(command);
-            });
+            this.wda.start();
         }
-        this.wda.on('response', this.sendMessage);
     }
 
-    private onStarted = (command: ControlCenterCommand): void => {
+    private onStatusChange = (command: ControlCenterCommand, status: WdaStatus, code?: number, text?: string): void => {
+        const id = command.getId();
+        const udid = command.getUdid();
+        const type = 'run-wda';
         const message: MessageRunWdaResponse = {
-            id: command.getId(),
-            type: 'run-wda',
+            id,
+            type,
             data: {
-                udid: command.getUdid(),
-                code: 0,
+                udid,
+                status,
+                code,
+                text,
             },
         };
         this.sendMessage(message);
@@ -118,7 +128,6 @@ export class WebDriverAgentProxy extends Mw {
     public release(): void {
         super.release();
         if (this.wda) {
-            this.wda.off('response', this.sendMessage);
             this.wda.release();
         }
     }

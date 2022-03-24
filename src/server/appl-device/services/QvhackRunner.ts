@@ -56,8 +56,8 @@ export class QvhackRunner extends ProcessRunner<ProcessRunnerEvents> {
         return [host];
     }
 
-    public start(): void {
-        this.runProcess()
+    public async start(): Promise<void> {
+        return this.runProcess()
             .then(() => {
                 // Wait for server to start listen on a port
                 this.once('stderr', () => {

@@ -8,6 +8,7 @@ import { html } from '../ui/HtmlTag';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import { ParamsDeviceTracker } from '../../types/ParamsDeviceTracker';
 import { HostItem } from '../../types/Configuration';
+import { Tool } from './Tool';
 
 const TAG = '[BaseDeviceTracker]';
 
@@ -22,15 +23,12 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
     public static readonly AttributePlayerFullName = 'data-player-full-name';
     public static readonly AttributePlayerCodeName = 'data-player-code-name';
     public static readonly AttributePrefixPlayerFor = 'player_for_';
+    protected static tools: Set<Tool> = new Set();
     protected static instanceId = 0;
-    protected title = 'Device list';
-    protected tableId = 'base_device_list';
-    protected descriptors: DD[] = [];
-    protected elementId: string;
-    protected trackerName = '';
-    protected id = '';
-    private created = false;
-    private messageId = 0;
+
+    public static registerTool(tool: Tool): void {
+        this.tools.add(tool);
+    }
 
     public static buildUrl(item: HostItem): URL {
         const { secure, port, hostname } = item;
@@ -47,6 +45,38 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         wsUrl.searchParams.set('action', this.ACTION);
         return wsUrl;
     }
+
+    public static buildLink(q: ParsedUrlQueryInput, text: string, params: ParamsDeviceTracker): HTMLAnchorElement {
+        let { hostname } = params;
+        let port: string | number | undefined = params.port;
+        let protocol = params.secure ? 'https:' : 'http:';
+        if (params.useProxy) {
+            q.hostname = hostname;
+            q.port = port;
+            q.secure = params.secure;
+            q.useProxy = true;
+            protocol = location.protocol;
+            hostname = location.hostname;
+            port = location.port;
+        }
+        const hash = `#!${querystring.encode(q)}`;
+        const a = document.createElement('a');
+        a.setAttribute('href', `${protocol}//${hostname}:${port}/${hash}`);
+        a.setAttribute('rel', 'noopener noreferrer');
+        a.setAttribute('target', '_blank');
+        a.classList.add(`link-${q.action}`);
+        a.innerText = text;
+        return a;
+    }
+
+    protected title = 'Device list';
+    protected tableId = 'base_device_list';
+    protected descriptors: DD[] = [];
+    protected elementId: string;
+    protected trackerName = '';
+    protected id = '';
+    private created = false;
+    private messageId = 0;
 
     protected constructor(params: ParamsDeviceTracker, protected readonly directUrl: string) {
         super(params);
@@ -198,29 +228,6 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
             }
         }
         return tbody;
-    }
-
-    public static buildLink(q: ParsedUrlQueryInput, text: string, params: ParamsDeviceTracker): HTMLAnchorElement {
-        let { hostname } = params;
-        let port: string | number | undefined = params.port;
-        let protocol = params.secure ? 'https:' : 'http:';
-        if (params.useProxy) {
-            q.hostname = hostname;
-            q.port = port;
-            q.secure = params.secure;
-            q.useProxy = true;
-            protocol = location.protocol;
-            hostname = location.hostname;
-            port = location.port;
-        }
-        const hash = `#!${querystring.encode(q)}`;
-        const a = document.createElement('a');
-        a.setAttribute('href', `${protocol}//${hostname}:${port}/${hash}`);
-        a.setAttribute('rel', 'noopener noreferrer');
-        a.setAttribute('target', '_blank');
-        a.classList.add(`link-${q.action}`);
-        a.innerText = text;
-        return a;
     }
 
     public getDescriptorByUdid(udid: string): DD | undefined {

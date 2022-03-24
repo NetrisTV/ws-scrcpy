@@ -1,10 +1,15 @@
+import '../../../style/morebox.css';
 import { BasePlayer } from '../../player/BasePlayer';
 import Size from '../../Size';
 
-const TAG = '[QVHackMoreBox]';
+const TAG = '[ApplMoreBox]';
 
-export class QVHackMoreBox {
-    private onStop?: () => void;
+interface StopListener {
+    onStop: () => void;
+}
+
+export class ApplMoreBox {
+    private stopListener?: StopListener;
     private readonly holder: HTMLElement;
 
     constructor(udid: string, player: BasePlayer) {
@@ -24,7 +29,7 @@ export class QVHackMoreBox {
         qualityCheck.id = qualityId;
         qualityLabel.htmlFor = qualityId;
         qualityLabel.innerText = 'Show quality stats';
-        QVHackMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox);
+        ApplMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox);
         qualityCheck.onchange = () => {
             player.setShowQualityStats(qualityCheck.checked);
         };
@@ -38,9 +43,9 @@ export class QVHackMoreBox {
                 parent.removeChild(moreBox);
             }
             player.off('video-view-resize', this.onViewVideoResize);
-            if (this.onStop) {
-                this.onStop();
-                delete this.onStop;
+            if (this.stopListener) {
+                this.stopListener.onStop();
+                delete this.stopListener;
             }
         };
 
@@ -48,7 +53,7 @@ export class QVHackMoreBox {
         stopBtn.innerText = `Disconnect`;
         stopBtn.onclick = stop;
 
-        QVHackMoreBox.wrap('p', [stopBtn], moreBox);
+        ApplMoreBox.wrap('p', [stopBtn], moreBox);
         player.on('video-view-resize', this.onViewVideoResize);
         this.holder = moreBox;
     }
@@ -58,19 +63,20 @@ export class QVHackMoreBox {
         this.holder.style.width = `${size.width - 2 * 10}px`;
     };
 
-    private static wrap(tagName: string, elements: HTMLElement[], parent: HTMLElement): void {
+    protected static wrap(tagName: string, elements: HTMLElement[], parent: HTMLElement): HTMLElement {
         const wrap = document.createElement(tagName);
         elements.forEach((e) => {
             wrap.appendChild(e);
         });
         parent.appendChild(wrap);
+        return wrap;
     }
 
     public getHolderElement(): HTMLElement {
         return this.holder;
     }
 
-    public setOnStop(listener: () => void): void {
-        this.onStop = listener;
+    public setOnStop(listener: StopListener): void {
+        this.stopListener = listener;
     }
 }

@@ -8,9 +8,9 @@ import DeviceMessage from '../DeviceMessage';
 import VideoSettings from '../../VideoSettings';
 import { StreamClientScrcpy } from '../client/StreamClientScrcpy';
 
-const TAG = '[DroidMoreBox]';
+const TAG = '[GoogMoreBox]';
 
-export class DroidMoreBox {
+export class GoogMoreBox {
     private static defaultSize = new Size(480, 480);
     private onStop?: () => void;
     private readonly holder: HTMLElement;
@@ -37,7 +37,7 @@ export class DroidMoreBox {
         const sendButton = document.createElement('button');
         sendButton.innerText = 'Send as keys';
 
-        const inputWrapper = DroidMoreBox.wrap('p', [input, sendButton], moreBox);
+        const inputWrapper = GoogMoreBox.wrap('p', [input, sendButton], moreBox);
         sendButton.onclick = () => {
             if (input.value) {
                 client.sendMessage(new TextControlMessage(input.value));
@@ -76,7 +76,7 @@ export class DroidMoreBox {
                 bitrateInput = document.createElement('input');
                 bitrateInput.placeholder = `${preferredSettings.bitrate} bps`;
                 bitrateInput.value = videoSettings.bitrate.toString();
-                DroidMoreBox.wrap('div', [bitrateLabel, bitrateInput], innerDiv);
+                GoogMoreBox.wrap('div', [bitrateLabel, bitrateInput], innerDiv);
                 this.bitrateInput = bitrateInput;
 
                 const maxFpsLabel = document.createElement('label');
@@ -84,7 +84,7 @@ export class DroidMoreBox {
                 maxFpsInput = document.createElement('input');
                 maxFpsInput.placeholder = `${preferredSettings.maxFps} fps`;
                 maxFpsInput.value = videoSettings.maxFps.toString();
-                DroidMoreBox.wrap('div', [maxFpsLabel, maxFpsInput], innerDiv);
+                GoogMoreBox.wrap('div', [maxFpsLabel, maxFpsInput], innerDiv);
                 this.maxFpsInput = maxFpsInput;
 
                 const iFrameIntervalLabel = document.createElement('label');
@@ -92,10 +92,10 @@ export class DroidMoreBox {
                 iFrameIntervalInput = document.createElement('input');
                 iFrameIntervalInput.placeholder = `${preferredSettings.iFrameInterval} seconds`;
                 iFrameIntervalInput.value = videoSettings.iFrameInterval.toString();
-                DroidMoreBox.wrap('div', [iFrameIntervalLabel, iFrameIntervalInput], innerDiv);
+                GoogMoreBox.wrap('div', [iFrameIntervalLabel, iFrameIntervalInput], innerDiv);
                 this.iFrameIntervalInput = iFrameIntervalInput;
 
-                const { width, height } = videoSettings.bounds || client.getMaxSize() || DroidMoreBox.defaultSize;
+                const { width, height } = videoSettings.bounds || client.getMaxSize() || GoogMoreBox.defaultSize;
                 const pWidth = preferredSettings.bounds?.width || width;
                 const pHeight = preferredSettings.bounds?.height || height;
 
@@ -104,7 +104,7 @@ export class DroidMoreBox {
                 maxWidthInput = document.createElement('input');
                 maxWidthInput.placeholder = `${pWidth} px`;
                 maxWidthInput.value = width.toString();
-                DroidMoreBox.wrap('div', [maxWidthLabel, maxWidthInput], innerDiv);
+                GoogMoreBox.wrap('div', [maxWidthLabel, maxWidthInput], innerDiv);
                 this.maxWidthInput = maxWidthInput;
 
                 const maxHeightLabel = document.createElement('label');
@@ -112,7 +112,7 @@ export class DroidMoreBox {
                 maxHeightInput = document.createElement('input');
                 maxHeightInput.placeholder = `${pHeight} px`;
                 maxHeightInput.value = height.toString();
-                DroidMoreBox.wrap('div', [maxHeightLabel, maxHeightInput], innerDiv);
+                GoogMoreBox.wrap('div', [maxHeightLabel, maxHeightInput], innerDiv);
                 this.maxHeightInput = maxHeightInput;
 
                 innerDiv.appendChild(btn);
@@ -175,7 +175,7 @@ export class DroidMoreBox {
                 };
             }
         }
-        DroidMoreBox.wrap('p', commands, moreBox);
+        GoogMoreBox.wrap('p', commands, moreBox);
 
         const screenPowerModeId = `screen_power_mode_${udid}_${playerName}_${displayId}`;
         const screenPowerModeLabel = document.createElement('label');
@@ -198,7 +198,7 @@ export class DroidMoreBox {
             const message = CommandControlMessage.createSetScreenPowerModeCommand(screenPowerModeCheck.checked);
             client.sendMessage(message);
         };
-        DroidMoreBox.wrap('p', [screenPowerModeCheck, screenPowerModeLabel, sendScreenPowerModeButton], moreBox, [
+        GoogMoreBox.wrap('p', [screenPowerModeCheck, screenPowerModeLabel, sendScreenPowerModeButton], moreBox, [
             'flex-center',
         ]);
 
@@ -210,7 +210,7 @@ export class DroidMoreBox {
         qualityCheck.id = qualityId;
         qualityLabel.htmlFor = qualityId;
         qualityLabel.innerText = 'Show quality stats';
-        DroidMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox, ['flex-center']);
+        GoogMoreBox.wrap('p', [qualityCheck, qualityLabel], moreBox, ['flex-center']);
         qualityCheck.onchange = () => {
             player.setShowQualityStats(qualityCheck.checked);
         };
@@ -234,7 +234,7 @@ export class DroidMoreBox {
         stopBtn.innerText = `Disconnect`;
         stopBtn.onclick = stop;
 
-        DroidMoreBox.wrap('p', [stopBtn], moreBox);
+        GoogMoreBox.wrap('p', [stopBtn], moreBox);
         player.on('video-view-resize', this.onViewVideoResize);
         player.on('video-settings', this.onVideoSettings);
         this.holder = moreBox;
@@ -267,7 +267,7 @@ export class DroidMoreBox {
     };
 
     private fit = (): void => {
-        const { width, height } = this.client.getMaxSize() || DroidMoreBox.defaultSize;
+        const { width, height } = this.client.getMaxSize() || GoogMoreBox.defaultSize;
         if (this.maxWidthInput) {
             this.maxWidthInput.value = width.toString();
         }
