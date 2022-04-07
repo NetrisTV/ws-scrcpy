@@ -17,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "@devicefarmer/adbkit": "^2.11.3",
+    "chokidar": "^3.5.3",
     "express": "^4.17.1",
     "ios-device-lib": "0.9.0",
     "node-mjpeg-proxy": "^0.3.2",
