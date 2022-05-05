@@ -32,7 +32,7 @@
     "@types/express": "^4.17.13",
     "@types/mini-css-extract-plugin": "^1.2.2",
     "@types/node": "^12.20.47",
-    "@types/node-forge": "^1.0.1",
+    "@types/node-forge": "^0.10.0",
     "@types/npmlog": "^4.1.4",
     "@types/webpack-node-externals": "^2.5.3",
     "@types/ws": "^7.4.7",
