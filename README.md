@@ -29,7 +29,6 @@ npm start
 ## Known issues
 
 * The server on the Android Emulator listens on internal interface and not available from the outside (as workaround you can do `adb forward tcp:8886 tcp:8886`)
-* H264bsdDecoder may fail to start 
 
 ## scrcpy websocket fork
 
