@@ -15,10 +15,10 @@ import { ChannelCode } from '../../../common/ChannelCode';
 
 const TAG = '[ShellClient]';
 
-export class ShellClient extends ManagerClient<ParamsShell, never> {
+export class _ShellClient extends ManagerClient<ParamsShell, never> {
     public static ACTION = ACTION.SHELL;
-    public static start(params: ParsedUrlQuery): ShellClient {
-        return new ShellClient(params);
+    public static start(params: ParsedUrlQuery): _ShellClient {
+        return new _ShellClient(params);
     }
 
     private readonly term: Terminal;
@@ -40,7 +40,7 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
         this.fitAddon = new FitAddon();
         this.term.loadAddon(this.fitAddon);
         this.escapedUdid = Util.escapeUdid(this.udid);
-        this.term.open(ShellClient.getOrCreateContainer(this.escapedUdid));
+        this.term.open(_ShellClient.getOrCreateContainer(this.escapedUdid));
         this.updateTerminalSize();
         this.term.focus();
     }
@@ -103,7 +103,7 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
     private updateTerminalSize(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const term: any = this.term;
-        const terminalContainer: HTMLElement = ShellClient.getOrCreateContainer(this.escapedUdid);
+        const terminalContainer: HTMLElement = _ShellClient.getOrCreateContainer(this.escapedUdid);
         const { rows, cols } = this.fitAddon.proposeDimensions();
         const width =
             (cols * term._core._renderService.dimensions.actualCellWidth + term._core.viewport.scrollBarWidth).toFixed(

@@ -77,12 +77,12 @@ window.onload = async function (): Promise<void> {
     const tools: Tool[] = [];
 
     /// #if INCLUDE_ADB_SHELL
-    const { ShellClient } = await import('./googDevice/client/ShellClient');
-    if (action === ShellClient.ACTION && typeof parsedQuery.udid === 'string') {
-        ShellClient.start(parsedQuery);
-        return;
-    }
-    tools.push(ShellClient);
+    // const { _ShellClient } = await import('./googDevice/client/ShellClient');
+    // if (action === _ShellClient.ACTION && typeof parsedQuery.udid === 'string') {
+    //     _ShellClient.start(parsedQuery);
+    //     return;
+    // }
+    // tools.push(_ShellClient);
     /// #endif
 
     /// #if INCLUDE_DEV_TOOLS
