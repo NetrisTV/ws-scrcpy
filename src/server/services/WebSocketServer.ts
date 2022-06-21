@@ -68,9 +68,10 @@ export class WebSocketServer implements Service {
         return `WebSocket Server Service`;
     }
 
-    public start(): void {
+    public async start(): Promise<void> {
         const service = HttpServer.getInstance();
-        service.getServers().forEach((item) => {
+        const servers = await service.getServers();
+        servers.forEach((item) => {
             this.attachToServer(item);
         });
     }

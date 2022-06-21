@@ -4,14 +4,13 @@ import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
 import Util from '../../Util';
 import { html } from '../../ui/HtmlTag';
 import { DeviceState } from '../../../common/DeviceState';
-import { ParsedUrlQueryInput } from 'querystring';
 import { HostItem } from '../../../types/Configuration';
 import { ChannelCode } from '../../../common/ChannelCode';
-import { StreamClientQVHack } from './StreamClientQVHack';
+import { Tool } from '../../client/Tool';
 
 export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never> {
     public static ACTION = ACTION.APPL_DEVICE_LIST;
-    protected tableId = 'appl_devices_list';
+    protected static tools: Set<Tool> = new Set();
     private static instancesByUrl: Map<string, DeviceTracker> = new Map();
 
     public static start(hostItem: HostItem): DeviceTracker {
@@ -26,7 +25,7 @@ export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never
     public static getInstance(hostItem: HostItem): DeviceTracker {
         return this.start(hostItem);
     }
-
+    protected tableId = 'appl_devices_list';
     constructor(params: HostItem, directUrl: string) {
         super({ ...params, action: DeviceTracker.ACTION }, directUrl);
         DeviceTracker.instancesByUrl.set(directUrl, this);
@@ -60,23 +59,17 @@ export class DeviceTracker extends BaseDeviceTracker<ApplDeviceDescriptor, never
             return;
         }
 
-        const name = `${DeviceTracker.AttributePrefixPlayerFor}${fullName}`;
-        const players = StreamClientQVHack.getPlayers();
-        players.forEach((playerClass) => {
-            const { playerCodeName, playerFullName } = playerClass;
-            const playerTd = document.createElement('div');
-            playerTd.classList.add(blockClass);
-            playerTd.setAttribute('name', encodeURIComponent(name));
-            playerTd.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
-            playerTd.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
-            const q: ParsedUrlQueryInput = {
-                action: ACTION.STREAM_WS_QVH,
-                player: playerCodeName,
-                udid: device.udid,
-            };
-            const link = DeviceTracker.buildLink(q, `Stream (${playerFullName})`, this.params);
-            playerTd.appendChild(link);
-            services.appendChild(playerTd);
+        DeviceTracker.tools.forEach((tool) => {
+            const entry = tool.createEntryForDeviceList(device, blockClass, this.params);
+            if (entry) {
+                if (Array.isArray(entry)) {
+                    entry.forEach((item) => {
+                        item && services.appendChild(item);
+                    });
+                } else {
+                    services.appendChild(entry);
+                }
+            }
         });
         tbody.appendChild(row);
     }

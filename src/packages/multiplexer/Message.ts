@@ -4,7 +4,7 @@ import { CloseEventClass } from './CloseEventClass';
 
 export class Message {
     public static parse(buffer: ArrayBuffer): Message {
-        const view = new Buffer(buffer);
+        const view = Buffer.from(buffer);
 
         const type: MessageType = view.readUInt8(0);
         const channelId = view.readUInt32LE(1);

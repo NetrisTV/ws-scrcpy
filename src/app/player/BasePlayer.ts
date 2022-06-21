@@ -82,6 +82,9 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     protected receivedFirstFrame = false;
     private statLines: string[] = [];
     public readonly supportsScreenshot: boolean = false;
+    public readonly resizeVideoToBounds: boolean = false;
+    protected videoHeight = -1;
+    protected videoWidth = -1;
 
     public static storageKeyPrefix = 'BaseDecoder';
     public static playerFullName = 'BasePlayer';
@@ -94,6 +97,11 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         bounds: new Size(480, 480),
         sendFrameMeta: false,
     });
+
+    public static isSupported(): boolean {
+        // Implement the check in a child class
+        return false;
+    }
 
     constructor(
         public readonly udid: string,
@@ -110,6 +118,45 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         };
         const preferred = this.getPreferredVideoSetting();
         this.videoSettings = BasePlayer.getVideoSettingFromStorage(preferred, this.storageKeyPrefix, udid, displayInfo);
+    }
+
+    protected calculateScreenInfoForBounds(videoWidth: number, videoHeight: number): void {
+        this.videoWidth = videoWidth;
+        this.videoHeight = videoHeight;
+        if (this.resizeVideoToBounds) {
+            let w = videoWidth;
+            let h = videoHeight;
+            if (this.bounds) {
+                let { w: boundsWidth, h: boundsHeight } = this.bounds;
+                if (w > boundsWidth || h > boundsHeight) {
+                    let scaledHeight;
+                    let scaledWidth;
+                    if (boundsWidth > w) {
+                        scaledHeight = h;
+                    } else {
+                        scaledHeight = (boundsWidth * h) / w;
+                    }
+                    if (boundsHeight > scaledHeight) {
+                        boundsHeight = scaledHeight;
+                    }
+                    if (boundsHeight == h) {
+                        scaledWidth = w;
+                    } else {
+                        scaledWidth = (boundsHeight * w) / h;
+                    }
+                    if (boundsWidth > scaledWidth) {
+                        boundsWidth = scaledWidth;
+                    }
+                    w = boundsWidth | 0;
+                    h = boundsHeight | 0;
+                    this.tag.style.maxWidth = `${w}px`;
+                    this.tag.style.maxHeight = `${h}px`;
+                }
+            }
+            const realScreen = new ScreenInfo(new Rect(0, 0, videoWidth, videoHeight), new Size(w, h), 0);
+            this.emit('input-video-resize', realScreen);
+            this.setScreenInfo(new ScreenInfo(new Rect(0, 0, w, h), new Size(w, h), 0));
+        }
     }
 
     protected static isIFrame(frame: Uint8Array): boolean {

@@ -19,7 +19,7 @@ export class DisplayInfo {
     ) {}
 
     public toBuffer(): Buffer {
-        const temp = new Buffer(DisplayInfo.BUFFER_LENGTH);
+        const temp = Buffer.alloc(DisplayInfo.BUFFER_LENGTH);
         let offset = 0;
         offset = temp.writeInt32BE(this.displayId, offset);
         offset = temp.writeInt32BE(this.size.width, offset);

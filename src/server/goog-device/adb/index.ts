@@ -12,7 +12,7 @@ export class AdbExtended extends Adb {
     static createClient(options: Options = {}): ExtendedClient {
         const opts: ClientOptions = {
             bin: options.bin,
-            host: options.host || process.env.ADB_HOST,
+            host: options.host || process.env.ADB_HOST || '127.0.0.1',
             port: options.port || 0,
         };
         if (!opts.port) {

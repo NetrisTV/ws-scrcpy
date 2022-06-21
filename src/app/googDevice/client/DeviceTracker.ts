@@ -13,8 +13,8 @@ import { DeviceState } from '../../../common/DeviceState';
 import { Message } from '../../../types/Message';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { HostItem } from '../../../types/Configuration';
-import { Tool } from './Tool';
 import { ChannelCode } from '../../../common/ChannelCode';
+import { Tool } from '../../client/Tool';
 
 type Field = keyof GoogDeviceDescriptor | ((descriptor: GoogDeviceDescriptor) => string);
 type DescriptionColumn = { title: string; field: Field };
@@ -34,7 +34,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
     public static readonly ACTION = ACTION.GOOG_DEVICE_LIST;
     public static readonly CREATE_DIRECT_LINKS = true;
     private static instancesByUrl: Map<string, DeviceTracker> = new Map();
-    private static tools: Set<Tool> = new Set();
+    protected static tools: Set<Tool> = new Set();
     protected tableId = 'goog_device_list';
 
     public static start(hostItem: HostItem): DeviceTracker {
@@ -48,10 +48,6 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
 
     public static getInstance(hostItem: HostItem): DeviceTracker {
         return this.start(hostItem);
-    }
-
-    public static registerTool(tool: Tool): void {
-        this.tools.add(tool);
     }
 
     protected constructor(params: HostItem, directUrl: string) {
@@ -201,7 +197,13 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         DeviceTracker.tools.forEach((tool) => {
             const entry = tool.createEntryForDeviceList(device, blockClass, this.params);
             if (entry) {
-                services.appendChild(entry);
+                if (Array.isArray(entry)) {
+                    entry.forEach((item) => {
+                        item && services.appendChild(item);
+                    });
+                } else {
+                    services.appendChild(entry);
+                }
             }
         });
 

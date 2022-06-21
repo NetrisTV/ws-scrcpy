@@ -1,6 +1,7 @@
 import { Mw, RequestParameters } from './Mw';
 import WS from 'ws';
 import { ACTION } from '../../common/Action';
+import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
 
 export class WebsocketProxy extends Mw {
     public static readonly TAG = 'WebsocketProxy';
@@ -24,7 +25,7 @@ export class WebsocketProxy extends Mw {
         return this.createProxy(ws, parsedQuery.ws);
     }
 
-    public static createProxy(ws: WS, remoteUrl: string): WebsocketProxy {
+    public static createProxy(ws: WS | Multiplexer, remoteUrl: string): WebsocketProxy {
         const service = new WebsocketProxy(ws);
         service.init(remoteUrl).catch((e) => {
             const msg = `[${this.TAG}] Failed to start service: ${e.message}`;
@@ -34,7 +35,7 @@ export class WebsocketProxy extends Mw {
         return service;
     }
 
-    constructor(ws: WS) {
+    constructor(ws: WS | Multiplexer) {
         super(ws);
     }
 

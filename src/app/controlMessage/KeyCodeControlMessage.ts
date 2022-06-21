@@ -24,7 +24,7 @@ export class KeyCodeControlMessage extends ControlMessage {
      * @override
      */
     public toBuffer(): Buffer {
-        const buffer = new Buffer(KeyCodeControlMessage.PAYLOAD_LENGTH + 1);
+        const buffer = Buffer.alloc(KeyCodeControlMessage.PAYLOAD_LENGTH + 1);
         let offset = 0;
         offset = buffer.writeInt8(this.type, offset);
         offset = buffer.writeInt8(this.action, offset);

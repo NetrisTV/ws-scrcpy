@@ -31,7 +31,7 @@ export class FilePushReader {
     }
 
     private static createResponse(id: number, code: number): Buffer {
-        const buffer = new Buffer(3);
+        const buffer = Buffer.alloc(3);
         let offset = 0;
         offset = buffer.writeInt16BE(id, offset);
         buffer.writeInt8(code, offset);
@@ -75,7 +75,7 @@ export class FilePushReader {
     }
 
     private onMessage = async (e: MessageEvent): Promise<void> => {
-        const command = CommandControlMessage.pushFileCommandFromBuffer(new Buffer(e.data));
+        const command = CommandControlMessage.pushFileCommandFromBuffer(Buffer.from(e.data));
 
         const { id, state } = command;
         switch (state) {

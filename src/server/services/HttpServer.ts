@@ -5,6 +5,7 @@ import { Service } from './Service';
 import { Utils } from '../Utils';
 import express, { Express } from 'express';
 import { Config } from '../Config';
+import { TypedEmitter } from '../../common/TypedEmitter';
 
 const DEFAULT_STATIC_DIR = path.join(__dirname, './public');
 
@@ -13,15 +14,20 @@ export type ServerAndPort = {
     port: number;
 };
 
-export class HttpServer implements Service {
+interface HttpServerEvents {
+    started: boolean;
+}
+
+export class HttpServer extends TypedEmitter<HttpServerEvents> implements Service {
     private static instance: HttpServer;
     private static PUBLIC_DIR = DEFAULT_STATIC_DIR;
     private static SERVE_STATIC = true;
     private servers: ServerAndPort[] = [];
     private mainApp?: Express;
+    private started = false;
 
     protected constructor() {
-        // nothing here
+        super();
     }
 
     public static getInstance(): HttpServer {
@@ -49,18 +55,31 @@ export class HttpServer implements Service {
         HttpServer.SERVE_STATIC = enabled;
     }
 
-    public getServers(): ServerAndPort[] {
-        return [...this.servers];
+    public async getServers(): Promise<ServerAndPort[]> {
+        if (this.started) {
+            return [...this.servers];
+        }
+        return new Promise<ServerAndPort[]>((resolve) => {
+            this.once('started', () => {
+                resolve([...this.servers]);
+            });
+        });
     }
 
     public getName(): string {
         return `HTTP(s) Server Service`;
     }
 
-    public start(): void {
+    public async start(): Promise<void> {
         this.mainApp = express();
         if (HttpServer.SERVE_STATIC && HttpServer.PUBLIC_DIR) {
             this.mainApp.use(express.static(HttpServer.PUBLIC_DIR));
+
+            /// #if USE_WDA_MJPEG_SERVER
+
+            const { MjpegProxyFactory } = await import('../mw/MjpegProxyFactory');
+            this.mainApp.get('/mjpeg/:udid', new MjpegProxyFactory().proxyRequest);
+            /// #endif
         }
         const config = Config.getInstance();
         config.getServers().forEach((serverItem) => {
@@ -123,6 +142,8 @@ export class HttpServer implements Service {
                 Utils.printListeningMsg(proto, port);
             });
         });
+        this.started = true;
+        this.emit('started', true);
     }
 
     public release(): void {

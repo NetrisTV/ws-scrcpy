@@ -57,7 +57,7 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
         let offset = MAGIC_BYTES_INITIAL.length;
         let nameBytes = new Uint8Array(data, offset, DEVICE_NAME_FIELD_LENGTH);
         offset += DEVICE_NAME_FIELD_LENGTH;
-        let rest: Buffer = new Buffer(new Uint8Array(data, offset));
+        let rest: Buffer = Buffer.from(new Uint8Array(data, offset));
         const displaysCount = rest.readInt32BE(0);
         this.displayInfoMap.clear();
         this.connectionCountMap.clear();
@@ -117,6 +117,9 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
 
     protected buildDirectWebSocketUrl(): URL {
         const localUrl = super.buildDirectWebSocketUrl();
+        if (this.supportMultiplexing()) {
+            return localUrl;
+        }
         localUrl.searchParams.set('udid', this.params.udid);
         return localUrl;
     }

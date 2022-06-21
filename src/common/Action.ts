@@ -9,6 +9,7 @@ export enum ACTION {
     DEVTOOLS = 'devtools',
     STREAM_SCRCPY = 'stream',
     STREAM_WS_QVH = 'stream-qvh',
+    STREAM_MJPEG = 'stream-mjpeg',
     PROXY_WDA = 'proxy-wda',
     FILE_LISTING = 'list-files',
 }

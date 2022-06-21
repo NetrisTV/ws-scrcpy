@@ -1,6 +1,6 @@
 export interface Service {
     getName(): string;
-    start(): void;
+    start(): Promise<void>;
     release(): void;
 }
 
