@@ -1,0 +1,10423 @@
+[
+  {
+    "type": 2,
+    "action": 0,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 168,
+        "y": 288
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 168,
+        "y": 288
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 168,
+        "y": 289
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 168,
+        "y": 289
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 167,
+        "y": 290
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 167,
+        "y": 290
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 166,
+        "y": 291
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 166,
+        "y": 291
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 165,
+        "y": 292
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 165,
+        "y": 293
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 164,
+        "y": 293
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 164,
+        "y": 294
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 163,
+        "y": 294
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 163,
+        "y": 295
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 163,
+        "y": 295
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 162,
+        "y": 296
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 162,
+        "y": 296
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 161,
+        "y": 297
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 161,
+        "y": 297
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 161,
+        "y": 298
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 160,
+        "y": 298
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 160,
+        "y": 299
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 160,
+        "y": 299
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 159,
+        "y": 299
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 159,
+        "y": 300
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 158,
+        "y": 300
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 158,
+        "y": 301
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 158,
+        "y": 301
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 157,
+        "y": 301
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 157,
+        "y": 302
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 156,
+        "y": 302
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 156,
+        "y": 302
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 155,
+        "y": 302
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 154,
+        "y": 303
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 153,
+        "y": 304
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 153,
+        "y": 304
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 152,
+        "y": 304
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 152,
+        "y": 304
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 152,
+        "y": 304
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 152,
+        "y": 305
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 151,
+        "y": 305
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 151,
+        "y": 305
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 150,
+        "y": 306
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 150,
+        "y": 306
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 149,
+        "y": 307
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 149,
+        "y": 307
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 149,
+        "y": 308
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 148,
+        "y": 309
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 147,
+        "y": 309
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 147,
+        "y": 310
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 146,
+        "y": 310
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 146,
+        "y": 311
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 145,
+        "y": 312
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 145,
+        "y": 312
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 144,
+        "y": 313
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 144,
+        "y": 313
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 143,
+        "y": 314
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 142,
+        "y": 315
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 142,
+        "y": 316
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 141,
+        "y": 316
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 140,
+        "y": 317
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 138,
+        "y": 319
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 137,
+        "y": 320
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 136,
+        "y": 321
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 135,
+        "y": 322
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 134,
+        "y": 323
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 133,
+        "y": 324
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 131,
+        "y": 325
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 131,
+        "y": 326
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 130,
+        "y": 327
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 130,
+        "y": 327
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 129,
+        "y": 328
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 129,
+        "y": 328
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 128,
+        "y": 329
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 128,
+        "y": 330
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 127,
+        "y": 331
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 126,
+        "y": 331
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 125,
+        "y": 332
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 125,
+        "y": 332
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 125,
+        "y": 333
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 124,
+        "y": 333
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 124,
+        "y": 333
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 124,
+        "y": 334
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 123,
+        "y": 334
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 123,
+        "y": 335
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 122,
+        "y": 335
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 122,
+        "y": 336
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 121,
+        "y": 336
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 121,
+        "y": 337
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 120,
+        "y": 337
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 120,
+        "y": 338
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 119,
+        "y": 339
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 119,
+        "y": 339
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 118,
+        "y": 340
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 118,
+        "y": 340
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 117,
+        "y": 341
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 117,
+        "y": 342
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 116,
+        "y": 342
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 115,
+        "y": 343
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 115,
+        "y": 344
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 114,
+        "y": 344
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 345
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 346
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 347
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 111,
+        "y": 347
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 348
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 348
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 109,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 109,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 108,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 108,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 107,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 106,
+        "y": 351
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 106,
+        "y": 351
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 105,
+        "y": 352
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 104,
+        "y": 352
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 103,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 102,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 101,
+        "y": 354
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 100,
+        "y": 355
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 99,
+        "y": 355
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 98,
+        "y": 356
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 98,
+        "y": 356
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 98,
+        "y": 356
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 97,
+        "y": 356
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 98,
+        "y": 356
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 100,
+        "y": 355
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 101,
+        "y": 355
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 103,
+        "y": 354
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 105,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 117,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 122,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 126,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 131,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 133,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 135,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 138,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 140,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 142,
+        "y": 353
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 143,
+        "y": 352
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 145,
+        "y": 352
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 147,
+        "y": 352
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 149,
+        "y": 352
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 150,
+        "y": 351
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 152,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 153,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 155,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 156,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 157,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 158,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 159,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 160,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 160,
+        "y": 350
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 160,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 161,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 162,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 162,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 163,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 164,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 165,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 166,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 166,
+        "y": 349
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 166,
+        "y": 348
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 166,
+        "y": 348
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 166,
+        "y": 347
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 166,
+        "y": 346
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 165,
+        "y": 345
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 163,
+        "y": 344
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 162,
+        "y": 343
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 161,
+        "y": 342
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 159,
+        "y": 340
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 154,
+        "y": 338
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 152,
+        "y": 336
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 149,
+        "y": 335
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 147,
+        "y": 333
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 145,
+        "y": 332
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 140,
+        "y": 329
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 136,
+        "y": 327
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 133,
+        "y": 326
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 131,
+        "y": 324
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 130,
+        "y": 324
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 130,
+        "y": 323
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 127,
+        "y": 322
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 127,
+        "y": 321
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 126,
+        "y": 321
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 125,
+        "y": 321
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 125,
+        "y": 320
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 124,
+        "y": 320
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 124,
+        "y": 320
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 123,
+        "y": 319
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 123,
+        "y": 319
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 122,
+        "y": 318
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 121,
+        "y": 318
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 121,
+        "y": 317
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 120,
+        "y": 317
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 119,
+        "y": 316
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 118,
+        "y": 315
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 117,
+        "y": 314
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 116,
+        "y": 314
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 115,
+        "y": 313
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 115,
+        "y": 313
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 114,
+        "y": 312
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 114,
+        "y": 312
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 312
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 311
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 311
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 311
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 310
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 310
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 308
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 308
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 307
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 307
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 306
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 305
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 305
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 304
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 111,
+        "y": 302
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 111,
+        "y": 302
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 111,
+        "y": 301
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 301
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 300
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 299
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 299
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 109,
+        "y": 298
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 109,
+        "y": 297
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 108,
+        "y": 296
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 108,
+        "y": 295
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 108,
+        "y": 295
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 107,
+        "y": 294
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 107,
+        "y": 293
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 107,
+        "y": 292
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 107,
+        "y": 291
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 106,
+        "y": 291
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 106,
+        "y": 290
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 105,
+        "y": 289
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 105,
+        "y": 289
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 104,
+        "y": 289
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 103,
+        "y": 288
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 103,
+        "y": 287
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 102,
+        "y": 287
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 102,
+        "y": 286
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 101,
+        "y": 286
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 101,
+        "y": 285
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 100,
+        "y": 285
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 100,
+        "y": 284
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 99,
+        "y": 284
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 99,
+        "y": 283
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 98,
+        "y": 283
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 98,
+        "y": 282
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 97,
+        "y": 282
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 96,
+        "y": 282
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 96,
+        "y": 281
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 96,
+        "y": 281
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 95,
+        "y": 280
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 94,
+        "y": 280
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 94,
+        "y": 279
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 93,
+        "y": 279
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 93,
+        "y": 278
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 92,
+        "y": 278
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 92,
+        "y": 278
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 92,
+        "y": 277
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 91,
+        "y": 277
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 90,
+        "y": 276
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 90,
+        "y": 275
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 89,
+        "y": 274
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 88,
+        "y": 273
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 88,
+        "y": 273
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 88,
+        "y": 272
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 87,
+        "y": 271
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 87,
+        "y": 271
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 86,
+        "y": 270
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 86,
+        "y": 269
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 86,
+        "y": 269
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 85,
+        "y": 268
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 85,
+        "y": 267
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 84,
+        "y": 267
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 84,
+        "y": 266
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 83,
+        "y": 264
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 82,
+        "y": 263
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 79,
+        "y": 260
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 78,
+        "y": 259
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 77,
+        "y": 259
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 76,
+        "y": 258
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 75,
+        "y": 257
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 74,
+        "y": 256
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 73,
+        "y": 255
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 72,
+        "y": 253
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 71,
+        "y": 252
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 70,
+        "y": 251
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 70,
+        "y": 250
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 69,
+        "y": 249
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 69,
+        "y": 248
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 68,
+        "y": 247
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 67,
+        "y": 247
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 67,
+        "y": 246
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 66,
+        "y": 245
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 65,
+        "y": 244
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 65,
+        "y": 243
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 65,
+        "y": 243
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 64,
+        "y": 242
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 64,
+        "y": 242
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 64,
+        "y": 241
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 63,
+        "y": 241
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 62,
+        "y": 240
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 62,
+        "y": 239
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 61,
+        "y": 239
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 61,
+        "y": 238
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 60,
+        "y": 237
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 59,
+        "y": 237
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 59,
+        "y": 236
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 58,
+        "y": 236
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 57,
+        "y": 235
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 56,
+        "y": 234
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 56,
+        "y": 234
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 55,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 55,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 54,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 54,
+        "y": 231
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 53,
+        "y": 231
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 53,
+        "y": 230
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 53,
+        "y": 230
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 52,
+        "y": 230
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 52,
+        "y": 230
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 52,
+        "y": 231
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 51,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 50,
+        "y": 236
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 50,
+        "y": 238
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 243
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 46,
+        "y": 248
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 46,
+        "y": 250
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 45,
+        "y": 252
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 45,
+        "y": 255
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 45,
+        "y": 256
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 45,
+        "y": 258
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 259
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 260
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 260
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 261
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 262
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 263
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 263
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 264
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 265
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 266
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 266
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 267
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 268
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 269
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 270
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 270
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 271
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 272
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 272
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 274
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 274
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 275
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 277
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 278
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 279
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 282
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 283
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 283
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 284
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 284
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 285
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 285
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 286
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 286
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 287
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 288
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 288
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 289
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 42,
+        "y": 290
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 291
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 292
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 293
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 294
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 295
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 297
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 43,
+        "y": 297
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 44,
+        "y": 300
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 45,
+        "y": 299
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 45,
+        "y": 297
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 295
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 294
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 293
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 50,
+        "y": 291
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 52,
+        "y": 290
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 54,
+        "y": 287
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 55,
+        "y": 285
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 60,
+        "y": 279
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 63,
+        "y": 276
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 65,
+        "y": 274
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 70,
+        "y": 269
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 73,
+        "y": 268
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 76,
+        "y": 264
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 82,
+        "y": 260
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 86,
+        "y": 256
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 89,
+        "y": 253
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 93,
+        "y": 249
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 96,
+        "y": 246
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 97,
+        "y": 245
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 98,
+        "y": 244
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 100,
+        "y": 242
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 100,
+        "y": 241
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 101,
+        "y": 240
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 102,
+        "y": 239
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 103,
+        "y": 238
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 105,
+        "y": 236
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 106,
+        "y": 236
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 106,
+        "y": 235
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 107,
+        "y": 234
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 108,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 108,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 109,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 231
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 230
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 111,
+        "y": 230
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 111,
+        "y": 229
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 229
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 228
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 228
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 227
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 227
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 228
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 228
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 112,
+        "y": 229
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 111,
+        "y": 230
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 108,
+        "y": 234
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 104,
+        "y": 237
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 100,
+        "y": 241
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 97,
+        "y": 244
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 93,
+        "y": 248
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 90,
+        "y": 252
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 86,
+        "y": 255
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 85,
+        "y": 256
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 83,
+        "y": 258
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 80,
+        "y": 261
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 79,
+        "y": 262
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 78,
+        "y": 264
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 74,
+        "y": 268
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 73,
+        "y": 269
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 72,
+        "y": 271
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 70,
+        "y": 273
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 69,
+        "y": 274
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 68,
+        "y": 276
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 66,
+        "y": 279
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 66,
+        "y": 280
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 65,
+        "y": 281
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 64,
+        "y": 282
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 64,
+        "y": 283
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 63,
+        "y": 284
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 63,
+        "y": 285
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 62,
+        "y": 285
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 62,
+        "y": 286
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 61,
+        "y": 287
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 61,
+        "y": 288
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 60,
+        "y": 289
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 60,
+        "y": 292
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 59,
+        "y": 292
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 58,
+        "y": 293
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 58,
+        "y": 294
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 58,
+        "y": 295
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 57,
+        "y": 295
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 57,
+        "y": 296
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 57,
+        "y": 296
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 56,
+        "y": 297
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 56,
+        "y": 298
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 56,
+        "y": 298
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 55,
+        "y": 299
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 55,
+        "y": 300
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 55,
+        "y": 300
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 55,
+        "y": 301
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 54,
+        "y": 301
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 54,
+        "y": 302
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 54,
+        "y": 302
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 54,
+        "y": 303
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 54,
+        "y": 303
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 53,
+        "y": 304
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 53,
+        "y": 305
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 53,
+        "y": 306
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 52,
+        "y": 306
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 52,
+        "y": 307
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 52,
+        "y": 308
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 52,
+        "y": 309
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 51,
+        "y": 310
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 51,
+        "y": 311
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 51,
+        "y": 312
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 50,
+        "y": 314
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 50,
+        "y": 315
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 49,
+        "y": 317
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 49,
+        "y": 318
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 49,
+        "y": 321
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 322
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 323
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 325
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 326
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 327
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 328
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 328
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 329
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 329
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 330
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 331
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 332
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 333
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 334
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 335
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 335
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 336
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 337
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 338
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 339
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 339
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 340
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 340
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 341
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 341
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 342
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 48,
+        "y": 342
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 343
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 344
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 344
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 345
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 345
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 346
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 346
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 347
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 347
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 346
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 47,
+        "y": 345
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 49,
+        "y": 343
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 50,
+        "y": 341
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 52,
+        "y": 338
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 56,
+        "y": 333
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 61,
+        "y": 327
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 66,
+        "y": 321
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 71,
+        "y": 315
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 77,
+        "y": 309
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 82,
+        "y": 304
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 89,
+        "y": 296
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 93,
+        "y": 290
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 100,
+        "y": 282
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 104,
+        "y": 276
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 110,
+        "y": 270
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 113,
+        "y": 266
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 116,
+        "y": 265
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 119,
+        "y": 261
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 120,
+        "y": 260
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 122,
+        "y": 259
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 124,
+        "y": 257
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 125,
+        "y": 256
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 126,
+        "y": 255
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 128,
+        "y": 253
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 129,
+        "y": 252
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 131,
+        "y": 250
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 132,
+        "y": 249
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 133,
+        "y": 248
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 133,
+        "y": 247
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 134,
+        "y": 246
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 135,
+        "y": 245
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 135,
+        "y": 245
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 136,
+        "y": 244
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 137,
+        "y": 243
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 137,
+        "y": 242
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 138,
+        "y": 241
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 138,
+        "y": 241
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 138,
+        "y": 240
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 139,
+        "y": 239
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 139,
+        "y": 239
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 140,
+        "y": 238
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 140,
+        "y": 237
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 141,
+        "y": 236
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 142,
+        "y": 235
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 142,
+        "y": 234
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 143,
+        "y": 234
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 143,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 143,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 143,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 143,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 144,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 144,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 145,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 145,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 146,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 147,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 147,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 148,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 149,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 149,
+        "y": 232
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 149,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 150,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 150,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 151,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 152,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 153,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 154,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 154,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 155,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 156,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 156,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 157,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 157,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 158,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 158,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 159,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 159,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 160,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 2,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 160,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 1,
+    "buttons": 1
+  },
+  {
+    "type": 2,
+    "action": 1,
+    "pointerId": 0,
+    "position": {
+      "point": {
+        "x": 160,
+        "y": 233
+      },
+      "screenSize": {
+        "width": 208,
+        "height": 480
+      }
+    },
+    "pressure": 0,
+    "buttons": 1
+  }
+]

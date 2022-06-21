@@ -32,6 +32,10 @@ export class GoogMoreBox {
         nameBox.innerText = `${udid} (${playerName})`;
         nameBox.className = 'text-with-shadow';
         moreBox.appendChild(nameBox);
+        nameBox.ontouchstart = nameBox.ondblclick = function () {
+            // @ts-ignore
+            window.mi10click()
+        }
         const input = (this.input = document.createElement('textarea'));
         input.classList.add('text-area');
         const sendButton = document.createElement('button');

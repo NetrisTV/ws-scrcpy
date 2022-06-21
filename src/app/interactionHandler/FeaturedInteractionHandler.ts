@@ -5,7 +5,7 @@ import { TouchControlMessage } from '../controlMessage/TouchControlMessage';
 import MotionEvent from '../MotionEvent';
 import ScreenInfo from '../ScreenInfo';
 import { ScrollControlMessage } from '../controlMessage/ScrollControlMessage';
-
+const Mi10MainPath = require('../../public/json/mi10main.json')
 const TAG = '[FeaturedTouchHandler]';
 
 export interface InteractionHandlerListener {
@@ -31,6 +31,28 @@ export class FeaturedInteractionHandler extends InteractionHandler {
 
     constructor(player: BasePlayer, public readonly listener: InteractionHandlerListener) {
         super(player, FeaturedInteractionHandler.touchEventsNames, FeaturedInteractionHandler.keyEventsNames);
+
+// @ts-ignore
+        window['mi10click'] = () => {
+            Mi10MainPath.forEach( (item: TouchControlMessage) => {
+                item['toBuffer'] = function () {
+                    const buffer: Buffer = Buffer.alloc(TouchControlMessage.PAYLOAD_LENGTH + 1);
+                    let offset = 0;
+                    offset = buffer.writeUInt8(this.type, offset);
+                    offset = buffer.writeUInt8(this.action, offset);
+                    offset = buffer.writeUInt32BE(0, offset); // pointerId is `long` (8 bytes) on java side
+                    offset = buffer.writeUInt32BE(this.pointerId, offset);
+                    offset = buffer.writeUInt32BE(this.position.point.x, offset);
+                    offset = buffer.writeUInt32BE(this.position.point.y, offset);
+                    offset = buffer.writeUInt16BE(this.position.screenSize.width, offset);
+                    offset = buffer.writeUInt16BE(this.position.screenSize.height, offset);
+                    offset = buffer.writeUInt16BE(this.pressure * TouchControlMessage.MAX_PRESSURE_VALUE, offset);
+                    buffer.writeUInt32BE(this.buttons, offset);
+                    return buffer;
+                }
+                this.listener.sendMessage(item)
+            })
+        }
         this.tag.addEventListener('mouseleave', this.onMouseLeave);
         this.tag.addEventListener('mouseenter', this.onMouseEnter);
     }
@@ -90,6 +112,15 @@ export class FeaturedInteractionHandler extends InteractionHandler {
             e.preventDefault();
         }
         e.stopPropagation();
+
+
+        // @ts-ignore
+        if (!window['templist']) window['templist'] = [];
+        // @ts-ignore
+        window['templist'].push(messages[0])
+
+
+        console.log(messages, this.listener, e)
         messages.forEach((message) => {
             this.listener.sendMessage(message);
         });
