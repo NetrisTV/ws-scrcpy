@@ -65,7 +65,7 @@ async function loadApplModules() {
     const { WebDriverAgentProxy } = await import('./appl-device/mw/WebDriverAgentProxy');
 
     // Hack to reduce log-level of appium libs
-    const npmlog = await import('npmlog');
+    const { default: npmlog } = await import('npmlog');
     npmlog.level = 'warn';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global as any)._global_npmlog = npmlog;
