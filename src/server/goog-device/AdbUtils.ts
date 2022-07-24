@@ -14,6 +14,8 @@ import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
 import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
 import { ReadStream } from 'fs';
 import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
+import TcpUsbServer from '@devicefarmer/adbkit/lib/adb/tcpusb/server';
+import Bluebird from 'bluebird';
 
 type IncomingMessage = {
     statusCode?: number;
@@ -365,5 +367,50 @@ export class AdbUtils {
         const client = AdbExtended.createClient();
         const props = await client.getProperties(serial);
         return props['ro.product.model'] || 'Unknown device';
+    }
+
+    public static async createTcpUsbBridge(
+        serial: string,
+        maxWaitTime: number,
+    ): Promise<{ server: TcpUsbServer; port: number }> {
+        const port = await portfinder.getPortPromise();
+        const client = AdbExtended.createClient();
+        const server = client.createTcpUsbBridge(serial, {
+            auth: (key): Bluebird<boolean | void> => {
+                return new Bluebird<boolean | void>((resolve) => {
+                    console.log(key);
+                    resolve();
+                });
+            },
+        });
+        const promise = new Promise<{ server: TcpUsbServer; port: number }>((resolve, reject) => {
+            let fulfilled = false;
+            const timeout = setTimeout(() => {
+                if (fulfilled) {
+                    return;
+                }
+                server.end();
+                fulfilled = true;
+                reject(new Error('Timeout'));
+            }, maxWaitTime);
+            server.on('listening', () => {
+                if (fulfilled) {
+                    return;
+                }
+                fulfilled = true;
+                clearTimeout(timeout);
+                resolve({ server, port });
+            });
+            server.on('error', (e) => {
+                if (fulfilled) {
+                    return;
+                }
+                fulfilled = true;
+                clearTimeout(timeout);
+                reject(e);
+            });
+        });
+        server.listen(port);
+        return promise;
     }
 }

@@ -84,16 +84,4 @@ export class FileListing extends Mw {
             FileListing.sendError(e.message, channel);
         }
     }
-
-    private static sendError(message: string, channel: Multiplexer): void {
-        if (channel.readyState === channel.OPEN) {
-            const length = Buffer.byteLength(message, 'utf-8');
-            const buf = Buffer.alloc(4 + 4 + length);
-            let offset = buf.write(Protocol.FAIL, 'ascii');
-            offset = buf.writeUInt32LE(length, offset);
-            buf.write(message, offset, 'utf-8');
-            channel.send(buf);
-            channel.close();
-        }
-    }
 }

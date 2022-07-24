@@ -9,6 +9,7 @@
   "INCLUDE_DEV_TOOLS": true,
   "INCLUDE_ADB_SHELL": true,
   "INCLUDE_FILE_LISTING": true,
+  "INCLUDE_CONNECTION_FORWARD": true,
   "INCLUDE_APPL": false,
   "INCLUDE_GOOG": true
 }

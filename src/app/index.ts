@@ -103,6 +103,11 @@ window.onload = async function (): Promise<void> {
     tools.push(FileListingClient);
     /// #endif
 
+    /// #if INCLUDE_CONNECTION_FORWARD
+    const { ConnectionForward } = await import('./googDevice/client/ConnectionForward');
+    tools.push(ConnectionForward);
+    /// #endif
+
     if (tools.length) {
         const { DeviceTracker } = await import('./googDevice/client/DeviceTracker');
         tools.forEach((tool) => {

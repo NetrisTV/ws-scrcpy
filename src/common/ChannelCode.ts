@@ -6,4 +6,5 @@ export enum ChannelCode {
     ATRC = 'ATRC', // Appl device TRaCer
     WDAP = 'WDAP', // WebDriverAgent Proxy
     QVHS = 'QVHS', // Quicktime_Video_Hack Stream
+    USBF = 'USBF', // Connection Forward
 }
