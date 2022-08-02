@@ -85,7 +85,7 @@ export class WdaProxyClient
     private commands: string[] = [];
     private hasSession = false;
     private messageId = 0;
-    private wait: Map<number, { resolve: (m: Message) => void; reject: () => void }> = new Map();
+    private wait: Map<number, { resolve: (m: Message) => void; reject: (error: any) => void }> = new Map();
 
     constructor(params: ParamsWdaProxy) {
         super(params);

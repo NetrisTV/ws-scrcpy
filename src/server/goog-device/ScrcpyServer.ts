@@ -4,7 +4,7 @@ import '../../../vendor/Genymobile/scrcpy/LICENSE';
 import { Device } from './Device';
 import { ARGS_STRING, SERVER_PACKAGE, SERVER_PROCESS_NAME, SERVER_VERSION } from '../../common/Constants';
 import path from 'path';
-import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
+import PushTransfer from '@dead50f7/adbkit/lib/adb/sync/pushtransfer';
 import { ServerVersion } from './ServerVersion';
 
 const TEMP_PATH = '/data/local/tmp/';

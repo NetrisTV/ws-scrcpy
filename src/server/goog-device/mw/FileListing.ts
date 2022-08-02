@@ -1,7 +1,7 @@
 import { Mw } from '../../mw/Mw';
 import { AdbUtils } from '../AdbUtils';
 import Util from '../../../app/Util';
-import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
+import Protocol from '@dead50f7/adbkit/lib/adb/protocol';
 import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
 import { ChannelCode } from '../../../common/ChannelCode';
 import { FilePushReader } from '../filePush/FilePushReader';

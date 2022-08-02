@@ -1,6 +1,6 @@
-import Connection from '@devicefarmer/adbkit/lib/adb/connection';
-import Parser from '@devicefarmer/adbkit/lib/adb/parser';
-import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
+import Connection from '@dead50f7/adbkit/lib/adb/connection';
+import Parser from '@dead50f7/adbkit/lib/adb/parser';
+import Protocol from '@dead50f7/adbkit/lib/adb/protocol';
 import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
 
 export class ExtendedSync {

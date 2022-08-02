@@ -1,6 +1,6 @@
 import { AdbExtended } from './adb';
-import AdbKitClient from '@devicefarmer/adbkit/lib/adb/client';
-import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
+import AdbKitClient from '@dead50f7/adbkit/lib/adb/client';
+import PushTransfer from '@dead50f7/adbkit/lib/adb/sync/pushtransfer';
 import { spawn } from 'child_process';
 import { NetInterface } from '../../types/NetInterface';
 import { TypedEmitter } from '../../common/TypedEmitter';

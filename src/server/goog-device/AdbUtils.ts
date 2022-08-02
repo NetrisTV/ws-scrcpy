@@ -5,15 +5,15 @@ import { ACTION } from '../../common/Action';
 import { AdbExtended } from './adb';
 import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, VersionMetadata } from '../../types/RemoteDevtools';
 import { URL } from 'url';
-import { Forward } from '@devicefarmer/adbkit/lib/Forward';
-import Entry from '@devicefarmer/adbkit/lib/adb/sync/entry';
-import Stats from '@devicefarmer/adbkit/lib/adb/sync/stats';
-import PullTransfer from '@devicefarmer/adbkit/lib/adb/sync/pulltransfer';
+import { Forward } from '@dead50f7/adbkit/lib/Forward';
+import Entry from '@dead50f7/adbkit/lib/adb/sync/entry';
+import Stats from '@dead50f7/adbkit/lib/adb/sync/stats';
+import PullTransfer from '@dead50f7/adbkit/lib/adb/sync/pulltransfer';
 import { FileStats } from '../../types/FileStats';
-import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
+import Protocol from '@dead50f7/adbkit/lib/adb/protocol';
 import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
 import { ReadStream } from 'fs';
-import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
+import PushTransfer from '@dead50f7/adbkit/lib/adb/sync/pushtransfer';
 
 type IncomingMessage = {
     statusCode?: number;

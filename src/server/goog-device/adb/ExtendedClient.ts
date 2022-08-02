@@ -1,4 +1,4 @@
-import Client from '@devicefarmer/adbkit/lib/adb/client';
+import Client from '@dead50f7/adbkit/lib/adb/client';
 import { ExtendedSync } from './ExtendedSync';
 import { SyncCommand } from './command/host-transport/sync';
 import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';

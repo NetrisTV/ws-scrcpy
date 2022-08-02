@@ -1,5 +1,5 @@
-import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
-import Command from '@devicefarmer/adbkit/lib/adb/command';
+import Protocol from '@dead50f7/adbkit/lib/adb/protocol';
+import Command from '@dead50f7/adbkit/lib/adb/command';
 import { ExtendedSync } from '../../ExtendedSync';
 import Bluebird from 'bluebird';
 
