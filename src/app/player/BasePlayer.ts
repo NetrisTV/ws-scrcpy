@@ -113,8 +113,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         super();
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
-        this.touchableCanvas.oncontextmenu = function (e: MouseEvent): void {
-            e.preventDefault();
+        this.touchableCanvas.oncontextmenu = function (event: MouseEvent): void {
+            event.preventDefault();
         };
         const preferred = this.getPreferredVideoSetting();
         this.videoSettings = BasePlayer.getVideoSettingFromStorage(preferred, this.storageKeyPrefix, udid, displayInfo);
@@ -221,7 +221,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         }
         try {
             parsedValue = JSON.parse(saved);
-        } catch (e) {
+        } catch (error: any) {
             console.error(`[${this.name}]`, 'Failed to parse', saved);
         }
         return parsedValue;

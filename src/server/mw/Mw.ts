@@ -1,14 +1,12 @@
 import { Message } from '../../types/Message';
 import * as http from 'http';
-import * as querystring from 'querystring';
-import url from 'url';
 import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
 import WS from 'ws';
 
 export type RequestParameters = {
     request: http.IncomingMessage;
-    parsedUrl: url.UrlWithStringQuery;
-    parsedQuery: querystring.ParsedUrlQuery;
+    url: URL;
+    action: string;
 };
 
 export interface MwFactory {

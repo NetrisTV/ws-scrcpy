@@ -7,13 +7,13 @@ import { ACTION } from '../../../common/Action';
 export class RemoteDevtools extends Mw {
     public static readonly TAG = 'RemoteDevtools';
     public static processRequest(ws: WS, params: RequestParameters): RemoteDevtools | undefined {
-        const { request, parsedQuery } = params;
-        if (parsedQuery.action !== ACTION.DEVTOOLS) {
+        const { action, request, url } = params;
+        if (action !== ACTION.DEVTOOLS) {
             return;
         }
         const host = request.headers['host'];
-        const udid = parsedQuery.udid;
-        if (typeof udid !== 'string' || !udid) {
+        const udid = url.searchParams.get('udid');
+        if (!udid) {
             ws.close(4003, `[${this.TAG}] Invalid value "${udid}" for "udid" parameter`);
             return;
         }
@@ -30,7 +30,7 @@ export class RemoteDevtools extends Mw {
         let data;
         try {
             data = JSON.parse(event.data.toString());
-        } catch (e) {
+        } catch (error: any) {
             console.log(`Received message: ${event.data}`);
             return;
         }

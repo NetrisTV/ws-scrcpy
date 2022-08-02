@@ -10,14 +10,13 @@ import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
 import Util from '../../Util';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
-import { ParsedUrlQuery } from 'querystring';
 import { ChannelCode } from '../../../common/ChannelCode';
 
 const TAG = '[ShellClient]';
 
 export class ShellClient extends ManagerClient<ParamsShell, never> {
     public static ACTION = ACTION.SHELL;
-    public static start(params: ParsedUrlQuery): ShellClient {
+    public static start(params: ParamsShell): ShellClient {
         return new ShellClient(params);
     }
 
@@ -26,9 +25,9 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
     private readonly escapedUdid: string;
     private readonly udid: string;
 
-    constructor(params: ParsedUrlQuery) {
+    constructor(params: ParamsShell) {
         super(params);
-        this.udid = Util.parseStringEnv(params.udid);
+        this.udid = params.udid;
         this.openNewConnection();
         this.setTitle(`Shell ${this.udid}`);
         this.setBodyClass('shell');
@@ -49,21 +48,21 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
         return true;
     }
 
-    public parseParameters(params: ParsedUrlQuery): ParamsShell {
+    public static parseParameters(params: URLSearchParams): ParamsShell {
         const typedParams = super.parseParameters(params);
         const { action } = typedParams;
         if (action !== ACTION.SHELL) {
             throw Error('Incorrect action');
         }
-        return { ...typedParams, action, udid: Util.parseStringEnv(params.udid) };
+        return { ...typedParams, action, udid: Util.parseString(params, 'udid', true) };
     }
 
     protected onSocketOpen = (): void => {
         this.startShell(this.udid);
     };
 
-    protected onSocketClose(e: CloseEvent): void {
-        console.log(TAG, `Connection closed: ${e.reason}`);
+    protected onSocketClose(event: CloseEvent): void {
+        console.log(TAG, `Connection closed: ${event.reason}`);
         this.term.dispose();
     }
 

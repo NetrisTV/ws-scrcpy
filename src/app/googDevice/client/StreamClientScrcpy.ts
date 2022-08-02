@@ -27,7 +27,6 @@ import { DisplayInfo } from '../../DisplayInfo';
 import { Attribute } from '../../Attribute';
 import { HostTracker } from '../../client/HostTracker';
 import { ACTION } from '../../../common/Action';
-import { ParsedUrlQuery } from 'querystring';
 import { StreamReceiverScrcpy } from './StreamReceiverScrcpy';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { ScrcpyFilePushStream } from '../filePush/ScrcpyFilePushStream';
@@ -44,7 +43,8 @@ const TAG = '[StreamClientScrcpy]';
 
 export class StreamClientScrcpy
     extends BaseClient<ParamsStreamScrcpy, never>
-    implements KeyEventListener, InteractionHandlerListener {
+    implements KeyEventListener, InteractionHandlerListener
+{
     public static ACTION = 'stream';
     private static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
 
@@ -98,13 +98,18 @@ export class StreamClientScrcpy
     }
 
     public static start(
-        params: ParsedUrlQuery | ParamsStreamScrcpy,
+        query: URLSearchParams | ParamsStreamScrcpy,
         streamReceiver?: StreamReceiverScrcpy,
         player?: BasePlayer,
         fitToScreen?: boolean,
         videoSettings?: VideoSettings,
     ): StreamClientScrcpy {
-        return new StreamClientScrcpy(params, streamReceiver, player, fitToScreen, videoSettings);
+        if (query instanceof URLSearchParams) {
+            const params = StreamClientScrcpy.parseParameters(query);
+            return new StreamClientScrcpy(params, streamReceiver, player, fitToScreen, videoSettings);
+        } else {
+            return new StreamClientScrcpy(query, streamReceiver, player, fitToScreen, videoSettings);
+        }
     }
 
     private static createVideoSettingsWithBounds(old: VideoSettings, newBounds: Size): VideoSettings {
@@ -123,7 +128,7 @@ export class StreamClientScrcpy
     }
 
     protected constructor(
-        params: ParsedUrlQuery | ParamsStreamScrcpy,
+        params: ParamsStreamScrcpy,
         streamReceiver?: StreamReceiverScrcpy,
         player?: BasePlayer,
         fitToScreen?: boolean,
@@ -141,7 +146,7 @@ export class StreamClientScrcpy
         this.setBodyClass('stream');
     }
 
-    public parseParameters(params: ParsedUrlQuery): ParamsStreamScrcpy {
+    public static parseParameters(params: URLSearchParams): ParamsStreamScrcpy {
         const typedParams = super.parseParameters(params);
         const { action } = typedParams;
         if (action !== ACTION.STREAM_SCRCPY) {
@@ -150,9 +155,9 @@ export class StreamClientScrcpy
         return {
             ...typedParams,
             action,
-            player: Util.parseStringEnv(params.player),
-            udid: Util.parseStringEnv(params.udid),
-            ws: Util.parseStringEnv(params.ws),
+            player: Util.parseString(params, 'player', true),
+            udid: Util.parseString(params, 'udid', true),
+            ws: Util.parseString(params, 'ws', true),
         };
     }
 
@@ -342,8 +347,8 @@ export class StreamClientScrcpy
         console.log(TAG, player.getName(), udid);
     }
 
-    public sendMessage(e: ControlMessage): void {
-        this.streamReceiver.sendEvent(e);
+    public sendMessage(message: ControlMessage): void {
+        this.streamReceiver.sendEvent(message);
     }
 
     public getDeviceName(): string {
@@ -435,12 +440,12 @@ export class StreamClientScrcpy
         return;
     }
 
-    private static onConfigureStreamClick = (e: MouseEvent): void => {
-        const button = e.currentTarget as HTMLAnchorElement;
+    private static onConfigureStreamClick = (event: MouseEvent): void => {
+        const button = event.currentTarget as HTMLAnchorElement;
         const udid = Util.parseStringEnv(button.getAttribute(Attribute.UDID) || '');
         const fullName = button.getAttribute(Attribute.FULL_NAME);
         const secure = Util.parseBooleanEnv(button.getAttribute(Attribute.SECURE) || undefined) || false;
-        const hostname = Util.parseStringEnv(button.getAttribute(Attribute.HOSTNAME) || undefined);
+        const hostname = Util.parseStringEnv(button.getAttribute(Attribute.HOSTNAME) || undefined) || '';
         const port = Util.parseIntEnv(button.getAttribute(Attribute.PORT) || undefined);
         const useProxy = Util.parseBooleanEnv(button.getAttribute(Attribute.USE_PROXY) || undefined);
         if (!udid) {
@@ -460,7 +465,7 @@ export class StreamClientScrcpy
         if (!descriptor) {
             return;
         }
-        e.preventDefault();
+        event.preventDefault();
         const elements = document.getElementsByName(`${DeviceTracker.AttributePrefixInterfaceSelectFor}${fullName}`);
         if (!elements || !elements.length) {
             return;

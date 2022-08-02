@@ -1,14 +1,13 @@
-import * as querystring from 'querystring';
 import { ManagerClient } from './ManagerClient';
 import { Message } from '../../types/Message';
 import { BaseDeviceDescriptor } from '../../types/BaseDeviceDescriptor';
 import { DeviceTrackerEvent } from '../../types/DeviceTrackerEvent';
 import { DeviceTrackerEventList } from '../../types/DeviceTrackerEventList';
 import { html } from '../ui/HtmlTag';
-import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import { ParamsDeviceTracker } from '../../types/ParamsDeviceTracker';
 import { HostItem } from '../../types/Configuration';
 import { Tool } from './Tool';
+import Util from '../Util';
 
 const TAG = '[BaseDeviceTracker]';
 
@@ -46,7 +45,7 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         return wsUrl;
     }
 
-    public static buildLink(q: ParsedUrlQueryInput, text: string, params: ParamsDeviceTracker): HTMLAnchorElement {
+    public static buildLink(q: any, text: string, params: ParamsDeviceTracker): HTMLAnchorElement {
         let { hostname } = params;
         let port: string | number | undefined = params.port;
         let protocol = params.secure ? 'https:' : 'http:';
@@ -59,7 +58,7 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
             hostname = location.hostname;
             port = location.port;
         }
-        const hash = `#!${querystring.encode(q)}`;
+        const hash = `#!${new URLSearchParams(q).toString()}`;
         const a = document.createElement('a');
         a.setAttribute('href', `${protocol}//${hostname}:${port}/${hash}`);
         a.setAttribute('rel', 'noopener noreferrer');
@@ -86,9 +85,9 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         this.setTitle();
     }
 
-    public parseParameters(params: ParsedUrlQuery): ParamsDeviceTracker {
+    public static parseParameters(params: URLSearchParams): ParamsDeviceTracker {
         const typedParams = super.parseParameters(params);
-        const { type } = params;
+        const type = Util.parseString(params, 'type', true);
         if (type !== 'android' && type !== 'ios') {
             throw Error('Incorrect type');
         }
@@ -143,23 +142,23 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
 
     protected abstract buildDeviceRow(tbody: Element, device: DD): void;
 
-    protected onSocketClose(e: CloseEvent): void {
+    protected onSocketClose(event: CloseEvent): void {
         if (this.destroyed) {
             return;
         }
-        console.log(TAG, `Connection closed: ${e.reason}`);
+        console.log(TAG, `Connection closed: ${event.reason}`);
         setTimeout(() => {
             this.openNewConnection();
         }, 2000);
     }
 
-    protected onSocketMessage(e: MessageEvent): void {
+    protected onSocketMessage(event: MessageEvent): void {
         let message: Message;
         try {
-            message = JSON.parse(e.data);
-        } catch (error) {
+            message = JSON.parse(event.data);
+        } catch (error: any) {
             console.error(TAG, error.message);
-            console.log(TAG, e.data);
+            console.log(TAG, error.data);
             return;
         }
         switch (message.type) {

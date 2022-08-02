@@ -23,7 +23,7 @@ export class DeviceTracker extends Mw {
     }
 
     public static processRequest(ws: WS, params: RequestParameters): DeviceTracker | undefined {
-        if (params.parsedQuery?.action !== ACTION.APPL_DEVICE_LIST) {
+        if (params.action !== ACTION.APPL_DEVICE_LIST) {
             return;
         }
         return new DeviceTracker(ws);
@@ -39,8 +39,8 @@ export class DeviceTracker extends Mw {
                 this.icc.on('device', this.sendDeviceMessage);
                 this.buildAndSendMessage(this.icc.getDevices());
             })
-            .catch((e: Error) => {
-                console.error(`[${DeviceTracker.TAG}] Error: ${e.message}`);
+            .catch((error: Error) => {
+                console.error(`[${DeviceTracker.TAG}] Error: ${error.message}`);
             });
     }
 
@@ -74,12 +74,12 @@ export class DeviceTracker extends Mw {
         let command: ControlCenterCommand;
         try {
             command = ControlCenterCommand.fromJSON(event.data.toString());
-        } catch (e) {
-            console.error(`[${DeviceTracker.TAG}], Received message: ${event.data}. Error: ${e.message}`);
+        } catch (error: any) {
+            console.error(`[${DeviceTracker.TAG}], Received message: ${event.data}. Error: ${error.message}`);
             return;
         }
-        this.icc.runCommand(command).catch((e) => {
-            console.error(`[${DeviceTracker.TAG}], Received message: ${event.data}. Error: ${e.message}`);
+        this.icc.runCommand(command).catch((error) => {
+            console.error(`[${DeviceTracker.TAG}], Received message: ${event.data}. Error: ${error.message}`);
         });
     }
 

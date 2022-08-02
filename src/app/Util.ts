@@ -29,11 +29,44 @@ export default class Util {
         return 'udid_' + udid.replace(/[. :]/g, '_');
     }
 
-    public static parseBooleanEnv(input: string | string[] | boolean | undefined): boolean | undefined {
+    public static parse(params: URLSearchParams, name: string, required?: boolean): string | null {
+        const value = params.get(name);
+        if (required && value === null) {
+            throw TypeError(`Missing required parameter "${name}"`);
+        }
+        return value;
+    }
+
+    public static parseString(params: URLSearchParams, name: string, required?: boolean): string {
+        const value = params.get(name);
+        if (required && value === null) {
+            throw TypeError(`Missing required parameter "${name}"`);
+        }
+        return value || '';
+    }
+
+    public static parseBoolean(params: URLSearchParams, name: string, required?: boolean): boolean {
+        const value = this.parse(params, name, required);
+        return value === '1' || (!!value && value.toString() === 'true');
+    }
+
+    public  static parseInt(params: URLSearchParams, name: string, required?: boolean): number {
+        const value = this.parse(params, name, required);
+        if (value === null) {
+            return 0;
+        }
+        const int = parseInt(value, 10);
+        if (isNaN(int)) {
+            return 0;
+        }
+        return int;
+    }
+
+    public static parseBooleanEnv(input: string | string[] | boolean | undefined | null): boolean | undefined {
         if (typeof input === 'boolean') {
             return input;
         }
-        if (typeof input === 'undefined') {
+        if (typeof input === 'undefined' || input === null) {
             return undefined;
         }
         if (Array.isArray(input)) {
@@ -42,20 +75,20 @@ export default class Util {
         return input === '1' || input.toLowerCase() === 'true';
     }
 
-    public static parseStringEnv(input: string | string[] | undefined): string {
-        if (typeof input === 'undefined') {
-            return '';
+    public static parseStringEnv(input: string | string[] | undefined | null): string | undefined {
+        if (typeof input === 'undefined' || input === null) {
+            return undefined;
         }
         if (Array.isArray(input)) {
             input = input[input.length - 1];
         }
         return input;
     }
-    public static parseIntEnv(input: string | string[] | number | undefined): number | undefined {
+    public static parseIntEnv(input: string | string[] | number | undefined | null): number | undefined {
         if (typeof input === 'number') {
             return input;
         }
-        if (typeof input === 'undefined') {
+        if (typeof input === 'undefined' || input === null) {
             return undefined;
         }
         if (Array.isArray(input)) {
@@ -172,11 +205,15 @@ export default class Util {
             window.addEventListener('testPassive', null, opts);
             // @ts-ignore
             window.removeEventListener('testPassive', null, opts);
-        } catch (e) {}
+        } catch (error: any) {}
 
         return Util.supportsPassiveValue = supportsPassive;
 
         // Use our detect's results. passive applied if supported, capture will be false either way.
         // elem.addEventListener('touchstart', fn, supportsPassive ? { passive: true } : false);
+    }
+
+    static setImmediate(fn: () => any): void {
+        Promise.resolve().then(fn);
     }
 }

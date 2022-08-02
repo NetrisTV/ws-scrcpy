@@ -55,8 +55,8 @@ export class FileListing extends Mw {
                 offset += 4;
                 const pathBuffer = data.slice(offset, offset + length);
                 const pathString = Util.utf8ByteArrayToString(pathBuffer);
-                FileListing.handle(cmd, serial, pathString, channel).catch((e: Error) => {
-                    console.error(`[${FileListing.TAG}]`, e.message);
+                FileListing.handle(cmd, serial, pathString, channel).catch((error: Error) => {
+                    console.error(`[${FileListing.TAG}]`, error.message);
                 });
                 break;
             case Protocol.SEND:
@@ -80,8 +80,8 @@ export class FileListing extends Mw {
             if (cmd === Protocol.RECV) {
                 return AdbUtils.pipePullFileToStream(serial, pathString, channel);
             }
-        } catch (e) {
-            FileListing.sendError(e.message, channel);
+        } catch (error: any) {
+            FileListing.sendError(error?.message, channel);
         }
     }
 

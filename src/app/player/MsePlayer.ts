@@ -60,7 +60,7 @@ export class MsePlayer extends BasePlayer {
     protected canPlay = false;
     private seekingSince = -1;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    protected readonly isSafari = !!((window as unknown) as any)['safari'];
+    protected readonly isSafari = !!(window as unknown as any)['safari'];
     protected readonly isChrome = navigator.userAgent.includes('Chrome');
     protected readonly isMac = navigator.platform.startsWith('Mac');
     private MAX_TIME_TO_RECOVER = 200; // ms
@@ -78,8 +78,8 @@ export class MsePlayer extends BasePlayer {
         protected tag: HTMLVideoElement = MsePlayer.createElement(),
     ) {
         super(udid, displayInfo, name, MsePlayer.storageKeyPrefix, tag);
-        tag.oncontextmenu = function (e: MouseEvent): boolean {
-            e.preventDefault();
+        tag.oncontextmenu = function (event: MouseEvent): boolean {
+            event.preventDefault();
             return false;
         };
         tag.addEventListener('error', this.onVideoError);
@@ -88,8 +88,8 @@ export class MsePlayer extends BasePlayer {
         setLogger(() => {}, console.error);
     }
 
-    onVideoError = (e: Event): void => {
-        console.error(`[${this.name}]`, e);
+    onVideoError = (event: Event): void => {
+        console.error(`[${this.name}]`, event);
     };
 
     onVideoCanPlay = (): void => {
@@ -271,7 +271,7 @@ export class MsePlayer extends BasePlayer {
                 }
                 frame = this.frames.shift();
             }
-        } catch (e) {
+        } catch (error: any) {
             console.error(`[${this.name}]`, 'Failed to clean source buffer');
         }
     };

@@ -38,8 +38,8 @@ export class AdbUtils {
     public static async push(serial: string, stream: ReadStream, pathString: string): Promise<PushTransfer> {
         const client = AdbExtended.createClient();
         const transfer = await client.push(serial, stream, pathString);
-        client.on('error', (e: Error) => {
-            transfer.emit('error', e);
+        client.on('error', (error: Error) => {
+            transfer.emit('error', error);
         });
         return transfer;
     }
@@ -58,16 +58,16 @@ export class AdbUtils {
             }
             try {
                 stats = await this.stats(serial, pathString, stats, deep++);
-            } catch (e) {
-                if (e.message === 'Too deep') {
+            } catch (error: any) {
+                if (error.message === 'Too deep') {
                     if (deep === 0) {
                         console.error(`Symlink is too deep: ${pathString}`);
                         return stats;
                     }
-                    throw e;
+                    throw error;
                 }
-                if (e.code !== 'ENOENT') {
-                    console.error(e.message);
+                if (error.code !== 'ENOENT') {
+                    console.error(error.message);
                 }
             }
             return stats;
@@ -199,8 +199,8 @@ export class AdbUtils {
             request.on('socket', () => {
                 request.end();
             });
-            request.on('error', (e: Error) => {
-                reject(e);
+            request.on('error', (error: Error) => {
+                reject(error);
             });
         });
         let data = '';
@@ -323,8 +323,8 @@ export class AdbUtils {
 
         const all: Promise<string | RemoteBrowserInfo>[] = [];
         list.forEach((socket) => {
-            const v = this.getRemoteDevtoolsVersion(host, serial, socket).catch((e: Error) => {
-                console.error('getRemoteDevtoolsVersion failed:', e.message);
+            const v = this.getRemoteDevtoolsVersion(host, serial, socket).catch((error: Error) => {
+                console.error('getRemoteDevtoolsVersion failed:', error.message);
                 return {
                     'Android-Package': 'string',
                     Browser: 'string',
@@ -335,9 +335,8 @@ export class AdbUtils {
                     webSocketDebuggerUrl: 'string',
                 };
             });
-            const t = this.getRemoteDevtoolsTargets(host, serial, socket).catch((e: Error) => {
-                console.error('getRemoteDevtoolsTargets failed:', e.message);
-                console.error('getRemoteDevtoolsTargets failed:', e.message);
+            const t = this.getRemoteDevtoolsTargets(host, serial, socket).catch((error: Error) => {
+                console.error('getRemoteDevtoolsTargets failed:', error.message);
                 return [];
             });
             const p = Promise.all([v, t]).then((result) => {

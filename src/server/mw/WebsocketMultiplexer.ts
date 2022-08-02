@@ -12,11 +12,8 @@ export class WebsocketMultiplexer extends Mw {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static processRequest(ws: WS, params: RequestParameters): WebsocketMultiplexer | undefined {
-        const { parsedQuery } = params;
-        if (!parsedQuery) {
-            return;
-        }
-        if (parsedQuery.action !== ACTION.MULTIPLEX) {
+        const { action } = params;
+        if (action !== ACTION.MULTIPLEX) {
             return;
         }
         return this.createMultiplexer(ws);
@@ -34,7 +31,7 @@ export class WebsocketMultiplexer extends Mw {
 
     constructor(ws: WS) {
         super(ws);
-        this.multiplexer = Multiplexer.wrap((ws as unknown) as WebSocket);
+        this.multiplexer = Multiplexer.wrap(ws as unknown as WebSocket);
     }
 
     public async init(): Promise<void> {

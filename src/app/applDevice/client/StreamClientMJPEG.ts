@@ -1,6 +1,5 @@
 import { ParamsStream } from '../../../types/ParamsStream';
 import { ACTION } from '../../../common/Action';
-import { ParsedUrlQuery } from 'querystring';
 import { StreamClient } from './StreamClient';
 import { BasePlayer, PlayerClass } from '../../player/BasePlayer';
 import { WdaStatus } from '../../../common/WdaStatus';
@@ -12,11 +11,11 @@ export class StreamClientMJPEG extends StreamClient<ParamsStream> {
     public static ACTION = ACTION.STREAM_MJPEG;
     protected static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
 
-    public static start(params: ParsedUrlQuery | ParamsStream): StreamClientMJPEG {
+    public static start(params: ParamsStream): StreamClientMJPEG {
         return new StreamClientMJPEG(params);
     }
 
-    constructor(params: ParsedUrlQuery | ParamsStream) {
+    constructor(params: ParamsStream) {
         super(params);
         this.name = `[${TAG}:${this.udid}]`;
         this.udid = this.params.udid;
@@ -33,7 +32,7 @@ export class StreamClientMJPEG extends StreamClient<ParamsStream> {
         });
     }
 
-    public get action(): string {
+    public static get action(): string {
         return StreamClientMJPEG.ACTION;
     }
 

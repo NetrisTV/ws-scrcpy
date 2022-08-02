@@ -113,9 +113,9 @@ export class Device extends TypedEmitter<DeviceEvents> {
                 console.error(this.TAG, `stderr: ${data}`);
             });
 
-            adb.on('error', (e: Error) => {
-                console.error(this.TAG, `failed to spawn adb process.\n${e.stack}`);
-                reject(e);
+            adb.on('error', (error: Error) => {
+                console.error(this.TAG, `failed to spawn adb process.\n${error.stack}`);
+                reject(error);
             });
 
             adb.on('close', (code) => {
@@ -439,9 +439,9 @@ export class Device extends TypedEmitter<DeviceEvents> {
             }
             this.descriptor.pid = -1;
             this.emitUpdate();
-        } catch (e) {
-            console.error(this.TAG, `Error: ${e.message}`);
-            throw e;
+        } catch (error: any) {
+            console.error(this.TAG, `Error: ${error.message}`);
+            throw error;
         }
     }
 
@@ -457,9 +457,9 @@ export class Device extends TypedEmitter<DeviceEvents> {
                 console.log(this.TAG, `start server: "${output}"`);
             }
             return this.getServerPid();
-        } catch (e) {
-            console.error(this.TAG, `Error: ${e.message}`);
-            throw e;
+        } catch (error: any) {
+            console.error(this.TAG, `Error: ${error.message}`);
+            throw error;
         }
     }
 }

@@ -1,6 +1,5 @@
 import { BaseClient } from './BaseClient';
 import { ACTION } from '../../common/Action';
-import { ParsedUrlQuery } from 'querystring';
 import { ParamsBase } from '../../types/ParamsBase';
 import Util from '../Util';
 import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
@@ -20,7 +19,7 @@ export abstract class ManagerClient<P extends ParamsBase, TE> extends BaseClient
     protected url: URL;
     protected ws?: Multiplexer | WebSocket;
 
-    protected constructor(params: ParsedUrlQuery | P) {
+    protected constructor(params: P) {
         super(params);
         this.action = Util.parseStringEnv(params.action);
         this.url = this.buildWebSocketUrl();
@@ -125,7 +124,7 @@ export abstract class ManagerClient<P extends ParamsBase, TE> extends BaseClient
         return Buffer.from(ManagerClient.CODE);
     }
 
-    protected abstract onSocketOpen(e: Event): void;
-    protected abstract onSocketMessage(e: MessageEvent): void;
-    protected abstract onSocketClose(e: CloseEvent): void;
+    protected abstract onSocketOpen(event: Event): void;
+    protected abstract onSocketMessage(event: MessageEvent): void;
+    protected abstract onSocketClose(event: CloseEvent): void;
 }

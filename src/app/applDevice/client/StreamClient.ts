@@ -4,7 +4,6 @@ import { SimpleInteractionHandler } from '../../interactionHandler/SimpleInterac
 import { BasePlayer, PlayerClass } from '../../player/BasePlayer';
 import ScreenInfo from '../../ScreenInfo';
 import { WdaProxyClient } from './WdaProxyClient';
-import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import { ACTION } from '../../../common/Action';
 import { ApplMoreBox } from '../toolbox/ApplMoreBox';
 import { ApplToolBox } from '../toolbox/ApplToolBox';
@@ -71,7 +70,7 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
             playerTd.classList.add(blockClass);
             playerTd.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
             playerTd.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
-            const q: ParsedUrlQueryInput = {
+            const q: any = {
                 action: this.ACTION,
                 player: playerCodeName,
                 udid: descriptor.udid,
@@ -104,7 +103,7 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
     protected moreBox?: HTMLElement;
     protected player?: BasePlayer;
 
-    protected constructor(params: ParsedUrlQuery | T) {
+    protected constructor(params: T) {
         super(params);
         this.udid = this.params.udid;
         this.wdaProxy = new WdaProxyClient({ ...this.params, action: ACTION.PROXY_WDA });
@@ -114,11 +113,11 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         this.setWdaStatusNotification(WdaStatus.STARTING);
     }
 
-    public get action(): string {
+    public static get action(): string {
         return StreamClient.ACTION;
     }
 
-    public parseParameters(params: ParsedUrlQuery): ParamsStream {
+    public static parseParameters(params: URLSearchParams): ParamsStream {
         const typedParams = super.parseParameters(params);
         const { action } = typedParams;
         if (action !== this.action) {
@@ -127,8 +126,8 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         return {
             ...typedParams,
             action,
-            udid: Util.parseStringEnv(params.udid),
-            player: Util.parseStringEnv(params.player),
+            udid: Util.parseString(params, 'udid', true),
+            player: Util.parseString(params, 'player', true),
         };
     }
 

@@ -55,9 +55,9 @@ export class AdbkitFilePushStream extends FilePushStream {
         let pushId = id;
         const newParams = { id, state: FilePushState.NEW };
         const channel = this.socket.createChannel(Buffer.from(Protocol.SEND));
-        const onMessage = (e: MessageEvent): void => {
+        const onMessage = (event: MessageEvent): void => {
             let offset = 0;
-            const buffer = Buffer.from(e.data);
+            const buffer = Buffer.from(event.data);
             const id = buffer.readInt16BE(offset);
             offset += 2;
             const code = buffer.readInt8(offset);
@@ -67,11 +67,14 @@ export class AdbkitFilePushStream extends FilePushStream {
             }
             this.emit('response', { id, code });
         };
-        const onClose = (e: CloseEvent): void => {
-            if (!e.wasClean) {
-                const code = 4000 - e.code;
+        const onClose = (event: CloseEvent): void => {
+            if (!event.wasClean) {
+                const code = 4000 - event.code;
                 // this.emit('response', { id: pushId, code });
-                this.emit('error', { id: pushId, error: new Error(FilePushHandler.getErrorMessage(code, e.reason)) });
+                this.emit('error', {
+                    id: pushId,
+                    error: new Error(FilePushHandler.getErrorMessage(code, event.reason)),
+                });
             }
             channel.removeEventListener('message', onMessage);
             channel.removeEventListener('close', onClose);

@@ -1,24 +1,27 @@
 import { TypedEmitter } from '../../common/TypedEmitter';
 import { ParamsBase } from '../../types/ParamsBase';
-import { ParsedUrlQuery } from 'querystring';
 import Util from '../Util';
 
 export class BaseClient<P extends ParamsBase, TE> extends TypedEmitter<TE> {
     protected title = 'BaseClient';
     protected params: P;
 
-    protected constructor(query: ParsedUrlQuery | P) {
+    protected constructor(params: P) {
         super();
-        this.params = this.parseParameters(query) as P;
+        this.params = params;
     }
 
-    protected parseParameters(query: ParsedUrlQuery | P): ParamsBase {
+    public static parseParameters(query: URLSearchParams): ParamsBase {
+        const action = Util.parseStringEnv(query.get('action'));
+        if (!action) {
+            throw TypeError('Invalid action');
+        }
         return {
-            action: Util.parseStringEnv(query.action),
-            useProxy: Util.parseBooleanEnv(query.useProxy),
-            secure: Util.parseBooleanEnv(query.secure),
-            hostname: Util.parseStringEnv(query.hostname),
-            port: Util.parseIntEnv(query.port),
+            action: action,
+            useProxy: Util.parseBooleanEnv(query.get('useProxy')),
+            secure: Util.parseBooleanEnv(query.get('secure')),
+            hostname: Util.parseStringEnv(query.get('hostname')),
+            port: Util.parseIntEnv(query.get('port')),
         };
     }
 

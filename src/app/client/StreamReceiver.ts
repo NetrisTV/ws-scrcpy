@@ -129,23 +129,23 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
         this.emit('disconnected', ev);
     }
 
-    protected onSocketMessage(e: MessageEvent): void {
-        if (e.data instanceof ArrayBuffer) {
+    protected onSocketMessage(event: MessageEvent): void {
+        if (event.data instanceof ArrayBuffer) {
             // works only because MAGIC_BYTES_INITIAL and MAGIC_BYTES_MESSAGE have same length
-            if (e.data.byteLength > MAGIC_BYTES_INITIAL.length) {
-                const magicBytes = new Uint8Array(e.data, 0, MAGIC_BYTES_INITIAL.length);
+            if (event.data.byteLength > MAGIC_BYTES_INITIAL.length) {
+                const magicBytes = new Uint8Array(event.data, 0, MAGIC_BYTES_INITIAL.length);
                 if (StreamReceiver.EqualArrays(magicBytes, MAGIC_BYTES_INITIAL)) {
-                    this.handleInitialInfo(e.data);
+                    this.handleInitialInfo(event.data);
                     return;
                 }
                 if (StreamReceiver.EqualArrays(magicBytes, DeviceMessage.MAGIC_BYTES_MESSAGE)) {
-                    const message = DeviceMessage.fromBuffer(e.data);
+                    const message = DeviceMessage.fromBuffer(event.data);
                     this.emit('deviceMessage', message);
                     return;
                 }
             }
 
-            this.emit('video', new Uint8Array(e.data));
+            this.emit('video', new Uint8Array(event.data));
         }
     }
 

@@ -24,7 +24,7 @@ export abstract class ProcessRunner<T extends ProcessRunnerEvents> extends Typed
         this.name = `${this.TAG}`;
     }
 
-    protected abstract async getArgs(): Promise<string[]>;
+    protected abstract getArgs(): Promise<string[]>;
 
     protected async runProcess(): Promise<void> {
         if (!this.cmd) {

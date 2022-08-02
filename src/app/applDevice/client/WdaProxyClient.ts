@@ -3,7 +3,6 @@ import { MessageRunWdaResponse } from '../../../types/MessageRunWdaResponse';
 import { Message } from '../../../types/Message';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
 import { ParamsWdaProxy } from '../../../types/ParamsWdaProxy';
-import { ParsedUrlQuery } from 'querystring';
 import { ACTION } from '../../../common/Action';
 import Util from '../../Util';
 import { ChannelCode } from '../../../common/ChannelCode';
@@ -43,7 +42,8 @@ const TAG = '[WdaProxyClient]';
 
 export class WdaProxyClient
     extends ManagerClient<ParamsWdaProxy, WdaProxyClientEvents>
-    implements TouchHandlerListener {
+    implements TouchHandlerListener
+{
     public static calculatePhysicalPoint(
         screenInfo: ScreenInfo,
         screenWidth: number,
@@ -93,18 +93,18 @@ export class WdaProxyClient
         this.udid = params.udid;
     }
 
-    public parseParameters(params: ParsedUrlQuery): ParamsWdaProxy {
+    public static parseParameters(params: URLSearchParams): ParamsWdaProxy {
         const typedParams = super.parseParameters(params);
         const { action } = typedParams;
         if (action !== ACTION.PROXY_WDA) {
             throw Error('Incorrect action');
         }
-        return { ...typedParams, action, udid: Util.parseStringEnv(params.udid) };
+        return { ...typedParams, action, udid: Util.parseString(params, 'udid', true) };
     }
 
-    protected onSocketClose(e: CloseEvent): void {
+    protected onSocketClose(event: CloseEvent): void {
         this.emit('connected', false);
-        console.log(TAG, `Connection closed: ${e.reason}`);
+        console.log(TAG, `Connection closed: ${event.reason}`);
         if (!this.stopped) {
             setTimeout(() => {
                 this.openNewConnection();
@@ -112,8 +112,8 @@ export class WdaProxyClient
         }
     }
 
-    protected onSocketMessage(e: MessageEvent): void {
-        new Response(e.data)
+    protected onSocketMessage(event: MessageEvent): void {
+        new Response(event.data)
             .text()
             .then((text: string) => {
                 const json = JSON.parse(text) as Message;
@@ -134,7 +134,7 @@ export class WdaProxyClient
             })
             .catch((error: Error) => {
                 console.error(TAG, error.message);
-                console.log(TAG, e.data);
+                console.log(TAG, event.data);
             });
     }
 
