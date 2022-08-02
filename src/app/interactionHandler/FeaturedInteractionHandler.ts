@@ -35,12 +35,12 @@ export class FeaturedInteractionHandler extends InteractionHandler {
         this.tag.addEventListener('mouseenter', this.onMouseEnter);
     }
 
-    public buildScrollEvent(e: WheelEvent, screenInfo: ScreenInfo): ScrollControlMessage[] {
+    public buildScrollEvent(event: WheelEvent, screenInfo: ScreenInfo): ScrollControlMessage[] {
         const messages: ScrollControlMessage[] = [];
-        const touchOnClient = InteractionHandler.buildTouchOnClient(e, screenInfo);
+        const touchOnClient = InteractionHandler.buildTouchOnClient(event, screenInfo);
         if (touchOnClient) {
-            const hScroll = e.deltaX > 0 ? -1 : e.deltaX < -0 ? 1 : 0;
-            const vScroll = e.deltaY > 0 ? -1 : e.deltaY < -0 ? 1 : 0;
+            const hScroll = event.deltaX > 0 ? -1 : event.deltaX < -0 ? 1 : 0;
+            const vScroll = event.deltaY > 0 ? -1 : event.deltaY < -0 ? 1 : 0;
             const time = Date.now();
             if (
                 !this.lastScrollEvent ||
@@ -55,47 +55,47 @@ export class FeaturedInteractionHandler extends InteractionHandler {
         return messages;
     }
 
-    protected onInteraction(e: MouseEvent | TouchEvent): void {
+    protected onInteraction(event: MouseEvent | TouchEvent): void {
         const screenInfo = this.player.getScreenInfo();
         if (!screenInfo) {
             return;
         }
         let messages: ControlMessage[];
         let storage: Map<number, TouchControlMessage>;
-        if (e instanceof MouseEvent) {
-            if (e.target !== this.tag) {
+        if (event instanceof MouseEvent) {
+            if (event.target !== this.tag) {
                 return;
             }
-            if (window['WheelEvent'] && e instanceof WheelEvent) {
-                messages = this.buildScrollEvent(e, screenInfo);
+            if (window['WheelEvent'] && event instanceof WheelEvent) {
+                messages = this.buildScrollEvent(event, screenInfo);
             } else {
                 storage = this.storedFromMouseEvent;
-                messages = this.buildTouchEvent(e, screenInfo, storage);
+                messages = this.buildTouchEvent(event, screenInfo, storage);
             }
             if (this.over) {
-                this.lastPosition = e;
+                this.lastPosition = event;
             }
-        } else if (window['TouchEvent'] && e instanceof TouchEvent) {
+        } else if (window['TouchEvent'] && event instanceof TouchEvent) {
             // TODO: Research drag from out of the target inside it
-            if (e.target !== this.tag) {
+            if (event.target !== this.tag) {
                 return;
             }
             storage = this.storedFromTouchEvent;
-            messages = this.formatTouchEvent(e, screenInfo, storage);
+            messages = this.formatTouchEvent(event, screenInfo, storage);
         } else {
-            console.error(TAG, 'Unsupported event', e);
+            console.error(TAG, 'Unsupported event', event);
             return;
         }
-        if (e.cancelable) {
-            e.preventDefault();
+        if (event.cancelable) {
+            event.preventDefault();
         }
-        e.stopPropagation();
+        event.stopPropagation();
         messages.forEach((message) => {
             this.listener.sendMessage(message);
         });
     }
 
-    protected onKey(e: KeyboardEvent): void {
+    protected onKey(event: KeyboardEvent): void {
         if (!this.lastPosition) {
             return;
         }
@@ -103,11 +103,11 @@ export class FeaturedInteractionHandler extends InteractionHandler {
         if (!screenInfo) {
             return;
         }
-        const { ctrlKey, shiftKey } = e;
+        const { ctrlKey, shiftKey } = event;
         const { target, button, buttons, clientY, clientX } = this.lastPosition;
         const type = InteractionHandler.SIMULATE_MULTI_TOUCH;
-        const event = { ctrlKey, shiftKey, type, target, button, buttons, clientX, clientY };
-        this.buildTouchEvent(event, screenInfo, new Map());
+        const props = { ctrlKey, shiftKey, type, target, button, buttons, clientX, clientY };
+        this.buildTouchEvent(props, screenInfo, new Map());
     }
 
     private onMouseEnter = (): void => {

@@ -108,8 +108,8 @@ export class WebDriverAgentProxy extends Mw {
         let command: ControlCenterCommand;
         try {
             command = ControlCenterCommand.fromJSON(event.data.toString());
-        } catch (e) {
-            console.error(`[${WebDriverAgentProxy.TAG}], Received message: ${event.data}. Error: ${e.message}`);
+        } catch (error: any) {
+            console.error(`[${WebDriverAgentProxy.TAG}], Received message: ${event.data}. Error: ${error.message}`);
             return;
         }
         const type = command.getType();

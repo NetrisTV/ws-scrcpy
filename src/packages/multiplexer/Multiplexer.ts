@@ -41,7 +41,7 @@ export class Multiplexer extends TypedEmitter<MultiplexerEvents> implements WebS
     private maxId = 4294967296;
     private storage: Array<string | ArrayBufferLike | Blob | ArrayBufferView> = [];
     private readonly messageEmitter: WebsocketEventEmitter;
-    private emptyTimer: NodeJS.Immediate | null = null;
+    private emptyTimerScheduled = false;
 
     public onclose: ((this: WebSocket, ev: CloseEvent) => any) | null = null;
     public onerror: ((this: WebSocket, ev: Event) => any) | null = null;
@@ -67,15 +67,15 @@ export class Multiplexer extends TypedEmitter<MultiplexerEvents> implements WebS
             this.dispatchEvent(event);
         };
 
-        const onCloseHandler = (e: CloseEvent) => {
+        const onCloseHandler = (event: CloseEvent) => {
             this.readyState = this.ws.readyState;
-            this.dispatchEvent(e);
+            this.dispatchEvent(event);
             this.channels.clear();
         };
 
-        const onErrorHandler = (e: Event) => {
+        const onErrorHandler = (event: Event) => {
             this.readyState = this.ws.readyState;
-            this.dispatchEvent(e);
+            this.dispatchEvent(event);
             this.channels.clear();
         };
 
@@ -210,16 +210,21 @@ export class Multiplexer extends TypedEmitter<MultiplexerEvents> implements WebS
     }
 
     private scheduleEmptyEvent(): void {
-        this.emptyTimer = setImmediate(() => {
-            this.emptyTimer = null;
-            this.emit('empty', this);
+        if (this.emptyTimerScheduled) {
+            return;
+        }
+        this.emptyTimerScheduled = true;
+        Promise.resolve().then(() => {
+            if (this.emptyTimerScheduled) {
+                this.emptyTimerScheduled = false;
+                this.emit('empty', this);
+            }
         });
     }
 
     private clearEmptyEvent(): void {
-        if (this.emptyTimer) {
-            clearImmediate(this.emptyTimer);
-            this.emptyTimer = null;
+        if (this.emptyTimerScheduled) {
+            this.emptyTimerScheduled = false;
         }
     }
 
@@ -285,7 +290,7 @@ export class Multiplexer extends TypedEmitter<MultiplexerEvents> implements WebS
         this.channels.set(id, { channel, emitter });
         if (sendOpenEvent) {
             if (this.readyState === this.OPEN) {
-                setImmediate(() => {
+                Util.setImmediate(() => {
                     channel.readyState = this.OPEN;
                     channel.dispatchEvent(new EventClass('open'));
                 });

@@ -1,13 +1,12 @@
 import '../style/app.css';
-import * as querystring from 'querystring';
 import { StreamClientScrcpy } from './googDevice/client/StreamClientScrcpy';
 import { HostTracker } from './client/HostTracker';
 import { Tool } from './client/Tool';
 
 window.onload = async function (): Promise<void> {
     const hash = location.hash.replace(/^#!/, '');
-    const parsedQuery = querystring.parse(hash);
-    const action = parsedQuery.action;
+    const parsedQuery = new URLSearchParams(hash);
+    const action = parsedQuery.get('action');
 
     /// #if USE_BROADWAY
     const { BroadwayPlayer } = await import('./player/BroadwayPlayer');
@@ -29,7 +28,7 @@ window.onload = async function (): Promise<void> {
     StreamClientScrcpy.registerPlayer(WebCodecsPlayer);
     /// #endif
 
-    if (action === StreamClientScrcpy.ACTION && typeof parsedQuery.udid === 'string') {
+    if (action === StreamClientScrcpy.ACTION && typeof parsedQuery.get('udid') === 'string') {
         StreamClientScrcpy.start(parsedQuery);
         return;
     }
@@ -53,8 +52,8 @@ window.onload = async function (): Promise<void> {
         StreamClientQVHack.registerPlayer(MsePlayerForQVHack);
         /// #endif
 
-        if (action === StreamClientQVHack.ACTION && typeof parsedQuery.udid === 'string') {
-            StreamClientQVHack.start(parsedQuery);
+        if (action === StreamClientQVHack.ACTION && typeof parsedQuery.get('udid') === 'string') {
+            StreamClientQVHack.start(StreamClientQVHack.parseParameters(parsedQuery));
             return;
         }
         /// #endif
@@ -66,8 +65,8 @@ window.onload = async function (): Promise<void> {
         const { MjpegPlayer } = await import('./player/MjpegPlayer');
         StreamClientMJPEG.registerPlayer(MjpegPlayer);
 
-        if (action === StreamClientMJPEG.ACTION && typeof parsedQuery.udid === 'string') {
-            StreamClientMJPEG.start(parsedQuery);
+        if (action === StreamClientMJPEG.ACTION && typeof parsedQuery.get('udid') === 'string') {
+            StreamClientMJPEG.start(StreamClientMJPEG.parseParameters(parsedQuery));
             return;
         }
         /// #endif
@@ -78,8 +77,8 @@ window.onload = async function (): Promise<void> {
 
     /// #if INCLUDE_ADB_SHELL
     const { ShellClient } = await import('./googDevice/client/ShellClient');
-    if (action === ShellClient.ACTION && typeof parsedQuery.udid === 'string') {
-        ShellClient.start(parsedQuery);
+    if (action === ShellClient.ACTION && typeof parsedQuery.get('udid') === 'string') {
+        ShellClient.start(ShellClient.parseParameters(parsedQuery));
         return;
     }
     tools.push(ShellClient);
@@ -88,7 +87,7 @@ window.onload = async function (): Promise<void> {
     /// #if INCLUDE_DEV_TOOLS
     const { DevtoolsClient } = await import('./googDevice/client/DevtoolsClient');
     if (action === DevtoolsClient.ACTION) {
-        DevtoolsClient.start(parsedQuery);
+        DevtoolsClient.start(DevtoolsClient.parseParameters(parsedQuery));
         return;
     }
     tools.push(DevtoolsClient);
@@ -97,7 +96,7 @@ window.onload = async function (): Promise<void> {
     /// #if INCLUDE_FILE_LISTING
     const { FileListingClient } = await import('./googDevice/client/FileListingClient');
     if (action === FileListingClient.ACTION) {
-        FileListingClient.start(parsedQuery);
+        FileListingClient.start(FileListingClient.parseParameters(parsedQuery));
         return;
     }
     tools.push(FileListingClient);

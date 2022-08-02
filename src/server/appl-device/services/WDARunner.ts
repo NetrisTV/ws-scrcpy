@@ -191,10 +191,10 @@ export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
             /// #endif
             this.started = true;
             this.emit('status-change', { status: WdaStatus.STARTED });
-        } catch (e) {
+        } catch (error: any) {
             this.started = false;
             this.starting = false;
-            this.emit('error', e);
+            this.emit('error', error);
         }
         this.server = server;
     }

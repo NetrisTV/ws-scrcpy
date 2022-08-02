@@ -8,7 +8,6 @@ import { DevtoolsInfo, RemoteBrowserInfo, RemoteTarget, TargetDescription } from
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
-import { ParsedUrlQuery } from 'querystring';
 import Util from '../../Util';
 
 const FRONTEND_RE = /^https?:\/\/chrome-devtools-frontend\.appspot\.com\/serve_rev\/(@.*)/;
@@ -19,7 +18,7 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
     public static readonly ACTION = ACTION.DEVTOOLS;
     public static readonly TIMEOUT = 1000;
 
-    public static start(params: ParsedUrlQuery): DevtoolsClient {
+    public static start(params: ParamsDevtools): DevtoolsClient {
         return new DevtoolsClient(params);
     }
 
@@ -28,7 +27,7 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
     private readonly tooltip: HTMLSpanElement;
     private hideTimeout?: number;
     private readonly udid: string;
-    constructor(params: ParsedUrlQuery) {
+    constructor(params: ParamsDevtools) {
         super(params);
         this.udid = this.params.udid;
         this.openNewConnection();
@@ -45,13 +44,13 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
         document.body.appendChild(this.tooltip);
     }
 
-    public parseParameters(params: ParsedUrlQuery): ParamsDevtools {
+    public static parseParameters(params: URLSearchParams): ParamsDevtools {
         const typedParams = super.parseParameters(params);
         const { action } = typedParams;
         if (action !== ACTION.DEVTOOLS) {
             throw Error('Incorrect action');
         }
-        return { ...typedParams, action, udid: Util.parseStringEnv(params.udid) };
+        return { ...typedParams, action, udid: Util.parseString(params, 'udid', true) };
     }
 
     private static compareBrowsers = (a: RemoteBrowserInfo, b: RemoteBrowserInfo): number => {
@@ -73,20 +72,20 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
         return localUrl;
     }
 
-    protected onSocketClose(e: CloseEvent): void {
-        console.error(TAG, `Socket closed. Code: ${e.code}.${e.reason ? ' Reason: ' + e.reason : ''}`);
+    protected onSocketClose(event: CloseEvent): void {
+        console.error(TAG, `Socket closed. Code: ${event.code}.${event.reason ? ' Reason: ' + event.reason : ''}`);
         setTimeout(() => {
             this.openNewConnection();
         }, 2000);
     }
 
-    protected onSocketMessage(e: MessageEvent): void {
+    protected onSocketMessage(event: MessageEvent): void {
         let message: Message;
         try {
-            message = JSON.parse(e.data);
-        } catch (error) {
+            message = JSON.parse(event.data);
+        } catch (error: any) {
             console.error(TAG, error.message);
-            console.log(TAG, e.data);
+            console.log(TAG, error.data);
             return;
         }
         if (message.type !== DevtoolsClient.ACTION) {
@@ -231,7 +230,7 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
                 size.className = 'size';
                 size.innerText = `size ${desc.width} × ${desc.height}`;
                 sub2.appendChild(size);
-            } catch (e) {}
+            } catch (error: any) {}
         }
         const absoluteAddress = page.devtoolsFrontendUrl && page.devtoolsFrontendUrl.startsWith('http');
 
@@ -309,8 +308,8 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
         return row;
     }
 
-    private onDevtoolsLinkClick = (e: MouseEvent): void => {
-        const a = e.target as HTMLAnchorElement;
+    private onDevtoolsLinkClick = (event: MouseEvent): void => {
+        const a = event.target as HTMLAnchorElement;
         const url = a.getAttribute('href');
         if (!url) {
             return;
@@ -321,11 +320,11 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
         this.hiddenInput.setSelectionRange(0, url.length);
         document.execCommand('copy');
         this.hiddenInput.setAttribute('hidden', 'hidden');
-        this.tooltip.style.left = `${e.clientX}px`;
-        this.tooltip.style.top = `${e.clientY}px`;
+        this.tooltip.style.left = `${event.clientX}px`;
+        this.tooltip.style.top = `${event.clientY}px`;
         this.tooltip.style.display = 'block';
         this.hideTooltip();
-        e.preventDefault();
+        event.preventDefault();
     };
 
     private hideTooltip() {

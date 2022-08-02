@@ -20,17 +20,17 @@ export class SimpleInteractionHandler extends InteractionHandler {
         super(player, SimpleInteractionHandler.touchEventsNames, []);
     }
 
-    protected onInteraction(e: MouseEvent | TouchEvent): void {
+    protected onInteraction(event: MouseEvent | TouchEvent): void {
         let handled = false;
-        if (!(e instanceof MouseEvent)) {
+        if (!(event instanceof MouseEvent)) {
             return;
         }
-        if (e.target === this.tag) {
+        if (event.target === this.tag) {
             const screenInfo: ScreenInfo = this.player.getScreenInfo() as ScreenInfo;
             if (!screenInfo) {
                 return;
             }
-            const events = this.buildTouchEvent(e, screenInfo, this.storage);
+            const events = this.buildTouchEvent(event, screenInfo, this.storage);
             if (events.length > 1) {
                 console.warn(TAG, 'Too many events', events);
                 return;
@@ -38,13 +38,13 @@ export class SimpleInteractionHandler extends InteractionHandler {
             const downEventName = 'mousedown';
             if (events.length === 1) {
                 handled = true;
-                if (e.type === downEventName) {
+                if (event.type === downEventName) {
                     this.startPosition = events[0].position;
                 } else {
                     if (this.startPosition) {
                         this.endPosition = events[0].position;
                     } else {
-                        console.warn(TAG, `Received "${e.type}" before "${downEventName}"`);
+                        console.warn(TAG, `Received "${event.type}" before "${downEventName}"`);
                     }
                 }
                 if (this.startPosition) {
@@ -56,7 +56,7 @@ export class SimpleInteractionHandler extends InteractionHandler {
                         this.drawLine(this.startPosition.point, this.endPosition.point);
                     }
                 }
-                if (e.type === 'mouseup') {
+                if (event.type === 'mouseup') {
                     if (this.startPosition && this.endPosition) {
                         this.clearCanvas();
                         if (this.startPosition.point.distance(this.endPosition.point) < 10) {
@@ -68,13 +68,13 @@ export class SimpleInteractionHandler extends InteractionHandler {
                 }
             }
             if (handled) {
-                if (e.cancelable) {
-                    e.preventDefault();
+                if (event.cancelable) {
+                    event.preventDefault();
                 }
-                e.stopPropagation();
+                event.stopPropagation();
             }
         }
-        if (e.type === 'mouseup') {
+        if (event.type === 'mouseup') {
             this.startPosition = undefined;
             this.endPosition = undefined;
         }

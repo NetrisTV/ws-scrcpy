@@ -94,8 +94,8 @@ export abstract class InteractionHandler {
         InteractionHandler.bindGlobalListeners(this);
     }
 
-    protected abstract onInteraction(e: MouseEvent | TouchEvent): void;
-    protected abstract onKey(e: KeyboardEvent): void;
+    protected abstract onInteraction(event: MouseEvent | TouchEvent): void;
+    protected abstract onKey(event: KeyboardEvent): void;
 
     protected static bindGlobalListeners(interactionHandler: InteractionHandler): void {
         interactionHandler.touchEventsNames.forEach((eventName) => {
@@ -143,23 +143,23 @@ export abstract class InteractionHandler {
         });
     }
 
-    protected static onInteractionEvent = (e: MouseEvent | TouchEvent): void => {
-        const set = InteractionHandler.eventListeners.get(e.type as TouchEventNames);
+    protected static onInteractionEvent = (event: MouseEvent | TouchEvent): void => {
+        const set = InteractionHandler.eventListeners.get(event.type as TouchEventNames);
         if (!set) {
             return;
         }
         set.forEach((instance) => {
-            instance.onInteraction(e);
+            instance.onInteraction(event);
         });
     };
 
-    protected static onKeyEvent = (e: KeyboardEvent): void => {
-        const set = InteractionHandler.eventListeners.get(e.type as KeyEventNames);
+    protected static onKeyEvent = (event: KeyboardEvent): void => {
+        const set = InteractionHandler.eventListeners.get(event.type as KeyEventNames);
         if (!set) {
             return;
         }
         set.forEach((instance) => {
-            instance.onKey(e);
+            instance.onKey(event);
         });
     };
 
@@ -170,13 +170,13 @@ export abstract class InteractionHandler {
         const total = 2;
         let current = 0;
 
-        const onload = (e: Event) => {
+        const onload = (event: Event) => {
             if (++current === total) {
                 this.pointImagesLoaded = true;
             }
-            if (e.target === this.touchPointImage) {
+            if (event.target === this.touchPointImage) {
                 this.touchPointRadius = this.touchPointImage.width / 2;
-            } else if (e.target === this.centerPointImage) {
+            } else if (event.target === this.centerPointImage) {
                 this.centerPointRadius = this.centerPointImage.width / 2;
             }
         };
@@ -206,14 +206,14 @@ export abstract class InteractionHandler {
         return pointerId;
     }
 
-    protected static buildTouchOnClient(e: CommonTouchAndMouse, screenInfo: ScreenInfo): TouchOnClient | null {
-        const action = this.mapTypeToAction(e.type);
+    protected static buildTouchOnClient(event: CommonTouchAndMouse, screenInfo: ScreenInfo): TouchOnClient | null {
+        const action = this.mapTypeToAction(event.type);
         const { width, height } = screenInfo.videoSize;
-        const target: HTMLElement = e.target as HTMLElement;
+        const target: HTMLElement = event.target as HTMLElement;
         const rect = target.getBoundingClientRect();
         let { clientWidth, clientHeight } = target;
-        let touchX = e.clientX - rect.left;
-        let touchY = e.clientY - rect.top;
+        let touchX = event.clientX - rect.left;
+        let touchY = event.clientY - rect.top;
         let invalid = false;
         if (touchX < 0 || touchX > clientWidth || touchY < 0 || touchY > clientHeight) {
             invalid = true;
@@ -256,7 +256,7 @@ export abstract class InteractionHandler {
                 invalid,
                 action,
                 position,
-                buttons: e.buttons,
+                buttons: event.buttons,
             },
         };
     }

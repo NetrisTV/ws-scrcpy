@@ -41,8 +41,8 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
         super(udid, displayInfo, name, TinyH264Player.storageKeyPrefix);
     }
 
-    private onWorkerMessage = (e: MessageEvent): void => {
-        const message: WorkerMessage = e.data;
+    private onWorkerMessage = (event: MessageEvent): void => {
+        const message: WorkerMessage = event.data;
         switch (message.type) {
             case 'pictureReady':
                 const { width, height, data } = message;

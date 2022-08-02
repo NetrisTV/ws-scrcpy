@@ -1,7 +1,7 @@
 import nodeExternals from 'webpack-node-externals';
 import fs from 'fs';
 import path from 'path';
-import webpack, { ConfigurationFactory } from 'webpack';
+import webpack from 'webpack';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import GeneratePackageJsonPlugin from 'generate-package-json-webpack-plugin';
@@ -12,9 +12,8 @@ export const SERVER_DIST_PATH = path.join(PROJECT_ROOT, 'dist');
 export const CLIENT_DIST_PATH = path.join(PROJECT_ROOT, 'dist/public');
 const PACKAGE_JSON = path.join(PROJECT_ROOT, 'package.json');
 
-export const common: ConfigurationFactory = (env) => {
-    const buildConfig =
-        env && typeof env === 'object' && typeof env.config_override === 'string' ? env.config_override : undefined;
+export const common = () => {
+    const override = path.join(PROJECT_ROOT, '/build.config.override.json');
     return {
         module: {
             rules: [
@@ -28,7 +27,7 @@ export const common: ConfigurationFactory = (env) => {
                         { loader: 'ts-loader' },
                         {
                             loader: 'ifdef-loader',
-                            options: mergeWithDefaultConfig(buildConfig),
+                            options: mergeWithDefaultConfig(override),
                         },
                     ],
                     exclude: /node_modules/,
@@ -99,15 +98,24 @@ const front: webpack.Configuration = {
             inject: 'head',
         }),
         new MiniCssExtractPlugin(),
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+        }),
     ],
+    resolve: {
+        fallback: {
+            path: 'path-browserify',
+        },
+        extensions: ['.tsx', '.ts', '.js'],
+    },
     output: {
         filename: 'bundle.js',
         path: CLIENT_DIST_PATH,
     },
 };
 
-export const frontend: ConfigurationFactory = (env, args) => {
-    return Object.assign({}, common(env, args), front);
+export const frontend = () => {
+    return Object.assign({}, common(), front);
 };
 
 const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON).toString());
@@ -139,6 +147,6 @@ const back: webpack.Configuration = {
     target: 'node',
 };
 
-export const backend: ConfigurationFactory = (env, args) => {
-    return Object.assign({}, common(env, args), back);
+export const backend = () => {
+    return Object.assign({}, common(), back);
 };

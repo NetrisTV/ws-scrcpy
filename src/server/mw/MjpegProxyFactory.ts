@@ -20,7 +20,7 @@ export class MjpegProxyFactory {
                     const onStatusChange = ({ status }: { status: WdaStatus }) => {
                         if (status === WdaStatus.STARTED) {
                             wda.off('status-change', onStatusChange);
-                            resolve();
+                            resolve(undefined);
                         }
                     };
                     wda.on('status-change', onStatusChange);

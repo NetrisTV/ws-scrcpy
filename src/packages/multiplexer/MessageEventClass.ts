@@ -17,6 +17,10 @@ export class MessageEvent2 extends Event2 implements MessageEvent {
         this.source = source;
         this.ports = [...ports];
     }
+
+    initMessageEvent(): void {
+        throw Error('Deprecated method');
+    }
 }
 
 export const MessageEventClass = typeof MessageEvent !== 'undefined' ? MessageEvent : MessageEvent2;

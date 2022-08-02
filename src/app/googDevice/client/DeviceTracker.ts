@@ -74,8 +74,8 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         }
     }
 
-    onInterfaceSelected = (e: Event): void => {
-        const selectElement = e.currentTarget as HTMLSelectElement;
+    onInterfaceSelected = (event: Event): void => {
+        const selectElement = event.currentTarget as HTMLSelectElement;
         const option = selectElement.selectedOptions[0];
         const url = decodeURI(option.getAttribute(Attribute.URL) || '');
         const name = option.getAttribute(Attribute.NAME) || '';
@@ -120,8 +120,8 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         });
     }
 
-    onActionButtonClick = (e: MouseEvent): void => {
-        const button = e.currentTarget as HTMLButtonElement;
+    onActionButtonClick = (event: MouseEvent): void => {
+        const button = event.currentTarget as HTMLButtonElement;
         const udid = button.getAttribute(Attribute.UDID);
         const pidString = button.getAttribute(Attribute.PID) || '';
         const command = button.getAttribute(Attribute.COMMAND) as string;

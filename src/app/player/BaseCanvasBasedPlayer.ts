@@ -30,7 +30,7 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
         while (!gl && index++ < validContextNames.length) {
             try {
                 gl = testCanvas.getContext(validContextNames[index]);
-            } catch (e) {
+            } catch (error: any) {
                 gl = null;
             }
         }
@@ -168,11 +168,11 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
                 this.tag = tag;
             }
         }
-        this.tag.onerror = (e: Event | string): void => {
-            console.error(`[${this.name}]`, e);
+        this.tag.onerror = (event: Event | string): void => {
+            console.error(`[${this.name}]`, event);
         };
-        this.tag.oncontextmenu = (e: MouseEvent): void => {
-            e.preventDefault();
+        this.tag.oncontextmenu = (event: MouseEvent): void => {
+            event.preventDefault();
         };
         this.tag.width = Math.round(width);
         this.tag.height = Math.round(height);

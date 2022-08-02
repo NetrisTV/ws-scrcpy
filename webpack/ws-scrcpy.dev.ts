@@ -1,16 +1,16 @@
 import { frontend, backend } from './ws-scrcpy.common';
-import webpack, { ConfigurationFactory } from 'webpack';
+import webpack from 'webpack';
 
 const devOpts: webpack.Configuration = {
     devtool: 'inline-source-map',
     mode: 'development',
 };
 
-const front: ConfigurationFactory = (env, args) => {
-    return Object.assign({}, frontend(env, args), devOpts);
+const front = () => {
+    return Object.assign({}, frontend(), devOpts);
 };
-const back: ConfigurationFactory = (env, args) => {
-    return Object.assign({}, backend(env, args), devOpts);
+const back = () => {
+    return Object.assign({}, backend(), devOpts);
 };
 
 module.exports = [front, back];

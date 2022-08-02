@@ -6,19 +6,19 @@ import { ACTION } from '../../../common/Action';
 
 export class WebsocketProxyOverAdb extends WebsocketProxy {
     public static processRequest(ws: WS, params: RequestParameters): WebsocketProxy | undefined {
-        const { parsedQuery, parsedUrl } = params;
-        let udid: string | string[] = '';
-        let remote: string | string[] = '';
-        let path: string | string[] = '';
+        const { action, url } = params;
+        let udid: string | null = '';
+        let remote: string | null = '';
+        let path: string | null = '';
         let isSuitable = false;
-        if (parsedQuery?.action === ACTION.PROXY_ADB) {
+        if (action === ACTION.PROXY_ADB) {
             isSuitable = true;
-            remote = parsedQuery.remote;
-            udid = parsedQuery.udid;
-            path = parsedQuery.path;
+            remote = url.searchParams.get('remote');
+            udid = url.searchParams.get('udid');
+            path = url.searchParams.get('path');
         }
-        if (parsedUrl && parsedUrl.path) {
-            const temp = parsedUrl.path.split('/');
+        if (url && url.pathname) {
+            const temp = url.pathname.split('/');
             // Shortcut for action=proxy, without query string
             if (temp.length >= 4 && temp[0] === '' && temp[1] === ACTION.PROXY_ADB) {
                 isSuitable = true;
@@ -46,7 +46,7 @@ export class WebsocketProxyOverAdb extends WebsocketProxy {
         return this.createProxyOverAdb(ws, udid, remote, path);
     }
 
-    public static createProxyOverAdb(ws: WS, udid: string, remote: string, path?: string): WebsocketProxy {
+    public static createProxyOverAdb(ws: WS, udid: string, remote: string, path?: string | null): WebsocketProxy {
         const service = new WebsocketProxy(ws);
         AdbUtils.forward(udid, remote)
             .then((port) => {

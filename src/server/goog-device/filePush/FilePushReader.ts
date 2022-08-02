@@ -74,8 +74,8 @@ export class FilePushReader {
         this.release();
     }
 
-    private onMessage = async (e: MessageEvent): Promise<void> => {
-        const command = CommandControlMessage.pushFileCommandFromBuffer(Buffer.from(e.data));
+    private onMessage = async (event: MessageEvent): Promise<void> => {
+        const command = CommandControlMessage.pushFileCommandFromBuffer(Buffer.from(event.data));
 
         const { id, state } = command;
         switch (state) {
@@ -192,9 +192,9 @@ export class FilePushReader {
         this.readStream.push(chunk);
         const client = AdbExtended.createClient();
         this.pushTransfer = await client.push(this.serial, this.readStream, this.fileName);
-        client.on('error', (e: Error) => {
-            console.error(`Client error (${this.serial} | ${this.fileName}):`, e.message);
-            this.closeWithError(FilePushResponseStatus.ERROR_OTHER, e.message);
+        client.on('error', (error: Error) => {
+            console.error(`Client error (${this.serial} | ${this.fileName}):`, error.message);
+            this.closeWithError(FilePushResponseStatus.ERROR_OTHER, error.message);
         });
         this.pushTransfer.on('error', this.onPushError);
         this.pushTransfer.on('end', this.onPushEnd);
@@ -205,8 +205,8 @@ export class FilePushReader {
         this.release();
     };
 
-    private onPushError = (e: Error) => {
-        this.closeWithError(FilePushResponseStatus.ERROR_OTHER, e.message);
+    private onPushError = (error: Error) => {
+        this.closeWithError(FilePushResponseStatus.ERROR_OTHER, error.message);
     };
 
     private onPushEnd = () => {

@@ -5,7 +5,6 @@ import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
 import { ACTION } from '../../../common/Action';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
-import { ParsedUrlQuery } from 'querystring';
 import Util from '../../Util';
 import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
 import { Entry } from '../Entry';
@@ -55,7 +54,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
     public static readonly PROPERTY_ENTRY_ID = 'data-entry-id';
     public static REMOVE_ROW_TIMEOUT = 2000;
 
-    public static start(params: ParsedUrlQuery): FileListingClient {
+    public static start(params: ParamsFileListing): FileListingClient {
         return new FileListingClient(params);
     }
 
@@ -98,7 +97,7 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
     private uploads: Map<string, Upload> = new Map();
     private tableBody: HTMLElement;
     private channels: Set<Multiplexer> = new Set();
-    constructor(params: ParsedUrlQuery) {
+    constructor(params: ParamsFileListing) {
         super(params);
         this.parent = document.body;
         this.serial = this.params.udid;
@@ -262,14 +261,15 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         });
     }
 
-    public parseParameters(params: ParsedUrlQuery): ParamsFileListing {
+    public static parseParameters(params: URLSearchParams): ParamsFileListing {
         const typedParams = super.parseParameters(params);
         const { action } = typedParams;
         if (action !== ACTION.FILE_LISTING) {
             throw Error('Incorrect action');
         }
-        const path = params.path ? (Array.isArray(params.path) ? params.path[0] : params.path) : '/data/local/tmp';
-        return { ...typedParams, action, udid: Util.parseStringEnv(params.udid), path };
+        const pathParam = params.get('path');
+        const path = pathParam || '/data/local/tmp';
+        return { ...typedParams, action, udid: Util.parseString(params, 'udid', true), path };
     }
 
     protected buildDirectWebSocketUrl(): URL {
@@ -278,11 +278,11 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         return localUrl;
     }
 
-    protected onSocketClose(e: CloseEvent): void {
+    protected onSocketClose(event: CloseEvent): void {
         if (this.filePushHandler) {
             this.filePushHandler.release();
         }
-        console.error(this.name, 'socket closed', e.reason);
+        console.error(this.name, 'socket closed', event.reason);
         this.addForeground(Foreground.Connect);
     }
 
@@ -328,8 +328,8 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
             pathToLoadAfter,
         };
         this.downloads.set(channel, download);
-        const onMessage = (e: MessageEvent): void => {
-            this.handleReply(channel, e);
+        const onMessage = (event: MessageEvent): void => {
+            this.handleReply(channel, event);
         };
         const onClose = (): void => {
             this.channels.delete(channel);
