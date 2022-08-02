@@ -2,7 +2,7 @@ import { FilePushStream } from './FilePushStream';
 import { CommandControlMessage, FilePushState } from '../../controlMessage/CommandControlMessage';
 import { Multiplexer } from '../../../packages/multiplexer/Multiplexer';
 import { FilePushResponseStatus } from './FilePushResponseStatus';
-import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
+import Protocol from '@dead50f7/adbkit/lib/adb/protocol';
 import { FileListingClient } from '../client/FileListingClient';
 import * as path from 'path';
 import FilePushHandler from './FilePushHandler';

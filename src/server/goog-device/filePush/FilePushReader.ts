@@ -1,7 +1,7 @@
 import { ReadableOptions } from 'stream';
 import { CommandControlMessage, FilePushState } from '../../../app/controlMessage/CommandControlMessage';
 import { FilePushResponseStatus } from '../../../app/googDevice/filePush/FilePushResponseStatus';
-import PushTransfer from '@devicefarmer/adbkit/lib/adb/sync/pushtransfer';
+import PushTransfer from '@dead50f7/adbkit/lib/adb/sync/pushtransfer';
 import { ReadStream } from './ReadStream';
 import { AdbExtended } from '../adb';
 

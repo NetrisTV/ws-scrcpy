@@ -6,7 +6,7 @@ import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
 import { ACTION } from '../../../common/Action';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import Util from '../../Util';
-import Protocol from '@devicefarmer/adbkit/lib/adb/protocol';
+import Protocol from '@dead50f7/adbkit/lib/adb/protocol';
 import { Entry } from '../Entry';
 import { html } from '../../ui/HtmlTag';
 import * as path from 'path';

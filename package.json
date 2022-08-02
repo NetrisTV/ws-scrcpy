@@ -16,7 +16,7 @@
   "author": "Sergey Volkov <drauggres@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@devicefarmer/adbkit": "^2.11.3",
+    "@dead50f7/adbkit": "^2.11.4",
     "express": "^4.17.3",
     "ios-device-lib": "^0.9.2",
     "node-mjpeg-proxy": "^0.3.2",
