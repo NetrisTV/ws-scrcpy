@@ -4,7 +4,7 @@ import path from 'path';
 import webpack from 'webpack';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import GeneratePackageJsonPlugin from 'generate-package-json-webpack-plugin';
+import GeneratePackageJsonPlugin from '@dead50f7/generate-package-json-webpack-plugin';
 import { mergeWithDefaultConfig } from './build.config.utils';
 
 export const PROJECT_ROOT = path.resolve(__dirname, '..');
