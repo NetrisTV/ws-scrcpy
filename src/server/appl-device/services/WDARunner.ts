@@ -4,7 +4,7 @@ import * as portfinder from 'portfinder';
 import { Server, XCUITestDriver } from '../../../types/WdaServer';
 import * as XCUITest from 'appium-xcuitest-driver';
 import { WDAMethod } from '../../../common/WDAMethod';
-import { timing } from '../../../workarounds/appium-support';
+import { timing } from 'appium-support';
 import { WdaStatus } from '../../../common/WdaStatus';
 
 const MJPEG_SERVER_PORT = 9100;
