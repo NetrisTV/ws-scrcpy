@@ -13,7 +13,7 @@
     "format": "eslint src/ --fix --ext .ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Sergey Volkov <s.volkov@netris.ru>",
+  "author": "Sergey Volkov <drauggres@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "@devicefarmer/adbkit": "^2.11.3",
