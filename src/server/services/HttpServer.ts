@@ -82,7 +82,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
             /// #endif
         }
         const config = Config.getInstance();
-        config.getServers().forEach((serverItem) => {
+        config.servers.forEach((serverItem) => {
             const { secure, port, redirectToSecure } = serverItem;
             let proto: string;
             let server: http.Server | https.Server;
@@ -90,22 +90,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
                 if (!serverItem.options) {
                     throw Error('Must provide option for secure server configuration');
                 }
-                let { key, cert } = serverItem.options;
-                const { keyPath, certPath } = serverItem.options;
-                if (!key) {
-                    if (typeof keyPath !== 'string') {
-                        throw Error('Must provide parameter "key" or "keyPath"');
-                    }
-                    key = config.readFile(keyPath);
-                }
-                if (!cert) {
-                    if (typeof certPath !== 'string') {
-                        throw Error('Must provide parameter "cert" or "certPath"');
-                    }
-                    cert = config.readFile(certPath);
-                }
-                const options = { ...serverItem.options, cert, key };
-                server = https.createServer(options, this.mainApp);
+                server = https.createServer(serverItem.options, this.mainApp);
                 proto = 'https';
             } else {
                 const options = serverItem.options ? { ...serverItem.options } : {};
