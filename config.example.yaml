@@ -1,7 +1,9 @@
 # Run configuration example. See full config file spec in src/types/Configuration.d.ts
 
-# Device trackers (default: true)
+# Device trackers
+## track android devices (default: true, if was INCLUDE_GOOG enabled in build config)
 runGoogTracker: false
+## track iOS devices (default: true, if was INCLUDE_APPL enabled in build config)
 runApplTracker: false;
 
 # HTTP[s] servers configuration
