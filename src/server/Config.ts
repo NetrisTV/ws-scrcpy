@@ -12,7 +12,7 @@ const JSON_RE = /^.+\.(json|js)$/i;
 
 export class Config {
     private static instance?: Config;
-    private static initConfig(userConfig: Configuration = {}): Configuration {
+    private static initConfig(userConfig: Configuration = {}): Required<Configuration> {
         let runGoogTracker = false;
         let announceGoogTracker = false;
         /// #if INCLUDE_GOOG
@@ -26,13 +26,19 @@ export class Config {
         runApplTracker = true;
         announceApplTracker = true;
         /// #endif
-        const server: ServerItem[] = [];
-        const defaultConfig = {
+        const server: ServerItem[] = [
+            {
+                secure: false,
+                port: DEFAULT_PORT,
+            },
+        ];
+        const defaultConfig: Required<Configuration> = {
             runGoogTracker,
             runApplTracker,
             announceGoogTracker,
             announceApplTracker,
             server,
+            remoteHostList: [],
         };
         const merged = Object.assign({}, defaultConfig, userConfig);
         merged.server = merged.server.map((item) => this.parseServerItem(item));
@@ -58,12 +64,18 @@ export class Config {
             }
             options.key = this.readFile(options.keyPath);
         }
-        return {
+        const serverItem: ServerItem = {
             secure,
             port,
-            options,
             redirectToSecure,
         };
+        if (typeof options !== 'undefined') {
+            serverItem.options = options;
+        }
+        if (typeof redirectToSecure === 'boolean') {
+            serverItem.redirectToSecure = redirectToSecure;
+        }
+        return serverItem;
     }
     public static getInstance(): Config {
         if (!this.instance) {
@@ -95,7 +107,7 @@ export class Config {
         return fs.readFileSync(absolutePath).toString();
     }
 
-    constructor(private fullConfig: Configuration) {}
+    constructor(private fullConfig: Required<Configuration>) {}
 
     public getHostList(): HostItem[] {
         if (!this.fullConfig.remoteHostList || !this.fullConfig.remoteHostList.length) {
@@ -122,36 +134,22 @@ export class Config {
     }
 
     public get runLocalGoogTracker(): boolean {
-        return !!this.fullConfig.runGoogTracker;
+        return this.fullConfig.runGoogTracker;
     }
 
     public get announceLocalGoogTracker(): boolean {
-        if (typeof this.fullConfig.announceGoogTracker === 'boolean') {
-            return this.fullConfig.announceGoogTracker;
-        }
-        return this.fullConfig.runGoogTracker === true;
+        return this.fullConfig.runGoogTracker;
     }
 
     public get runLocalApplTracker(): boolean {
-        return !!this.fullConfig.runApplTracker;
+        return this.fullConfig.runApplTracker;
     }
 
     public get announceLocalApplTracker(): boolean {
-        if (typeof this.fullConfig.announceApplTracker === 'boolean') {
-            return this.fullConfig.announceApplTracker;
-        }
-        return this.fullConfig.runApplTracker === true;
+        return this.fullConfig.runApplTracker;
     }
 
     public get servers(): ServerItem[] {
-        if (!Array.isArray(this.fullConfig.server)) {
-            return [
-                {
-                    secure: false,
-                    port: DEFAULT_PORT,
-                },
-            ];
-        }
         return this.fullConfig.server;
     }
 }
