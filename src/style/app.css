@@ -103,7 +103,6 @@ body.stream {
 
 .device-view {
     z-index: 1;
-    float: right;
     display: inline-block;
 }
 
