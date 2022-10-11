@@ -9,7 +9,7 @@ WORKDIR dist
 RUN npm install
 
 FROM alpine:3.14 AS runner
-LABEL maintainer="Vitaly Repin <vitaly.repin@gmail.com>"
+LABEL maintainer="MaxDuke <maxduke@gmail.com>"
 
 RUN apk add --no-cache android-tools npm
 COPY --from=builder /ws-scrcpy/dist /root/ws-scrcpy
