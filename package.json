@@ -24,7 +24,7 @@
     "portfinder": "^1.0.28",
     "tslib": "^2.3.1",
     "ws": "^8.5.0",
-    "yaml": "^2.0.0"
+    "yaml": "^2.2.2"
   },
   "devDependencies": {
     "@dead50f7/generate-package-json-webpack-plugin": "^2.6.1",
