@@ -102,19 +102,21 @@ body.stream {
 }
 
 .device-view {
-    z-index: 1;
-    float: right;
-    display: inline-block;
+    z-index: 100;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 3;
 }
 
 .video-layer {
     position: absolute;
-    z-index: 0;
+    z-index: 5;
 }
 
 .touch-layer {
     position: absolute;
-    z-index: 1;
+    z-index: 6;
 }
 
 .video {

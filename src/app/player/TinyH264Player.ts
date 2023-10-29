@@ -5,6 +5,7 @@ import YUVWebGLCanvas from '../../../vendor/tinyh264/YUVWebGLCanvas';
 import YUVCanvas from '../../../vendor/tinyh264/YUVCanvas';
 import Size from '../Size';
 import { DisplayInfo } from '../DisplayInfo';
+import defaultVideoSettings from './defaultVideoSettings.json';
 
 type WorkerMessage = {
     type: string;
@@ -20,12 +21,12 @@ export class TinyH264Player extends BaseCanvasBasedPlayer {
     public static readonly playerCodeName = 'tinyh264';
     private static videoStreamId = 1;
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
-        lockedVideoOrientation: -1,
-        bitrate: 524288,
-        maxFps: 24,
-        iFrameInterval: 5,
-        bounds: new Size(480, 480),
-        sendFrameMeta: false,
+        lockedVideoOrientation: defaultVideoSettings.lockedVideoOrientation,
+        bitrate: defaultVideoSettings.bitrate,
+        maxFps: defaultVideoSettings.maxFps,
+        iFrameInterval: defaultVideoSettings.iFrameInterval,
+        bounds: new Size(defaultVideoSettings.bounds.width, defaultVideoSettings.bounds.height),
+        sendFrameMeta: defaultVideoSettings.sendFrameMeta,
     });
 
     private worker?: TinyH264Worker;

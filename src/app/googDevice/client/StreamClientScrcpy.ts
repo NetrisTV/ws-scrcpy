@@ -49,6 +49,7 @@ export class StreamClientScrcpy
     private static players: Map<string, PlayerClass> = new Map<string, PlayerClass>();
 
     private controlButtons?: HTMLElement;
+    private deviceView?: HTMLElement;
     private deviceName = '';
     private clientId = -1;
     private clientsCount = -1;
@@ -227,7 +228,7 @@ export class StreamClientScrcpy
         }
 
         if (!videoSettings.equals(currentSettings)) {
-            this.applyNewVideoSettings(videoSettings, videoSettings.equals(this.requestedVideoSettings));
+            this.applyNewVideoSettings(videoSettings, false);
         }
         if (!oldInfo) {
             const bounds = currentSettings.bounds;
@@ -249,6 +250,7 @@ export class StreamClientScrcpy
     };
 
     public onDisconnected = (): void => {
+        console.log("disconnectt");
         this.streamReceiver.off('deviceMessage', this.OnDeviceMessage);
         this.streamReceiver.off('video', this.onVideo);
         this.streamReceiver.off('clientsStats', this.onClientsStats);
@@ -259,6 +261,12 @@ export class StreamClientScrcpy
         this.filePushHandler = undefined;
         this.touchHandler?.release();
         this.touchHandler = undefined;
+        this.deviceView?.remove();
+        this.deviceView = undefined;
+        //this.streamReceiver.stop();
+        if (this.player) {
+            this.player.stop();
+        }
     };
 
     public startStream({ udid, player, playerName, videoSettings, fitToScreen }: StartParams): void {
@@ -292,6 +300,7 @@ export class StreamClientScrcpy
         }
 
         const deviceView = document.createElement('div');
+        this.deviceView = deviceView;
         deviceView.className = 'device-view';
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
@@ -344,7 +353,7 @@ export class StreamClientScrcpy
         streamReceiver.on('clientsStats', this.onClientsStats);
         streamReceiver.on('displayInfo', this.onDisplayInfo);
         streamReceiver.on('disconnected', this.onDisconnected);
-        console.log(TAG, player.getName(), udid);
+        //console.log(TAG, player.getName(), udid);
     }
 
     public sendMessage(message: ControlMessage): void {
@@ -369,6 +378,7 @@ export class StreamClientScrcpy
 
     public sendNewVideoSetting(videoSettings: VideoSettings): void {
         this.requestedVideoSettings = videoSettings;
+        console.log('Updating emulator screen settings', this.requestedVideoSettings);
         this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(videoSettings));
     }
 
@@ -397,9 +407,8 @@ export class StreamClientScrcpy
         this.touchHandler = new FeaturedInteractionHandler(player, this);
     }
 
-    private applyNewVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
+    public applyNewVideoSettings(videoSettings: VideoSettings, saveToStorage: boolean): void {
         let fitToScreen = false;
-
         // TODO: create control (switch/checkbox) instead
         if (videoSettings.bounds && videoSettings.bounds.equals(this.getMaxSize())) {
             fitToScreen = true;

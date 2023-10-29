@@ -31,7 +31,7 @@
     /* Additional Checks */
     "noUnusedLocals": true,                   /* Report errors on unused locals. */
     "noUnusedParameters": true,               /* Report errors on unused parameters. */
-    "noImplicitReturns": true                 /* Report error when not all code paths in function return a value. */
+    "noImplicitReturns": true,                 /* Report error when not all code paths in function return a value. */
     // "noFallthroughCasesInSwitch": true,    /* Report errors for fallthrough cases in switch statement. */
 
     /* Module Resolution Options */
@@ -51,6 +51,7 @@
     /* Experimental Options */
     // "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
+    "resolveJsonModule": true
   },
   "include":[
     "./typings/**/*",

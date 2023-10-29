@@ -31,10 +31,7 @@ body.list {
 body.stream #devices {
     background-color: var(--device-list-default-color);
     opacity: .8;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 3;
+    display: inline-block;
 }
 
 body.list #device_list_menu {
@@ -43,10 +40,6 @@ body.list #device_list_menu {
 
 #device_list_menu {
     display: block;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    z-index: 4;
 }
 
 #devices .device-list button {

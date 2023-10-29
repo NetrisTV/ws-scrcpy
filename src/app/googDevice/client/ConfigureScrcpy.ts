@@ -50,8 +50,16 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
     private dialogContainer?: HTMLElement;
     private statusText = '';
     private connectionCount = 0;
+    private static streamClientScrcpy?: StreamClientScrcpy;
+    private playerOptionMapping: { [key: string]: number } = {};
+    private hidden = false;
 
-    constructor(private readonly tracker: DeviceTracker, descriptor: GoogDeviceDescriptor, params: ParamsStreamScrcpy) {
+    constructor(
+        private readonly tracker: DeviceTracker,
+        descriptor: GoogDeviceDescriptor,
+        params: ParamsStreamScrcpy,
+        openConfiguration = true,
+    ) {
         super(params);
         this.udid = descriptor.udid;
         this.escapedUdid = Util.escapeUdid(this.udid);
@@ -59,8 +67,10 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         this.deviceName = descriptor['ro.product.model'];
         this.TAG = `ConfigureScrcpy[${this.udid}]`;
         this.createStreamReceiver(params);
+        this.background = document.createElement('div');
         this.setTitle(`${this.deviceName}. Configure stream`);
         this.background = this.createUI();
+        console.log(openConfiguration);
     }
 
     public getTracker(): DeviceTracker {
@@ -119,7 +129,6 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
     };
 
     private onDisplayInfo = (infoArray: DisplayCombinedInfo[]): void => {
-        // console.log(this.TAG, 'Received info');
         this.statusText = 'Ready';
         this.updateStatus();
         this.dialogContainer?.classList.add('ready');
@@ -162,6 +171,9 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
             this.dialogBody.classList.remove('hidden');
             this.dialogBody.classList.add('visible');
         }
+        if (!ConfigureScrcpy.streamClientScrcpy) {
+            this.openStreamWithSettings();
+        }
     };
 
     private onConnected = (): void => {
@@ -203,23 +215,31 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         this.updateVideoSettingsForPlayer();
     };
 
-    private getPlayer(): PlayerClass | undefined {
+    public getPlayer(): PlayerClass | undefined {
         if (!this.playerSelectElement) {
             return;
         }
         const playerName = this.playerSelectElement.options[this.playerSelectElement.selectedIndex].value;
+        return this.getPlayerByName(playerName);
+    }
+
+    private getPlayerByName(playerName: string): PlayerClass | undefined {
+        if (!this.playerSelectElement) {
+            return;
+        }
         return StreamClientScrcpy.getPlayers().find((playerClass) => {
             return playerClass.playerFullName === playerName;
         });
     }
 
-    private updateVideoSettingsForPlayer(): void {
+    public updateVideoSettingsForPlayer(): void {
         const player = this.getPlayer();
         if (player) {
             this.playerName = player.playerFullName;
             const storedOrPreferred = player.loadVideoSettings(this.udid, this.displayInfo);
             const fitToScreen = player.getFitToScreenStatus(this.udid, this.displayInfo);
             this.fillInputsFromVideoSettings(storedOrPreferred, fitToScreen);
+            ConfigureScrcpy.streamClientScrcpy?.sendNewVideoSetting(storedOrPreferred);
         }
     }
 
@@ -449,6 +469,7 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
             if (playerFullName === previouslyUsedPlayer) {
                 playerSelect.selectedIndex = index;
             }
+            this.playerOptionMapping[playerFullName] = index;
         });
         playerSelect.onchange = this.onPlayerChange;
         this.updateVideoSettingsForPlayer();
@@ -570,13 +591,16 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
     }
 
     private removeUI(): void {
-        document.body.removeChild(this.background);
-        this.okButton?.removeEventListener('click', this.openStream);
-        // this.cancelButton?.removeEventListener('click', this.cancel);
-        this.resetSettingsButton?.removeEventListener('click', this.resetSettings);
-        this.loadSettingsButton?.removeEventListener('click', this.loadSettings);
-        this.saveSettingsButton?.removeEventListener('click', this.saveSettings);
-        this.background.removeEventListener('click', this.onBackgroundClick);
+        if (!this.hidden) {
+            this.hidden = true;
+            document.body.removeChild(this.background);
+            this.okButton?.removeEventListener('click', this.openStream);
+            // this.cancelButton?.removeEventListener('click', this.cancel);
+            this.resetSettingsButton?.removeEventListener('click', this.resetSettings);
+            this.loadSettingsButton?.removeEventListener('click', this.loadSettings);
+            this.saveSettingsButton?.removeEventListener('click', this.saveSettings);
+            this.background.removeEventListener('click', this.onBackgroundClick);
+        }
     }
 
     private onBackgroundClick = (event: MouseEvent): void => {
@@ -612,7 +636,54 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         if (videoSettings && player) {
             const fitToScreen = this.getFitToScreenValue();
             player.saveVideoSettings(this.udid, videoSettings, fitToScreen, this.displayInfo);
+            this.updateVideoSettingsForPlayer();
         }
+    };
+
+    public changePlayer = (playerName: string): void => {
+        if (!this.playerSelectElement) {
+            return;
+        }
+        this.playerSelectElement.selectedIndex = this.playerOptionMapping[playerName];
+        this.onPlayerChange();
+        ConfigureScrcpy.streamClientScrcpy?.onDisconnected();
+        ConfigureScrcpy.streamClientScrcpy = undefined;
+    };
+
+    public openStreamWithSettings = (): void => {
+        console.log('open stream!');
+        this.getPreviouslyUsedPlayer();
+
+        const playerUsed = this.getPlayer();
+        if (!playerUsed || !this.streamReceiver) {
+            return;
+        }
+        this.playerName = playerUsed.playerFullName;
+        const videoSettings = playerUsed.loadVideoSettings(this.udid, this.displayInfo);
+        const fitToScreen = playerUsed.getFitToScreenStatus(this.udid, this.displayInfo);
+        this.removeUI();
+        const player = StreamClientScrcpy.createPlayer(this.playerName, this.udid, this.displayInfo);
+        if (!player) {
+            return;
+        }
+        this.setPreviouslyUsedPlayer(this.playerName);
+        player.setVideoSettings(videoSettings, fitToScreen, false);
+        const params: ParamsStreamScrcpy = {
+            ...this.params,
+            udid: this.udid,
+            fitToScreen,
+        };
+        ConfigureScrcpy.streamClientScrcpy = StreamClientScrcpy.start(
+            params,
+            this.streamReceiver,
+            player,
+            fitToScreen,
+            videoSettings,
+        );
+        this.streamReceiver.triggerInitialInfoEvents();
+
+        //this.detachEventsListeners(this.streamReceiver);
+        //this.emit('closed', { dialog: this, result: false });
     };
 
     private openStream = (): void => {
@@ -622,7 +693,7 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         }
         const fitToScreen = this.getFitToScreenValue();
         this.detachEventsListeners(this.streamReceiver);
-        this.emit('closed', { dialog: this, result: true });
+        this.emit('closed', { dialog: this, result: false });
         this.removeUI();
         const player = StreamClientScrcpy.createPlayer(this.playerName, this.udid, this.displayInfo);
         if (!player) {

@@ -3,6 +3,7 @@ import VideoConverter, { setLogger, mimeType } from 'h264-converter';
 import VideoSettings from '../VideoSettings';
 import Size from '../Size';
 import { DisplayInfo } from '../DisplayInfo';
+import defaultVideoSettings from './defaultVideoSettings.json';
 
 interface QualityStats {
     timestamp: number;
@@ -20,12 +21,12 @@ export class MsePlayer extends BasePlayer {
     public static readonly playerFullName = 'H264 Converter';
     public static readonly playerCodeName = 'mse';
     public static readonly preferredVideoSettings: VideoSettings = new VideoSettings({
-        lockedVideoOrientation: -1,
-        bitrate: 7340032,
-        maxFps: 60,
-        iFrameInterval: 10,
-        bounds: new Size(720, 720),
-        sendFrameMeta: false,
+        lockedVideoOrientation: defaultVideoSettings.lockedVideoOrientation,
+        bitrate: defaultVideoSettings.bitrate,
+        maxFps: defaultVideoSettings.maxFps,
+        iFrameInterval: defaultVideoSettings.iFrameInterval,
+        bounds: new Size(defaultVideoSettings.bounds.width, defaultVideoSettings.bounds.height),
+        sendFrameMeta: defaultVideoSettings.sendFrameMeta,
     });
     private static DEFAULT_FRAMES_PER_FRAGMENT = 1;
     private static DEFAULT_FRAMES_PER_SECOND = 60;

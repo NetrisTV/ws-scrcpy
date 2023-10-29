@@ -7,7 +7,7 @@
     display: none;
     position: absolute;
     background-color: var(--controls-bg-color);
-    z-index: 2;
+    z-index: 6;
     padding: 0 .714rem .714rem .714rem;
 }
 
