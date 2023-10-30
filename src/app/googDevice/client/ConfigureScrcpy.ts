@@ -54,12 +54,7 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
     private playerOptionMapping: { [key: string]: number } = {};
     private hidden = false;
 
-    constructor(
-        private readonly tracker: DeviceTracker,
-        descriptor: GoogDeviceDescriptor,
-        params: ParamsStreamScrcpy,
-        openConfiguration = true,
-    ) {
+    constructor(private readonly tracker: DeviceTracker, descriptor: GoogDeviceDescriptor, params: ParamsStreamScrcpy) {
         super(params);
         this.udid = descriptor.udid;
         this.escapedUdid = Util.escapeUdid(this.udid);
@@ -70,7 +65,6 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         this.background = document.createElement('div');
         this.setTitle(`${this.deviceName}. Configure stream`);
         this.background = this.createUI();
-        console.log(openConfiguration);
     }
 
     public getTracker(): DeviceTracker {
@@ -651,7 +645,6 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
     };
 
     public openStreamWithSettings = (): void => {
-        console.log('open stream!');
         this.getPreviouslyUsedPlayer();
 
         const playerUsed = this.getPlayer();

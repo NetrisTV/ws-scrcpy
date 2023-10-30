@@ -80,6 +80,8 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
     }
 
     onInterfaceSelected = (event: Event): void => {
+        console.log(event);
+        /*
         const selectElement = event.currentTarget as HTMLSelectElement;
         const option = selectElement.selectedOptions[0];
         const url = decodeURI(option.getAttribute(Attribute.URL) || '');
@@ -87,9 +89,11 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         const fullName = decodeURIComponent(selectElement.getAttribute(Attribute.FULL_NAME) || '');
         const udid = selectElement.getAttribute(Attribute.UDID) || '';
         this.updateLink({ url, name, fullName, udid, store: true });
+        */
     };
-
+    /*
     private updateLink(params: { url: string; name: string; fullName: string; udid: string; store: boolean }): void {
+
         const { url, name, fullName, udid, store } = params;
         const playerTds = document.getElementsByName(
             encodeURIComponent(`${DeviceTracker.AttributePrefixPlayerFor}${fullName}`),
@@ -105,7 +109,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         }
         const action = ACTION.STREAM_SCRCPY;
         playerTds.forEach((item) => {
-            //item.innerHTML = '';
+            item.innerHTML = '';
             const playerFullName = item.getAttribute(DeviceTracker.AttributePlayerFullName);
             const playerCodeName = item.getAttribute(DeviceTracker.AttributePlayerCodeName);
             if (!playerFullName || !playerCodeName) {
@@ -121,10 +125,9 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                 decodeURIComponent(playerFullName),
                 this.params,
             );
-            console.log(link);
-           // item.appendChild(link);
+            item.appendChild(link);
         });
-    }
+    }*/
 
     onActionButtonClick = (event: MouseEvent): void => {
         const button = event.currentTarget as HTMLButtonElement;
@@ -415,13 +418,15 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
 
         tbody.appendChild(row);
         if (DeviceTracker.CREATE_DIRECT_LINKS && hasPid && selectedInterfaceUrl) {
-            this.updateLink({
-                url: selectedInterfaceUrl,
-                name: selectedInterfaceName,
-                fullName,
-                udid: device.udid,
-                store: false,
-            });
+            /*
+                this.updateLink({
+                    url: selectedInterfaceUrl,
+                    name: selectedInterfaceName,
+                    fullName,
+                    udid: device.udid,
+                    store: false,
+                });
+            */
         }
 
         this.buildEmulatorScreen(device);

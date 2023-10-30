@@ -250,7 +250,6 @@ export class StreamClientScrcpy
     };
 
     public onDisconnected = (): void => {
-        console.log("disconnectt");
         this.streamReceiver.off('deviceMessage', this.OnDeviceMessage);
         this.streamReceiver.off('video', this.onVideo);
         this.streamReceiver.off('clientsStats', this.onClientsStats);
@@ -378,8 +377,7 @@ export class StreamClientScrcpy
 
     public sendNewVideoSetting(videoSettings: VideoSettings): void {
         this.requestedVideoSettings = videoSettings;
-        console.log('Updating emulator screen settings', this.requestedVideoSettings);
-        this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(videoSettings));
+        this.sendMessage(CommandControlMessage.createSetVideoSettingsCommand(this.requestedVideoSettings));
     }
 
     public getClientId(): number {

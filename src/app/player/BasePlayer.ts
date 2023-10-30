@@ -240,7 +240,6 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         if (!saved) {
             return preferred;
         }
-        console.log('localstorage save: ', saved);
         const parsed = JSON.parse(saved);
         const {
             displayId,

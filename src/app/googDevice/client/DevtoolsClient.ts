@@ -338,7 +338,6 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
     }
 
     public buildList(info: DevtoolsInfo): void {
-        // console.log(info);
         const block = this.createDeviceBlock(info);
         const header = this.createDeviceHeader(info);
         const browsers = this.createBrowsersBlock(info);
