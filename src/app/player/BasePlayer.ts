@@ -5,6 +5,7 @@ import Size from '../Size';
 import Util from '../Util';
 import { TypedEmitter } from '../../common/TypedEmitter';
 import { DisplayInfo } from '../DisplayInfo';
+import defaultVideoSettings from './defaultVideoSettings.json';
 
 interface BitrateStat {
     timestamp: number;
@@ -90,12 +91,12 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     public static playerFullName = 'BasePlayer';
     public static playerCodeName = 'baseplayer';
     public static preferredVideoSettings: VideoSettings = new VideoSettings({
-        lockedVideoOrientation: -1,
-        bitrate: 524288,
-        maxFps: 24,
-        iFrameInterval: 5,
-        bounds: new Size(480, 480),
-        sendFrameMeta: false,
+        lockedVideoOrientation: defaultVideoSettings.lockedVideoOrientation,
+        bitrate: defaultVideoSettings.bitrate,
+        maxFps: defaultVideoSettings.maxFps,
+        iFrameInterval: defaultVideoSettings.iFrameInterval,
+        bounds: new Size(defaultVideoSettings.bounds.width, defaultVideoSettings.bounds.height),
+        sendFrameMeta: defaultVideoSettings.sendFrameMeta,
     });
 
     public static isSupported(): boolean {
@@ -170,16 +171,14 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     }
 
     private static getStorageKey(storageKeyPrefix: string, udid: string): string {
-        const { innerHeight, innerWidth } = window;
-        return `${storageKeyPrefix}:${udid}:${innerWidth}x${innerHeight}`;
+        return `${storageKeyPrefix}:${udid}`;
     }
 
     private static getFullStorageKey(storageKeyPrefix: string, udid: string, displayInfo?: DisplayInfo): string {
-        const { innerHeight, innerWidth } = window;
-        let base = `${storageKeyPrefix}:${udid}:${innerWidth}x${innerHeight}`;
+        let base = `${storageKeyPrefix}:${udid}`;
         if (displayInfo) {
-            const { displayId, size } = displayInfo;
-            base = `${base}:${displayId}:${size.width}x${size.height}`;
+            const { displayId } = displayInfo;
+            base = `${base}:${displayId}`;
         }
         return base;
     }
@@ -236,6 +235,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         if (!window.localStorage) {
             return preferred;
         }
+
         const saved = this.getFromStorageCompat(storageKeyPrefix, udid, displayInfo);
         if (!saved) {
             return preferred;

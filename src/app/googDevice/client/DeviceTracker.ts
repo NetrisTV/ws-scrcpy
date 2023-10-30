@@ -15,6 +15,8 @@ import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { HostItem } from '../../../types/Configuration';
 import { ChannelCode } from '../../../common/ChannelCode';
 import { Tool } from '../../client/Tool';
+import { ConfigureScrcpy } from './ConfigureScrcpy';
+import { ParamsStreamScrcpy } from '../../../types/ParamsStreamScrcpy';
 
 type Field = keyof GoogDeviceDescriptor | ((descriptor: GoogDeviceDescriptor) => string);
 type DescriptionColumn = { title: string; field: Field };
@@ -33,9 +35,12 @@ const DESC_COLUMNS: DescriptionColumn[] = [
 export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never> {
     public static readonly ACTION = ACTION.GOOG_DEVICE_LIST;
     public static readonly CREATE_DIRECT_LINKS = true;
+    public static configureScrcpy: ConfigureScrcpy;
     private static instancesByUrl: Map<string, DeviceTracker> = new Map();
     protected static tools: Set<Tool> = new Set();
     protected tableId = 'goog_device_list';
+    protected static fullName = '';
+    private static SelectCodex?: HTMLSelectElement;
 
     public static start(hostItem: HostItem): DeviceTracker {
         const url = this.buildUrlForTracker(hostItem).toString();
@@ -75,6 +80,8 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
     }
 
     onInterfaceSelected = (event: Event): void => {
+        console.log(event);
+        /*
         const selectElement = event.currentTarget as HTMLSelectElement;
         const option = selectElement.selectedOptions[0];
         const url = decodeURI(option.getAttribute(Attribute.URL) || '');
@@ -82,9 +89,11 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         const fullName = decodeURIComponent(selectElement.getAttribute(Attribute.FULL_NAME) || '');
         const udid = selectElement.getAttribute(Attribute.UDID) || '';
         this.updateLink({ url, name, fullName, udid, store: true });
+        */
     };
-
+    /*
     private updateLink(params: { url: string; name: string; fullName: string; udid: string; store: boolean }): void {
+
         const { url, name, fullName, udid, store } = params;
         const playerTds = document.getElementsByName(
             encodeURIComponent(`${DeviceTracker.AttributePrefixPlayerFor}${fullName}`),
@@ -118,7 +127,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
             );
             item.appendChild(link);
         });
-    }
+    }*/
 
     onActionButtonClick = (event: MouseEvent): void => {
         const button = event.currentTarget as HTMLButtonElement;
@@ -167,6 +176,62 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
 
     private static titleToClassName(title: string): string {
         return title.toLowerCase().replace(/\s/g, '_');
+    }
+
+    protected buildEmulatorScreen(device: GoogDeviceDescriptor): void {
+        const { secure, hostname, port, useProxy } = this.params;
+        if (!hostname || !port) {
+            return;
+        }
+        const tracker = DeviceTracker.getInstance({
+            type: 'android',
+            secure: secure || false,
+            hostname,
+            port,
+            useProxy,
+        });
+
+        const descriptor = tracker.getDescriptorByUdid(device.udid);
+        if (!descriptor) {
+            return;
+        }
+        const fullName = `${this.id}_${Util.escapeUdid(device.udid)}`;
+        const elements = document.getElementsByName(`${DeviceTracker.AttributePrefixInterfaceSelectFor}${fullName}`);
+        if (!elements || !elements.length) {
+            return;
+        }
+        const select = elements[0] as HTMLSelectElement;
+        const optionElement = select.options[select.selectedIndex];
+        const ws = optionElement.getAttribute(Attribute.URL);
+        const name = optionElement.getAttribute(Attribute.NAME);
+        if (!ws || !name) {
+            return;
+        }
+        const options: ParamsStreamScrcpy = {
+            udid: device.udid,
+            ws,
+            player: '',
+            action: ACTION.STREAM_SCRCPY,
+            secure,
+            hostname,
+            port,
+            useProxy,
+        };
+        DeviceTracker.configureScrcpy = new ConfigureScrcpy(tracker, descriptor, options);
+        const player = DeviceTracker.configureScrcpy.getPlayer();
+        if (!DeviceTracker.SelectCodex) {
+            return;
+        }
+
+        for (let i = 0; i < DeviceTracker.SelectCodex.options.length; i++) {
+            const attr = decodeURIComponent(
+                DeviceTracker.SelectCodex.options[i].getAttribute(DeviceTracker.AttributePlayerFullName) || '',
+            );
+            if (attr == player?.playerFullName) {
+                DeviceTracker.SelectCodex.selectedIndex = i;
+                break;
+            }
+        }
     }
 
     protected buildDeviceRow(tbody: Element, device: GoogDeviceDescriptor): void {
@@ -253,7 +318,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                     actionButton.appendChild(SvgImage.create(SvgImage.Icon.OFFLINE));
                 }
                 const span = document.createElement('span');
-                span.innerText = value;
+                span.innerText = `${actionButton.title} (pid=${value})`;
                 actionButton.appendChild(span);
                 td.appendChild(actionButton);
             } else if (fieldName === 'interfaces') {
@@ -321,27 +386,50 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
 
         if (DeviceTracker.CREATE_DIRECT_LINKS) {
             const name = `${DeviceTracker.AttributePrefixPlayerFor}${fullName}`;
-            StreamClientScrcpy.getPlayers().forEach((playerClass) => {
+            const select = document.createElement('select');
+            select.setAttribute('name', name);
+            DeviceTracker.SelectCodex = select;
+            const players = StreamClientScrcpy.getPlayers();
+            for (let i = 0; i < players.length; i++) {
+                const playerClass = players[i];
                 const { playerCodeName, playerFullName } = playerClass;
-                const playerTd = document.createElement('div');
-                playerTd.classList.add(blockClass);
-                playerTd.setAttribute('name', encodeURIComponent(name));
-                playerTd.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
-                playerTd.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
-                services.appendChild(playerTd);
+
+                const option = document.createElement('option');
+                option.value = playerCodeName;
+                if (playerFullName.includes('Broadway')) {
+                    option.textContent = playerFullName + ' (Recommended)';
+                } else {
+                    option.textContent = playerFullName;
+                }
+
+                option.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
+                option.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
+                select.appendChild(option);
+            }
+            // Add the onchange event listener
+            select.addEventListener('change', function () {
+                const player = decodeURIComponent(
+                    this.options[this.selectedIndex].getAttribute(DeviceTracker.AttributePlayerFullName) || '',
+                );
+                DeviceTracker.configureScrcpy.changePlayer(player);
             });
+            services.appendChild(select);
         }
 
         tbody.appendChild(row);
         if (DeviceTracker.CREATE_DIRECT_LINKS && hasPid && selectedInterfaceUrl) {
-            this.updateLink({
-                url: selectedInterfaceUrl,
-                name: selectedInterfaceName,
-                fullName,
-                udid: device.udid,
-                store: false,
-            });
+            /*
+                this.updateLink({
+                    url: selectedInterfaceUrl,
+                    name: selectedInterfaceName,
+                    fullName,
+                    udid: device.udid,
+                    store: false,
+                });
+            */
         }
+
+        this.buildEmulatorScreen(device);
     }
 
     protected getChannelCode(): string {

@@ -142,7 +142,7 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
     }
 
     public getName(): string {
-        return `aDevice Tracker [${os.hostname()}]`;
+        return `Android Emulator [${os.hostname()}]`;
     }
 
     public start(): Promise<void> {

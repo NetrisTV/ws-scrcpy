@@ -1,0 +1,11 @@
+{
+    "lockedVideoOrientation": -1,
+    "bitrate": 524288,
+    "maxFps": 30,
+    "iFrameInterval": 5,
+    "bounds": {
+        "width": 800,
+        "height": 800
+    },
+    "sendFrameMeta": false
+}
