@@ -568,11 +568,13 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         // const cancelButton = (this.cancelButton = document.createElement('button'));
         // cancelButton.innerText = 'Cancel';
         // cancelButton.addEventListener('click', this.cancel);
-        const okButton = (this.okButton = document.createElement('button'));
-        okButton.innerText = 'Open';
-        okButton.disabled = true;
-        okButton.addEventListener('click', this.openStream);
-        dialogFooter.appendChild(okButton);
+        /* UI will already be rendered on the same screen, there's no need for an Open button
+            const okButton = (this.okButton = document.createElement('button'));
+            okButton.innerText = 'Open';
+            okButton.disabled = true;
+            okButton.addEventListener('click', this.openStream);
+            dialogFooter.appendChild(okButton);
+        */
         // dialogFooter.appendChild(cancelButton);
         dialogBody.appendChild(dialogFooter);
         dialogContainer.appendChild(dialogHeader);
