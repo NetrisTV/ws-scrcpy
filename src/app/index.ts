@@ -7,7 +7,10 @@ window.onload = async function (): Promise<void> {
     const hash = location.hash.replace(/^#!/, '');
     const parsedQuery = new URLSearchParams(hash);
     const action = parsedQuery.get('action');
-    sessionStorage.setItem('scrcpy::proxyPath', location.pathname || '');
+    const proxyPath = location.pathname.slice(0, -1);
+    if (proxyPath && proxyPath.length > 0) {
+        sessionStorage.setItem('scrcpy::proxyPath', proxyPath);
+    }
     /// #if USE_BROADWAY
     const { BroadwayPlayer } = await import('./player/BroadwayPlayer');
     StreamClientScrcpy.registerPlayer(BroadwayPlayer);
