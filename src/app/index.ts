@@ -3,11 +3,19 @@ import { StreamClientScrcpy } from './googDevice/client/StreamClientScrcpy';
 import { HostTracker } from './client/HostTracker';
 import { Tool } from './client/Tool';
 
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('loc1', location);
+    const proxyPath = location.pathname.slice(0, -1);
+    if (proxyPath && proxyPath.length > 0) {
+        sessionStorage.setItem('scrcpy::proxyPath', proxyPath);
+    }
+});
+
 window.onload = async function (): Promise<void> {
     const hash = location.hash.replace(/^#!/, '');
     const parsedQuery = new URLSearchParams(hash);
     const action = parsedQuery.get('action');
-
+    console.log('loc2', location);
     /// #if USE_BROADWAY
     const { BroadwayPlayer } = await import('./player/BroadwayPlayer');
     StreamClientScrcpy.registerPlayer(BroadwayPlayer);
