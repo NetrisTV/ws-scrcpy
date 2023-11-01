@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no' name='viewport' />
     <title>Android Emulator</title>
+    <script>
+        const proxyPath = location.pathname.slice(0, -1);
+        if (proxyPath && proxyPath.length > 0) {
+            sessionStorage.setItem('scrcpy::proxyPath', proxyPath);
+        }
+    </script>
 </head>
 <body>
 </body>
