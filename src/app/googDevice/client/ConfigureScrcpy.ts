@@ -52,7 +52,7 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
     private connectionCount = 0;
     private static streamClientScrcpy?: StreamClientScrcpy;
     private playerOptionMapping: { [key: string]: number } = {};
-    private hidden = false;
+    private hidden = true;
 
     constructor(private readonly tracker: DeviceTracker, descriptor: GoogDeviceDescriptor, params: ParamsStreamScrcpy) {
         super(params);
@@ -161,10 +161,13 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
             this.updateStatus();
         }
         this.displayIdSelectElement = select;
-        if (this.dialogBody) {
+        if (this.dialogBody && this.hidden) {
             this.dialogBody.classList.remove('hidden');
             this.dialogBody.classList.add('visible');
+            this.updateVideoSettingsForPlayer();
+            this.hidden = false;
         }
+
         if (!ConfigureScrcpy.streamClientScrcpy) {
             this.openStreamWithSettings();
         }
@@ -466,7 +469,6 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
             this.playerOptionMapping[playerFullName] = index;
         });
         playerSelect.onchange = this.onPlayerChange;
-        this.updateVideoSettingsForPlayer();
 
         const controls = document.createElement('div');
         controls.classList.add('controls', 'control-wrapper');
@@ -542,15 +544,9 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         resetSettingsButton.addEventListener('click', this.resetSettings);
         buttonsWrapper.appendChild(resetSettingsButton);
 
-        const loadSettingsButton = (this.loadSettingsButton = document.createElement('button'));
-        loadSettingsButton.classList.add('button');
-        loadSettingsButton.innerText = 'Load settings';
-        loadSettingsButton.addEventListener('click', this.loadSettings);
-        buttonsWrapper.appendChild(loadSettingsButton);
-
         const saveSettingsButton = (this.saveSettingsButton = document.createElement('button'));
         saveSettingsButton.classList.add('button');
-        saveSettingsButton.innerText = 'Save settings';
+        saveSettingsButton.innerText = 'Save and apply settings';
         saveSettingsButton.addEventListener('click', this.saveSettings);
         buttonsWrapper.appendChild(saveSettingsButton);
 
@@ -587,8 +583,7 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
     }
 
     private removeUI(): void {
-        if (!this.hidden) {
-            this.hidden = true;
+        if (document.body.contains(this.background)) {
             document.body.removeChild(this.background);
             this.okButton?.removeEventListener('click', this.openStream);
             // this.cancelButton?.removeEventListener('click', this.cancel);

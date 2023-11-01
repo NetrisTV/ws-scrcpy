@@ -28,7 +28,7 @@ export class CommandControlMessage extends ControlMessage {
         [ControlMessage.TYPE_GET_CLIPBOARD, 'Get clipboard'],
         [ControlMessage.TYPE_SET_CLIPBOARD, 'Set clipboard'],
         [ControlMessage.TYPE_ROTATE_DEVICE, 'Rotate device'],
-        [ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS, 'Change video settings'],
+        //[ControlMessage.TYPE_CHANGE_STREAM_PARAMETERS, 'Change video settings'],
     ]);
 
     public static createSetVideoSettingsCommand(videoSettings: VideoSettings): CommandControlMessage {
