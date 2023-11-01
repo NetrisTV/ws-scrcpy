@@ -32,8 +32,8 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
     public static buildUrl(item: HostItem): URL {
         const { secure, port, hostname } = item;
         const protocol = secure ? 'wss:' : 'ws:';
-        const proxyPath = sessionStorage.getItem('scrcpy::proxyPath');
-        const url = new URL(`${protocol}//${hostname}${proxyPath ? proxyPath : ''}`);
+        const proxyPath = location.pathname.slice(0, -1);
+        const url = new URL(`${protocol}//${hostname}${proxyPath || ''}`);
         if (port) {
             url.port = port.toString();
         }
@@ -61,8 +61,8 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         }
         const hash = `#!${new URLSearchParams(q).toString()}`;
         const a = document.createElement('a');
-        const proxyPath = sessionStorage.getItem('scrcpy::proxyPath');
-        a.setAttribute('href', `${protocol}//${hostname}:${port}${proxyPath ? proxyPath : ''}/${hash}`);
+        const proxyPath = location.pathname.slice(0, -1);
+        a.setAttribute('href', `${protocol}//${hostname}:${port}${proxyPath || ''}/${hash}`);
         a.setAttribute('rel', 'noopener noreferrer');
         a.setAttribute('target', '_blank');
         a.classList.add(`link-${q.action}`);
