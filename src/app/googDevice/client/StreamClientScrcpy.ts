@@ -67,7 +67,12 @@ export class StreamClientScrcpy
         const { secure, port, hostname } = this.params;
         const protocol = secure ? 'wss:' : 'ws:';
         const proxyPath = location.pathname.slice(0, -1);
-        const url = new URL(`${protocol}//${hostname}${proxyPath || ''}`);
+        let urlString = `${protocol}//${hostname}${proxyPath || ''}`;
+        if (urlString[urlString.length - 1] !== '/') {
+            urlString += '/';
+        }
+
+        const url = new URL(urlString);
         if (port) {
             url.port = port.toString();
         }
