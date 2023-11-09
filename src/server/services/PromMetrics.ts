@@ -1,6 +1,6 @@
 import promClient from 'prom-client';
 
-const labels = ['player_name', 'user_email'];
+const labels = ['player_name', 'user_ldap'];
 
 const playerNames = ['Broadway.js', 'H264 Converter', 'Tiny H264', 'WebCodecs'];
 
@@ -31,7 +31,7 @@ const inputBytesGauge = new promClient.Gauge({
 const webSocketConnections = new promClient.Gauge({
     name: 'scrcpy_ws_active_connections',
     help: 'Number of active WebSocket connections',
-    labelNames: ['user_email'],
+    labelNames: ['user_ldap'],
 });
 
 export { decodedFramesGauge, droppedFramesGauge, inputBytesGauge, inputFramesGauge, webSocketConnections, playerNames };

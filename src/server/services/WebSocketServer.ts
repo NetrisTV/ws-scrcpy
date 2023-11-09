@@ -39,7 +39,7 @@ export class WebSocketServer implements Service {
         this.mwFactories.add(mwFactory);
     }
 
-    private getUserEmail(request: IncomingMessage): string {
+    private getUserLdap(request: IncomingMessage): string {
         const userEmailHeader = request.headers[this.AUTH_EMAIL_HEADER];
         if (Array.isArray(userEmailHeader)) {
             return userEmailHeader[0] || 'localhost';
@@ -59,14 +59,14 @@ export class WebSocketServer implements Service {
     }
 
     private handleMetricsSocket(ws: WS, request: IncomingMessage) {
-        const user_email = this.getUserEmail(request);
+        const user_ldap = this.getUserLdap(request);
         ws.on('message', (message) => {
             try {
                 if (message instanceof Buffer) {
                     const messageString = message.toString('utf8');
 
                     const { momentumQualityStats, playerName } = JSON.parse(messageString);
-                    const labelValues = { player_name: playerName, user_email };
+                    const labelValues = { player_name: playerName, user_ldap };
                     decodedFramesGauge.set(labelValues, momentumQualityStats.decodedFrames);
                     droppedFramesGauge.set(labelValues, momentumQualityStats.droppedFrames);
                     inputFramesGauge.set(labelValues, momentumQualityStats.inputFrames);
@@ -79,7 +79,7 @@ export class WebSocketServer implements Service {
 
         ws.on('close', () => {
             playerNames.forEach((player_name) => {
-                const labelValues = { player_name: player_name, user_email: user_email };
+                const labelValues = { player_name: player_name, user_ldap };
                 decodedFramesGauge.remove(labelValues);
                 droppedFramesGauge.remove(labelValues);
                 inputFramesGauge.remove(labelValues);
@@ -102,15 +102,15 @@ export class WebSocketServer implements Service {
                 this.handleMetricsSocket(ws, request);
                 return;
             }
-            const user_email = this.getUserEmail(request);
+            const user_ldap = this.getUserLdap(request);
             const url = new URL(request.url, 'https://example.org/');
             const action = url.searchParams.get('action') || '';
             let processed = false;
 
             if (action === ACTION.PROXY_ADB) {
-                webSocketConnections.labels(user_email).inc();
+                webSocketConnections.labels(user_ldap).inc();
                 ws.on('close', () => {
-                    webSocketConnections.labels(user_email).dec();
+                    webSocketConnections.labels(user_ldap).dec();
                 });
             }
 
