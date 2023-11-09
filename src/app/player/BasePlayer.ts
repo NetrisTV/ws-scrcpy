@@ -65,8 +65,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     protected parentElement?: HTMLElement;
     protected touchableCanvas: HTMLCanvasElement;
     protected inputBytes: BitrateStat[] = [];
-    protected perSecondQualityStats?: FramesPerSecondStats;
-    protected momentumQualityStats?: PlaybackQuality;
+    private perSecondQualityStats?: FramesPerSecondStats;
+    public momentumQualityStats?: PlaybackQuality;
     protected bounds: Size | null = null;
     private totalStats: PlaybackQuality = {
         decodedFrames: 0,

@@ -6,6 +6,7 @@ import { Utils } from '../Utils';
 import express, { Express } from 'express';
 import { Config } from '../Config';
 import { TypedEmitter } from '../../common/TypedEmitter';
+import promClient from 'prom-client';
 
 const DEFAULT_STATIC_DIR = path.join(__dirname, './public');
 
@@ -80,6 +81,16 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
             const { MjpegProxyFactory } = await import('../mw/MjpegProxyFactory');
             this.mainApp.get('/mjpeg/:udid', new MjpegProxyFactory().proxyRequest);
             /// #endif
+
+            // Set up Prometheus client to collect metrics
+            //const collectDefaultMetrics = promClient.collectDefaultMetrics;
+            //collectDefaultMetrics();
+
+            // Define a new route for metrics
+            this.mainApp.get('/metrics', async (_, res) => {
+                res.set('Content-Type', promClient.register.contentType);
+                res.end(await promClient.register.metrics());
+            });
         }
         const config = Config.getInstance();
         config.servers.forEach((serverItem) => {
