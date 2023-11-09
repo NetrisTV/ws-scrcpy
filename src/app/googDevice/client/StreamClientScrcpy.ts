@@ -60,7 +60,45 @@ export class StreamClientScrcpy
     private player?: BasePlayer;
     private filePushHandler?: FilePushHandler;
     private fitToScreen?: boolean;
+    private metricsWs?: WebSocket;
     private readonly streamReceiver: StreamReceiverScrcpy;
+
+    private buildMetricsURL(): URL {
+        const { secure, port, hostname } = this.params;
+        const protocol = secure ? 'wss:' : 'ws:';
+        const proxyPath = location.pathname.slice(0, -1);
+        const url = new URL(`${protocol}//${hostname}${proxyPath || ''}`);
+        if (port) {
+            url.port = port.toString();
+        }
+        return url;
+    }
+
+    private createWebSocket() {
+        this.metricsWs = new WebSocket(this.buildMetricsURL().toString() + 'metrics');
+        let intervalId: NodeJS.Timeout;
+        this.metricsWs.onopen = () => {
+            intervalId = setInterval(() => {
+                if (this.metricsWs && this.metricsWs.readyState === WebSocket.OPEN && this.player) {
+                    this.metricsWs?.send(
+                        JSON.stringify({
+                            momentumQualityStats: this.player.momentumQualityStats,
+                            playerName: this.player.getName(),
+                        }),
+                    );
+                }
+            }, 1000);
+        };
+        this.metricsWs.onclose = () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+
+        this.metricsWs.onerror = (e) => {
+            console.error('Metrics WS error', e);
+        };
+    }
 
     public static registerPlayer(playerClass: PlayerClass): void {
         if (playerClass.isSupported()) {
@@ -145,6 +183,7 @@ export class StreamClientScrcpy
         const { udid, player: playerName } = this.params;
         this.startStream({ udid, player, playerName, fitToScreen, videoSettings });
         this.setBodyClass('stream');
+        this.createWebSocket();
     }
 
     public static parseParameters(params: URLSearchParams): ParamsStreamScrcpy {
@@ -266,6 +305,7 @@ export class StreamClientScrcpy
         if (this.player) {
             this.player.stop();
         }
+        this.metricsWs?.close();
     };
 
     public startStream({ udid, player, playerName, videoSettings, fitToScreen }: StartParams): void {
@@ -352,6 +392,7 @@ export class StreamClientScrcpy
         streamReceiver.on('clientsStats', this.onClientsStats);
         streamReceiver.on('displayInfo', this.onDisplayInfo);
         streamReceiver.on('disconnected', this.onDisconnected);
+
         //console.log(TAG, player.getName(), udid);
     }
 

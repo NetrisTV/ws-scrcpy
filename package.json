@@ -22,6 +22,7 @@
     "node-mjpeg-proxy": "^0.3.2",
     "node-pty": "^0.10.1",
     "portfinder": "^1.0.28",
+    "prom-client": "^15.0.0",
     "tslib": "^2.3.1",
     "ws": "^8.5.0",
     "yaml": "^2.2.2"
