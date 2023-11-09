@@ -46,8 +46,9 @@ export class WebSocketServer implements Service {
         }
 
         if (typeof userEmailHeader === 'string') {
-            return userEmailHeader;
+            return userEmailHeader.split(':')[0];
         }
+
         return 'localhost';
     }
 
