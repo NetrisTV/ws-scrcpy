@@ -45,8 +45,14 @@ export class WebSocketServer implements Service {
             return userEmailHeader[0] || 'localhost';
         }
 
+        // format: accounts.google.com:test@google.com
         if (typeof userEmailHeader === 'string') {
-            return userEmailHeader.split(':')[0].split('@')[0];
+            const emailSplit = userEmailHeader.split(':');
+            if (emailSplit.length > 1) {
+                return emailSplit[1].split('@')[0];
+            } else {
+                return emailSplit[0];
+            }
         }
 
         return 'localhost';
