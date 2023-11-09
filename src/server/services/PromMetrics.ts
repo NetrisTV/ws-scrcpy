@@ -29,7 +29,7 @@ const inputBytesGauge = new promClient.Gauge({
 });
 
 const webSocketConnections = new promClient.Gauge({
-    name: 'web_socket_active_connections',
+    name: 'ws_active_connections',
     help: 'Number of active WebSocket connections',
     labelNames: ['user_email'],
 });

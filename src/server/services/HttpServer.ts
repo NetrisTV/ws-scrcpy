@@ -82,10 +82,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
             this.mainApp.get('/mjpeg/:udid', new MjpegProxyFactory().proxyRequest);
             /// #endif
 
-            // Set up Prometheus client to collect metrics
-            //const collectDefaultMetrics = promClient.collectDefaultMetrics;
-            //collectDefaultMetrics();
-
+            promClient.register.setDefaultLabels({ prefix: 'scrcpy_' });
             // Define a new route for metrics
             this.mainApp.get('/metrics', async (_, res) => {
                 res.set('Content-Type', promClient.register.contentType);
