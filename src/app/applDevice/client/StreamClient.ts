@@ -11,7 +11,7 @@ import Size from '../../Size';
 import Util from '../../Util';
 import ApplDeviceDescriptor from '../../../types/ApplDeviceDescriptor';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
-import { DeviceTracker } from './DeviceTracker';
+//import { DeviceTracker } from './DeviceTracker';
 import { WdaStatus } from '../../../common/WdaStatus';
 import { MessageRunWdaResponse } from '../../../types/MessageRunWdaResponse';
 
@@ -62,24 +62,29 @@ export abstract class StreamClient<T extends ParamsStream> extends BaseClient<T,
         blockClass: string,
         params: ParamsDeviceTracker,
     ): Array<HTMLElement | DocumentFragment | undefined> {
+        console.log(descriptor, blockClass, params);
         const entries: Array<HTMLElement | DocumentFragment> = [];
-        const players = this.getPlayers();
-        players.forEach((playerClass) => {
-            const { playerCodeName, playerFullName } = playerClass;
-            const playerTd = document.createElement('div');
-            playerTd.classList.add(blockClass);
-            playerTd.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
-            playerTd.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
-            const q: any = {
-                action: this.ACTION,
-                player: playerCodeName,
-                udid: descriptor.udid,
-            };
-            const link = DeviceTracker.buildLink(q, `Stream (${playerFullName})`, params);
-            playerTd.appendChild(link);
-            entries.push(playerTd);
-        });
         return entries;
+        /*
+            const entries: Array<HTMLElement | DocumentFragment> = [];
+            const players = this.getPlayers();
+            players.forEach((playerClass) => {
+                const { playerCodeName, playerFullName } = playerClass;
+                const playerTd = document.createElement('div');
+                playerTd.classList.add(blockClass);
+                playerTd.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
+                playerTd.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
+                const q: any = {
+                    action: this.ACTION,
+                    player: playerCodeName,
+                    udid: descriptor.udid,
+                };
+                const link = DeviceTracker.buildLink(q, `Stream (${playerFullName})`, params);
+                playerTd.appendChild(link);
+                entries.push(playerTd);
+            });
+            return entries;
+       */
     }
 
     protected static getMaxSize(controlButtons: HTMLElement): Size | undefined {

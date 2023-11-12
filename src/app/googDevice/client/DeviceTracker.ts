@@ -242,20 +242,48 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         const isActive = device.state === DeviceState.DEVICE;
         let hasPid = false;
         const servicesId = `device_services_${fullName}`;
+        const streamingSettingsId = `device_streaming_settings_${fullName}`;
         const row = html`<div class="device ${isActive ? 'active' : 'not-active'}">
-            <div class="device-header">
-                <div class="device-name">${device['ro.product.manufacturer']} ${device['ro.product.model']}</div>
-                <div class="device-serial">${device.udid}</div>
-                <div class="device-version">
-                    <div class="release-version">${device['ro.build.version.release']}</div>
-                    <div class="sdk-version">${device['ro.build.version.sdk']}</div>
+            <div class="device-stats">
+                <hr class="full-line" />
+                <div id="${servicesId}" class="services"></div>
+                <div class="device-sub-header">Streaming settings</div>
+                <hr class="full-line" />
+                <div id="${streamingSettingsId}" class="streaming_settings"></div>
+                <div class="device-sub-header">Emulator information</div>
+                <hr class="full-line" />
+                <div class="device-information">
+                    <div class="device-property">
+                        UDID:
+                        <span class="device-value">${device.udid}</span>
+                        <div class="device-state" title="State: ${device.state}"></div>
+                    </div>
+                    <div class="device-property">
+                        Manufacturer:
+                        <span class="device-value">${device['ro.product.manufacturer']}</span>
+                    </div>
+                    <div class="device-property">
+                        Product model:
+                        <span class="device-value">${device['ro.product.model']}</span>
+                    </div>
+                    <div class="device-property">
+                        Build version release:
+                        <span class="device-value">${device['ro.build.version.release']}</span>
+                    </div>
+                    <div class="device-property">
+                        SDK version:
+                        <span class="device-value">${device['ro.build.version.sdk']}</span>
+                    </div>
                 </div>
-                <div class="device-state" title="State: ${device.state}"></div>
             </div>
-            <div id="${servicesId}" class="services"></div>
         </div>`.content;
         const services = row.getElementById(servicesId);
         if (!services) {
+            return;
+        }
+
+        const streamingSettings = row.getElementById(streamingSettingsId);
+        if (!streamingSettings) {
             return;
         }
 
@@ -273,7 +301,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         });
 
         const streamEntry = StreamClientScrcpy.createEntryForDeviceList(device, blockClass, fullName, this.params);
-        streamEntry && services.appendChild(streamEntry);
+        streamEntry && streamingSettings.appendChild(streamEntry);
 
         DESC_COLUMNS.forEach((item) => {
             const { title } = item;
@@ -286,7 +314,10 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
             }
             const td = document.createElement('div');
             td.classList.add(DeviceTracker.titleToClassName(title), blockClass);
-            services.appendChild(td);
+            if (fieldName !== 'pid') {
+                services.appendChild(td);
+            }
+
             if (fieldName === 'pid') {
                 hasPid = value !== '-1';
                 const actionButton = document.createElement('button');
@@ -386,8 +417,13 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
 
         if (DeviceTracker.CREATE_DIRECT_LINKS) {
             const name = `${DeviceTracker.AttributePrefixPlayerFor}${fullName}`;
+            const parentSelect = document.createElement('div');
             const select = document.createElement('select');
+            select.classList.add('select-encoder', blockClass);
             select.setAttribute('name', name);
+            parentSelect.textContent = 'Selected codex: \u00A0';
+            parentSelect.classList.add('codex-select', 'button-label');
+            parentSelect.appendChild(select);
             DeviceTracker.SelectCodex = select;
             const players = StreamClientScrcpy.getPlayers();
             for (let i = 0; i < players.length; i++) {
@@ -413,7 +449,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                 );
                 DeviceTracker.configureScrcpy.changePlayer(player);
             });
-            services.appendChild(select);
+            streamingSettings.appendChild(parentSelect);
         }
 
         tbody.appendChild(row);

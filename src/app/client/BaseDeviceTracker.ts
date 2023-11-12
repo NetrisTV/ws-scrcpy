@@ -46,7 +46,7 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         return wsUrl;
     }
 
-    public static buildLink(q: any, text: string, params: ParamsDeviceTracker): HTMLAnchorElement {
+    public static buildLink(q: any, params: ParamsDeviceTracker): string {
         let { hostname } = params;
         let port: string | number | undefined = params.port;
         let protocol = params.secure ? 'https:' : 'http:';
@@ -60,14 +60,8 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
             port = location.port;
         }
         const hash = `#!${new URLSearchParams(q).toString()}`;
-        const a = document.createElement('a');
         const proxyPath = location.pathname.slice(0, -1);
-        a.setAttribute('href', `${protocol}//${hostname}:${port}${proxyPath || ''}/${hash}`);
-        a.setAttribute('rel', 'noopener noreferrer');
-        a.setAttribute('target', '_blank');
-        a.classList.add(`link-${q.action}`);
-        a.innerText = text;
-        return a;
+        return `${protocol}//${hostname}:${port}${proxyPath || ''}/${hash}`;
     }
 
     protected title = 'Device list';

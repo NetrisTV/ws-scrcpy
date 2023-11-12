@@ -471,21 +471,19 @@ export class StreamClientScrcpy
         const hasPid = descriptor.pid !== -1;
         if (hasPid) {
             const configureButtonId = `configure_${Util.escapeUdid(descriptor.udid)}`;
-            const e = html`<div class="stream ${blockClass}">
-                <button
-                    ${Attribute.UDID}="${descriptor.udid}"
-                    ${Attribute.COMMAND}="${ControlCenterCommand.CONFIGURE_STREAM}"
-                    ${Attribute.FULL_NAME}="${fullName}"
-                    ${Attribute.SECURE}="${params.secure}"
-                    ${Attribute.HOSTNAME}="${params.hostname}"
-                    ${Attribute.PORT}="${params.port}"
-                    ${Attribute.USE_PROXY}="${params.useProxy}"
-                    id="${configureButtonId}"
-                    class="active action-button"
-                >
-                    Configure stream
-                </button>
-            </div>`;
+            const e = html`<button
+                ${Attribute.UDID}="${descriptor.udid}"
+                ${Attribute.COMMAND}="${ControlCenterCommand.CONFIGURE_STREAM}"
+                ${Attribute.FULL_NAME}="${fullName}"
+                ${Attribute.SECURE}="${params.secure}"
+                ${Attribute.HOSTNAME}="${params.hostname}"
+                ${Attribute.PORT}="${params.port}"
+                ${Attribute.USE_PROXY}="${params.useProxy}"
+                id="${configureButtonId}"
+                class="stream ${blockClass}"
+            >
+                Configure stream
+            </button>`;
             const a = e.content.getElementById(configureButtonId);
             a && (a.onclick = this.onConfigureStreamClick);
             return e.content;

@@ -359,18 +359,21 @@ export class DevtoolsClient extends ManagerClient<ParamsDevtools, never> {
         if (descriptor.state !== 'device') {
             return;
         }
-        const entry = document.createElement('div');
+        const entry = document.createElement('a');
         entry.classList.add('devtools', blockClass);
-        entry.appendChild(
+        entry.textContent = 'Open devtools';
+        entry.setAttribute(
+            'href',
             BaseDeviceTracker.buildLink(
                 {
                     action: ACTION.DEVTOOLS,
                     udid: descriptor.udid,
                 },
-                'devtools',
                 params,
             ),
         );
+        entry.setAttribute('rel', 'noopener noreferrer');
+        entry.setAttribute('target', '_blank');
         return entry;
     }
 }

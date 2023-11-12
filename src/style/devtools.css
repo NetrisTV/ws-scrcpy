@@ -79,7 +79,6 @@ body.devtools .subrow > div {
     color: var(--url-color);
     max-width: 200px;
     text-overflow: ellipsis;
-    white-space: nowrap;
     overflow: hidden;
 }
 

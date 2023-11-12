@@ -66,19 +66,22 @@ export class FileListingClient extends ManagerClient<ParamsFileListing, never> i
         if (descriptor.state !== 'device') {
             return;
         }
-        const entry = document.createElement('div');
+        const entry = document.createElement('a');
         entry.classList.add('file-listing', blockClass);
-        entry.appendChild(
+        entry.textContent = 'Open file explorer';
+        entry.setAttribute(
+            'href',
             BaseDeviceTracker.buildLink(
                 {
                     action: ACTION.FILE_LISTING,
                     udid: descriptor.udid,
                     path: `${tempPath}/`,
                 },
-                'list files',
                 params,
             ),
         );
+        entry.setAttribute('rel', 'noopener noreferrer');
+        entry.setAttribute('target', '_blank');
         return entry;
     }
 

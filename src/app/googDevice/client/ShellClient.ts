@@ -122,18 +122,23 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
         if (descriptor.state !== 'device') {
             return;
         }
-        const entry = document.createElement('div');
+        const entry = document.createElement('a');
         entry.classList.add('shell', blockClass);
-        entry.appendChild(
+
+        entry.textContent = 'Open ADB shell';
+        entry.setAttribute(
+            'href',
             BaseDeviceTracker.buildLink(
                 {
                     action: ACTION.SHELL,
                     udid: descriptor.udid,
                 },
-                'shell',
                 params,
             ),
         );
+        entry.setAttribute('rel', 'noopener noreferrer');
+        entry.setAttribute('target', '_blank');
+
         return entry;
     }
 
