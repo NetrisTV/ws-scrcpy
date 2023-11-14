@@ -10,16 +10,26 @@
             font-family: Arial, sans-serif;
         }
         .navbar-container {
-            border-bottom: 1px solid hsl(0, 0%, 30%);
+            position: relative;
             height: 70px;
             display: flex;
             align-items: center;
+            width: 100%;
+        }
+        .navbar-container::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100vw;
+            border-bottom: 1px solid hsl(0, 0%, 30%);
         }
         .navbar {
             color: white;
             padding-left: 64px;
             padding-right: 64px;
             width: 100%;
+            box-sizing: border-box;
         }
         .navbar-title {
             font-size: 20px;
