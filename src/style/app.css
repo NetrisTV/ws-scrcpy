@@ -25,7 +25,7 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --main-bg-color: hsl(0, 0%, 14%);
+        --main-bg-color: hsl(0, 0%, 20%);
         --stream-bg-color: hsl(0, 0%, 20%);
         --shell-bg-color: hsl(0, 0%, 0%);
         --text-shadow-color: hsl(218, 17%, 18%);

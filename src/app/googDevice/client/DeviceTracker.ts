@@ -91,43 +91,6 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         this.updateLink({ url, name, fullName, udid, store: true });
         */
     };
-    /*
-    private updateLink(params: { url: string; name: string; fullName: string; udid: string; store: boolean }): void {
-
-        const { url, name, fullName, udid, store } = params;
-        const playerTds = document.getElementsByName(
-            encodeURIComponent(`${DeviceTracker.AttributePrefixPlayerFor}${fullName}`),
-        );
-        if (typeof udid !== 'string') {
-            return;
-        }
-        if (store) {
-            const localStorageKey = DeviceTracker.getLocalStorageKey(fullName || '');
-            if (localStorage && name) {
-                localStorage.setItem(localStorageKey, name);
-            }
-        }
-        const action = ACTION.STREAM_SCRCPY;
-        playerTds.forEach((item) => {
-            item.innerHTML = '';
-            const playerFullName = item.getAttribute(DeviceTracker.AttributePlayerFullName);
-            const playerCodeName = item.getAttribute(DeviceTracker.AttributePlayerCodeName);
-            if (!playerFullName || !playerCodeName) {
-                return;
-            }
-            const link = DeviceTracker.buildLink(
-                {
-                    action,
-                    udid,
-                    player: decodeURIComponent(playerCodeName),
-                    ws: url,
-                },
-                decodeURIComponent(playerFullName),
-                this.params,
-            );
-            item.appendChild(link);
-        });
-    }*/
 
     onActionButtonClick = (event: MouseEvent): void => {
         const button = event.currentTarget as HTMLButtonElement;
@@ -243,227 +206,259 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         let hasPid = false;
         const servicesId = `device_services_${fullName}`;
         const streamingSettingsId = `device_streaming_settings_${fullName}`;
-        const row = html`<div class="device ${isActive ? 'active' : 'not-active'}">
-            <div class="device-stats">
-                <hr class="full-line" />
-                <div id="${servicesId}" class="services"></div>
-                <div class="device-sub-header">Streaming settings</div>
-                <hr class="full-line" />
-                <div id="${streamingSettingsId}" class="streaming_settings"></div>
-                <div class="device-sub-header">Emulator information</div>
-                <hr class="full-line" />
-                <div class="device-information">
-                    <div class="device-property">
-                        UDID:
-                        <span class="device-value">${device.udid}</span>
-                        <div class="device-state" title="State: ${device.state}"></div>
-                    </div>
-                    <div class="device-property">
-                        Manufacturer:
-                        <span class="device-value">${device['ro.product.manufacturer']}</span>
-                    </div>
-                    <div class="device-property">
-                        Product model:
-                        <span class="device-value">${device['ro.product.model']}</span>
-                    </div>
-                    <div class="device-property">
-                        Build version release:
-                        <span class="device-value">${device['ro.build.version.release']}</span>
-                    </div>
-                    <div class="device-property">
-                        SDK version:
-                        <span class="device-value">${device['ro.build.version.sdk']}</span>
+        let row = html``.content;
+        if (!isActive) {
+            row = html`<div class="device ${isActive ? 'active' : 'not-active'}">
+                <div class="device-stats">
+                    <hr class="full-line" />
+                    <h2>Emulator Authentication Issue</h2>
+                    <p>Your emulator is not authenticated against the server.</p>
+                    <p>Please try <strong>restarting the emulator instance</strong>.</p>
+                    <div class="device-sub-header">Emulator information</div>
+                    <hr class="full-line" />
+                    <div class="device-information">
+                        <div class="device-property">
+                            UDID:
+                            <span class="device-value">${device.udid}</span>
+                            <div class="device-state" title="State: ${device.state}"></div>
+                        </div>
+                        <div class="device-property">
+                            Manufacturer:
+                            <span class="device-value">${device['ro.product.manufacturer']}</span>
+                        </div>
+                        <div class="device-property">
+                            Product model:
+                            <span class="device-value">${device['ro.product.model']}</span>
+                        </div>
+                        <div class="device-property">
+                            Build version release:
+                            <span class="device-value">${device['ro.build.version.release']}</span>
+                        </div>
+                        <div class="device-property">
+                            SDK version:
+                            <span class="device-value">${device['ro.build.version.sdk']}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>`.content;
-        const services = row.getElementById(servicesId);
-        if (!services) {
-            return;
-        }
-
-        const streamingSettings = row.getElementById(streamingSettingsId);
-        if (!streamingSettings) {
-            return;
-        }
-
-        DeviceTracker.tools.forEach((tool) => {
-            const entry = tool.createEntryForDeviceList(device, blockClass, this.params);
-            if (entry) {
-                if (Array.isArray(entry)) {
-                    entry.forEach((item) => {
-                        item && services.appendChild(item);
-                    });
-                } else {
-                    services.appendChild(entry);
-                }
+            </div>`.content;
+            StreamClientScrcpy.createEntryForDeviceList(device, blockClass, fullName, this.params);
+        } else {
+            row = html`<div class="device ${isActive ? 'active' : 'not-active'}">
+                <div class="device-stats">
+                    <hr class="full-line" />
+                    <div id="${servicesId}" class="services"></div>
+                    <div class="device-sub-header">Streaming settings</div>
+                    <hr class="full-line" />
+                    <div id="${streamingSettingsId}" class="streaming_settings"></div>
+                    <div class="device-sub-header">Emulator information</div>
+                    <hr class="full-line" />
+                    <div class="device-information">
+                        <div class="device-property">
+                            UDID:
+                            <span class="device-value">${device.udid}</span>
+                            <div class="device-state" title="State: ${device.state}"></div>
+                        </div>
+                        <div class="device-property">
+                            Manufacturer:
+                            <span class="device-value">${device['ro.product.manufacturer']}</span>
+                        </div>
+                        <div class="device-property">
+                            Product model:
+                            <span class="device-value">${device['ro.product.model']}</span>
+                        </div>
+                        <div class="device-property">
+                            Build version release:
+                            <span class="device-value">${device['ro.build.version.release']}</span>
+                        </div>
+                        <div class="device-property">
+                            SDK version:
+                            <span class="device-value">${device['ro.build.version.sdk']}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>`.content;
+            const services = row.getElementById(servicesId);
+            if (!services) {
+                return;
             }
-        });
 
-        const streamEntry = StreamClientScrcpy.createEntryForDeviceList(device, blockClass, fullName, this.params);
-        streamEntry && streamingSettings.appendChild(streamEntry);
-
-        DESC_COLUMNS.forEach((item) => {
-            const { title } = item;
-            const fieldName = item.field;
-            let value: string;
-            if (typeof item.field === 'string') {
-                value = '' + device[item.field];
-            } else {
-                value = item.field(device);
-            }
-            const td = document.createElement('div');
-            td.classList.add(DeviceTracker.titleToClassName(title), blockClass);
-            if (fieldName !== 'pid') {
-                services.appendChild(td);
+            const streamingSettings = row.getElementById(streamingSettingsId);
+            if (!streamingSettings) {
+                return;
             }
 
-            if (fieldName === 'pid') {
-                hasPid = value !== '-1';
-                const actionButton = document.createElement('button');
-                actionButton.className = 'action-button kill-server-button';
-                actionButton.setAttribute(Attribute.UDID, device.udid);
-                actionButton.setAttribute(Attribute.PID, value);
-                let command: string;
-                if (isActive) {
-                    actionButton.classList.add('active');
-                    actionButton.onclick = this.onActionButtonClick;
-                    if (hasPid) {
-                        command = ControlCenterCommand.KILL_SERVER;
-                        actionButton.title = 'Kill server';
-                        actionButton.appendChild(SvgImage.create(SvgImage.Icon.CANCEL));
+            DeviceTracker.tools.forEach((tool) => {
+                const entry = tool.createEntryForDeviceList(device, blockClass, this.params);
+                if (entry) {
+                    if (Array.isArray(entry)) {
+                        entry.forEach((item) => {
+                            item && services.appendChild(item);
+                        });
                     } else {
-                        command = ControlCenterCommand.START_SERVER;
-                        actionButton.title = 'Start server';
-                        actionButton.appendChild(SvgImage.create(SvgImage.Icon.REFRESH));
+                        services.appendChild(entry);
                     }
-                    actionButton.setAttribute(Attribute.COMMAND, command);
-                } else {
-                    const timestamp = device['last.update.timestamp'];
-                    if (timestamp) {
-                        const date = new Date(timestamp);
-                        actionButton.title = `Last update on ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
-                    } else {
-                        actionButton.title = `Not active`;
-                    }
-                    actionButton.appendChild(SvgImage.create(SvgImage.Icon.OFFLINE));
                 }
-                const span = document.createElement('span');
-                span.innerText = `${actionButton.title} (pid=${value})`;
-                actionButton.appendChild(span);
-                td.appendChild(actionButton);
-            } else if (fieldName === 'interfaces') {
-                const proxyInterfaceUrl = DeviceTracker.createUrl(this.params, device.udid).toString();
-                const proxyInterfaceName = 'proxy';
-                const localStorageKey = DeviceTracker.getLocalStorageKey(fullName);
-                const lastSelected = localStorage && localStorage.getItem(localStorageKey);
-                const selectElement = document.createElement('select');
-                selectElement.setAttribute(Attribute.UDID, device.udid);
-                selectElement.setAttribute(Attribute.FULL_NAME, fullName);
-                selectElement.setAttribute(
-                    'name',
-                    encodeURIComponent(`${DeviceTracker.AttributePrefixInterfaceSelectFor}${fullName}`),
-                );
-                /// #if SCRCPY_LISTENS_ON_ALL_INTERFACES
-                device.interfaces.forEach((value) => {
-                    const params = {
-                        ...this.params,
-                        secure: false,
-                        hostname: value.ipv4,
-                        port: SERVER_PORT,
-                    };
-                    const url = DeviceTracker.createUrl(params).toString();
-                    const optionElement = DeviceTracker.createInterfaceOption(value.name, url);
-                    optionElement.innerText = `${value.name}: ${value.ipv4}`;
-                    selectElement.appendChild(optionElement);
-                    if (lastSelected) {
-                        if (lastSelected === value.name || !selectedInterfaceName) {
-                            optionElement.selected = true;
-                            selectedInterfaceUrl = url;
-                            selectedInterfaceName = value.name;
-                        }
-                    } else if (device['wifi.interface'] === value.name) {
-                        optionElement.selected = true;
-                    }
-                });
-                /// #else
-                selectedInterfaceUrl = proxyInterfaceUrl;
-                selectedInterfaceName = proxyInterfaceName;
-                td.classList.add('hidden');
-                /// #endif
-                if (isActive) {
-                    const adbProxyOption = DeviceTracker.createInterfaceOption(proxyInterfaceName, proxyInterfaceUrl);
-                    if (lastSelected === proxyInterfaceName || !selectedInterfaceName) {
-                        adbProxyOption.selected = true;
-                        selectedInterfaceUrl = proxyInterfaceUrl;
-                        selectedInterfaceName = proxyInterfaceName;
-                    }
-                    selectElement.appendChild(adbProxyOption);
-                    const actionButton = document.createElement('button');
-                    actionButton.className = 'action-button update-interfaces-button active';
-                    actionButton.title = `Update information`;
-                    actionButton.appendChild(SvgImage.create(SvgImage.Icon.REFRESH));
-                    actionButton.setAttribute(Attribute.UDID, device.udid);
-                    actionButton.setAttribute(Attribute.COMMAND, ControlCenterCommand.UPDATE_INTERFACES);
-                    actionButton.onclick = this.onActionButtonClick;
-                    td.appendChild(actionButton);
-                }
-                selectElement.onchange = this.onInterfaceSelected;
-                td.appendChild(selectElement);
-            } else {
-                td.innerText = value;
-            }
-        });
-
-        if (DeviceTracker.CREATE_DIRECT_LINKS) {
-            const name = `${DeviceTracker.AttributePrefixPlayerFor}${fullName}`;
-            const parentSelect = document.createElement('div');
-            const select = document.createElement('select');
-            select.classList.add('select-encoder', blockClass);
-            select.setAttribute('name', name);
-            parentSelect.textContent = 'Selected codex: \u00A0';
-            parentSelect.classList.add('codex-select', 'button-label');
-            parentSelect.appendChild(select);
-            DeviceTracker.SelectCodex = select;
-            const players = StreamClientScrcpy.getPlayers();
-            for (let i = 0; i < players.length; i++) {
-                const playerClass = players[i];
-                const { playerCodeName, playerFullName } = playerClass;
-
-                const option = document.createElement('option');
-                option.value = playerCodeName;
-                if (playerFullName.includes('Broadway')) {
-                    option.textContent = playerFullName + ' (Recommended)';
-                } else {
-                    option.textContent = playerFullName;
-                }
-
-                option.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
-                option.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
-                select.appendChild(option);
-            }
-            // Add the onchange event listener
-            select.addEventListener('change', function () {
-                const player = decodeURIComponent(
-                    this.options[this.selectedIndex].getAttribute(DeviceTracker.AttributePlayerFullName) || '',
-                );
-                DeviceTracker.configureScrcpy.changePlayer(player);
             });
-            streamingSettings.appendChild(parentSelect);
-        }
 
-        tbody.appendChild(row);
-        if (DeviceTracker.CREATE_DIRECT_LINKS && hasPid && selectedInterfaceUrl) {
-            /*
-                this.updateLink({
-                    url: selectedInterfaceUrl,
-                    name: selectedInterfaceName,
-                    fullName,
-                    udid: device.udid,
-                    store: false,
+            const streamEntry = StreamClientScrcpy.createEntryForDeviceList(device, blockClass, fullName, this.params);
+            streamEntry && streamingSettings.appendChild(streamEntry);
+
+            DESC_COLUMNS.forEach((item) => {
+                const { title } = item;
+                const fieldName = item.field;
+                let value: string;
+                if (typeof item.field === 'string') {
+                    value = '' + device[item.field];
+                } else {
+                    value = item.field(device);
+                }
+                const td = document.createElement('div');
+                td.classList.add(DeviceTracker.titleToClassName(title), blockClass);
+                if (fieldName !== 'pid') {
+                    services.appendChild(td);
+                }
+
+                if (fieldName === 'pid') {
+                    hasPid = value !== '-1';
+                    const actionButton = document.createElement('button');
+                    actionButton.className = 'action-button kill-server-button';
+                    actionButton.setAttribute(Attribute.UDID, device.udid);
+                    actionButton.setAttribute(Attribute.PID, value);
+                    let command: string;
+                    if (isActive) {
+                        actionButton.classList.add('active');
+                        actionButton.onclick = this.onActionButtonClick;
+                        if (hasPid) {
+                            command = ControlCenterCommand.KILL_SERVER;
+                            actionButton.title = 'Kill server';
+                            actionButton.appendChild(SvgImage.create(SvgImage.Icon.CANCEL));
+                        } else {
+                            command = ControlCenterCommand.START_SERVER;
+                            actionButton.title = 'Start server';
+                            actionButton.appendChild(SvgImage.create(SvgImage.Icon.REFRESH));
+                        }
+                        actionButton.setAttribute(Attribute.COMMAND, command);
+                    } else {
+                        const timestamp = device['last.update.timestamp'];
+                        if (timestamp) {
+                            const date = new Date(timestamp);
+                            actionButton.title = `Last update on ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
+                        } else {
+                            actionButton.title = `Not active`;
+                        }
+                        actionButton.appendChild(SvgImage.create(SvgImage.Icon.OFFLINE));
+                    }
+                    const span = document.createElement('span');
+                    span.innerText = `${actionButton.title} (pid=${value})`;
+                    actionButton.appendChild(span);
+                    td.appendChild(actionButton);
+                } else if (fieldName === 'interfaces') {
+                    const proxyInterfaceUrl = DeviceTracker.createUrl(this.params, device.udid).toString();
+                    const proxyInterfaceName = 'proxy';
+                    const localStorageKey = DeviceTracker.getLocalStorageKey(fullName);
+                    const lastSelected = localStorage && localStorage.getItem(localStorageKey);
+                    const selectElement = document.createElement('select');
+                    selectElement.setAttribute(Attribute.UDID, device.udid);
+                    selectElement.setAttribute(Attribute.FULL_NAME, fullName);
+                    selectElement.setAttribute(
+                        'name',
+                        encodeURIComponent(`${DeviceTracker.AttributePrefixInterfaceSelectFor}${fullName}`),
+                    );
+                    /// #if SCRCPY_LISTENS_ON_ALL_INTERFACES
+                    device.interfaces.forEach((value) => {
+                        const params = {
+                            ...this.params,
+                            secure: false,
+                            hostname: value.ipv4,
+                            port: SERVER_PORT,
+                        };
+                        const url = DeviceTracker.createUrl(params).toString();
+                        const optionElement = DeviceTracker.createInterfaceOption(value.name, url);
+                        optionElement.innerText = `${value.name}: ${value.ipv4}`;
+                        selectElement.appendChild(optionElement);
+                        if (lastSelected) {
+                            if (lastSelected === value.name || !selectedInterfaceName) {
+                                optionElement.selected = true;
+                                selectedInterfaceUrl = url;
+                                selectedInterfaceName = value.name;
+                            }
+                        } else if (device['wifi.interface'] === value.name) {
+                            optionElement.selected = true;
+                        }
+                    });
+                    /// #else
+                    selectedInterfaceUrl = proxyInterfaceUrl;
+                    selectedInterfaceName = proxyInterfaceName;
+                    td.classList.add('hidden');
+                    /// #endif
+                    if (isActive) {
+                        const adbProxyOption = DeviceTracker.createInterfaceOption(
+                            proxyInterfaceName,
+                            proxyInterfaceUrl,
+                        );
+                        if (lastSelected === proxyInterfaceName || !selectedInterfaceName) {
+                            adbProxyOption.selected = true;
+                            selectedInterfaceUrl = proxyInterfaceUrl;
+                            selectedInterfaceName = proxyInterfaceName;
+                        }
+                        selectElement.appendChild(adbProxyOption);
+                        const actionButton = document.createElement('button');
+                        actionButton.className = 'action-button update-interfaces-button active';
+                        actionButton.title = `Update information`;
+                        actionButton.appendChild(SvgImage.create(SvgImage.Icon.REFRESH));
+                        actionButton.setAttribute(Attribute.UDID, device.udid);
+                        actionButton.setAttribute(Attribute.COMMAND, ControlCenterCommand.UPDATE_INTERFACES);
+                        actionButton.onclick = this.onActionButtonClick;
+                        td.appendChild(actionButton);
+                    }
+                    selectElement.onchange = this.onInterfaceSelected;
+                    td.appendChild(selectElement);
+                } else {
+                    td.innerText = value;
+                }
+            });
+
+            if (DeviceTracker.CREATE_DIRECT_LINKS) {
+                const name = `${DeviceTracker.AttributePrefixPlayerFor}${fullName}`;
+                const parentSelect = document.createElement('div');
+                const select = document.createElement('select');
+                select.classList.add('select-encoder', blockClass);
+                select.setAttribute('name', name);
+                parentSelect.textContent = 'Selected codex: \u00A0';
+                parentSelect.classList.add('codex-select', 'button-label');
+                parentSelect.appendChild(select);
+                DeviceTracker.SelectCodex = select;
+                const players = StreamClientScrcpy.getPlayers();
+                for (let i = 0; i < players.length; i++) {
+                    const playerClass = players[i];
+                    const { playerCodeName, playerFullName } = playerClass;
+
+                    const option = document.createElement('option');
+                    option.value = playerCodeName;
+                    if (playerFullName.includes('Broadway')) {
+                        option.textContent = playerFullName + ' (Recommended)';
+                    } else {
+                        option.textContent = playerFullName;
+                    }
+
+                    option.setAttribute(DeviceTracker.AttributePlayerFullName, encodeURIComponent(playerFullName));
+                    option.setAttribute(DeviceTracker.AttributePlayerCodeName, encodeURIComponent(playerCodeName));
+                    select.appendChild(option);
+                }
+                // Add the onchange event listener
+                select.addEventListener('change', function () {
+                    const player = decodeURIComponent(
+                        this.options[this.selectedIndex].getAttribute(DeviceTracker.AttributePlayerFullName) || '',
+                    );
+                    DeviceTracker.configureScrcpy.changePlayer(player);
                 });
-            */
+                streamingSettings.appendChild(parentSelect);
+            }
         }
+        if (selectedInterfaceUrl) {
+            // do nothing
+        }
+        tbody.appendChild(row);
 
         this.buildEmulatorScreen(device);
     }
