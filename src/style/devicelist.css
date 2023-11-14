@@ -1,19 +1,22 @@
 :root {
-    --device-border-color: hsl(0, 0%, 82%);
-    --device-list-stripe-color: hsl(0, 0%, 96%);
-    --device-list-default-color: hsl(0, 0%, 100%);
-    --device-list-hover-color: hsl(218, 67%, 95%);
+    --device-border-color: hsl(0, 0%, 50%);
+    --device-list-stripe-color: hsl(0, 0%, 24%);
+    --device-list-default-color: hsl(0, 0%, 22%);
+    --device-list-hover-color: hsl(0, 0%, 28%);
+    --text-color: hsl(0, 0%, 80%);
+    --text-color-light: hsl(0, 0%, 60%);
+    --link-color: hsl(26, 100%, 55%);
+    --link-color-light: hsl(26, 100%, 65%);
+    --link-color_visited: hsl(26, 100%, 45%);
+    --link-color_visited-light: hsl(26, 100%, 55%);
+    --button-text-color: hsl(0, 0%, 90%);
+    --button-border-color: hsl(0, 0%, 50%);
+    --button-bg-color: hsl(0, 0%, 28%);
+    --button-bg-hover-color: hsl(0, 0%, 33%);
+    --button-fill: hsl(0, 0%, 100%);
+    --kill-button-hover-color: hsl(0, 80%, 60%);
+    --font-size: 14px;
 }
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --device-border-color: hsl(0, 0%, 32%);
-        --device-list-stripe-color: hsl(0, 0%, 16%);
-        --device-list-default-color: hsl(0, 0%, 14%);
-        --device-list-hover-color: hsl(218, 17%, 18%);
-    }
-}
-
 
 body.list {
     height: auto;
@@ -108,14 +111,14 @@ body.list #device_list_menu {
     margin-top: 20px;
     padding: 20px;
     background-color: var(--device-list-default-color);
-}
-
-#devices .device-list {
+    border: 1px solid var(--device-border-color);
     border-spacing: 0;
     border-collapse: collapse;
     font-family: monospace;
     font-size: var(--font-size);
+    border-radius: 20px;
 }
+
 
 #devices .device-list div.device {
     padding: 5px 20px 5px;
@@ -123,25 +126,28 @@ body.list #device_list_menu {
 
 
 #devices .device-list a.desc-block {
-    margin-top: .3em;
-    margin-bottom: .3em;
+    margin-top: .6em;
+    margin-bottom: .6em;
     padding: 10px 20px;
-    background-color: hsl(0, 0%, 48%);
-    color: white;
-    border: none;
+    background-color: linear-gradient(145deg, var(--button-bg-color), hsl(0, 0%, 26%));
+    color: var(--button-text-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--button-border-color);
     width: 100%;
     border-radius: 5px;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
     font-size: 16px;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
     display: block;
     box-sizing: border-box;
 }
 
 #devices .device-list a.desc-block:hover {
-    background-color: hsl(0, 0%, 58%);
+    background: linear-gradient(145deg, hsl(0, 0%, 28%), var(--button-bg-hover-color));
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
 }
 
 #devices .device-list .button-label {
@@ -150,34 +156,37 @@ body.list #device_list_menu {
 }
 
 #devices .device-list button.desc-block {
-    margin-top: .3em;
-    margin-bottom: .3em;
+    margin-top: .6em;
+    margin-bottom: .6em;
     width: 100%;
     padding: 10px 20px;
-    background-color: hsl(0, 0%, 48%)   ;
-    color: white;
-    border: none;
+    background-color: linear-gradient(145deg, var(--button-bg-color), hsl(0, 0%, 26%));
+    color: var(--button-text-color);
+    border: 1px solid var(--button-border-color);
     border-radius: 5px;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
     font-size: 16px;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
     display: block;
 }
 
 #devices .device-list button.desc-block:hover {
-    background-color: hsl(0, 0%, 58%);
+    background: linear-gradient(145deg, hsl(0, 0%, 28%), var(--button-bg-hover-color));
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
 }
 
 
 #devices .device-list select.desc-block {
-    margin-top: .3em;
-    margin-bottom: .3em;
+    margin-top: .6em;
+    margin-bottom: .6em;
     flex-grow: 1;
     padding: 10px 20px;
-    background-color: hsl(0, 0%, 48%);
-    color: white;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    border: 1px solid var(--button-border-color);
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -189,7 +198,7 @@ body.list #device_list_menu {
 }
 
 #devices .device-list select.desc-block:hover {
-    background-color: hsl(0, 0%, 58%);
+    background-color: var(--button-bg-hover-color);
 }
 
 

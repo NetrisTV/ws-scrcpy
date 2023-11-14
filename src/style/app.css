@@ -1,54 +1,30 @@
 :root {
-    --main-bg-color: hsl(0, 0%, 100%);
-    --stream-bg-color: hsl(0, 0%, 85%);
-    --shell-bg-color: hsl(0, 0%, 0%);
-    --text-shadow-color: hsl(218, 67%, 95%);
-    --header-bg-color: hsl(0, 0%, 95%);
-    --controls-bg-color: hsla(0, 0%, 95%, 0.8);
-    --control-buttons-bg-color: hsl(0, 0%, 95%);
-    --text-color: hsl(210, 16%, 22%);
-    --text-color-light: hsl(200, 16%, 52%);
-    --link-color: hsl(218, 85%, 43%);
-    --link-color-light: hsl(218, 85%, 73%);
-    --link-color_visited: hsl(271, 68%, 32%);
-    --link-color_visited-light: hsl(271, 68%, 72%);
-    --svg-checkbox-bg-color: hsl(172, 100%, 37%);
-    --svg-button-fill: hsl(199, 17%, 46%);
-    --kill-button-hover-color: hsl(342, 100%, 37%);
-    --url-color: hsl(0, 0%, 60%);
-    --button-text-color: hsl(214, 82%, 51%);
-    --button-border-color: hsl(0, 0%, 70%);
-    --progress-background-color: hsla(225, 100%, 50%, 0.2);
-    --progress-background-error-color: hsla(0, 100%, 50%, 0.2);
+    --device-border-color: hsl(0, 0%, 50%); /* Lighter gray for borders */
+    --device-list-stripe-color: hsl(0, 0%, 24%); /* Dark gray for striped lists */
+    --device-list-default-color: hsl(0, 0%, 22%); /* Slightly darker gray for list backgrounds */
+    --device-list-hover-color: hsl(0, 0%, 28%); /* A bit lighter for hover states */
+    --main-bg-color: hsl(0, 0%, 18%); /* Very dark gray, almost black */
+    --stream-bg-color: hsl(0, 0%, 20%); /* Dark gray for stream background */
+    --shell-bg-color: hsl(0, 0%, 15%); /* Even darker for shell background */
+    --text-shadow-color: hsl(0, 0%, 25%); /* Subtle shadow for text */
+    --header-bg-color: hsl(0, 0%, 20%); /* Dark gray for headers */
+    --controls-bg-color: hsla(0, 0%, 20%, 0.8); /* Slightly transparent control backgrounds */
+    --control-buttons-bg-color: hsl(0, 0%, 20%); /* Same as controls */
+    --text-color: hsl(0, 0%, 80%); /* Light gray for text */
+    --text-color-light: hsl(0, 0%, 60%); /* Dimmed text */
+    --link-color: hsl(26, 100%, 55%); /* Orange for links */
+    --link-color-light: hsl(26, 100%, 65%); /* Lighter orange for hovered links */
+    --link-color_visited: hsl(26, 100%, 45%); /* Darker orange for visited links */
+    --link-color_visited-light: hsl(26, 100%, 55%); /* Slightly lighter for visited links */
+    --svg-checkbox-bg-color: hsl(26, 100%, 55%); /* Orange for checkboxes */
+    --svg-button-fill: hsl(26, 100%, 65%); /* Lighter orange for button fills */
+    --kill-button-hover-color: hsl(0, 80%, 60%); /* A different shade for hover states */
+    --url-color: hsl(0, 0%, 70%); /* Light gray for URLs */
+    --button-text-color: hsl(0, 0%, 90%); /* Very light gray for button text */
+    --button-border-color: hsl(0, 0%, 50%); /* Light gray for button borders */
+    --progress-background-color: hsla(26, 100%, 55%, 0.2); /* Translucent orange for progress backgrounds */
+    --progress-background-error-color: hsla(0, 100%, 50%, 0.2); /* Translucent red for error states */
     --font-size: 14px;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --main-bg-color: hsl(0, 0%, 20%);
-        --stream-bg-color: hsl(0, 0%, 20%);
-        --shell-bg-color: hsl(0, 0%, 0%);
-        --text-shadow-color: hsl(218, 17%, 18%);
-        --header-bg-color: hsl(0, 0%, 20%);
-        --controls-bg-color: hsla(201, 18%, 19%, 0.8);
-        --control-buttons-bg-color: hsl(201, 18%, 19%);
-        --text-color: hsl(0, 0%, 90%);
-        --text-color-light: hsl(0, 0%, 60%);
-        --link-color: hsl(218, 63%, 70%);
-        --link-color-light: hsl(218, 63%, 50%);
-        --link-color_visited: hsl(267, 31%, 47%);
-        --link-color_visited-light: hsl(267, 31%, 27%);
-        --svg-checkbox-bg-color: hsl(172, 100%, 27%);
-        --svg-button-fill: hsl(0, 0%, 100%);
-        --kill-button-hover-color: hsl(342, 100%, 27%);
-        --url-color: hsl(0, 0%, 60%);
-        --device-list-stripe-color: hsl(0, 0%, 16%);
-        --device-list-default-color: hsl(0, 0%, 14%);
-        --button-text-color: hsl(214, 82%, 76%);
-        --button-border-color: hsl(213, 5%, 39%);
-        --progress-background-color: hsla(225, 100%, 50%, 0.2);
-        --progress-background-error-color: hsla(0, 100%, 50%, 0.2);
-    }
 }
 
 html {

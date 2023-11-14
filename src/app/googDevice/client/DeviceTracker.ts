@@ -214,34 +214,8 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                     <h2>Emulator Authentication Issue</h2>
                     <p>Your emulator is not authenticated against the server.</p>
                     <p>Please try <strong>restarting the emulator instance</strong>.</p>
-                    <div class="device-sub-header">Emulator information</div>
-                    <hr class="full-line" />
-                    <div class="device-information">
-                        <div class="device-property">
-                            UDID:
-                            <span class="device-value">${device.udid}</span>
-                            <div class="device-state" title="State: ${device.state}"></div>
-                        </div>
-                        <div class="device-property">
-                            Manufacturer:
-                            <span class="device-value">${device['ro.product.manufacturer']}</span>
-                        </div>
-                        <div class="device-property">
-                            Product model:
-                            <span class="device-value">${device['ro.product.model']}</span>
-                        </div>
-                        <div class="device-property">
-                            Build version release:
-                            <span class="device-value">${device['ro.build.version.release']}</span>
-                        </div>
-                        <div class="device-property">
-                            SDK version:
-                            <span class="device-value">${device['ro.build.version.sdk']}</span>
-                        </div>
-                    </div>
                 </div>
             </div>`.content;
-            StreamClientScrcpy.createEntryForDeviceList(device, blockClass, fullName, this.params);
         } else {
             row = html`<div class="device ${isActive ? 'active' : 'not-active'}">
                 <div class="device-stats">
