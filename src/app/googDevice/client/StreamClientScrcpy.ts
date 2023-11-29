@@ -317,10 +317,11 @@ export class StreamClientScrcpy
         googMoreBox.setOnStop(stop);
         const googToolBox = GoogToolBox.createToolBox(udid, player, this, moreBox);
         this.controlButtons = googToolBox.getHolderElement();
-        deviceView.appendChild(this.controlButtons);
+        
         const video = document.createElement('div');
         video.className = 'video';
         deviceView.appendChild(video);
+        deviceView.appendChild(this.controlButtons);
         deviceView.appendChild(moreBox);
         player.setParent(video);
         player.pause();

@@ -11,7 +11,7 @@ import { StreamClientScrcpy } from '../client/StreamClientScrcpy';
 const TAG = '[GoogMoreBox]';
 
 export class GoogMoreBox {
-    private static defaultSize = new Size(480, 480);
+    private static defaultSize = new Size(4000, 4000);
     private onStop?: () => void;
     private readonly holder: HTMLElement;
     private readonly input: HTMLTextAreaElement;
@@ -242,7 +242,7 @@ export class GoogMoreBox {
 
     private onViewVideoResize = (size: Size): void => {
         // padding: 10px
-        this.holder.style.width = `${size.width - 2 * 10}px`;
+        console.log(size)
     };
 
     private onVideoSettings = (videoSettings: VideoSettings): void => {

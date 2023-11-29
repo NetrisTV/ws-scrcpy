@@ -470,7 +470,7 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         this.appendBasicInput(controls, {
             label: 'Bitrate',
             id: 'bitrate',
-            range: { min: 524288, max: 8388608, step: 524288, formatter: Util.prettyBytes },
+            range: { min: 524288, max: 20917520, step: 524288, formatter: Util.prettyBytes },
         });
         this.appendBasicInput(controls, {
             label: 'Max FPS',

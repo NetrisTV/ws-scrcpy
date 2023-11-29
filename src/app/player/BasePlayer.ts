@@ -91,10 +91,10 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     public static playerCodeName = 'baseplayer';
     public static preferredVideoSettings: VideoSettings = new VideoSettings({
         lockedVideoOrientation: -1,
-        bitrate: 524288,
-        maxFps: 24,
+        bitrate: 10485760,
+        maxFps: 60,
         iFrameInterval: 5,
-        bounds: new Size(480, 480),
+        bounds: new Size(4000, 4000),
         sendFrameMeta: false,
     });
 
@@ -386,8 +386,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         this.touchableCanvas.width = width;
         this.touchableCanvas.height = height;
         if (this.parentElement) {
-            this.parentElement.style.height = `${height}px`;
-            this.parentElement.style.width = `${width}px`;
+            // this.parentElement.style.height = `${height}px`;
+            // this.parentElement.style.width = `${width}px`;
         }
         const size = new Size(width, height);
         this.emit('video-view-resize', size);
