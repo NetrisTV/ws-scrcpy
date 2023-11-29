@@ -10,7 +10,8 @@
     grid-row-start: 1;
     grid-column-start: 1;
     width: 300px;
-    padding: 0 .714rem .714rem .714rem;
+    padding: 10px 10px 10px 60px;
+    height: fit-content;
 }
 
 .text-with-shadow, .more-box label {

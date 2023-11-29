@@ -134,15 +134,26 @@ body.stream {
 }
 
 .control-buttons-list {
-    float: right;
-    width: 3.715rem;
+    width: 0px;
     background-color: var(--control-buttons-bg-color);
-    overflow: hidden;
     position: relative;
+    grid-row-start: 1;
+    grid-column-start: 1;
+    height: fit-content;
+    z-index: 3;
+}
+
+.tool-box-button-container {
+    display: grid;
+    overflow: hidden;
 }
 
 .hide-button {
+    width: 20px;
+    height: 50px;
     position: absolute;
+    right: -20px;
+    top: 30px;
 }
 
 .control-button {
