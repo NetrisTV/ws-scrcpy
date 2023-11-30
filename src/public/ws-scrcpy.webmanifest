@@ -1,0 +1,17 @@
+{
+    "name": "WS-scrcpy",
+    "short_name": "WS-scrcpy",
+    "description": "scrcpy in the web.",
+    "icons": [
+      {
+        "src": "icon-256.png",
+        "sizes": "256x256",
+        "type": "image/png"
+      }
+    ],
+    "start_url": "/",
+    "display": "fullscreen",
+    "theme_color": "#000000",
+    "background_color": "#000000"
+}
+  

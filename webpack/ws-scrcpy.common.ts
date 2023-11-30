@@ -11,6 +11,7 @@ export const PROJECT_ROOT = path.resolve(__dirname, '..');
 export const SERVER_DIST_PATH = path.join(PROJECT_ROOT, 'dist');
 export const CLIENT_DIST_PATH = path.join(PROJECT_ROOT, 'dist/public');
 const PACKAGE_JSON = path.join(PROJECT_ROOT, 'package.json');
+const WorkboxPlugin = require('workbox-webpack-plugin');
 
 export const common = () => {
     const override = path.join(PROJECT_ROOT, '/build.config.override.json');
@@ -45,6 +46,9 @@ export const common = () => {
                     use: [
                         {
                             loader: 'file-loader',
+                            options: {
+                                name: '[name].[ext]',
+                            },
                         },
                     ],
                 },
@@ -55,6 +59,17 @@ export const common = () => {
                             loader: 'file-loader',
                             options: {
                                 name: '[name]',
+                            },
+                        },
+                    ],
+                },
+                {
+                    test: /\.webmanifest$/,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: '[name].[ext]',
                             },
                         },
                     ],
@@ -93,6 +108,10 @@ const front: webpack.Configuration = {
     entry: path.join(PROJECT_ROOT, './src/app/index.ts'),
     externals: ['fs'],
     plugins: [
+        new WorkboxPlugin.GenerateSW({
+            clientsClaim: true,
+            skipWaiting: true,
+          }),
         new HtmlWebpackPlugin({
             template: path.join(PROJECT_ROOT, '/src/public/index.html'),
             inject: 'head',
