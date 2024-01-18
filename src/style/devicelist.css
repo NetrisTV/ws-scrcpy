@@ -116,7 +116,7 @@ body.list #device_list_menu {
     border-collapse: collapse;
     font-family: monospace;
     font-size: var(--font-size);
-    border-radius: 20px;
+    border-radius: 5px;
 }
 
 
