@@ -13,7 +13,6 @@ import {
 } from './PromMetrics';
 import { IncomingMessage } from 'http';
 import { ACTION } from '../../common/Action';
-import { AdbExtended } from '../goog-device/adb';
 
 export class WebSocketServer implements Service {
     private static instance?: WebSocketServer;
@@ -89,36 +88,6 @@ export class WebSocketServer implements Service {
         });
     }
 
-    private async resetTCPConnectionIfOffline(): Promise<void> {
-        const client = AdbExtended.createClient();
-        const devices = await client.listDevices();
-        if (!devices || !devices.length) {
-            return;
-        }
-
-        const sleep = (ms: number): Promise<void> => {
-            return new Promise<void>((resolve) => setTimeout(resolve, ms));
-        };
-        for (const device of devices) {
-            const { type } = device;
-            if (type === 'offline') {
-                try {
-                    const port = await client.tcpip(device.id, 5555);
-                    console.log('reset tcp ip success | stdout: ', port);
-
-                    // Wait for 2 seconds
-                    // We need some time for the device tcpip connection to be finished completely
-                    await sleep(2000);
-                    const connectedId = await client.connect(device.id, 5555);
-
-                    console.log('connected successfully to ', connectedId);
-                } catch (error) {
-                    console.error('error in restarting tcpip 5555', error);
-                }
-            }
-        }
-    }
-
     public attachToServer(item: ServerAndPort): WSServer {
         const { server, port } = item;
         const TAG = `WebSocket Server {tcp:${port}}`;
@@ -133,11 +102,6 @@ export class WebSocketServer implements Service {
                 this.handleMetricsSocket(ws, request);
                 return;
             }
-
-            // TCP connection for some reason gets corrupted after prolonged idling
-            // adb tcpip 5555 fixes this issue, for now providing temporary workaround
-            // tcpip PORT     Restart adbd listening on TCP on PORT.
-            this.resetTCPConnectionIfOffline();
 
             const user_ldap = this.getUserLdap(request);
             const url = new URL(request.url, 'https://example.org/');
