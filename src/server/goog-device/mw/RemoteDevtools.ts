@@ -21,6 +21,7 @@ export class RemoteDevtools extends Mw {
             ws.close(4003, `[${this.TAG}] Invalid value "${host}" in "Host" header`);
             return;
         }
+
         return new RemoteDevtools(ws, host, udid);
     }
     constructor(protected ws: WS, private readonly host: string, private readonly udid: string) {

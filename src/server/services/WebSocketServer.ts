@@ -102,6 +102,7 @@ export class WebSocketServer implements Service {
                 this.handleMetricsSocket(ws, request);
                 return;
             }
+
             const user_ldap = this.getUserLdap(request);
             const url = new URL(request.url, 'https://example.org/');
             const action = url.searchParams.get('action') || '';

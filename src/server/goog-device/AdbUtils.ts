@@ -365,4 +365,37 @@ export class AdbUtils {
         const props = await client.getProperties(serial);
         return props['ro.product.model'] || 'Unknown device';
     }
+
+    // TCP connection for some reason gets corrupted after prolonged idling
+    // adb tcpip 5555 fixes this issue, for now providing temporary workaround
+    public static async resetTCPConnectionIfOffline(): Promise<void> {
+        const client = AdbExtended.createClient();
+        const devices = await client.listDevices();
+        if (!devices || !devices.length) {
+            return;
+        }
+
+        const sleep = (ms: number): Promise<void> => {
+            return new Promise<void>((resolve) => setTimeout(resolve, ms));
+        };
+
+        for (const device of devices) {
+            const { type } = device;
+            if (type === 'offline') {
+                try {
+                    const port = await client.tcpip(device.id, 5555);
+                    console.log('reset tcp ip success | stdout: ', port);
+
+                    // Wait for 2 seconds
+                    // We need some time for the device tcpip connection to be finished completely
+                    await sleep(2000);
+                    const connectedId = await client.connect(device.id, 5555);
+
+                    console.log('connected successfully to ', connectedId);
+                } catch (error) {
+                    console.error('error in restarting tcpip 5555', error);
+                }
+            }
+        }
+    }
 }

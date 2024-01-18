@@ -1,4 +1,36 @@
-# ws scrcpy
+# Forked version of https://github.com/NetrisTV/ws-scrcpy
+
+# [FORKED] Changes
+
+## Only one emulator per server
+The change is oriented to kubernetes setup, when one emulator will have a scrcpy server assigned to it as a side container, I have modified the code to make the whole UI be oriented for one emulator control.
+
+### New UI design for better UX
+Refactored whole UI to look more professional, new screen when scrcpy can't connect to the emulator via adb.
+
+
+## Added support for user email
+Tracking active connections to the scrcpy server. Fetching email from `x-goog-authenticated-user-email` header.
+If this header is not found then email will be assigned as `localhost`.
+
+## Exporting prometheus metrics
+Added metrics for:
+- web_socket_active_connections
+- input_bytes
+- input_frames
+- dropped_frames
+- decoded_frames
+
+All metrics have labels based on player name and user email that is using this instance.
+
+
+## Minor changes
+- Moved all video player settings to a config.
+- Added navbar at the top.
+- Emulator screen is rendered on the same main page instantly.
+- Default player is preselected and a new dropdown added if user wants to change the player.
+
+# Original readme
 
 Web client for [Genymobile/scrcpy][scrcpy] and more.
 
