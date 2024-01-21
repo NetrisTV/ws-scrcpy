@@ -98,6 +98,7 @@ export class WebSocketServer implements Service {
                 return;
             }
 
+            // If the request is for metrics, handle it and return the socket for metrics
             if (request.url === '/metrics') {
                 this.handleMetricsSocket(ws, request);
                 return;
@@ -126,6 +127,7 @@ export class WebSocketServer implements Service {
             }
             return;
         });
+
         wss.on('close', () => {
             console.log(`${TAG} stopped`);
         });
