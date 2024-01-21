@@ -145,4 +145,4 @@ function exit(signal: string) {
 // adb tcpip 5555 fixes this issue, for now providing temporary workaround
 // we run this check every 5 seconds, basically it will fetch all emulators and check if it is offline
 // if it is in such state we try to restart it.
-setTimeout(AdbUtils.resetTCPConnectionIfOffline, 10000);
+AdbUtils.resetTCPConnection();

@@ -368,7 +368,7 @@ export class AdbUtils {
 
     // TCP connection for some reason gets corrupted after prolonged idling
     // adb tcpip 5555 fixes this issue, for now providing temporary workaround
-    public static async resetTCPConnectionIfOffline(): Promise<void> {
+    public static async resetTCPConnection(): Promise<void> {
         const client = AdbExtended.createClient();
         const devices = await client.listDevices();
         if (!devices || !devices.length) {
@@ -379,23 +379,29 @@ export class AdbUtils {
             return new Promise<void>((resolve) => setTimeout(resolve, ms));
         };
 
-        for (const device of devices) {
-            const { type } = device;
-            if (type === 'offline') {
-                try {
-                    const port = await client.tcpip(device.id, 5555);
-                    console.log('reset tcp ip success | stdout: ', port);
+        try {
+            for (const device of devices) {
+                const port = await client.tcpip(device.id, 5555);
+                console.log('reset tcp ip success | stdout: ', port);
+            }
 
-                    // Wait for 2 seconds
-                    // We need some time for the device tcpip connection to be finished completely
-                    await sleep(2000);
-                    const connectedId = await client.connect(device.id, 5555);
+            await sleep(2000);
 
-                    console.log('connected successfully to ', connectedId);
-                } catch (error) {
-                    console.error('error in restarting tcpip 5555', error);
+            // sleep for 5 seconds and reconnect if needed
+            const newDevices = await client.listDevices();
+            if (newDevices.length > 0) {
+                return;
+            }
+
+            for (const device of devices) {
+                // re-connect if device is not connected
+                if (!newDevices.find((d) => d.id === device.id)) {
+                    const deviceConnectedID = await client.connect(device.id);
+                    console.log('connected to device: ', deviceConnectedID);
                 }
             }
+        } catch (error) {
+            console.error('error in restarting tcpip 5555', error);
         }
     }
 }
