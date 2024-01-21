@@ -370,22 +370,38 @@ export class AdbUtils {
     // adb tcpip 5555 fixes this issue, for now providing temporary workaround
     public static async resetTCPConnection(): Promise<void> {
         const client = AdbExtended.createClient();
-        const devices = await client.listDevices();
-        if (!devices || !devices.length) {
-            return;
-        }
 
         const sleep = (ms: number): Promise<void> => {
             return new Promise<void>((resolve) => setTimeout(resolve, ms));
         };
 
-        try {
+        const deviceIsOnline = async (): Promise<boolean> => {
+            const devices = await client.listDevices();
             for (const device of devices) {
-                const port = await client.tcpip(device.id, 5555);
-                console.log('reset tcp ip success | stdout: ', port);
+                if (device.type !== 'offline') {
+                    return true;
+                }
             }
 
-            await sleep(2000);
+            return false;
+        };
+
+        // wait for the device to become online, then reset tcp connection on port 5555
+        while (!(await deviceIsOnline())) {
+            console.log('waiting for device to become online');
+            await sleep(1000);
+        }
+
+        try {
+            const devices = await client.listDevices();
+            for (const device of devices) {
+                if (device.type !== 'offline') {
+                    const port = await client.tcpip(device.id, 5555);
+                    console.log('reset tcp ip success | stdout: ', port);
+                }
+            }
+
+            await sleep(5000);
 
             // sleep for 5 seconds and reconnect if needed
             const newDevices = await client.listDevices();
