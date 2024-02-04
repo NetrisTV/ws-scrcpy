@@ -369,6 +369,8 @@ export class StreamClientScrcpy
         const moreBox = googMoreBox.getHolderElement();
         googMoreBox.setOnStop(stop);
         const googToolBox = GoogToolBox.createToolBox(udid, player, this, moreBox);
+        // enable keyboard events by default
+        this.setHandleKeyboardEvents(true);
         this.controlButtons = googToolBox.getHolderElement();
         deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');

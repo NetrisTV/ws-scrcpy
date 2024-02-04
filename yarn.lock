@@ -3459,6 +3459,11 @@
   dependencies:
     "minimist" "^1.2.6"
 
+"moment-duration-format@^2.3.2":
+  "integrity" "sha1-X6Kxm5QbjSdxIv8/h6EolewNYhI="
+  "resolved" "https://unpm.uberinternal.com/moment-duration-format/-/moment-duration-format-2.3.2.tgz"
+  "version" "2.3.2"
+
 "moment-timezone@^0.x":
   "integrity" "sha512-uEDzDNFhfaywRl+vwXxffjjq1q0Vzr+fcQpQ1bU0kbzorfS7zVtZnCnGc8mhWmF39d4g4YriF6kwA75mJKE/Zg=="
   "resolved" "https://registry.npmjs.org/moment-timezone/-/moment-timezone-0.5.37.tgz"
@@ -3466,10 +3471,10 @@
   dependencies:
     "moment" ">= 2.9.0"
 
-"moment@^2.24.0", "moment@>= 2.9.0":
-  "integrity" "sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w=="
-  "resolved" "https://registry.npmjs.org/moment/-/moment-2.29.4.tgz"
-  "version" "2.29.4"
+"moment@^2.24.0", "moment@^2.30.1", "moment@>= 2.9.0":
+  "integrity" "sha1-+MkcB7enhuMMWZJt9TC06slpdK4="
+  "resolved" "https://unpm.uberinternal.com/moment/-/moment-2.30.1.tgz"
+  "version" "2.30.1"
 
 "morgan@^1.9.0":
   "integrity" "sha512-AbegBVI4sh6El+1gNwvD5YIck7nSA36weD7xvIxG4in80j/UoK8AEGaWnnz8v1GxonMCltmlNs5ZKbGvl9b1XQ=="

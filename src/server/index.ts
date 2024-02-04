@@ -8,7 +8,6 @@ import { MwFactory } from './mw/Mw';
 import { WebsocketProxy } from './mw/WebsocketProxy';
 import { HostTracker } from './mw/HostTracker';
 import { WebsocketMultiplexer } from './mw/WebsocketMultiplexer';
-import { AdbUtils } from './goog-device/AdbUtils';
 
 const servicesToStart: ServiceClass[] = [HttpServer, WebSocketServer];
 
@@ -31,6 +30,7 @@ async function loadGoogModules() {
 
     if (config.runLocalGoogTracker) {
         mw2List.push(DeviceTracker);
+        mwList.push(DeviceTracker);
     }
 
     if (config.announceLocalGoogTracker) {
@@ -140,9 +140,3 @@ function exit(signal: string) {
         service.release();
     });
 }
-
-// TCP connection for some reason gets corrupted after prolonged idling
-// adb tcpip 5555 fixes this issue, for now providing temporary workaround
-// we run this check every 5 seconds, basically it will fetch all emulators and check if it is offline
-// if it is in such state we try to restart it.
-AdbUtils.resetTCPConnection();

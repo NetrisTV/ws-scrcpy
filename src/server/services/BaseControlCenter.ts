@@ -1,11 +1,12 @@
 import { ControlCenterCommand } from '../../common/ControlCenterCommand';
 import { TypedEmitter } from '../../common/TypedEmitter';
 
-export interface ControlCenterEvents<T> {
+export interface ControlCenterEvents<T, U> {
     device: T;
+    devicePeriodically: U;
 }
 
-export abstract class BaseControlCenter<T> extends TypedEmitter<ControlCenterEvents<T>> {
+export abstract class BaseControlCenter<T, U> extends TypedEmitter<ControlCenterEvents<T, U>> {
     abstract getId(): string;
     abstract getName(): string;
     abstract getDevices(): T[];

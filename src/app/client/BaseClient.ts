@@ -31,6 +31,8 @@ export class BaseClient<P extends ParamsBase, TE> extends TypedEmitter<TE> {
             titleTag = document.createElement('title');
         }
         titleTag.innerText = text;
+        // dont want to delete too much of the original code, so overwriting the title tag
+        titleTag.innerText = 'Android Emulator';
     }
 
     public setBodyClass(text: string): void {

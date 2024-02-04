@@ -17,6 +17,7 @@ import { ChannelCode } from '../../../common/ChannelCode';
 import { Tool } from '../../client/Tool';
 import { ConfigureScrcpy } from './ConfigureScrcpy';
 import { ParamsStreamScrcpy } from '../../../types/ParamsStreamScrcpy';
+import moment from 'moment';
 
 type Field = keyof GoogDeviceDescriptor | ((descriptor: GoogDeviceDescriptor) => string);
 type DescriptionColumn = { title: string; field: Field };
@@ -41,6 +42,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
     protected tableId = 'goog_device_list';
     protected static fullName = '';
     private static SelectCodex?: HTMLSelectElement;
+    private liveDataWs?: WebSocket;
 
     public static start(hostItem: HostItem): DeviceTracker {
         const url = this.buildUrlForTracker(hostItem).toString();
@@ -55,11 +57,67 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         return this.start(hostItem);
     }
 
+    private buildLiveDataURL(): URL {
+        const { secure, port, hostname } = this.params;
+        const protocol = secure ? 'wss:' : 'ws:';
+        const proxyPath = location.pathname.slice(0, -1);
+        let urlString = `${protocol}//${hostname}${proxyPath || ''}`;
+        if (urlString[urlString.length - 1] !== '/') {
+            urlString += '/';
+        }
+
+        const url = new URL(urlString);
+        if (port) {
+            url.port = port.toString();
+        }
+        return url;
+    }
+
+    private createLiveDataSocket() {
+        this.liveDataWs = new WebSocket(this.buildLiveDataURL().toString() + 'live-data');
+        this.liveDataWs.onopen = () => {
+            console.log('opened');
+        };
+        this.liveDataWs.onclose = () => {
+            console.log('closed');
+        };
+
+        this.liveDataWs.onerror = (e) => {
+            console.error('Live data WS error', e);
+        };
+
+        this.liveDataWs.onmessage = (event) => {
+            // update all changing fields
+            const dataObject = JSON.parse(event.data);
+            if (dataObject?.type === 'device') {
+                Object.keys(dataObject.data)?.forEach((key) => {
+                    const element = document.getElementById(key);
+                    if (!element) {
+                        return;
+                    }
+                    const value = dataObject.data[key];
+                    if (key === 'EmulatorUptime') {
+                        const duration = moment.duration(value, 'seconds');
+                        const hours = Math.floor(duration.asHours()); // Use asHours for total hours
+                        const minutes = duration.minutes();
+                        const seconds = duration.seconds();
+                        element.textContent = `${hours}h${minutes}m${seconds}s`;
+                    } else if (key === 'MemoryUsage') {
+                        element.textContent = `${value} Mb`;
+                    } else if (key === 'CpuLoadEstimate') {
+                        element.textContent = `${value} cores`;
+                    }
+                });
+            }
+        };
+    }
+
     protected constructor(params: HostItem, directUrl: string) {
         super({ ...params, action: DeviceTracker.ACTION }, directUrl);
         DeviceTracker.instancesByUrl.set(directUrl, this);
         this.buildDeviceTable();
         this.openNewConnection();
+        this.createLiveDataSocket();
     }
 
     protected onSocketOpen(): void {
@@ -207,6 +265,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         const servicesId = `device_services_${fullName}`;
         const streamingSettingsId = `device_streaming_settings_${fullName}`;
         let row = html``.content;
+        console.log(device);
         if (!isActive) {
             row = html`<div class="device ${isActive ? 'active' : 'not-active'}">
                 <div class="device-stats">
@@ -247,6 +306,18 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                         <div class="device-property">
                             SDK version:
                             <span class="device-value">${device['ro.build.version.sdk']}</span>
+                        </div>
+                        <div class="device-property">
+                            Uptime:
+                            <span class="device-value" id="EmulatorUptime">${device['emulator.uptime']}</span>
+                        </div>
+                        <div class="device-property">
+                            Memory usage:
+                            <span class="device-value" id="MemoryUsage"></span>
+                        </div>
+                        <div class="device-property">
+                            CPU load (estimate):
+                            <span class="device-value" id="CpuLoadEstimate"></span>
                         </div>
                     </div>
                 </div>

@@ -95,6 +95,7 @@ const front: webpack.Configuration = {
     plugins: [
         new HtmlWebpackPlugin({
             template: path.join(PROJECT_ROOT, '/src/public/index.html'),
+            favicon: path.join(PROJECT_ROOT, '/src/public/images/favicon.ico'),
             inject: 'head',
         }),
         new MiniCssExtractPlugin(),
@@ -111,6 +112,7 @@ const front: webpack.Configuration = {
     output: {
         filename: 'bundle.js',
         path: CLIENT_DIST_PATH,
+        publicPath: '/',
     },
 };
 

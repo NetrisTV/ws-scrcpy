@@ -19,7 +19,14 @@ enum PID_DETECTION {
 
 export interface DeviceEvents {
     update: Device;
+    updatePeriodically: DeviceProps;
 }
+
+export type DeviceProps = {
+    EmulatorUptime: number;
+    MemoryUsage: number;
+    CpuLoadEstimate: number;
+};
 
 export class Device extends TypedEmitter<DeviceEvents> {
     private static readonly INITIAL_UPDATE_TIMEOUT = 1500;
@@ -52,9 +59,25 @@ export class Device extends TypedEmitter<DeviceEvents> {
             'ro.product.model': '',
             'ro.product.cpu.abi': '',
             'last.update.timestamp': 0,
+            'emulator.uptime': 0,
         };
         this.client = AdbExtended.createClient();
         this.setState(state);
+        // update information every second
+        setInterval(() => this.updateChangingInfo(), 1000);
+    }
+
+    private async updateChangingInfo() {
+        if (this.connected) {
+            const uptime = await this.getEmulatorUptime();
+            const memoryUsage = await this.getEmulatorMemoryUsage();
+            const cpuLoadEstimate = await this.getCpuLoadEstimate();
+            this.emit('updatePeriodically', {
+                EmulatorUptime: uptime,
+                MemoryUsage: memoryUsage,
+                CpuLoadEstimate: cpuLoadEstimate,
+            });
+        }
     }
 
     public setState(state: string): void {
@@ -327,6 +350,12 @@ export class Device extends TypedEmitter<DeviceEvents> {
                 }
                 return true;
             });
+
+            const uptimePromise = this.getEmulatorUptime().then((uptime: number) => {
+                this.descriptor['emulator.uptime'] = uptime;
+                return true;
+            });
+
             const netIntPromise = this.updateInterfaces().then((interfaces) => {
                 return !!interfaces.length;
             });
@@ -339,7 +368,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
             const serverPromise = pidPromise.then(() => {
                 return !(this.descriptor.pid === -1 && this.spawnServer);
             });
-            Promise.all([propsPromise, netIntPromise, serverPromise])
+            Promise.all([propsPromise, netIntPromise, serverPromise, uptimePromise])
                 .then((results) => {
                     this.updateTimeoutId = undefined;
                     const failedCount = results.filter((result) => !result).length;
@@ -363,6 +392,25 @@ export class Device extends TypedEmitter<DeviceEvents> {
         return;
     };
 
+    private async getEmulatorUptime(): Promise<number> {
+        return this.runShellCommandAdbKit("cat /proc/uptime | awk '{print $1}'").then((output) => {
+            return parseInt(output, 10);
+        });
+    }
+
+    private async getEmulatorMemoryUsage(): Promise<number> {
+        // adb shell "free -m | grep 'Mem:' | awk '{print \$3}'"
+        return this.runShellCommandAdbKit("free -m | grep 'Mem:' | awk '{print $3}'").then((output) => {
+            return parseInt(output, 10);
+        });
+    }
+
+    private async getCpuLoadEstimate(): Promise<number> {
+        return this.runShellCommandAdbKit("cat /proc/loadavg | awk '{print $1}'").then((output) => {
+            return parseFloat(output);
+        });
+    }
+
     private emitUpdate(setUpdateTime = true): void {
         const THROTTLE = 300;
         const now = Date.now();
@@ -370,6 +418,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
         if (setUpdateTime) {
             this.descriptor['last.update.timestamp'] = now;
         }
+
         if (time > THROTTLE) {
             this.lastEmit = now;
             this.emit('update', this);

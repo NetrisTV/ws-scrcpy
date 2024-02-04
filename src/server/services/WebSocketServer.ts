@@ -67,10 +67,10 @@ export class WebSocketServer implements Service {
 
                     const { momentumQualityStats, playerName } = JSON.parse(messageString);
                     const labelValues = { player_name: playerName, user_ldap };
-                    decodedFramesGauge.set(labelValues, momentumQualityStats.decodedFrames);
-                    droppedFramesGauge.set(labelValues, momentumQualityStats.droppedFrames);
-                    inputFramesGauge.set(labelValues, momentumQualityStats.inputFrames);
-                    inputBytesGauge.set(labelValues, momentumQualityStats.inputBytes);
+                    decodedFramesGauge.set(labelValues, momentumQualityStats?.decodedFrames || 0);
+                    droppedFramesGauge.set(labelValues, momentumQualityStats?.droppedFrames || 0);
+                    inputFramesGauge.set(labelValues, momentumQualityStats?.inputFrames || 0);
+                    inputBytesGauge.set(labelValues, momentumQualityStats?.inputBytes || 0);
                 }
             } catch (error) {
                 console.error('Error parsing message:', error);
@@ -104,8 +104,20 @@ export class WebSocketServer implements Service {
                 return;
             }
 
-            const user_ldap = this.getUserLdap(request);
             const url = new URL(request.url, 'https://example.org/');
+            // path for live data
+            if (request.url === '/live-data') {
+                for (const mwFactory of this.mwFactories.values()) {
+                    mwFactory.processRequest(ws, {
+                        action: ACTION.GOOG_DEVICE_LIST,
+                        request,
+                        url,
+                        type: 'live-data',
+                    });
+                }
+                return;
+            }
+            const user_ldap = this.getUserLdap(request);
             const action = url.searchParams.get('action') || '';
             let processed = false;
 
@@ -117,7 +129,7 @@ export class WebSocketServer implements Service {
             }
 
             for (const mwFactory of this.mwFactories.values()) {
-                const service = mwFactory.processRequest(ws, { action, request, url });
+                const service = mwFactory.processRequest(ws, { action, request, url, type: 'screen' });
                 if (service) {
                     processed = true;
                 }

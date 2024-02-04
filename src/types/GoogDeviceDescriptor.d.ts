@@ -11,4 +11,5 @@ export default interface GoogDeviceDescriptor extends BaseDeviceDescriptor {
     interfaces: NetInterface[];
     pid: number;
     'last.update.timestamp': number;
+    'emulator.uptime': number;
 }

@@ -8,7 +8,7 @@ import { IOSDeviceLib } from 'ios-device-lib';
 import { DeviceState } from '../../../common/DeviceState';
 import { ProductType } from '../../../common/ProductType';
 
-export class ControlCenter extends BaseControlCenter<ApplDeviceDescriptor> implements Service {
+export class ControlCenter extends BaseControlCenter<ApplDeviceDescriptor, undefined> implements Service {
     private static instance?: ControlCenter;
 
     private initialized = false;

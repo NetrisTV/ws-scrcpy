@@ -22,6 +22,7 @@
     width: 75%;
     max-width: 30rem;
     min-width: 20rem;
+    min-height: 15rem;
     background-color: var(--main-bg-color);
     /*border-radius: 0.3rem;*/
     overflow: hidden;
@@ -89,7 +90,7 @@
     padding: var(--block-top-padding) 0.5rem var(--block-bottom-padding);
     background-color: var(--stream-bg-color);
     height: var(--footer-height);
-    overflow: hidden;
+    overflow: visible;
 }
 
 .dialog-footer span.subtitle {
@@ -98,7 +99,35 @@
     float: left;
 }
 
-.dialog-footer button {
+.dialog-footer .tcp {
+    margin-top: 6em;
+    margin-bottom: .6em;
+    padding: 10px 20px;
+    background-color: linear-gradient(145deg, var(--button-bg-color), hsl(0, 0%, 26%));
+    color: var(--button-text-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--button-border-color);
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    display: block;
+    box-sizing: border-box;
+}
+.dialog-footer .tcp.hidden {
+    display: none;
+}
+
+.dialog-footer .tcp:hover {
+    background: linear-gradient(145deg, hsl(0, 0%, 28%), var(--button-bg-hover-color));
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
+}
+
+.dialog-footer .footer-button {
     padding: var(--button-top-padding) 0.5rem var(--button-bottom-padding);
     margin: 0 0 0 0.5rem;
     border-radius: 0.3rem;
@@ -111,7 +140,7 @@
     float: right;
 }
 
-.dialog-footer button:disabled {
+.dialog-footer .footer-button:disabled {
     cursor: not-allowed;
     color: var(--text-color-light);
 }
