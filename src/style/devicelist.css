@@ -109,7 +109,6 @@ body.list #device_list_menu {
 #devices .device-list {
     margin-left: 64px;
     margin-top: 20px;
-    padding: 20px;
     background-color: var(--device-list-default-color);
     border: 1px solid var(--device-border-color);
     border-spacing: 0;
@@ -121,7 +120,7 @@ body.list #device_list_menu {
 
 
 #devices .device-list div.device {
-    padding: 5px 20px 5px;
+    padding: 10px 20px 10px;
 }
 
 
@@ -294,4 +293,38 @@ body.list #device_list_menu {
 
 #devices .device-information {
     margin-top: 8px;
+}
+
+.tabs {
+    overflow: hidden;
+    background-color: var(--button-bg-color);
+    border-bottom: none;
+}
+
+.tab {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: background-color 0.3s;
+}
+
+.tab.active {
+    background-color: hsl(0, 0%, 40%);
+}
+.tab:hover {
+    background-color: var(--button-bg-hover-color);
+}
+
+.tab-content {
+    display: none;
+}
+
+#main-terminal-container {
+    padding-top: 20px;
+    padding-right: 10px;
+    width: 800px;
+    height: 600px;
 }

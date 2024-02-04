@@ -99,32 +99,18 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         const devices = this.getOrCreateTableHolder();
         const tbody = this.getOrBuildTableBody(devices);
 
-        const block = this.getOrCreateTrackerBlock(tbody, this.trackerName);
+        const block = this.getOrCreateTrackerBlock(tbody);
         data.forEach((item) => {
             this.buildDeviceRow(block, item);
         });
     }
 
-    private setNameValue(parent: Element | null, name: string): void {
-        if (!parent) {
-            return;
-        }
-        const nameBlockId = `${this.elementId}_name`;
-        let nameEl = document.getElementById(nameBlockId);
-        if (!nameEl) {
-            nameEl = document.createElement('div');
-            nameEl.id = nameBlockId;
-            nameEl.className = 'tracker-name';
-        }
-        nameEl.innerText = name;
-        parent.insertBefore(nameEl, parent.firstChild);
-    }
-
-    private getOrCreateTrackerBlock(parent: Element, controlCenterName: string): Element {
+    private getOrCreateTrackerBlock(parent: Element): Element {
         let el = document.getElementById(this.elementId);
         if (!el) {
             el = document.createElement('div');
             el.id = this.elementId;
+            el.className = 'menu-block';
             parent.appendChild(el);
             this.created = true;
         } else {
@@ -132,7 +118,7 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
                 el.removeChild(el.children[0]);
             }
         }
-        this.setNameValue(el, controlCenterName);
+
         return el;
     }
 
@@ -183,7 +169,6 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> ext
         }
         this.id = id;
         this.trackerName = trackerName;
-        this.setNameValue(document.getElementById(this.elementId), trackerName);
     }
 
     protected getOrCreateTableHolder(): HTMLElement {
