@@ -116,6 +116,7 @@ body.list #device_list_menu {
     font-family: monospace;
     font-size: var(--font-size);
     border-radius: 5px;
+    min-width: 450px;
 }
 
 
