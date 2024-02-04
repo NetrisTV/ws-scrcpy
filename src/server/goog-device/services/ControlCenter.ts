@@ -1,5 +1,5 @@
 import { TrackerChangeSet } from '@dead50f7/adbkit/lib/TrackerChangeSet';
-import { Device } from '../Device';
+import { Device, DeviceProps } from '../Device';
 import { Service } from '../../services/Service';
 import AdbKitClient from '@dead50f7/adbkit/lib/adb/client';
 import { AdbExtended } from '../adb';
@@ -12,7 +12,7 @@ import * as os from 'os';
 import * as crypto from 'crypto';
 import { DeviceState } from '../../../common/DeviceState';
 
-export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> implements Service {
+export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor, DeviceProps> implements Service {
     private static readonly defaultWaitAfterError = 1000;
     private static instance?: ControlCenter;
 
@@ -82,6 +82,10 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
         this.emit('device', descriptor);
     };
 
+    private onDeviceUpdatePeriodically = (info: DeviceProps): void => {
+        this.emit('devicePeriodically', info);
+    };
+
     private handleConnected(udid: string, state: string): void {
         let device = this.deviceMap.get(udid);
         if (device) {
@@ -89,6 +93,7 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
         } else {
             device = new Device(udid, state);
             device.on('update', this.onDeviceUpdate);
+            device.on('updatePeriodically', this.onDeviceUpdatePeriodically);
             this.deviceMap.set(udid, device);
         }
     }

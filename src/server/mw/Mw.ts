@@ -3,10 +3,13 @@ import * as http from 'http';
 import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
 import WS from 'ws';
 
+export type DeviceTrackerType = 'screen' | 'live-data';
+
 export type RequestParameters = {
     request: http.IncomingMessage;
     url: URL;
     action: string;
+    type: DeviceTrackerType;
 };
 
 export interface MwFactory {

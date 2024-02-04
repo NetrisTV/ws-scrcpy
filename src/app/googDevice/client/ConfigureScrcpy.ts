@@ -53,6 +53,7 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
     private static streamClientScrcpy?: StreamClientScrcpy;
     private playerOptionMapping: { [key: string]: number } = {};
     private hidden = true;
+    private restartTCPButton?: HTMLButtonElement;
 
     constructor(private readonly tracker: DeviceTracker, descriptor: GoogDeviceDescriptor, params: ParamsStreamScrcpy) {
         super(params);
@@ -94,10 +95,17 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         streamReceiver.off('disconnected', this.onDisconnected);
     }
 
-    private updateStatus(): void {
+    private updateStatus(disableTCPButton: boolean): void {
         if (!this.connectionStatusElement) {
             return;
         }
+
+        if (disableTCPButton) {
+            this.restartTCPButton?.classList.add('hidden');
+        } else {
+            this.restartTCPButton?.classList.remove('hidden');
+        }
+
         let text = this.statusText;
         if (this.connectionCount) {
             text = `${text}. Other clients: ${this.connectionCount}.`;
@@ -124,7 +132,7 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
 
     private onDisplayInfo = (infoArray: DisplayCombinedInfo[]): void => {
         this.statusText = 'Ready';
-        this.updateStatus();
+        this.updateStatus(true);
         this.dialogContainer?.classList.add('ready');
         const select = this.displayIdSelectElement || document.createElement('select');
         let child;
@@ -158,7 +166,7 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
                 this.updateVideoSettingsForPlayer();
             }
             this.connectionCount = connectionCount;
-            this.updateStatus();
+            this.updateStatus(true);
         }
         this.displayIdSelectElement = select;
         if (this.dialogBody && this.hidden) {
@@ -175,8 +183,9 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
 
     private onConnected = (): void => {
         // console.log(this.TAG, 'Connected');
-        this.statusText = 'Waiting for info...';
-        this.updateStatus();
+        this.statusText = 'Loading emulator screen... If it exceeds a minute, please restart the connection.';
+
+        this.updateStatus(false);
         if (this.okButton) {
             this.okButton.disabled = false;
         }
@@ -185,10 +194,11 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
     private onDisconnected = (): void => {
         // console.log(this.TAG, 'Disconnected');
         this.statusText = 'Disconnected';
-        this.updateStatus();
+        this.updateStatus(true);
         if (this.okButton) {
             this.okButton.disabled = true;
         }
+
         if (this.dialogBody) {
             this.dialogBody.classList.remove('visible');
             this.dialogBody.classList.add('hidden');
@@ -559,7 +569,20 @@ export class ConfigureScrcpy extends BaseClient<ParamsStreamScrcpy, ConfigureScr
         this.connectionStatusElement = statusElement;
         dialogFooter.appendChild(statusElement);
         this.statusText = `Connecting...`;
-        this.updateStatus();
+
+        this.restartTCPButton = document.createElement('button');
+        this.restartTCPButton.classList.add('button');
+        this.restartTCPButton.innerText = 'Restart connection';
+        this.restartTCPButton.addEventListener('click', () => {
+            // restarting tcp connection endpoint
+            fetch('/restart-tcp', {
+                method: 'POST',
+            });
+        });
+        this.restartTCPButton.classList.add('tcp');
+        this.restartTCPButton.classList.add('hidden');
+        dialogFooter.appendChild(this.restartTCPButton);
+        this.updateStatus(true);
 
         // const cancelButton = (this.cancelButton = document.createElement('button'));
         // cancelButton.innerText = 'Cancel';

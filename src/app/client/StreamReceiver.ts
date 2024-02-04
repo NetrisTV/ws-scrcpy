@@ -51,6 +51,14 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
         if (this.ws) {
             this.ws.binaryType = 'arraybuffer';
         }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                if (this.ws?.readyState !== WebSocket.OPEN) {
+                    location.reload();
+                }
+            }
+        });
     }
 
     private handleInitialInfo(data: ArrayBuffer): void {

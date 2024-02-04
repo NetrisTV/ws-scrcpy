@@ -7,6 +7,7 @@ import express, { Express } from 'express';
 import { Config } from '../Config';
 import { TypedEmitter } from '../../common/TypedEmitter';
 import promClient from 'prom-client';
+import { AdbUtils } from '../goog-device/AdbUtils';
 
 const DEFAULT_STATIC_DIR = path.join(__dirname, './public');
 
@@ -78,7 +79,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
         // Handle static file serving
         if (HttpServer.SERVE_STATIC && HttpServer.PUBLIC_DIR) {
             this.mainApp.use(express.static(HttpServer.PUBLIC_DIR));
-
+            console.log('static', HttpServer.PUBLIC_DIR);
             /// #if USE_WDA_MJPEG_SERVER
             const { MjpegProxyFactory } = await import('../mw/MjpegProxyFactory');
             this.mainApp.get('/mjpeg/:udid', new MjpegProxyFactory().proxyRequest);
@@ -88,6 +89,12 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
             this.mainApp.get('/metrics', async (_, res) => {
                 res.set('Content-Type', promClient.register.contentType);
                 res.end(await promClient.register.metrics());
+            });
+
+            this.mainApp.post('/restart-tcp', async () => {
+                // TCP connection for some reason gets corrupted after prolonged idling or after restart
+                // adb tcpip 5555 fixes this issue, for now providing temporary workaround
+                AdbUtils.resetTCPConnection();
             });
         }
         const config = Config.getInstance();

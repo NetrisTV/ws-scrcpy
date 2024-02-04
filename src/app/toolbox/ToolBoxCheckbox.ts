@@ -11,10 +11,11 @@ export class ToolBoxCheckbox extends ToolBoxElement<HTMLInputElement> {
     private readonly label: HTMLLabelElement;
     private readonly imageOn?: Element;
     private readonly imageOff: Element;
-    constructor(title: string, icons: Icons | Icon, opt_id?: string, optional?: Optional) {
+    constructor(title: string, icons: Icons | Icon, opt_id?: string, optional?: Optional, checked?: boolean) {
         super(title, optional);
         const input = document.createElement('input');
         input.type = 'checkbox';
+        input.checked = checked || false;
         const label = document.createElement('label');
         label.title = title;
         label.classList.add('control-button');
