@@ -26,6 +26,10 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
     private readonly udid: string;
 
     constructor(params: ParamsShell) {
+        if (params.htmlElementToAppend === undefined) {
+            params.htmlElementToAppend = document.body;
+        }
+
         super(params);
         this.udid = params.udid;
         this.openNewConnection();
@@ -34,12 +38,40 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
         if (!this.ws) {
             throw Error('No WebSocket');
         }
-        this.term = new Terminal();
+
+        this.term = new Terminal({
+            theme: {
+                background: '#1d1f21',
+                foreground: '#c5c8c6',
+                cursor: '#f0c674',
+                selection: '#373b41',
+                black: '#1d1f21',
+                red: '#cc6666',
+                green: '#b5bd68',
+                yellow: '#f0c674',
+                blue: '#81a2be',
+                magenta: '#b294bb',
+                cyan: '#8abeb7',
+                white: '#c5c8c6',
+                brightBlack: '#666666',
+                brightRed: '#ff3334',
+                brightGreen: '#9ec400',
+                brightYellow: '#f0c674',
+                brightBlue: '#81a2be',
+                brightMagenta: '#b77ee0',
+                brightCyan: '#54ced6',
+                brightWhite: '#ffffff',
+            },
+            fontFamily: '"Fira Code", monospace',
+            cursorBlink: true,
+            cursorStyle: 'underline',
+            fontSize: 10,
+        });
         this.term.loadAddon(new AttachAddon(this.ws));
         this.fitAddon = new FitAddon();
         this.term.loadAddon(this.fitAddon);
         this.escapedUdid = Util.escapeUdid(this.udid);
-        this.term.open(ShellClient.getOrCreateContainer(this.escapedUdid));
+        this.term.open(ShellClient.getOrCreateContainer(this.escapedUdid, params.htmlElementToAppend));
         this.updateTerminalSize();
         this.term.focus();
     }
@@ -54,7 +86,12 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
         if (action !== ACTION.SHELL) {
             throw Error('Incorrect action');
         }
-        return { ...typedParams, action, udid: Util.parseString(params, 'udid', true) };
+        return {
+            ...typedParams,
+            action,
+            udid: Util.parseString(params, 'udid', true),
+            htmlElementToAppend: document.body,
+        };
     }
 
     protected onSocketOpen = (): void => {
@@ -74,43 +111,29 @@ export class ShellClient extends ManagerClient<ParamsShell, never> {
         if (!udid || !this.ws || this.ws.readyState !== this.ws.OPEN) {
             return;
         }
-        const { rows, cols } = this.fitAddon.proposeDimensions();
         const message: MessageXtermClient = {
             id: 1,
             type: 'shell',
             data: {
                 type: 'start',
-                rows,
-                cols,
                 udid,
             },
         };
         this.ws.send(JSON.stringify(message));
     }
 
-    private static getOrCreateContainer(udid: string): HTMLElement {
+    private static getOrCreateContainer(udid: string, appendHTML: HTMLElement): HTMLElement {
         let container = document.getElementById(udid);
         if (!container) {
             container = document.createElement('div');
             container.className = 'terminal-container';
             container.id = udid;
-            document.body.appendChild(container);
+            appendHTML.appendChild(container);
         }
-        return container;
+        return container as HTMLElement;
     }
 
-    private updateTerminalSize(): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const term: any = this.term;
-        const terminalContainer: HTMLElement = ShellClient.getOrCreateContainer(this.escapedUdid);
-        const { rows, cols } = this.fitAddon.proposeDimensions();
-        const width =
-            (cols * term._core._renderService.dimensions.actualCellWidth + term._core.viewport.scrollBarWidth).toFixed(
-                2,
-            ) + 'px';
-        const height = (rows * term._core._renderService.dimensions.actualCellHeight).toFixed(2) + 'px';
-        terminalContainer.style.width = width;
-        terminalContainer.style.height = height;
+    public updateTerminalSize(): void {
         this.fitAddon.fit();
     }
 
