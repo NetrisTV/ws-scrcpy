@@ -55,7 +55,7 @@ body.shell {
 }
 
 body.stream {
-    background: linear-gradient(145deg, #1E1E1E 0%, #3F3F3F 100%);
+    background: linear-gradient(180deg, #1E1E1E 0%, #3F3F3F 100%);
 }
 
 .terminal-container {
