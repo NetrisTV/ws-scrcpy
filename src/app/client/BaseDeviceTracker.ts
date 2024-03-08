@@ -8,10 +8,11 @@ import { ParamsDeviceTracker } from '../../types/ParamsDeviceTracker';
 import { HostItem } from '../../types/Configuration';
 import { Tool } from './Tool';
 import Util from '../Util';
+import { EventMap } from '../../common/TypedEmitter';
 
 const TAG = '[BaseDeviceTracker]';
 
-export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE> extends ManagerClient<
+export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE extends EventMap> extends ManagerClient<
     ParamsDeviceTracker,
     TE
 > {

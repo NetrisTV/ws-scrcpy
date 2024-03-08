@@ -52,7 +52,7 @@ export default class FilePushHandler implements DragEventListener {
 
     private static async getStreamReader(file: File): Promise<{
         reader: ReadableStreamDefaultReader<Uint8Array>;
-        result: ReadableStreamDefaultReadResult<Uint8Array>;
+        result: ReadableStreamReadResult<Uint8Array>;
     }> {
         const blob = await new Response(file).blob();
         const reader = blob.stream().getReader() as ReadableStreamDefaultReader<Uint8Array>;

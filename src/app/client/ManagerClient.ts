@@ -3,8 +3,9 @@ import { ACTION } from '../../common/Action';
 import { ParamsBase } from '../../types/ParamsBase';
 import Util from '../Util';
 import { Multiplexer } from '../../packages/multiplexer/Multiplexer';
+import { EventMap } from '../../common/TypedEmitter';
 
-export abstract class ManagerClient<P extends ParamsBase, TE> extends BaseClient<P, TE> {
+export abstract class ManagerClient<P extends ParamsBase, TE extends EventMap> extends BaseClient<P, TE> {
     public static ACTION = 'unknown';
     public static CODE = 'NONE';
     public static sockets: Map<string, Multiplexer> = new Map();
