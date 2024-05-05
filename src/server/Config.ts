@@ -115,19 +115,20 @@ export class Config {
         }
         const hostList: HostItem[] = [];
         this.fullConfig.remoteHostList.forEach((item) => {
-            const { hostname, port, secure, useProxy } = item;
+            const { hostname, port, pathname, secure, useProxy } = item;
             if (Array.isArray(item.type)) {
                 item.type.forEach((type) => {
                     hostList.push({
                         hostname,
                         port,
+                        pathname,
                         secure,
                         useProxy,
                         type,
                     });
                 });
             } else {
-                hostList.push({ hostname, port, secure, useProxy, type: item.type });
+                hostList.push({ hostname, port, pathname, secure, useProxy, type: item.type });
             }
         });
         return hostList;

@@ -6,8 +6,12 @@ import { Utils } from '../Utils';
 import express, { Express } from 'express';
 import { Config } from '../Config';
 import { TypedEmitter } from '../../common/TypedEmitter';
+import * as process from 'process';
+import { EnvName } from '../EnvName';
 
 const DEFAULT_STATIC_DIR = path.join(__dirname, './public');
+
+const PATHNAME = process.env[EnvName.WS_SCRCPY_PATHNAME] || '/';
 
 export type ServerAndPort = {
     server: https.Server | http.Server;
@@ -73,7 +77,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
     public async start(): Promise<void> {
         this.mainApp = express();
         if (HttpServer.SERVE_STATIC && HttpServer.PUBLIC_DIR) {
-            this.mainApp.use(express.static(HttpServer.PUBLIC_DIR));
+            this.mainApp.use(PATHNAME, express.static(HttpServer.PUBLIC_DIR));
 
             /// #if USE_WDA_MJPEG_SERVER
 

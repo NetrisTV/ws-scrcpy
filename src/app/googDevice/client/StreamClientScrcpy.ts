@@ -426,6 +426,7 @@ export class StreamClientScrcpy
                     ${Attribute.SECURE}="${params.secure}"
                     ${Attribute.HOSTNAME}="${params.hostname}"
                     ${Attribute.PORT}="${params.port}"
+                    ${Attribute.PATHNAME}="${params.pathname}"
                     ${Attribute.USE_PROXY}="${params.useProxy}"
                     id="${configureButtonId}"
                     class="active action-button"
@@ -447,6 +448,7 @@ export class StreamClientScrcpy
         const secure = Util.parseBooleanEnv(button.getAttribute(Attribute.SECURE) || undefined) || false;
         const hostname = Util.parseStringEnv(button.getAttribute(Attribute.HOSTNAME) || undefined) || '';
         const port = Util.parseIntEnv(button.getAttribute(Attribute.PORT) || undefined);
+        const pathname = Util.parseStringEnv(button.getAttribute(Attribute.PATHNAME) || undefined) || '';
         const useProxy = Util.parseBooleanEnv(button.getAttribute(Attribute.USE_PROXY) || undefined);
         if (!udid) {
             throw Error(`Invalid udid value: "${udid}"`);
@@ -459,6 +461,7 @@ export class StreamClientScrcpy
             secure,
             hostname,
             port,
+            pathname,
             useProxy,
         });
         const descriptor = tracker.getDescriptorByUdid(udid);
@@ -485,6 +488,7 @@ export class StreamClientScrcpy
             secure,
             hostname,
             port,
+            pathname,
             useProxy,
         };
         const dialog = new ConfigureScrcpy(tracker, descriptor, options);

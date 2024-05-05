@@ -148,7 +148,8 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         const secure = !!params.secure;
         const hostname = params.hostname || location.hostname;
         const port = typeof params.port === 'number' ? params.port : secure ? 443 : 80;
-        const urlObject = this.buildUrl({ ...params, secure, hostname, port });
+        const pathname = params.pathname || location.pathname;
+        const urlObject = this.buildUrl({ ...params, secure, hostname, port, pathname });
         if (udid) {
             urlObject.searchParams.set('action', ACTION.PROXY_ADB);
             urlObject.searchParams.set('remote', `tcp:${SERVER_PORT.toString(10)}`);
