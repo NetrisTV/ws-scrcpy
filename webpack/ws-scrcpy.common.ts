@@ -12,8 +12,13 @@ export const SERVER_DIST_PATH = path.join(PROJECT_ROOT, 'dist');
 export const CLIENT_DIST_PATH = path.join(PROJECT_ROOT, 'dist/public');
 const PACKAGE_JSON = path.join(PROJECT_ROOT, 'package.json');
 
+const override = path.join(PROJECT_ROOT, '/build.config.override.json');
+const buildConfigOptions = mergeWithDefaultConfig(override);
+const buildConfigDefinePlugin = new webpack.DefinePlugin({
+    '__PATHNAME__': JSON.stringify(buildConfigOptions.PATHNAME),
+});
+
 export const common = () => {
-    const override = path.join(PROJECT_ROOT, '/build.config.override.json');
     return {
         module: {
             rules: [
@@ -27,7 +32,7 @@ export const common = () => {
                         { loader: 'ts-loader' },
                         {
                             loader: 'ifdef-loader',
-                            options: mergeWithDefaultConfig(override),
+                            options: buildConfigOptions,
                         },
                     ],
                     exclude: /node_modules/,
@@ -134,7 +139,10 @@ delete packageJson.devDependencies;
 const back: webpack.Configuration = {
     entry: path.join(PROJECT_ROOT, './src/server/index.ts'),
     externals: [nodeExternals()],
-    plugins: [new GeneratePackageJsonPlugin(basePackage)],
+    plugins: [
+        new GeneratePackageJsonPlugin(basePackage),
+        buildConfigDefinePlugin,
+    ],
     node: {
         global: false,
         __filename: false,

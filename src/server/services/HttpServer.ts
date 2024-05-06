@@ -11,7 +11,7 @@ import { EnvName } from '../EnvName';
 
 const DEFAULT_STATIC_DIR = path.join(__dirname, './public');
 
-const PATHNAME = process.env[EnvName.WS_SCRCPY_PATHNAME] || '/';
+const PATHNAME = process.env[EnvName.WS_SCRCPY_PATHNAME] || __PATHNAME__;
 
 export type ServerAndPort = {
     server: https.Server | http.Server;
