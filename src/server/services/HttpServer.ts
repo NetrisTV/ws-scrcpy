@@ -128,7 +128,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
             }
             this.servers.push({ server, port });
             server.listen(port, () => {
-                Utils.printListeningMsg(proto, port);
+                Utils.printListeningMsg(proto, port, PATHNAME);
             });
         });
         this.started = true;
