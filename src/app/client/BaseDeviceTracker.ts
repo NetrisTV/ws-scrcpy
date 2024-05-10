@@ -32,8 +32,9 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE exte
 
     public static buildUrl(item: HostItem): URL {
         const { secure, port, hostname } = item;
+        const pathname = item.pathname ?? '/';
         const protocol = secure ? 'wss:' : 'ws:';
-        const url = new URL(`${protocol}//${hostname}`);
+        const url = new URL(`${protocol}//${hostname}${pathname}`);
         if (port) {
             url.port = port.toString();
         }
@@ -49,19 +50,22 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE exte
     public static buildLink(q: any, text: string, params: ParamsDeviceTracker): HTMLAnchorElement {
         let { hostname } = params;
         let port: string | number | undefined = params.port;
+        let pathname = params.pathname ?? location.pathname;
         let protocol = params.secure ? 'https:' : 'http:';
         if (params.useProxy) {
             q.hostname = hostname;
             q.port = port;
+            q.pathname = pathname;
             q.secure = params.secure;
             q.useProxy = true;
             protocol = location.protocol;
             hostname = location.hostname;
             port = location.port;
+            pathname = location.pathname;
         }
         const hash = `#!${new URLSearchParams(q).toString()}`;
         const a = document.createElement('a');
-        a.setAttribute('href', `${protocol}//${hostname}:${port}/${hash}`);
+        a.setAttribute('href', `${protocol}//${hostname}:${port}${pathname}${hash}`);
         a.setAttribute('rel', 'noopener noreferrer');
         a.setAttribute('target', '_blank');
         a.classList.add(`link-${q.action}`);

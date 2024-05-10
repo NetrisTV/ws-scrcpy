@@ -69,12 +69,12 @@ export class HostTracker extends ManagerClient<ParamsBase, HostTrackerEvents> {
                     msg.data.local.forEach(({ type }) => {
                         const secure = location.protocol === 'https:';
                         const port = location.port ? parseInt(location.port, 10) : secure ? 443 : 80;
-                        const { hostname } = location;
+                        const { hostname, pathname } = location;
                         if (type !== 'android' && type !== 'ios') {
                             console.warn(TAG, `Unsupported host type: "${type}"`);
                             return;
                         }
-                        const hostItem: HostItem = { useProxy: false, secure, port, hostname, type };
+                        const hostItem: HostItem = { useProxy: false, secure, port, hostname, pathname, type };
                         this.startTracker(hostItem);
                     });
                 }

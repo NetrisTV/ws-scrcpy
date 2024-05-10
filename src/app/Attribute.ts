@@ -9,5 +9,6 @@ export const Attribute = {
     SECURE: 'data-secure',
     HOSTNAME: 'data-hostname',
     PORT: 'data-port',
+    PATHNAME: 'data-pathname',
     VALUE: 'data-value',
 };

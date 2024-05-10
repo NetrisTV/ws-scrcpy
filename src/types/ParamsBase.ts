@@ -4,4 +4,5 @@ export interface ParamsBase {
     secure?: boolean;
     hostname?: string;
     port?: number;
+    pathname?: string;
 }

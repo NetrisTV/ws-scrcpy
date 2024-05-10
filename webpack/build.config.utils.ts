@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-type BuildConfig = Record<string, boolean>;
+type BuildConfig = Record<string, boolean | string>;
 
 const DEFAULT_CONFIG_PATH = path.resolve(path.dirname(__filename), 'default.build.config.json');
 const configCache: Map<string, BuildConfig> = new Map();
@@ -15,7 +15,7 @@ export function getConfig(filename: string): BuildConfig {
         const rawConfig = JSON.parse(fs.readFileSync(absolutePath).toString());
         Object.keys(rawConfig).forEach((key) => {
             const value = rawConfig[key];
-            if (typeof value === 'boolean') {
+            if (typeof value === 'boolean' || typeof value === 'string') {
                 filtered[key] = value;
             }
         });

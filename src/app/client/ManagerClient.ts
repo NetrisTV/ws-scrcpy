@@ -88,15 +88,16 @@ export abstract class ManagerClient<P extends ParamsBase, TE extends EventMap> e
 
     protected buildDirectWebSocketUrl(): URL {
         const { hostname, port, secure, action } = this.params;
+        const pathname = this.params.pathname ?? location.pathname;
         let urlString: string;
         if (typeof hostname === 'string' && typeof port === 'number') {
             const protocol = secure ? 'wss:' : 'ws:';
-            urlString = `${protocol}//${hostname}:${port}`;
+            urlString = `${protocol}//${hostname}:${port}${pathname}`;
         } else {
             const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
 
             // location.host includes hostname and port
-            urlString = `${protocol}${location.host}`;
+            urlString = `${protocol}${location.host}${pathname}`;
         }
         const directUrl = new URL(urlString);
         if (this.supportMultiplexing()) {
