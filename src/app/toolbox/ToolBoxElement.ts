@@ -5,10 +5,8 @@ export type Optional = {
 // type Listener = <K extends keyof HTMLElementEventMap, T extends HTMLElement>(type: K, el: ToolBoxElement<T>) => any;
 
 export abstract class ToolBoxElement<T extends HTMLElement> {
-    private listeners: Map<
-        string,
-        Set<<K extends keyof HTMLElementEventMap>(type: K, el: ToolBoxElement<T>) => any>
-    > = new Map();
+    private listeners: Map<string, Set<<K extends keyof HTMLElementEventMap>(type: K, el: ToolBoxElement<T>) => any>> =
+        new Map();
     protected constructor(public readonly title: string, public readonly optional?: Optional) {}
 
     public abstract getElement(): T;

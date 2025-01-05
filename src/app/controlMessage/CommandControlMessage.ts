@@ -163,9 +163,13 @@ export class CommandControlMessage extends ControlMessage {
         return event;
     }
 
-    public static pushFileCommandFromBuffer(
-        buffer: Buffer,
-    ): { id: number; state: FilePushState; chunk?: Buffer; fileSize?: number; fileName?: string } {
+    public static pushFileCommandFromBuffer(buffer: Buffer): {
+        id: number;
+        state: FilePushState;
+        chunk?: Buffer;
+        fileSize?: number;
+        fileName?: string;
+    } {
         let offset = 0;
         const type = buffer.readUInt8(offset);
         offset += 1;

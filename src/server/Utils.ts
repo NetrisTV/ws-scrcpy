@@ -32,7 +32,10 @@ export class Utils {
                     formatAddress(iface.address, scopeid);
                 });
             });
-        const nameList = [encodeURI(`${proto}://${os.hostname()}:${port}${pathname}`), encodeURI(`${proto}://localhost:${port}${pathname}`)];
+        const nameList = [
+            encodeURI(`${proto}://${os.hostname()}:${port}${pathname}`),
+            encodeURI(`${proto}://localhost:${port}${pathname}`),
+        ];
         console.log('Listening on:\n\t' + nameList.join(' '));
         if (ipv4List.length) {
             console.log('\t' + ipv4List.join(' '));
