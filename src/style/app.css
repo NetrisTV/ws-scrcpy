@@ -107,6 +107,7 @@ body.stream {
     display: flex;
     flex-direction: row;
     width: 100%;
+    max-width: 380px;
 }
 
 .video-layer {
@@ -120,6 +121,7 @@ body.stream {
 .touch-layer {
     position: absolute;
     z-index: 1;
+    max-width: 315px;
 }
 
 .video {

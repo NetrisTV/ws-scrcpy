@@ -41,6 +41,7 @@ export class MsePlayer extends BasePlayer {
         }
         tag.className = 'video-layer';
         tag.style.width = "calc(100vw - 4.35rem)";
+        tag.style.maxWidth = "315px";
         return tag;
     }
 
