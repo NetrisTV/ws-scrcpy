@@ -1,5 +1,5 @@
 :root {
-    --main-bg-color: hsl(0, 0%, 100%);
+    --main-bg-color: white;
     --stream-bg-color: hsl(0, 0%, 85%);
     --shell-bg-color: hsl(0, 0%, 0%);
     --text-shadow-color: hsl(218, 67%, 95%);
@@ -79,7 +79,7 @@ body.shell {
 }
 
 body.stream {
-    background-color: var(--stream-bg-color);
+    background-color: var(--main-bg-color);
 }
 
 .terminal-container {
@@ -104,12 +104,17 @@ body.stream {
 .device-view {
     z-index: 1;
     float: right;
-    display: inline-block;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
 }
 
 .video-layer {
     position: absolute;
     z-index: 0;
+    border-radius: 1rem;
+    margin-top: -4px;
+    margin-left: -3px;
 }
 
 .touch-layer {
@@ -121,21 +126,38 @@ body.stream {
     float: right;
     max-height: 100%;
     max-width: 100%;
-    background-color: #000000;
+    background-color: transparent;
+    padding: 1rem;
+    position: relative;
 }
 
+.mockup-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.generic-android-mockup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    z-index: 10;
+}
 
 .control-buttons-list {
     float: right;
-    width: 3.715rem;
+    width: 1.6rem;
     background-color: var(--control-buttons-bg-color);
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 .control-button {
-    margin: .357rem .786rem;
     padding: 0;
-    width: 2.143rem;
-    height: 2.143rem;
+    width: 1.5rem;
+    height: 1.5rem;
     border: none;
     opacity: 0.75;
     background-color: var(--control-buttons-bg-color);

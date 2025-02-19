@@ -40,6 +40,7 @@ export class MsePlayer extends BasePlayer {
             tag.id = id;
         }
         tag.className = 'video-layer';
+        tag.style.width = "calc(100vw - 4.35rem)";
         return tag;
     }
 
