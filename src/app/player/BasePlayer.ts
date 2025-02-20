@@ -115,11 +115,20 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         this.touchableCanvas.className = 'touch-layer';
         const myInterval = setInterval(()=>{
             if( tag.clientHeight || tag.clientWidth ){
-
                 const deviceMockup = document.getElementsByClassName("generic-android-mockup")[0] as HTMLElement;
+                
                 deviceMockup.style.height = (tag.clientHeight + 23) +"px";
                 this.touchableCanvas.style.height = (tag.clientHeight) +"px";
                 this.touchableCanvas.style.zIndex = "20";
+                
+                window.addEventListener('resize', () => {
+                    
+                    const deviceMockup = document.getElementsByClassName("generic-android-mockup")[0] as HTMLElement;
+                    deviceMockup.style.height = (tag.clientHeight + 23) +"px";
+                    this.touchableCanvas.style.height = (tag.clientHeight) +"px";
+                    this.touchableCanvas.style.zIndex = "20";
+                });
+                
                 clearInterval(myInterval);
             }
         }, 500);
