@@ -4,7 +4,7 @@
 > npm run dist:dev
 
 2. Run from `dist` directory:
-> node start
+> npm run start
 
 3. Use the browser's built-in developer tools or your favorite IDE.
 
