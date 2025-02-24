@@ -25,6 +25,7 @@ export type DisplayCombinedInfo = {
 interface StreamReceiverEvents {
     video: ArrayBuffer;
     deviceMessage: DeviceMessage;
+    rotated: any;
     displayInfo: DisplayCombinedInfo[];
     clientsStats: ClientsStats;
     encoders: string[];
@@ -67,6 +68,7 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
         for (let i = 0; i < displaysCount; i++) {
             const displayInfoBuffer = rest.slice(0, DisplayInfo.BUFFER_LENGTH);
             const displayInfo = DisplayInfo.fromBuffer(displayInfoBuffer);
+            this.emit("rotated", displayInfo.rotation);
             const { displayId } = displayInfo;
             this.displayInfoMap.set(displayId, displayInfo);
             rest = rest.slice(DisplayInfo.BUFFER_LENGTH);

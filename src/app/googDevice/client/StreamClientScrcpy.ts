@@ -30,7 +30,7 @@ import { ACTION } from '../../../common/Action';
 import { StreamReceiverScrcpy } from './StreamReceiverScrcpy';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { ScrcpyFilePushStream } from '../filePush/ScrcpyFilePushStream';
-import genericAndroid from "../../../common/generic_android.png"
+// import genericAndroid from "../../../common/generic_android.png"
 
 type StartParams = {
     udid: string;
@@ -321,11 +321,11 @@ export class StreamClientScrcpy
         deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');
         video.className = 'video';
-        const genericAndroidMockup = document.createElement("img");
-        genericAndroidMockup.src = genericAndroid;
-        genericAndroidMockup.className = "generic-android-mockup";
-        genericAndroidMockup.style.height = "";
-        video.appendChild(genericAndroidMockup);
+        // const genericAndroidMockup = document.createElement("img");
+        // genericAndroidMockup.src = genericAndroid;
+        // genericAndroidMockup.className = "generic-android-mockup";
+        // genericAndroidMockup.style.height = "";
+        // video.appendChild(genericAndroidMockup);
         deviceView.appendChild(video);
         deviceView.appendChild(moreBox);
         player.setParent(video);
@@ -346,6 +346,7 @@ export class StreamClientScrcpy
 
         const streamReceiver = this.streamReceiver;
         streamReceiver.on('deviceMessage', this.OnDeviceMessage);
+        streamReceiver.on('rotated', ()=>{ console.log("tag reorienting screen 2 ", this.player); this.player?.reOrientScreen(true, this.player) });
         streamReceiver.on('video', this.onVideo);
         streamReceiver.on('clientsStats', this.onClientsStats);
         streamReceiver.on('displayInfo', this.onDisplayInfo);

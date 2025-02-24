@@ -16,7 +16,15 @@ export class DisplayInfo {
         public readonly rotation: number,
         public readonly layerStack: number,
         public readonly flags: number,
-    ) {}
+    ) {
+        const deviceViewElem = document.getElementsByClassName('device-view')[0] as HTMLElement;
+        if( rotation && deviceViewElem ){
+            deviceViewElem.style.maxWidth = "none";            
+        }
+        else if( deviceViewElem ){
+            deviceViewElem.style.maxWidth = "380px";
+        }
+    }
 
     public toBuffer(): Buffer {
         const temp = Buffer.alloc(DisplayInfo.BUFFER_LENGTH);

@@ -113,22 +113,14 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         super();
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
-        const myInterval = setInterval(()=>{
-            if( tag.clientHeight || tag.clientWidth ){
-                const deviceMockup = document.getElementsByClassName("generic-android-mockup")[0] as HTMLElement;
-                
-                deviceMockup.style.height = (tag.clientHeight + 23) +"px";
-                this.touchableCanvas.style.height = (tag.clientHeight) +"px";
-                this.touchableCanvas.style.zIndex = "20";
-                
+        const myInterval = setInterval(() => {
+            if (tag.clientHeight || tag.clientWidth) {
+                this.reOrientScreen();
+
                 window.addEventListener('resize', () => {
-                    
-                    const deviceMockup = document.getElementsByClassName("generic-android-mockup")[0] as HTMLElement;
-                    deviceMockup.style.height = (tag.clientHeight + 23) +"px";
-                    this.touchableCanvas.style.height = (tag.clientHeight) +"px";
-                    this.touchableCanvas.style.zIndex = "20";
+                    this.reOrientScreen();
                 });
-                
+
                 clearInterval(myInterval);
             }
         }, 500);
@@ -138,6 +130,61 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const preferred = this.getPreferredVideoSetting();
         this.videoSettings = BasePlayer.getVideoSettingFromStorage(preferred, this.storageKeyPrefix, udid, displayInfo);
     }
+
+    protected sendDataToParent(rotation: number | undefined): void {
+        // Send data to the parent window
+        
+        const videoElem = document.getElementsByClassName("video-layer")[0] as HTMLElement;
+
+        if( videoElem ){
+            if( rotation ){
+                videoElem.style.maxWidth = "550px";
+            }
+            else{
+                videoElem.style.maxWidth = "315px";
+
+            }
+        }
+
+        window.top?.postMessage({ event: "device-rotation", rotation: rotation }, "*"); // Replace '*' with the specific origin for security
+    }
+
+    public reOrientScreen(invert: boolean = false, player: BasePlayer = this): void {
+
+        // if( !player ){
+        //     console.log("player not found");
+        //     player = this;
+        // }
+
+        // else {
+        //     console.log("player found");
+        // }
+
+        // const deviceMockup = document.getElementsByClassName("generic-android-mockup")[0] as HTMLElement;
+        // console.log("invert ", invert, player.displayInfo?.rotation, player.videoWidth, player.videoHeight);
+        let rotation = invert ? !player?.displayInfo?.rotation : player?.displayInfo?.rotation as number | boolean;
+        
+        this.sendDataToParent(player?.displayInfo?.rotation);
+        
+        if( rotation ) {
+
+            // deviceMockup.style.height = player.videoWidth + "px";
+            // deviceMockup.style.width = (player.videoHeight + 23) + "px";
+            // player.touchableCanvas.style.width = player.videoWidth + "px";
+            // player.touchableCanvas.style.height = (player.videoHeight) + "px";
+            // deviceMockup.style.transform = "translate(54%, -26.5%) rotateZ(90deg)";
+        }
+        else {
+            // deviceMockup.style.width = player.videoWidth + "px";
+            // deviceMockup.style.height = (player.videoHeight + 23) + "px";
+            // player.touchableCanvas.style.width = player.videoWidth + "px";
+            // player.touchableCanvas.style.height = (player.videoHeight) + "px";
+            // deviceMockup.style.transform = "none";
+        }
+
+        player.touchableCanvas.style.zIndex = "20";
+    }
+    
 
     protected calculateScreenInfoForBounds(videoWidth: number, videoHeight: number): void {
         this.videoWidth = videoWidth;
