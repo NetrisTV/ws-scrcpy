@@ -113,6 +113,9 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         super();
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
+        this.touchableCanvas.style.width = "calc(100vw - 4.35rem)";
+        this.touchableCanvas.style.maxWidth = "315px";
+
         const myInterval = setInterval(() => {
             if (tag.clientHeight || tag.clientWidth) {
                 this.reOrientScreen();
@@ -135,6 +138,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         // Send data to the parent window
         
         const videoElem = document.getElementsByClassName("video-layer")[0] as HTMLElement;
+        const touchElem = document.getElementsByClassName("touch-layer")[0] as HTMLElement;
 
         if( videoElem ){
             if( rotation ){
@@ -142,6 +146,15 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             }
             else{
                 videoElem.style.maxWidth = "315px";
+
+            }
+        }
+        if( touchElem ){
+            if( rotation ){
+                touchElem.style.maxWidth = "550px";
+            }
+            else{
+                touchElem.style.maxWidth = "315px";
 
             }
         }

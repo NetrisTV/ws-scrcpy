@@ -114,14 +114,15 @@ body.stream {
     position: absolute;
     z-index: 0;
     border-radius: 1rem;
-    margin-top: -4px;
+    margin-top: -3px;
     margin-left: -3px;
 }
 
 .touch-layer {
     position: absolute;
     z-index: 1;
-    max-width: 315px;
+    margin-top: -3px;
+    margin-left: -3px;
 }
 
 .video {
@@ -129,7 +130,6 @@ body.stream {
     max-height: 100%;
     max-width: 100%;
     background-color: transparent;
-    padding: 1rem;
     position: relative;
 }
 
