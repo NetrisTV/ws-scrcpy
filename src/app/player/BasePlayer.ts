@@ -113,7 +113,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         super();
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
-        this.touchableCanvas.style.width = "calc(100vw - 4.35rem)";
+        this.touchableCanvas.style.width = "calc(100vw - 3rem)";
         this.touchableCanvas.style.maxWidth = "315px";
 
         const myInterval = setInterval(() => {

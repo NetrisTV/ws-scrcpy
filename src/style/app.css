@@ -154,6 +154,7 @@ body.stream {
     background-color: var(--control-buttons-bg-color);
     padding-left: 8px;
     padding-right: 8px;
+    margin-left: auto;
 }
 
 .control-button {
