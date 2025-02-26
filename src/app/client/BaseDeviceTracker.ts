@@ -105,11 +105,13 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE exte
 
     protected buildDeviceTable(): void {
         const data = this.descriptors;
+        console.log(TAG, 'Building table for', data);
         const devices = this.getOrCreateTableHolder();
         const tbody = this.getOrBuildTableBody(devices);
 
         const block = this.getOrCreateTrackerBlock(tbody, this.trackerName);
         data.forEach((item) => {
+            console.log(TAG, 'Building row for', item);
             this.buildDeviceRow(block, item);
         });
     }
@@ -169,7 +171,16 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE exte
         switch (message.type) {
             case BaseDeviceTracker.ACTION_LIST: {
                 const event = message.data as DeviceTrackerEventList<DD>;
-                this.descriptors = event.list;
+                console.log(TAG, 'Received list of devices', event.list);
+                const filterdList = event.list
+                    .filter((device: any) => device.state === 'device' || device.state === 'connected')
+                    .map((device: any) => ({
+                        ...device,
+                        state: device.state === 'connected' ? 'connected' : 'device'
+                    }));
+
+                console.log(TAG, 'Filtered list of devices', filterdList);
+                this.descriptors = filterdList;
                 this.setIdAndHostName(event.id, event.name);
                 this.buildDeviceTable();
                 break;
