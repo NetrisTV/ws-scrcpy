@@ -88,8 +88,8 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
         const { udid, descriptor } = device; 
         if (descriptor.state === 'device' || descriptor.state === 'emulator') {
             this.descriptors.set(udid, descriptor);
-            this.emit('device', descriptor);
         }
+        this.emit('device', descriptor);
     };
 
     private handleConnected(udid: string, state: string): void {
