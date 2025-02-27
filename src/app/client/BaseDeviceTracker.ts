@@ -171,16 +171,7 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE exte
         switch (message.type) {
             case BaseDeviceTracker.ACTION_LIST: {
                 const event = message.data as DeviceTrackerEventList<DD>;
-                console.log(TAG, 'Received list of devices', event.list);
-                const filterdList = event.list
-                    .filter((device: any) => device.state === 'device' || device.state === 'connected')
-                    .map((device: any) => ({
-                        ...device,
-                        state: device.state === 'connected' ? 'connected' : 'device'
-                    }));
-
-                console.log(TAG, 'Filtered list of devices', filterdList);
-                this.descriptors = filterdList;
+                this.descriptors = event.list;
                 this.setIdAndHostName(event.id, event.name);
                 this.buildDeviceTable();
                 break;
