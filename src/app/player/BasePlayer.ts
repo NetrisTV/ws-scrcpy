@@ -140,21 +140,62 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const videoElem = document.getElementsByClassName("video-layer")[0] as HTMLElement;
         const touchElem = document.getElementsByClassName("touch-layer")[0] as HTMLElement;
 
+        console.log("touchElem ", touchElem, videoElem)
+
+        const remToPx = (rem: number) => rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+        const androidFrame = document.getElementById("generic-android-mockup");
+
+        if( androidFrame ){
+            androidFrame.style.width = "calc(100vw - 3rem)";
+            
+            
+            const offset = remToPx(3); // Convert 3rem to pixels
+            const initialWidth = window.innerWidth - offset > 323 ? 323 : window.innerWidth - offset;
+            androidFrame.style.transformOrigin = Math.abs(( initialWidth ) / 2) + "px " + Math.abs(( initialWidth ) / 2) + "px";
+            
+            if( rotation ){
+                androidFrame.style.transform = "rotateZ(-90deg)";
+                androidFrame.style.transformOrigin = Math.abs(( initialWidth ) / 2) + "px " + Math.abs(( initialWidth ) / 2) + "px";
+                androidFrame.style.aspectRatio = "37/64";
+                androidFrame.style.scale = "1.04";
+                androidFrame.style.marginTop = "-4px";
+                androidFrame.style.marginLeft = "5px";
+                
+            }
+            else{
+                androidFrame.style.transform = "none";
+                androidFrame.style.transformOrigin = Math.abs(( initialWidth ) / 2) + "px " + Math.abs(( initialWidth ) / 2) + "px";
+                androidFrame.style.aspectRatio = "189/320";
+                androidFrame.style.scale = "1.11";
+                androidFrame.style.marginTop = "17px";
+                androidFrame.style.marginLeft = "16px";
+            }
+        }
+
         if( videoElem ){
             if( rotation ){
                 videoElem.style.maxWidth = "550px";
+                videoElem.style.marginTop = "17px";
+                videoElem.style.marginLeft = "11px";
             }
             else{
                 videoElem.style.maxWidth = "315px";
-
+                videoElem.style.marginTop = "11px";
+                videoElem.style.marginLeft = "13px";
+                
             }
         }
         if( touchElem ){
             if( rotation ){
                 touchElem.style.maxWidth = "550px";
+                videoElem.style.marginTop = "17px";
+                touchElem.style.marginLeft = "11px";
             }
             else{
                 touchElem.style.maxWidth = "315px";
+                videoElem.style.marginTop = "11px";
+                videoElem.style.marginLeft = "13px";
 
             }
         }

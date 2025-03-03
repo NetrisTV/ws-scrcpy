@@ -113,16 +113,13 @@ body.stream {
 .video-layer {
     position: absolute;
     z-index: 0;
-    border-radius: 1rem;
-    margin-top: -3px;
-    margin-left: -3px;
+    border-radius: 2rem;
 }
 
 .touch-layer {
     position: absolute;
+    border-radius: 2rem;
     z-index: 1;
-    margin-top: -3px;
-    margin-left: -3px;
 }
 
 .video {
@@ -139,13 +136,12 @@ body.stream {
     height: 100%;
 }
 
-.generic-android-mockup {
+#generic-android-mockup {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    aspect-ratio: 9 / 16;
     z-index: 10;
+    max-width: 315px;
 }
 
 .control-buttons-list {
