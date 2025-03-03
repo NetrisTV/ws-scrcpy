@@ -346,7 +346,7 @@ export class StreamClientScrcpy
 
         const streamReceiver = this.streamReceiver;
         streamReceiver.on('deviceMessage', this.OnDeviceMessage);
-        streamReceiver.on('rotated', ()=>{ console.log("tag reorienting screen 2 ", this.player); this.player?.reOrientScreen(true, this.player) });
+        streamReceiver.on('rotated', ()=>{ this.player?.reOrientScreen(true, this.player) });
         streamReceiver.on('video', this.onVideo);
         streamReceiver.on('clientsStats', this.onClientsStats);
         streamReceiver.on('displayInfo', this.onDisplayInfo);

@@ -140,8 +140,6 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const videoElem = document.getElementsByClassName("video-layer")[0] as HTMLElement;
         const touchElem = document.getElementsByClassName("touch-layer")[0] as HTMLElement;
 
-        console.log("touchElem ", touchElem, videoElem)
-
         const remToPx = (rem: number) => rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
         const androidFrame = document.getElementById("generic-android-mockup");
