@@ -176,7 +176,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         if( videoElem ){
             if( rotation ){
                 videoElem.style.maxWidth = "550px";
-                videoElem.style.marginTop = "17px";
+                videoElem.style.marginTop = "11px";
                 videoElem.style.marginLeft = "11px";
             }
             else{
@@ -189,7 +189,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         if( touchElem ){
             if( rotation ){
                 touchElem.style.maxWidth = "550px";
-                videoElem.style.marginTop = "17px";
+                videoElem.style.marginTop = "11px";
                 touchElem.style.marginLeft = "11px";
             }
             else{
