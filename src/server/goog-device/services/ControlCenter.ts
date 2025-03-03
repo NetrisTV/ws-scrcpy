@@ -57,10 +57,10 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
     private onChangeSet = (changes: TrackerChangeSet): void => {
         this.waitAfterError = ControlCenter.defaultWaitAfterError;
         if (changes.added.length) {
-            console.log(`Changes added: ${JSON.stringify(changes.added)}`);
+            // console.log(`Changes added: ${JSON.stringify(changes.added)}`);
             for (const item of changes.added) {
                 const { id, type } = item;
-                console.log(`(Added on change list) Handling device connection for id : ${id} type: ${type}\n`);
+                // console.log(`(Added on change list) Handling device connection for id : ${id} type: ${type}\n`);
                 this.handleConnected(id, type);
 
 
@@ -69,7 +69,7 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
         if (changes.removed.length) {
             for (const item of changes.removed) {
                 const { id } = item;
-                console.log(`(Removed on change list) Handling device connection for id : ${id}\n`);
+                // console.log(`(Removed on change list) Handling device connection for id : ${id}\n`);
                 this.handleConnected(id, DeviceState.DISCONNECTED);
             }
         }
@@ -77,14 +77,14 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
         if (changes.changed.length) {
             for (const item of changes.changed) {
                 const { id, type } = item;
-                console.log(`(Changed on change list) Handling device connection for id : ${id} type: ${type}\n`);
+                // console.log(`(Changed on change list) Handling device connection for id : ${id} type: ${type}\n`);
                 this.handleConnected(id, type);
             }
         }
     };
 
     private onDeviceUpdate = (device: Device): void => {
-        console.log(`(On device update) Handling device update for udid: ${device.udid} and state: ${device.descriptor.state}\n`);
+        // console.log(`(On device update) Handling device update for udid: ${device.udid} and state: ${device.descriptor.state}\n`);
         const { udid, descriptor } = device; 
         if (descriptor.state === 'device' || descriptor.state === 'emulator') {
             this.descriptors.set(udid, descriptor);
@@ -93,7 +93,7 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
     };
 
     private handleConnected(udid: string, state: string): void {
-        console.log(`Device connected: ${udid} state: ${state}\n`);
+        // console.log(`Device connected: ${udid} state: ${state}\n`);
         let device = this.deviceMap.get(udid);
         if (device) {
             device.setState(state);
@@ -106,7 +106,7 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
 
 
     public async init(): Promise<void> {
-        console.log(`Initializing "${this.getName()}"`);
+        // console.log(`Initializing "${this.getName()}"`);
         if (this.initialized) {
             return;
         }
@@ -114,14 +114,14 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
         const list = await this.client.listDevices();
         list.forEach((device) => {
             const { id, type } = device;
-            console.log(`(Initialization) handling device connection for id: ${id} type: ${type}\n`);
+            // console.log(`(Initialization) handling device connection for id: ${id} type: ${type}\n`);
             this.handleConnected(id, type);
         });
         this.initialized = true;
     }
 
     private async startTracker(): Promise<Tracker> {
-        console.log(`Starting tracker`);
+        // console.log(`Starting tracker`);
         if (this.tracker) {
             return this.tracker;
         }
@@ -133,7 +133,7 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
     }
 
     private stopTracker(): void {
-        console.log(`Stopping tracker`);
+        // console.log(`Stopping tracker`);
         if (this.tracker) {
             this.tracker.off('changeSet', this.onChangeSet);
             this.tracker.off('end', this.restartTracker);

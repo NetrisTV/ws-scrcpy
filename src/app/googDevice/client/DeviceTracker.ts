@@ -171,13 +171,13 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
     }
 
     protected buildDeviceRow(tbody: Element, device: GoogDeviceDescriptor): void {
-        console.log('buildDeviceRow:', device);
+        // console.log('buildDeviceRow:', device);
         let selectedInterfaceUrl = '';
         let selectedInterfaceName = '';
         const blockClass = 'desc-block';
         const fullName = `${this.id}_${Util.escapeUdid(device.udid)}`;
         const isActive = device.state === DeviceState.DEVICE;
-        console.log('isActive:', isActive);
+        // console.log('isActive:', isActive);
         let hasPid = false;
         const servicesId = `device_services_${fullName}`;
         const row = html`<div class="device ${isActive ? 'active' : 'not-active'}">
