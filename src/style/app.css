@@ -113,12 +113,12 @@ body.stream {
 .video-layer {
     position: absolute;
     z-index: 0;
-    border-radius: 2rem;
+    border-radius: 1.5rem;
 }
 
 .touch-layer {
     position: absolute;
-    border-radius: 2rem;
+    border-radius: 1.5rem;
     z-index: 1;
 }
 
@@ -141,7 +141,6 @@ body.stream {
     top: 0;
     left: 0;
     z-index: 10;
-    max-width: 315px;
 }
 
 .control-buttons-list {
