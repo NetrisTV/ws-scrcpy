@@ -38,7 +38,7 @@ export class DeviceTracker extends Mw {
             .then(() => {
                 this.adt.on('device', this.sendDeviceMessage);
                 let deviceList = this.adt.getDevices();
-                console.log(`[${DeviceTracker.TAG}] deviceList: ${JSON.stringify(deviceList)}\n`);
+                // console.log(`[${DeviceTracker.TAG}] deviceList: ${JSON.stringify(deviceList)}\n`);
                 // Filter out devices with state 'offline' or 'disconnected'
                 deviceList = deviceList.filter((device: any) => device.state !== 'offline' && device.state !== 'disconnected');
                 this.buildAndSendMessage(deviceList);
