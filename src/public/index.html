@@ -6,5 +6,16 @@
     <title>WS scrcpy</title>
 </head>
 <body>
+    <button id="logout-button">Logout</button>
+
+    <script>
+        const logoutButton = document.getElementById('logout-button');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => {
+                await fetch('/logout', { method: 'POST' });
+                window.location.reload(); // Force reauthentication
+            });
+        }
+    </script>
 </body>
 </html>

@@ -3,9 +3,24 @@ import { StreamClientScrcpy } from './googDevice/client/StreamClientScrcpy';
 import { HostTracker } from './client/HostTracker';
 import { Tool } from './client/Tool';
 
+
 window.onload = async function (): Promise<void> {
+    // Redirect if the URL contains a hash fragment
     const hash = location.hash.replace(/^#!/, '');
-    const parsedQuery = new URLSearchParams(hash);
+    if (hash) {
+
+        const parsedQuery = new URLSearchParams(hash);
+
+        // Add `hasHash=true` to the query parameters
+        parsedQuery.set('hasHash', 'true');
+
+        // Redirect to a query-based URL
+        window.location.href = `/?${parsedQuery.toString()}`;
+        return; // Stop further execution
+    }
+
+    // If no hash fragment, proceed with the rest of the logic
+    const parsedQuery = new URLSearchParams(location.search); // Use query parameters instead of hash
     const action = parsedQuery.get('action');
 
     /// #if USE_BROADWAY

@@ -3,11 +3,12 @@ import * as https from 'https';
 import path from 'path';
 import { Service } from './Service';
 import { Utils } from '../Utils';
-import express, { Express } from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 import { Config } from '../Config';
 import { TypedEmitter } from '../../common/TypedEmitter';
 import * as process from 'process';
 import { EnvName } from '../EnvName';
+import basicAuth from 'express-basic-auth'; // Add this for basic authentication
 
 const DEFAULT_STATIC_DIR = path.join(__dirname, './public');
 
@@ -76,6 +77,42 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
 
     public async start(): Promise<void> {
         this.mainApp = express();
+
+        // Ensure environment variables are defined
+        const adminUser = process.env.ADMIN_USER;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+
+        if (!adminUser || !adminPassword) {
+            throw new Error('Environment variables ADMIN_USER and ADMIN_PASSWORD must be set');
+        }
+
+        // Add basic authentication middleware for the base path
+        const authMiddleware = basicAuth({
+            users: { 
+                [adminUser]: adminPassword 
+            },
+            challenge: true,
+            realm: 'Restricted Access',
+        });
+
+        // Protect the base path
+        this.mainApp.use((req: Request, res: Response, next: NextFunction) => {
+            // Allow access only if the query parameter 'hasHash=true' is present
+            if (req.path === '/' && req.query.hasHash === 'true') {
+                next();
+            } else if (req.path === '/') {
+                authMiddleware(req, res, next);
+            } else {
+                next();
+            }
+        });
+
+        this.mainApp.post('/logout', (_req: Request, res: Response) => {
+            console.log('Logging out');
+            res.setHeader('WWW-Authenticate', 'Basic realm="Restricted Access"');
+            res.status(401).send('Logged out successfully');
+        });
+
         if (HttpServer.SERVE_STATIC && HttpServer.PUBLIC_DIR) {
             this.mainApp.use(PATHNAME, express.static(HttpServer.PUBLIC_DIR));
 
@@ -85,6 +122,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
             this.mainApp.get('/mjpeg/:udid', new MjpegProxyFactory().proxyRequest);
             /// #endif
         }
+
         const config = Config.getInstance();
         config.servers.forEach((serverItem) => {
             const { secure, port, redirectToSecure } = serverItem;
