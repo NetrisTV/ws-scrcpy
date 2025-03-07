@@ -23,11 +23,18 @@
     </style>
 </head>
 <body>
-    <button id="logout-button">Logout</button>
-
     <script>
-        const logoutButton = document.getElementById('logout-button');
-        if (logoutButton) {
+        // Check if the current page is the index (/) without any query parameters
+        if (window.location.pathname === '/' && window.location.search === '') {
+            // Create the logout button
+            const logoutButton = document.createElement('button');
+            logoutButton.id = 'logout-button';
+            logoutButton.textContent = 'Logout';
+
+            // Add the logout button to the body
+            document.body.appendChild(logoutButton);
+
+            // Add the event listener for the logout button
             logoutButton.addEventListener('click', async () => {
                 await fetch('/logout', { method: 'POST' });
                 window.location.reload(); // Force reauthentication
