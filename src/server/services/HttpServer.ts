@@ -97,9 +97,9 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
 
         // Protect the base path
         this.mainApp.use((req: Request, res: Response, next: NextFunction) => {
-            console.log('Request URL:', req.url);
-            console.log('Query Params:', req.query);
-            console.log('Headers:', req.headers);
+            // console.log('Request URL:', req.url);
+            // console.log('Query Params:', req.query);
+            // console.log('Headers:', req.headers);
         
             // Allow access only if the query parameter 'hasHash=true' is present
             if (req.path === '/' && req.query.hasHash === 'true') {
@@ -113,10 +113,10 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
             }
         });
         
-        this.mainApp.use((req: Request, _res: Response, next: NextFunction) => {
-            console.log('Protocol:', req.protocol); // Log the protocol (http or https)
-            next();
-        });
+        // this.mainApp.use((req: Request, _res: Response, next: NextFunction) => {
+        //     console.log('Protocol:', req.protocol); // Log the protocol (http or https)
+        //     next();
+        // });
 
         this.mainApp.post('/logout', (_req: Request, res: Response) => {
             console.log('Logging out');
