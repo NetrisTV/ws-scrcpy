@@ -85,17 +85,24 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
     
         // Extract the URL before the 'signature' parameter
         const url = req.originalUrl.split('&signature=')[0];
+
+        console.log(`URL without signature: ${url}`);
     
         // Extract the received signature
         const receivedSignature = req.query.signature as string;
+
+        console.log(`Received signature: ${receivedSignature}`);
     
         // Create a HMAC-SHA256 hash of the URL using the secret key
         const hmac = crypto.createHmac('sha256', Buffer.from(SECRET_KEY, 'utf8')); // Use 'utf8' if SECRET_KEY is plain text
         hmac.update(url);
         const calculatedSignature = hmac.digest('base64');
+
+        console.log(`Calculated signature: ${calculatedSignature}`);
     
         // Convert base64 to base64url
         const base64urlSignature = calculatedSignature.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        console.log(`Base64url signature: ${base64urlSignature}`);
     
         // Compare the calculated signature with the received signature
         return receivedSignature === base64urlSignature;
