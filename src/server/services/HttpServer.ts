@@ -102,15 +102,21 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
         hmac.update(fullUrl);
         const calculatedSignature = hmac.digest('base64');
     
-        console.log(`Calculated signature: ${calculatedSignature}`);
+        console.log(`Calculated signature (base64): ${calculatedSignature}`);
     
-        // // Convert base64 to base64url
-        // const base64urlSignature = calculatedSignature.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        // console.log(`Base64url signature: ${base64urlSignature}`);
+        // Convert base64 to base64url
+        const base64urlSignature = calculatedSignature
+            .replace(/\+/g, '-') // Replace '+' with '-'
+            .replace(/\//g, '_') // Replace '/' with '_'
+            .replace(/=+$/, ''); // Remove padding '=' characters
+    
+        console.log(`Calculated signature (base64url): ${base64urlSignature}`);
+        console.log("\n");
     
         // Compare the calculated signature with the received signature
-        return receivedSignature === calculatedSignature;
+        return receivedSignature === base64urlSignature;
     }
+    
     
 
     public async start(): Promise<void> {
