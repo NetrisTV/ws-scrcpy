@@ -9,6 +9,8 @@ import { TypedEmitter } from '../../common/TypedEmitter';
 import * as process from 'process';
 import { EnvName } from '../EnvName';
 import basicAuth from 'express-basic-auth'; // Add this for basic authentication
+import * as crypto from 'crypto';
+
 
 const DEFAULT_STATIC_DIR = path.join(__dirname, './public');
 
@@ -75,6 +77,26 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
         return `HTTP(s) Server Service`;
     }
 
+    public  verifySignature(req: Request): boolean {
+
+        const SECRET_KEY = process.env.SIGNATURE_SECRET_KEY as string;
+        if (!SECRET_KEY) {
+            throw new Error('Environment variables SECRET_KEY must be set');
+        }
+
+        const url = req.originalUrl.split('&signature=')[0];
+        const receivedSignature = req.query.signature as string;
+    
+        // Create a HMAC-SHA256 hash of the URL using the secret key
+        const hmac = crypto.createHmac('sha256', SECRET_KEY);
+        hmac.update(url);
+        const calculatedSignature = hmac.digest('base64');
+    
+        // Compare the calculated signature with the received signature
+        return receivedSignature === calculatedSignature;
+    }
+    
+
     public async start(): Promise<void> {
         this.mainApp = express();
 
@@ -97,13 +119,13 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
 
         // Protect the base path
         this.mainApp.use((req: Request, res: Response, next: NextFunction) => {
-            // console.log('Request URL:', req.url);
-            // console.log('Query Params:', req.query);
-            // console.log('Headers:', req.headers);
-        
-            // Allow access only if the query parameter 'hasHash=true' is present
-            if (req.path === '/' && req.query.hasHash === 'true') {
-                next();
+            if (req.path === '/' && req.query.hasHash==='true' && req.query.signature) {
+                // Verify the signature for the base URL
+                if (this.verifySignature(req)) {
+                    next();
+                } else {
+                    res.status(403).send('Invalid signature');
+                }
             } else if (req.path === '/') {
                 // Apply authentication for all other cases (including the base URL)
                 authMiddleware(req, res, next);
@@ -112,6 +134,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
                 next();
             }
         });
+        
         
         // this.mainApp.use((req: Request, _res: Response, next: NextFunction) => {
         //     console.log('Protocol:', req.protocol); // Log the protocol (http or https)
