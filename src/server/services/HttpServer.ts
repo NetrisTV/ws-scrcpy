@@ -85,12 +85,17 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
     
         // Construct the full URL including protocol, host, and path
         const host = req.get('host'); // Get the host from the request headers
-        const protocol = 'https'; // Get the protocol (http or https)
+        let protocol: string;
+        if (host?.startsWith('localhost')) {
+            protocol = 'http';
+        }
+        else{
+            protocol = 'https';
+        }
         const path = req.originalUrl.split('&signature=')[0]; // Get the path and query without the signature
     
         const fullUrl = `${protocol}://${host}${path}`;
-    
-    
+        
         // Extract the received signature
         const receivedSignature = req.query.signature as string;
     
