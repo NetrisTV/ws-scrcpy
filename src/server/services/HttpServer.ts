@@ -104,12 +104,12 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
     
         console.log(`Calculated signature: ${calculatedSignature}`);
     
-        // Convert base64 to base64url
-        const base64urlSignature = calculatedSignature.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        console.log(`Base64url signature: ${base64urlSignature}`);
+        // // Convert base64 to base64url
+        // const base64urlSignature = calculatedSignature.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        // console.log(`Base64url signature: ${base64urlSignature}`);
     
         // Compare the calculated signature with the received signature
-        return receivedSignature === base64urlSignature;
+        return receivedSignature === calculatedSignature;
     }
     
 
