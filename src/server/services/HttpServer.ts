@@ -83,21 +83,25 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
             throw new Error('Environment variables SECRET_KEY must be set');
         }
     
-        // Extract the URL before the 'signature' parameter
-        const url = req.originalUrl.split('&signature=')[0];
-
-        console.log(`URL without signature: ${url}`);
+        // Construct the full URL including protocol, host, and path
+        const host = req.get('host'); // Get the host from the request headers
+        const protocol = req.protocol; // Get the protocol (http or https)
+        const path = req.originalUrl.split('&signature=')[0]; // Get the path and query without the signature
+    
+        const fullUrl = `${protocol}://${host}${path}`;
+    
+        console.log(`Full URL being verified: ${fullUrl}`);
     
         // Extract the received signature
         const receivedSignature = req.query.signature as string;
-
+    
         console.log(`Received signature: ${receivedSignature}`);
     
         // Create a HMAC-SHA256 hash of the URL using the secret key
         const hmac = crypto.createHmac('sha256', Buffer.from(SECRET_KEY, 'utf8')); // Use 'utf8' if SECRET_KEY is plain text
-        hmac.update(url);
+        hmac.update(fullUrl);
         const calculatedSignature = hmac.digest('base64');
-
+    
         console.log(`Calculated signature: ${calculatedSignature}`);
     
         // Convert base64 to base64url
