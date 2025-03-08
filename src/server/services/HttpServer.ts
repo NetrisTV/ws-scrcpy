@@ -77,25 +77,28 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
         return `HTTP(s) Server Service`;
     }
 
-    public  verifySignature(req: Request): boolean {
-
+    public verifySignature(req: Request): boolean {
         const SECRET_KEY = process.env.SIGNATURE_SECRET_KEY as string;
         if (!SECRET_KEY) {
             throw new Error('Environment variables SECRET_KEY must be set');
         }
-        console.log('SECRET_KEY:', SECRET_KEY);
-        
-        const SECRET_KEY_BUFFER = Buffer.from(SECRET_KEY, 'base64');
+    
+        // Extract the URL before the 'signature' parameter
         const url = req.originalUrl.split('&signature=')[0];
+    
+        // Extract the received signature
         const receivedSignature = req.query.signature as string;
     
         // Create a HMAC-SHA256 hash of the URL using the secret key
-        const hmac = crypto.createHmac('sha256', SECRET_KEY_BUFFER);
+        const hmac = crypto.createHmac('sha256', Buffer.from(SECRET_KEY, 'utf8')); // Use 'utf8' if SECRET_KEY is plain text
         hmac.update(url);
         const calculatedSignature = hmac.digest('base64');
     
+        // Convert base64 to base64url
+        const base64urlSignature = calculatedSignature.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    
         // Compare the calculated signature with the received signature
-        return receivedSignature === calculatedSignature;
+        return receivedSignature === base64urlSignature;
     }
     
 
