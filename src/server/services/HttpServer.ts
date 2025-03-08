@@ -83,12 +83,14 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
         if (!SECRET_KEY) {
             throw new Error('Environment variables SECRET_KEY must be set');
         }
-
+        console.log('SECRET_KEY:', SECRET_KEY);
+        
+        const SECRET_KEY_BUFFER = Buffer.from(SECRET_KEY, 'base64');
         const url = req.originalUrl.split('&signature=')[0];
         const receivedSignature = req.query.signature as string;
     
         // Create a HMAC-SHA256 hash of the URL using the secret key
-        const hmac = crypto.createHmac('sha256', SECRET_KEY);
+        const hmac = crypto.createHmac('sha256', SECRET_KEY_BUFFER);
         hmac.update(url);
         const calculatedSignature = hmac.digest('base64');
     
