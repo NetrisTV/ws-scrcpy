@@ -79,6 +79,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
 
     public verifySignature(req: Request): boolean {
         const SECRET_KEY = process.env.SIGNATURE_SECRET_KEY as string;
+        console.log('SECRET_KEY:', SECRET_KEY);
         if (!SECRET_KEY) {
             throw new Error('Environment variables SECRET_KEY must be set');
         }
@@ -95,7 +96,7 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
         const path = req.originalUrl.split('&signature=')[0]; // Get the path and query without the signature
     
         const fullUrl = `${protocol}://${host}${path}`;
-        
+
         // Extract the received signature
         const receivedSignature = req.query.signature as string;
     
