@@ -90,19 +90,16 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
     
         const fullUrl = `${protocol}://${host}${path}`;
     
-        console.log(`Full URL being verified: ${fullUrl}`);
     
         // Extract the received signature
         const receivedSignature = req.query.signature as string;
     
-        console.log(`Received signature: ${receivedSignature}`);
     
         // Create a HMAC-SHA256 hash of the URL using the secret key
         const hmac = crypto.createHmac('sha256', Buffer.from(SECRET_KEY, 'utf8')); // Use 'utf8' if SECRET_KEY is plain text
         hmac.update(fullUrl);
         const calculatedSignature = hmac.digest('base64');
     
-        console.log(`Calculated signature (base64): ${calculatedSignature}`);
     
         // Convert base64 to base64url
         const base64urlSignature = calculatedSignature
@@ -110,8 +107,6 @@ export class HttpServer extends TypedEmitter<HttpServerEvents> implements Servic
             .replace(/\//g, '_') // Replace '/' with '_'
             .replace(/=+$/, ''); // Remove padding '=' characters
     
-        console.log(`Calculated signature (base64url): ${base64urlSignature}`);
-        console.log("\n");
     
         // Compare the calculated signature with the received signature
         return receivedSignature === base64urlSignature;
