@@ -19,6 +19,7 @@
   "dependencies": {
     "@dead50f7/adbkit": "^2.11.4",
     "express": "^4.21.2",
+    "express-basic-auth": "^1.2.1",
     "ios-device-lib": "^0.9.2",
     "node-mjpeg-proxy": "^0.3.2",
     "node-pty": "^0.10.1",
