@@ -6,5 +6,19 @@
     <title>WS scrcpy</title>
 </head>
 <body>
+    <script>
+        const activityEvents = [
+        'mousemove', 'keydown', 
+        'scroll', 'touchstart', 'click',
+        'input', 'focus', 'focusin'
+      ];
+      
+      // Attach all event listeners
+      activityEvents.forEach(event => {
+        window.addEventListener(event, ()=>{
+          window.top?.postMessage({ event: "user-activity-in-frame" }, "*")
+        });
+      });
+    </script>
 </body>
 </html>

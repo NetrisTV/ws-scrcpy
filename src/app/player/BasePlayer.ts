@@ -227,7 +227,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
         if (videoElem) {
             if (rotation) {
-                
+    
                 if (window.innerWidth > 380){
                     videoElem.style.width = "calc(100vw - 4.5rem)";
                     videoElem.style.maxWidth = "529px";
@@ -258,7 +258,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
                     videoElem.style.maxWidth = "79.5vw";
                     videoElem.style.marginTop = "9px";
-                    videoElem.style.marginLeft = "13px";
+                    videoElem.style.marginLeft = "11px";
                 }
             }
         }
@@ -285,7 +285,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
                 touchElem.style.width = "calc(100vw - 3rem)";
 
-                if (window.innerWidth > 380){touchElem
+                if (window.innerWidth > 380){
                     touchElem.style.maxWidth = "305px";
                     touchElem.style.marginTop = "10px";
                     touchElem.style.marginLeft = "13px";
@@ -294,7 +294,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
                     touchElem.style.maxWidth = "79.5vw";
                     touchElem.style.marginTop = "9px";
-                    touchElem.style.marginLeft = "13px";
+                    touchElem.style.marginLeft = "11px";
                 }
             }
         }

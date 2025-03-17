@@ -150,6 +150,7 @@ body.stream {
     padding-left: 8px;
     padding-right: 8px;
     margin-left: auto;
+    padding-top: 1rem;
 }
 
 .control-button {
