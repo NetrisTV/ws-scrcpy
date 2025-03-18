@@ -141,6 +141,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     protected sendDataToParent(rotation: number | undefined): void {
         // Send data to the parent window
 
+        const videoElemParent = document.getElementsByClassName("video")[0] as HTMLElement;
         const videoElem = document.getElementsByClassName("video-layer")[0] as HTMLElement;
         const touchElem = document.getElementsByClassName("touch-layer")[0] as HTMLElement;
 
@@ -159,14 +160,14 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                 if( window.innerWidth <= 380 )
                     initialWidth = window.innerWidth - offset;
                 else
-                    initialWidth = window.innerWidth - offset > 550 ? 550 : window.innerWidth - offset
+                    initialWidth = window.innerWidth - offset > 940 ? 940 : window.innerWidth - offset
             }
             else {
                 
                 if( window.innerWidth <= 380 )
                     initialWidth = window.innerWidth - offset;
                 else
-                    initialWidth = window.innerWidth - offset > 315 ? 315 : window.innerWidth - offset
+                    initialWidth = window.innerWidth - offset > 420 ? 420 : window.innerWidth - offset
             }
             // const initialWidth = window.innerWidth <= 380 ? window.innerWidth - offset : ;
             // androidFrame.style.transformOrigin = Math.abs((initialWidth) / 2) + "px " + Math.abs((initialWidth) / 2) + "px";
@@ -178,11 +179,12 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     androidFrame.style.transform = "rotateZ(-90deg)";
                     androidFrame.style.transformOrigin = Math.abs((initialWidth * ( 191/320 )) / 2) + "px " + Math.abs((initialWidth * ( 191/320 )) / 2) + "px";
                     androidFrame.style.width = "auto";
-                    androidFrame.style.height = initialWidth - remToPx(2.5) + "px";
+                    videoElemParent.style.width = initialWidth + "px";
+                    androidFrame.style.height = initialWidth + "px";
                     androidFrame.style.aspectRatio = "191/320";
-                    androidFrame.style.scale = "1.07";
-                    androidFrame.style.marginTop = "-11px";
-                    androidFrame.style.marginLeft = "11px";
+                    // androidFrame.style.scale = "1.07";
+                    androidFrame.style.marginTop = "0px";
+                    androidFrame.style.marginLeft = "0px";
                 }
                 else {
 
@@ -191,9 +193,9 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     androidFrame.style.width = initialWidth + "px";
                     androidFrame.style.height = "auto";
                     androidFrame.style.aspectRatio = "47/80";
-                    androidFrame.style.scale = "1.07";
-                    androidFrame.style.marginTop = "10px";
-                    androidFrame.style.marginLeft = "9px";
+                    // androidFrame.style.scale = "1.07";
+                    androidFrame.style.marginTop = "0px";
+                    androidFrame.style.marginLeft = "0px";
                 }
 
             }
@@ -218,7 +220,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     androidFrame.style.transformOrigin = Math.abs((initialWidth) / 2) + "px " + Math.abs((initialWidth) / 2) + "px";
                     androidFrame.style.width = initialWidth + "px";
                     androidFrame.style.aspectRatio = "95/161" //"151/256";
-                    androidFrame.style.scale = "1.01";
+                    // androidFrame.style.scale = "1.01";
                     androidFrame.style.marginTop = "3px";
                     androidFrame.style.marginLeft = "0px"; 
                 }
@@ -230,9 +232,9 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     
                 if (window.innerWidth > 380){
                     videoElem.style.width = "calc(100vw - 4.5rem)";
-                    videoElem.style.maxWidth = "529px";
+                    videoElem.style.maxWidth = "910px";
                     videoElem.style.borderRadius = "1.5rem";
-                    videoElem.style.marginTop = "19px";
+                    videoElem.style.marginTop = "3.4%";
                     videoElem.style.marginLeft = "11px";
                 }
                 else{
@@ -240,8 +242,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     videoElem.style.width = "calc(100vw - 4rem)";
                     videoElem.style.maxWidth = "84vw";
                     videoElem.style.borderRadius = "1rem";
-                    videoElem.style.marginTop = "11px";
-                    videoElem.style.marginLeft = "7px";
+                    videoElem.style.marginTop = "14px";
+                    videoElem.style.marginLeft = "15px";
                 }  
             }
             else {
@@ -250,15 +252,17 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
                 if (window.innerWidth > 380){
 
-                    videoElem.style.maxWidth = "305px";
-                    videoElem.style.marginTop = "10px";
-                    videoElem.style.marginLeft = "13px";
+                    videoElem.style.width = "calc(100vw - 5.5rem)";
+                    videoElem.style.maxWidth = "380px";
+                    videoElem.style.marginTop = "4%";
+                    videoElem.style.marginLeft = "4%";
                 }
                 else{
 
-                    videoElem.style.maxWidth = "79.5vw";
-                    videoElem.style.marginTop = "9px";
-                    videoElem.style.marginLeft = "11px";
+                    videoElem.style.width = "calc(100vw - 4rem)";
+                    videoElem.style.maxWidth = "80vw";
+                    videoElem.style.marginTop = "4%";
+                    videoElem.style.marginLeft = "4.5%";
                 }
             }
         }
@@ -267,9 +271,9 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                 
                 if (window.innerWidth > 380){
                     touchElem.style.width = "calc(100vw - 4.5rem)";
-                    touchElem.style.maxWidth = "529px";
+                    touchElem.style.maxWidth = "910px";
                     touchElem.style.borderRadius = "1.5rem";
-                    touchElem.style.marginTop = "19px";
+                    touchElem.style.marginTop = "3.4%";
                     touchElem.style.marginLeft = "11px";
                 }
                 else{
@@ -283,18 +287,18 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             }
             else {
 
-                touchElem.style.width = "calc(100vw - 3rem)";
-
                 if (window.innerWidth > 380){
-                    touchElem.style.maxWidth = "305px";
-                    touchElem.style.marginTop = "10px";
-                    touchElem.style.marginLeft = "13px";
+                    touchElem.style.width = "calc(100vw - 5.5rem)";
+                    touchElem.style.maxWidth = "380px";
+                    touchElem.style.marginTop = "4%";
+                    touchElem.style.marginLeft = "4%";
                 }
                 else{
-
-                    touchElem.style.maxWidth = "79.5vw";
-                    touchElem.style.marginTop = "9px";
-                    touchElem.style.marginLeft = "11px";
+                    
+                    touchElem.style.width = "calc(100vw - 4rem)";
+                    touchElem.style.maxWidth = "80vw";
+                    touchElem.style.marginTop = "4%";
+                    touchElem.style.marginLeft = "4.5%";
                 }
             }
         }

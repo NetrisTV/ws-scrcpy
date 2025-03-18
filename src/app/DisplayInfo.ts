@@ -22,7 +22,7 @@ export class DisplayInfo {
             deviceViewElem.style.maxWidth = "none";            
         }
         else if( deviceViewElem ){
-            deviceViewElem.style.maxWidth = "380px";
+            deviceViewElem.style.maxWidth = "460px";
         }
     }
 

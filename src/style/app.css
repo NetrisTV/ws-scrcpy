@@ -107,7 +107,8 @@ body.stream {
     display: flex;
     flex-direction: row;
     width: 100%;
-    max-width: 380px;
+    max-width: 460px;
+    justify-content: start;
 }
 
 .video-layer {
@@ -123,7 +124,7 @@ body.stream {
 }
 
 .video {
-    float: right;
+    /* float: right; */
     max-height: 100%;
     max-width: 100%;
     background-color: transparent;
@@ -144,12 +145,12 @@ body.stream {
 }
 
 .control-buttons-list {
-    float: right;
+    /* float: right; */
     width: 1.6rem;
     background-color: var(--control-buttons-bg-color);
     padding-left: 8px;
     padding-right: 8px;
-    margin-left: auto;
+    /* margin-left: auto; */
     padding-top: 1rem;
 }
 
