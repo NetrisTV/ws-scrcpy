@@ -129,7 +129,15 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                 });
 
                 window.addEventListener('message', (e) => {
-                    console.log("e.data.event ", e.data.event === "screenshot", e, window.top);
+                    const allowedOrigins = [
+                        "https://trust-me-bro.nativebridge.io",
+                        "http://localhost:5173",
+                    ];
+                
+                    if (!allowedOrigins.includes(e.origin)) {
+                        console.warn("Blocked message from untrusted origin:", e.origin);
+                        return; // Reject messages from untrusted origins
+                    }
                     if(e.data.event === "screenshot"){
                         window.top?.postMessage({ event: "screenshot", imageUrl: this.getImageDataURL() }, "*"); // Replace '*' with the specific origin for security 
                     }
