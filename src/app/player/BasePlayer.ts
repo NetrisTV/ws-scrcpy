@@ -128,6 +128,13 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     this.reOrientScreen();
                 });
 
+                window.addEventListener('message', (e) => {
+                    console.log("e.data.event ", e.data.event === "screenshot", e, window.top);
+                    if(e.data.event === "screenshot"){
+                        window.top?.postMessage({ event: "screenshot", imageUrl: this.getImageDataURL() }, "*"); // Replace '*' with the specific origin for security 
+                    }
+                });
+
                 clearInterval(myInterval);
             }
         }, 500);
