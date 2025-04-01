@@ -139,7 +139,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                         return; // Reject messages from untrusted origins
                     }
                     if(e.data.event === "screenshot"){
-                        window.top?.postMessage({ event: "screenshot", imageUrl: this.getImageDataURL() }, "*"); // Replace '*' with the specific origin for security 
+                        window.parent?.postMessage({ event: "screenshot", imageUrl: this.getImageDataURL() }, "*"); // Replace '*' with the specific origin for security 
                     }
                 });
 
@@ -318,7 +318,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             }
         }
 
-        window.top?.postMessage({ event: "device-rotation", rotation: rotation }, "*"); // Replace '*' with the specific origin for security
+        window.parent?.postMessage({ event: "device-rotation", rotation: rotation }, "*"); // Replace '*' with the specific origin for security
     }
 
     public reOrientScreen(invert: boolean = false, player: BasePlayer = this): void {
