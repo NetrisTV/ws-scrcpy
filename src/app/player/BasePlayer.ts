@@ -130,6 +130,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
                 window.addEventListener('message', (e) => {
                     const allowedOrigins = [
+                        "https://nativebridge.io",
                         "https://trust-me-bro.nativebridge.io",
                         "http://localhost:5173",
                     ];
