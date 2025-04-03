@@ -254,12 +254,12 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     videoElem.style.marginLeft = "11px";
                 }
                 else{
-                    
-                    videoElem.style.width = "calc(100vw - 4rem)";
-                    videoElem.style.maxWidth = "84vw";
-                    videoElem.style.borderRadius = "1rem";
-                    videoElem.style.marginTop = "14px";
-                    videoElem.style.marginLeft = "15px";
+
+                    touchElem.style.width = "calc(100vw - 4rem)";
+                    touchElem.style.maxWidth = "84vw";
+                    touchElem.style.borderRadius = "1rem";
+                    touchElem.style.marginTop = "11px";
+                    touchElem.style.marginLeft = "7px";
                 }  
             }
             else {
