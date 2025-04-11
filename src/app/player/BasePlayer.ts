@@ -135,12 +135,14 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                         "http://localhost:5173",
                     ];
                 
-                    if (!allowedOrigins.includes(e.origin)) {
+                    const isAllowedOrigin = allowedOrigins.includes(e.origin) || e.origin.startsWith("vscode-webview://");
+
+                    if (!isAllowedOrigin) {
                         console.warn("Blocked message from untrusted origin:", e.origin);
                         return; // Reject messages from untrusted origins
                     }
                     if(e.data.event === "screenshot"){
-                        window.parent?.postMessage({ event: "screenshot", imageUrl: this.getImageDataURL() }, "*"); // Replace '*' with the specific origin for security 
+                        window.parent?.postMessage({ event: "screenshot", commentId: e.data.id, imageUrl: this.getImageDataURL() }, "*"); // Replace '*' with the specific origin for security
                     }
                 });
 
