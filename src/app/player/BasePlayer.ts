@@ -164,7 +164,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
     public reOrientScreen(invert: boolean = false, player: BasePlayer = this): void {
 
-        let rotation = this.displayInfo?.rotation !== 2 && this.displayInfo?.rotation !== 0 ? true : false;
+        let rotation = this.touchableCanvas.width > this.touchableCanvas.height as boolean;
 
         console.log("player info ", this.displayInfo, invert);
 
