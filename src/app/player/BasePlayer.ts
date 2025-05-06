@@ -164,7 +164,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
     public reOrientScreen(invert: boolean = false, player: BasePlayer = this): void {
 
-        let rotation = this.touchableCanvas.width > this.touchableCanvas.height as boolean;
+        let rotation = this.displayInfo?.rotation !== 2 && this.displayInfo?.rotation !== 0 ? true : false;
 
         console.log("player info ", this.displayInfo, invert);
 
@@ -180,7 +180,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     videoElem.style.width = "calc(100vw - 4.5rem)";
                     videoElem.style.maxWidth = "910px";
                     videoElem.style.borderRadius = "1.25rem";
-                    videoElem.style.marginTop = "2.9%";
+                    videoElem.style.marginTop = "3.2%";
                     videoElem.style.marginLeft = "2%";
                 }
                 else{
@@ -188,7 +188,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     videoElem.style.width = "calc(100vw - 4rem)";
                     videoElem.style.maxWidth = "84vw";
                     videoElem.style.borderRadius = "1rem";
-                    videoElem.style.marginTop = "2.8%";
+                    videoElem.style.marginTop = "3.2%";
                     videoElem.style.marginLeft = "2%";
                 }
             }
@@ -219,7 +219,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     touchElem.style.width = "calc(100vw - 4.5rem)";
                     touchElem.style.maxWidth = "910px";
                     touchElem.style.borderRadius = "1.5rem";
-                    touchElem.style.marginTop = "2.9%";
+                    touchElem.style.marginTop = "3.2%";
                     touchElem.style.marginLeft = "2%";
                 }
                 else{
@@ -227,7 +227,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     touchElem.style.width = "calc(100vw - 4rem)";
                     touchElem.style.maxWidth = "84vw";
                     touchElem.style.borderRadius = "1rem";
-                    touchElem.style.marginTop = "2.8%";
+                    touchElem.style.marginTop = "3.2%";
                     touchElem.style.marginLeft = "2%";
                 }  
             }
