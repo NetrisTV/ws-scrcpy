@@ -164,9 +164,9 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
     public reOrientScreen(invert: boolean = false, player: BasePlayer = this): void {
 
-        let rotation = this.touchableCanvas.width > this.touchableCanvas.height as boolean;
+        let rotation = this.displayInfo?.rotation !== 2 && this.displayInfo?.rotation !== 0 ? true : false;
 
-        console.log("player info ", invert, rotation, player.displayInfo, player.videoWidth, player.videoHeight, this.touchableCanvas.height, this.touchableCanvas.width);
+        console.log("player info ", this.displayInfo, invert);
 
         player.touchableCanvas.style.zIndex = "20";
 
@@ -200,14 +200,14 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
                     videoElem.style.width = "calc(100vw - 5.5rem)";
                     videoElem.style.maxWidth = "480px";
-                    videoElem.style.marginTop = "4%";
+                    videoElem.style.marginTop = "3%";
                     videoElem.style.marginLeft = "4.5%";
                 }
                 else{
 
                     videoElem.style.width = "calc(100vw - 4rem)";
                     videoElem.style.maxWidth = "78vw";
-                    videoElem.style.marginTop = "4%";
+                    videoElem.style.marginTop = "3%";
                     videoElem.style.marginLeft = "4.2%";
                 }
             }
@@ -236,14 +236,14 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                 if (window.innerWidth > 380){
                     touchElem.style.width = "calc(100vw - 5.5rem)";
                     touchElem.style.maxWidth = "480px";
-                    touchElem.style.marginTop = "4%";
+                    touchElem.style.marginTop = "3%";
                     touchElem.style.marginLeft = "4.5%";
                 }
                 else{
                     
                     touchElem.style.width = "calc(100vw - 4rem)";
                     touchElem.style.maxWidth = "78vw";
-                    touchElem.style.marginTop = "4%";
+                    touchElem.style.marginTop = "3%";
                     touchElem.style.marginLeft = "4.2%";
                 }
             }
