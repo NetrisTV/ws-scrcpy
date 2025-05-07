@@ -64,7 +64,7 @@ a:visited {
 
 body {
     color: var(--text-color);
-    background-color: white;
+    background-color: var(--main-bg-color);
     position: absolute;
     margin: 0;
     height: 100%;
@@ -77,9 +77,9 @@ body.shell {
     background-color: var(--shell-bg-color);
 }
 
-/* body.stream {
-    background-color: var(--main-bg-color);
-} */
+body.stream {
+    background-color: white;
+}
 
 .terminal-container {
     width: 100%;
