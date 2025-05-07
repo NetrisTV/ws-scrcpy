@@ -259,7 +259,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         videoElemParentParent.style.float = "none";
         const androidFrame = document.getElementById("generic-android-mockup");
 
-        if (androidFrame && this.displayInfo) {
+        if (androidFrame) {
             
             // const androidFrameParent = androidFrame.parentElement as HTMLElement;
             // androidFrameParent.style.width = (width*(rotation ? 1.11 : 1.04)) + "px";
