@@ -164,12 +164,11 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
     public reOrientScreen(invert: boolean = false, player: BasePlayer = this): void {
 
-        let rotation = this.displayInfo?.rotation !== 2 && this.displayInfo?.rotation !== 0 ? true : false;
+        let rotation = this.displayInfo?.rotation && this.displayInfo?.rotation !== 2 && this.displayInfo?.rotation !== 0 ? true : false;
 
         console.log("player info ", this.displayInfo, invert);
-
         player.touchableCanvas.style.zIndex = "20";
-
+        
         const videoElem = document.getElementsByClassName("video-layer")[0] as HTMLElement;
         const touchElem = document.getElementsByClassName("touch-layer")[0] as HTMLElement;
 
@@ -258,22 +257,28 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         videoElemParent.style.maxWidth = "none";
         videoElemParentParent.style.maxWidth = "none";
         videoElemParentParent.style.float = "none";
-
         const androidFrame = document.getElementById("generic-android-mockup");
 
-        if (androidFrame) {
-
+        if (androidFrame && this.displayInfo) {
+            
             // const androidFrameParent = androidFrame.parentElement as HTMLElement;
             // androidFrameParent.style.width = (width*(rotation ? 1.11 : 1.04)) + "px";
             // androidFrameParent.style.height = (height*(rotation ? 1.11 : 1.04)) + "px";
 
             if (rotation) {
+                if( width < height ){
+                    if( window.innerWidth > 380 )
+                        androidFrame.style.maxWidth = "910px";
+                    else
+                        androidFrame.style.maxWidth = "84vw";
+                    return;
+                }
+                else
+                    androidFrame.style.maxWidth = "none";
                 androidFrame.style.transform = "rotateZ(-90deg)";
                 androidFrame.style.transformOrigin = Math.abs( (height*1.11) / 2) + "px " + Math.abs( (height*1.11) / 2) + "px";
                 videoElemParent.style.width = (width*1.04 + 34) + "px";
                 videoElemParentParent.style.width = (width*1.04 + 34) + "px";
-                // videoElemParent.style.height = (height*1.11) + "px";
-                // videoElemParentParent.style.height = (height*1.11) + "px";
                 androidFrame.style.height = (width*1.04) + "px";
                 androidFrame.style.width = (height*1.11) + "px";
                 androidFrame.style.marginTop = "0px";
@@ -281,6 +286,15 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
             }
             else {
+                if( width > height ){
+                    if( window.innerWidth > 380 )
+                        androidFrame.style.maxWidth = "480px";
+                    else
+                        androidFrame.style.maxWidth = "78vw";
+                    return;
+                }
+                else
+                    androidFrame.style.maxWidth = "none";
                 androidFrame.style.transform = "";
                 androidFrame.style.transformOrigin = Math.abs((width*1.04) / 2) + "px " + Math.abs((width*1.04) / 2) + "px";
                 videoElemParent.style.width = (width*1.11 + 34) + "px";
@@ -293,7 +307,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                 androidFrame.style.marginLeft = "0px";
             }
 
-            const aspectRatio = videoElemParentParent.style.width + "/" + (rotation ? androidFrame.clientWidth : videoElemParent.style.height);
+
+            const aspectRatio = videoElemParentParent.clientWidth + "/" + (rotation ? androidFrame.clientWidth : videoElemParent.clientHeight);
 
             this.sendDataToParent(rotation, aspectRatio);
         }
