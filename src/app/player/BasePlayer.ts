@@ -260,6 +260,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         
         let androidFrame = document.getElementById("generic-android-mockup") as HTMLImageElement;
 
+        console.log("androidFrame ", androidFrame, androidFrame?.clientWidth, androidFrame?.clientHeight);
+        
         if( !androidFrame ){
             androidFrame = document.createElement("img");
             androidFrame.src = genericAndroid;
@@ -316,6 +318,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             }
 
             const androidMockFrame = document.getElementById("generic-android-mockup") as HTMLImageElement;
+            console.log("androidMockFrame ", videoElemParent, videoElemParent?.clientHeight, videoElemParent?.clientWidth, androidMockFrame, androidMockFrame?.clientWidth, androidMockFrame?.clientHeight, androidFrame?.clientWidth, androidFrame?.clientHeight);
             if( !androidMockFrame ){
                 videoElemParent.appendChild(androidFrame);
             }
