@@ -30,7 +30,6 @@ import { ACTION } from '../../../common/Action';
 import { StreamReceiverScrcpy } from './StreamReceiverScrcpy';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { ScrcpyFilePushStream } from '../filePush/ScrcpyFilePushStream';
-import genericAndroid from "../../../common/generic_android.png"
 
 type StartParams = {
     udid: string;
@@ -321,11 +320,6 @@ export class StreamClientScrcpy
         deviceView.appendChild(this.controlButtons);
         const video = document.createElement('div');
         video.className = 'video';
-        const genericAndroidMockup = document.createElement("img");
-        genericAndroidMockup.src = genericAndroid;
-        genericAndroidMockup.id = "generic-android-mockup";
-        genericAndroidMockup.style.height = "";
-        video.appendChild(genericAndroidMockup);
         deviceView.appendChild(video);
         deviceView.appendChild(moreBox);
         player.setParent(video);

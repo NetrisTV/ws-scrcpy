@@ -5,6 +5,7 @@ import Size from '../Size';
 import Util from '../Util';
 import { TypedEmitter } from '../../common/TypedEmitter';
 import { DisplayInfo } from '../DisplayInfo';
+import genericAndroid from "../../common/generic_android.png";
 
 interface BitrateStat {
     timestamp: number;
@@ -253,19 +254,26 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
         const videoElemParent = document.getElementsByClassName("video")[0] as HTMLElement;
         const videoElemParentParent = document.getElementsByClassName("device-view")[0] as HTMLElement;
-
         videoElemParent.style.maxWidth = "none";
         videoElemParentParent.style.maxWidth = "none";
         videoElemParentParent.style.float = "none";
-        const androidFrame = document.getElementById("generic-android-mockup");
+        
+        let androidFrame = document.getElementById("generic-android-mockup") as HTMLImageElement;
+
+        if( !androidFrame ){
+            androidFrame = document.createElement("img");
+            androidFrame.src = genericAndroid;
+            androidFrame.id = "generic-android-mockup";
+            androidFrame.style.height = "";
+        }
 
         if (androidFrame) {
-            
-            // const androidFrameParent = androidFrame.parentElement as HTMLElement;
-            // androidFrameParent.style.width = (width*(rotation ? 1.11 : 1.04)) + "px";
-            // androidFrameParent.style.height = (height*(rotation ? 1.11 : 1.04)) + "px";
 
+            androidFrame.style.aspectRatio = "auto";
             if (rotation) {
+
+                androidFrame.style.aspectRatio="auto";
+
                 if( width < height ){
                     if( window.innerWidth > 380 )
                         androidFrame.style.maxWidth = "910px";
@@ -307,6 +315,10 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                 androidFrame.style.marginLeft = "0px";
             }
 
+            const androidMockFrame = document.getElementById("generic-android-mockup") as HTMLImageElement;
+            if( !androidMockFrame ){
+                videoElemParent.appendChild(androidFrame);
+            }
 
             const aspectRatio = videoElemParentParent.clientWidth + "/" + (rotation ? androidFrame.clientWidth : videoElemParent.clientHeight);
 
