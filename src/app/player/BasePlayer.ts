@@ -292,7 +292,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     }
                     else{
 
-                        touchElem.style.width = "calc(100vw - 3.5rem)";
+                        touchElem.style.width = "calc(100vw - 3rem)";
                     }
                 }
                 else{
@@ -315,8 +315,11 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             //     touchElem.style.height = (touchElem.clientWidth / aspectRatio) + "px"
         }
 
-        const height = touchElem.clientHeight;
         const width = touchElem.clientWidth;
+        let height = touchElem.clientHeight;
+        
+        if( aspectRatio )
+            height = width / aspectRatio;
 
         const videoElemParent = document.getElementsByClassName("video")[0] as HTMLElement;
         const videoElemParentParent = document.getElementsByClassName("device-view")[0] as HTMLElement;
@@ -347,6 +350,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                         androidFrame.style.maxWidth = "910px";
                     else
                         androidFrame.style.maxWidth = "84vw";
+                    this.reOrientScreen();
                     return;
                 }
                 else
@@ -377,6 +381,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                         androidFrame.style.maxWidth = "480px";
                     else
                         androidFrame.style.maxWidth = "78vw";
+
+                    this.reOrientScreen();
                     return;
                 }
                 else
