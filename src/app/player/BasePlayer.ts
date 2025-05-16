@@ -242,7 +242,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             }
 
             if( aspectRatio ){
-                console.log("asdf ", videoElem.clientWidth, aspectRatio)
+                console.log("asdf ", videoElem.clientWidth, videoElem.clientHeight, aspectRatio)
                 // videoElem.style.height = (videoElem.clientWidth / aspectRatio) + "px";
             }
         }
@@ -326,7 +326,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         
         let androidFrame = document.getElementById("generic-android-mockup") as HTMLImageElement;
 
-        console.log("androidFrame ", androidFrame, androidFrame?.clientWidth, androidFrame?.clientHeight);
+        console.log("androidFrame ", androidFrame?.clientWidth, androidFrame?.clientHeight, rotation, height, width, touchElem?.clientHeight, touchElem?.clientWidth, touchElem?.clientHeight, videoElem?.clientHeight, videoElem?.clientWidth);
         
         if( !androidFrame ){
             androidFrame = document.createElement("img");
