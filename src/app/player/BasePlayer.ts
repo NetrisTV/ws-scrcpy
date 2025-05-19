@@ -318,7 +318,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const width = touchElem.clientWidth;
         let height = touchElem.clientHeight;
         
-        if( aspectRatio )
+        if( aspectRatio && deviceType !== "emulated" )
             height = width / aspectRatio;
 
         const videoElemParent = document.getElementsByClassName("video")[0] as HTMLElement;
@@ -417,7 +417,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                 deviceType == "emulated" ? androidFrame.clientWidth 
                     : height
                 : deviceType == "emulated" ? videoElemParent.clientHeight
-                    : videoElemParent.clientHeight);
+                    : height);
 
             this.sendDataToParent(rotation, aspectRatio, deviceType);
         }
