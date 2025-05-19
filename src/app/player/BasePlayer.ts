@@ -350,7 +350,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                         androidFrame.style.maxWidth = "910px";
                     else
                         androidFrame.style.maxWidth = "84vw";
-                    this.reOrientScreen();
+
                     return;
                 }
                 else
@@ -382,7 +382,6 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                     else
                         androidFrame.style.maxWidth = "78vw";
 
-                    this.reOrientScreen();
                     return;
                 }
                 else
