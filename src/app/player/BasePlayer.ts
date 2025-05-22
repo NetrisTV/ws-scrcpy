@@ -116,7 +116,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         this.touchableCanvas.className = 'touch-layer';
         this.touchableCanvas.style.width = "calc(100vw - 3rem)";
         if (window.innerWidth > 380)
-            this.touchableCanvas.style.maxWidth = "480px";
+            this.touchableCanvas.style.maxWidth = "510px";
         else
             this.touchableCanvas.style.maxWidth = "78vw";
 
@@ -212,7 +212,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
                 if (window.innerWidth > 380){
 
-                    videoElem.style.maxWidth = "480px";
+                    videoElem.style.maxWidth = "510px";
                     if( deviceType == "emulated" ){
                         
                         videoElem.style.width = "calc(100vw - 5.5rem)";
@@ -283,7 +283,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             else {
 
                 if (window.innerWidth > 380){
-                    touchElem.style.maxWidth = "480px";
+                    touchElem.style.maxWidth = "510px";
                     if( deviceType == "emulated" ){
                         
                         touchElem.style.width = "calc(100vw - 5.5rem)";
@@ -318,7 +318,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const width = touchElem.clientWidth;
         let height = touchElem.clientHeight;
         
-        if( aspectRatio && deviceType !== "emulated" )
+        if( aspectRatio )
             height = width / aspectRatio;
 
         const videoElemParent = document.getElementsByClassName("video")[0] as HTMLElement;
@@ -378,7 +378,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             else {
                 if( width > height ){
                     if( window.innerWidth > 380 )
-                        androidFrame.style.maxWidth = "480px";
+                        androidFrame.style.maxWidth = "510px";
                     else
                         androidFrame.style.maxWidth = "78vw";
 
