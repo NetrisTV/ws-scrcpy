@@ -105,13 +105,19 @@ export abstract class BaseDeviceTracker<DD extends BaseDeviceDescriptor, TE exte
 
     protected buildDeviceTable(): void {
         const data = this.descriptors;
+        // console.log(TAG, 'Building table for', data);
         const devices = this.getOrCreateTableHolder();
         const tbody = this.getOrBuildTableBody(devices);
 
         const block = this.getOrCreateTrackerBlock(tbody, this.trackerName);
+         // Refresh the page
+        // console.log('Refreshing the page');
+        // window.location.reload();
         data.forEach((item) => {
+            // console.log(TAG, 'Building row (after initiating refresh)', item);
             this.buildDeviceRow(block, item);
         });
+       
     }
 
     private setNameValue(parent: Element | null, name: string): void {

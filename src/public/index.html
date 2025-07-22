@@ -4,7 +4,56 @@
     <meta charset="UTF-8">
     <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no' name='viewport' />
     <title>WS scrcpy</title>
+    <style>
+        #logout-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #logout-button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
 </head>
 <body>
+    <script>
+        const activityEvents = [
+        'mousemove', 'keydown', 
+        'scroll', 'touchstart', 'click',
+        'input', 'focus', 'focusin'
+      ];
+      
+      // Attach all event listeners
+      activityEvents.forEach(event => {
+        window.addEventListener(event, ()=>{
+          window.top?.postMessage({ event: "user-activity-in-frame" }, "*")
+        });
+      });
+    </script>
+    <script>
+        // Check if the current page is the index (/) without any query parameters
+        if (window.location.pathname === '/' && window.location.search === '') {
+            // Create the logout button
+            const logoutButton = document.createElement('button');
+            logoutButton.id = 'logout-button';
+            logoutButton.textContent = 'Logout';
+
+            // Add the logout button to the body
+            document.body.appendChild(logoutButton);
+
+            // Add the event listener for the logout button
+            logoutButton.addEventListener('click', async () => {
+                await fetch('/logout', { method: 'POST' });
+                window.location.reload(); // Force reauthentication
+            });
+        }
+    </script>
 </body>
 </html>

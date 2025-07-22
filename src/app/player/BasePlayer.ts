@@ -46,7 +46,7 @@ export interface PlayerClass {
         fitToScreen: boolean,
         displayInfo?: DisplayInfo,
     ): void;
-    new (udid: string, displayInfo?: DisplayInfo): BasePlayer;
+    new(udid: string, displayInfo?: DisplayInfo): BasePlayer;
 }
 
 export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
@@ -113,12 +113,250 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         super();
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
+        this.touchableCanvas.style.width = "calc(100vw - 3rem)";
+        if (window.innerWidth > 380)
+            this.touchableCanvas.style.maxWidth = "315px";
+        else
+            this.touchableCanvas.style.maxWidth = "80vw";
+
+
+        const myInterval = setInterval(() => {
+            if (tag.clientHeight || tag.clientWidth) {
+                this.reOrientScreen();
+
+                window.addEventListener('resize', () => {
+                    this.reOrientScreen();
+                });
+
+                window.addEventListener('message', (e) => {
+                    const allowedOrigins = [
+                        "https://trust-me-bro.nativebridge.io",
+                        "http://localhost:5173",
+                    ];
+                
+                    if (!allowedOrigins.includes(e.origin)) {
+                        console.warn("Blocked message from untrusted origin:", e.origin);
+                        return; // Reject messages from untrusted origins
+                    }
+                    if(e.data.event === "screenshot"){
+                        window.top?.postMessage({ event: "screenshot", imageUrl: this.getImageDataURL() }, "*"); // Replace '*' with the specific origin for security 
+                    }
+                });
+
+                clearInterval(myInterval);
+            }
+        }, 500);
         this.touchableCanvas.oncontextmenu = function (event: MouseEvent): void {
             event.preventDefault();
         };
         const preferred = this.getPreferredVideoSetting();
         this.videoSettings = BasePlayer.getVideoSettingFromStorage(preferred, this.storageKeyPrefix, udid, displayInfo);
     }
+
+    protected sendDataToParent(rotation: number | undefined): void {
+        // Send data to the parent window
+
+        const videoElemParent = document.getElementsByClassName("video")[0] as HTMLElement;
+        const videoElem = document.getElementsByClassName("video-layer")[0] as HTMLElement;
+        const touchElem = document.getElementsByClassName("touch-layer")[0] as HTMLElement;
+
+        const remToPx = (rem: number) => rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+        const androidFrame = document.getElementById("generic-android-mockup");
+
+        if (androidFrame) {
+            // androidFrame.style.width = "calc(100vw - 3rem)";
+
+
+            const offset = remToPx(3); // Convert 3rem to pixels
+            let initialWidth;
+
+            if( rotation ){
+                if( window.innerWidth <= 380 )
+                    initialWidth = window.innerWidth - offset;
+                else
+                    initialWidth = window.innerWidth - offset > 940 ? 940 : window.innerWidth - offset
+            }
+            else {
+                
+                if( window.innerWidth <= 380 )
+                    initialWidth = window.innerWidth - offset;
+                else
+                    initialWidth = window.innerWidth - offset > 420 ? 420 : window.innerWidth - offset
+            }
+            // const initialWidth = window.innerWidth <= 380 ? window.innerWidth - offset : ;
+            // androidFrame.style.transformOrigin = Math.abs((initialWidth) / 2) + "px " + Math.abs((initialWidth) / 2) + "px";
+
+            if (window.innerWidth > 380){
+
+                if( rotation ){
+
+                    androidFrame.style.transform = "rotateZ(-90deg)";
+                    androidFrame.style.transformOrigin = Math.abs((initialWidth * ( 191/320 )) / 2) + "px " + Math.abs((initialWidth * ( 191/320 )) / 2) + "px";
+                    androidFrame.style.width = "auto";
+                    videoElemParent.style.width = initialWidth + "px";
+                    androidFrame.style.height = initialWidth + "px";
+                    androidFrame.style.aspectRatio = "191/320";
+                    // androidFrame.style.scale = "1.07";
+                    androidFrame.style.marginTop = "0px";
+                    androidFrame.style.marginLeft = "0px";
+                }
+                else {
+
+                    androidFrame.style.transform = "";
+                    androidFrame.style.transformOrigin = Math.abs((initialWidth) / 2) + "px " + Math.abs((initialWidth) / 2) + "px";
+                    androidFrame.style.width = initialWidth + "px";
+                    androidFrame.style.height = "auto";
+                    androidFrame.style.aspectRatio = "47/80";
+                    // androidFrame.style.scale = "1.07";
+                    androidFrame.style.marginTop = "0px";
+                    androidFrame.style.marginLeft = "0px";
+                }
+
+            }
+            else{
+
+                if (rotation) {
+                    androidFrame.style.maxWidth = "90vw";
+                
+                    console.log("initialWidth ", initialWidth);
+                    androidFrame.style.transform = "rotateZ(-90deg)";
+                    androidFrame.style.transformOrigin = Math.abs(((initialWidth)*( 37 / 64 )) / 2) + "px " + Math.abs(((initialWidth)*( 37 / 64 )) / 2) + "px";
+                    androidFrame.style.width = "auto";
+                    androidFrame.style.height = "calc(100vw - 3rem)";
+                    androidFrame.style.aspectRatio = "38/64";
+                    androidFrame.style.scale = "1";
+                    androidFrame.style.marginTop = "5px";
+                    androidFrame.style.marginLeft = "0px";
+    
+                }
+                else {
+                    androidFrame.style.transform = "";
+                    androidFrame.style.transformOrigin = Math.abs((initialWidth) / 2) + "px " + Math.abs((initialWidth) / 2) + "px";
+                    androidFrame.style.width = initialWidth + "px";
+                    androidFrame.style.aspectRatio = "95/161" //"151/256";
+                    // androidFrame.style.scale = "1.01";
+                    androidFrame.style.marginTop = "3px";
+                    androidFrame.style.marginLeft = "0px"; 
+                }
+            }
+        }
+
+        if (videoElem) {
+            if (rotation) {
+    
+                if (window.innerWidth > 380){
+                    videoElem.style.width = "calc(100vw - 4.5rem)";
+                    videoElem.style.maxWidth = "910px";
+                    videoElem.style.borderRadius = "1.5rem";
+                    videoElem.style.marginTop = "3.4%";
+                    videoElem.style.marginLeft = "11px";
+                }
+                else{
+                    
+                    videoElem.style.width = "calc(100vw - 4rem)";
+                    videoElem.style.maxWidth = "84vw";
+                    videoElem.style.borderRadius = "1rem";
+                    videoElem.style.marginTop = "14px";
+                    videoElem.style.marginLeft = "15px";
+                }  
+            }
+            else {
+
+                videoElem.style.width = "calc(100vw - 3rem)";
+
+                if (window.innerWidth > 380){
+
+                    videoElem.style.width = "calc(100vw - 5.5rem)";
+                    videoElem.style.maxWidth = "380px";
+                    videoElem.style.marginTop = "4%";
+                    videoElem.style.marginLeft = "4%";
+                }
+                else{
+
+                    videoElem.style.width = "calc(100vw - 4rem)";
+                    videoElem.style.maxWidth = "80vw";
+                    videoElem.style.marginTop = "4%";
+                    videoElem.style.marginLeft = "4.5%";
+                }
+            }
+        }
+        if (touchElem) {
+            if (rotation) {
+                
+                if (window.innerWidth > 380){
+                    touchElem.style.width = "calc(100vw - 4.5rem)";
+                    touchElem.style.maxWidth = "910px";
+                    touchElem.style.borderRadius = "1.5rem";
+                    touchElem.style.marginTop = "3.4%";
+                    touchElem.style.marginLeft = "11px";
+                }
+                else{
+                    
+                    touchElem.style.width = "calc(100vw - 4rem)";
+                    touchElem.style.maxWidth = "84vw";
+                    touchElem.style.borderRadius = "1rem";
+                    touchElem.style.marginTop = "11px";
+                    touchElem.style.marginLeft = "7px";
+                }  
+            }
+            else {
+
+                if (window.innerWidth > 380){
+                    touchElem.style.width = "calc(100vw - 5.5rem)";
+                    touchElem.style.maxWidth = "380px";
+                    touchElem.style.marginTop = "4%";
+                    touchElem.style.marginLeft = "4%";
+                }
+                else{
+                    
+                    touchElem.style.width = "calc(100vw - 4rem)";
+                    touchElem.style.maxWidth = "80vw";
+                    touchElem.style.marginTop = "4%";
+                    touchElem.style.marginLeft = "4.5%";
+                }
+            }
+        }
+
+        window.top?.postMessage({ event: "device-rotation", rotation: rotation }, "*"); // Replace '*' with the specific origin for security
+    }
+
+    public reOrientScreen(invert: boolean = false, player: BasePlayer = this): void {
+
+        // if( !player ){
+        //     console.log("player not found");
+        //     player = this;
+        // }
+
+        // else {
+        //     console.log("player found");
+        // }
+
+        // const deviceMockup = document.getElementsByClassName("generic-android-mockup")[0] as HTMLElement;
+        // console.log("invert ", invert, player.displayInfo?.rotation, player.videoWidth, player.videoHeight);
+        let rotation = invert ? !player?.displayInfo?.rotation : player?.displayInfo?.rotation as number | boolean;
+
+        this.sendDataToParent(player?.displayInfo?.rotation);
+
+        if (rotation) {
+
+            // deviceMockup.style.height = player.videoWidth + "px";
+            // deviceMockup.style.width = (player.videoHeight + 23) + "px";
+            // player.touchableCanvas.style.width = player.videoWidth + "px";
+            // player.touchableCanvas.style.height = (player.videoHeight) + "px";
+            // deviceMockup.style.transform = "translate(54%, -26.5%) rotateZ(90deg)";
+        }
+        else {
+            // deviceMockup.style.width = player.videoWidth + "px";
+            // deviceMockup.style.height = (player.videoHeight + 23) + "px";
+            // player.touchableCanvas.style.width = player.videoWidth + "px";
+            // player.touchableCanvas.style.height = (player.videoHeight) + "px";
+            // deviceMockup.style.transform = "none";
+        }
+
+        player.touchableCanvas.style.zIndex = "20";
+    }
+
 
     protected calculateScreenInfoForBounds(videoWidth: number, videoHeight: number): void {
         this.videoWidth = videoWidth;

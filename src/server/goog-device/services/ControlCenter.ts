@@ -57,32 +57,43 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
     private onChangeSet = (changes: TrackerChangeSet): void => {
         this.waitAfterError = ControlCenter.defaultWaitAfterError;
         if (changes.added.length) {
+            // console.log(`Changes added: ${JSON.stringify(changes.added)}`);
             for (const item of changes.added) {
                 const { id, type } = item;
+                // console.log(`(Added on change list) Handling device connection for id : ${id} type: ${type}\n`);
                 this.handleConnected(id, type);
+
+
             }
         }
         if (changes.removed.length) {
             for (const item of changes.removed) {
                 const { id } = item;
+                // console.log(`(Removed on change list) Handling device connection for id : ${id}\n`);
                 this.handleConnected(id, DeviceState.DISCONNECTED);
             }
         }
+
         if (changes.changed.length) {
             for (const item of changes.changed) {
                 const { id, type } = item;
+                // console.log(`(Changed on change list) Handling device connection for id : ${id} type: ${type}\n`);
                 this.handleConnected(id, type);
             }
         }
     };
 
     private onDeviceUpdate = (device: Device): void => {
-        const { udid, descriptor } = device;
-        this.descriptors.set(udid, descriptor);
+        // console.log(`(On device update) Handling device update for udid: ${device.udid} and state: ${device.descriptor.state}\n`);
+        const { udid, descriptor } = device; 
+        if (descriptor.state === 'device' || descriptor.state === 'emulator') {
+            this.descriptors.set(udid, descriptor);
+        }
         this.emit('device', descriptor);
     };
 
     private handleConnected(udid: string, state: string): void {
+        // console.log(`Device connected: ${udid} state: ${state}\n`);
         let device = this.deviceMap.get(udid);
         if (device) {
             device.setState(state);
@@ -93,7 +104,9 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
         }
     }
 
+
     public async init(): Promise<void> {
+        // console.log(`Initializing "${this.getName()}"`);
         if (this.initialized) {
             return;
         }
@@ -101,12 +114,14 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
         const list = await this.client.listDevices();
         list.forEach((device) => {
             const { id, type } = device;
+            // console.log(`(Initialization) handling device connection for id: ${id} type: ${type}\n`);
             this.handleConnected(id, type);
         });
         this.initialized = true;
     }
 
     private async startTracker(): Promise<Tracker> {
+        // console.log(`Starting tracker`);
         if (this.tracker) {
             return this.tracker;
         }
@@ -118,6 +133,7 @@ export class ControlCenter extends BaseControlCenter<GoogDeviceDescriptor> imple
     }
 
     private stopTracker(): void {
+        // console.log(`Stopping tracker`);
         if (this.tracker) {
             this.tracker.off('changeSet', this.onChangeSet);
             this.tracker.off('end', this.restartTracker);
