@@ -147,6 +147,119 @@ body.stream {
     z-index: 1;
 }
 
+/* Video loading overlay - Android Material Design */
+.video-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+    border-radius: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 1.5rem;
+}
+
+.video-loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Android Material Design Circular Progress */
+.video-loading-spinner {
+    position: relative;
+    width: 52px;
+    height: 52px;
+}
+
+.video-loading-spinner svg {
+    animation: spinner-rotate 1.4s linear infinite;
+    transform-origin: center center;
+    width: 100%;
+    height: 100%;
+}
+
+.video-loading-spinner circle {
+    stroke: #3DDC84;
+    stroke-dasharray: 125;
+    stroke-dashoffset: 125;
+    stroke-linecap: round;
+    animation: spinner-dash 1.4s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(61, 220, 132, 0.4));
+}
+
+@keyframes spinner-rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spinner-dash {
+    0% {
+        stroke-dashoffset: 125;
+        transform: rotate(0deg);
+    }
+    50% {
+        stroke-dashoffset: 30;
+        transform: rotate(45deg);
+    }
+    100% {
+        stroke-dashoffset: 125;
+        transform: rotate(360deg);
+    }
+}
+
+/* Android Robot Icon */
+.video-loading-android {
+    width: 32px;
+    height: 32px;
+    opacity: 0.9;
+    animation: android-pulse 2s ease-in-out infinite;
+}
+
+.video-loading-android svg {
+    width: 100%;
+    height: 100%;
+    fill: #3DDC84;
+    filter: drop-shadow(0 0 6px rgba(61, 220, 132, 0.3));
+}
+
+@keyframes android-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+/* Loading text */
+.video-loading-text {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: text-fade 1.5s ease-in-out infinite;
+}
+
+@keyframes text-fade {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
 .video {
     /* float: right; */
     max-height: 100%;

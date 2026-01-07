@@ -82,6 +82,12 @@ export abstract class BaseCanvasBasedPlayer extends BasePlayer {
             // decoded frame with previous video settings
             return;
         }
+
+        // Hide loading overlay on first frame
+        if (this.loadingOverlay) {
+            this.hideLoadingOverlay();
+        }
+
         let dropped = 0;
         const maxStored = this.videoSettings.maxFps / 10; // for 100ms
 
