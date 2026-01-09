@@ -696,6 +696,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             // Check if parent has actual dimensions (meaning layout is ready)
             if (parent.clientWidth > 50 && parent.clientHeight > 50) {
                 this.loadingOverlay.classList.add('visible');
+                // Hide the page-level loader now that video container loader is visible
+                this.hidePageLoader();
             } else {
                 // Keep checking until layout is ready
                 setTimeout(showWhenReady, 50);
@@ -704,6 +706,18 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
         // Start checking after initial frame
         setTimeout(showWhenReady, 50);
+    }
+
+    private hidePageLoader(): void {
+        const pageLoader = document.querySelector('.page-loading-overlay');
+        if (pageLoader) {
+            pageLoader.classList.add('fade-out');
+            setTimeout(() => {
+                if (pageLoader.parentElement) {
+                    pageLoader.parentElement.removeChild(pageLoader);
+                }
+            }, 300);
+        }
     }
 
     public hideLoadingOverlay(): void {

@@ -81,6 +81,72 @@ body.stream {
     background-color: white;
 }
 
+/* Initial page loader - shows on body.stream before video container is ready */
+.page-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    gap: 1.5rem;
+    transition: opacity 0.3s ease-out;
+}
+
+.page-loading-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.page-loading-overlay .page-spinner {
+    width: 48px;
+    height: 48px;
+}
+
+.page-loading-overlay .page-spinner svg {
+    animation: spinner-rotate 1.4s linear infinite;
+    width: 100%;
+    height: 100%;
+}
+
+.page-loading-overlay .page-spinner circle {
+    stroke: #3DDC84;
+    stroke-dasharray: 80, 126;
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    fill: none;
+    stroke-width: 4;
+    filter: drop-shadow(0 0 8px rgba(61, 220, 132, 0.4));
+}
+
+.page-loading-overlay .page-android {
+    width: 32px;
+    height: 32px;
+    animation: android-pulse 2s ease-in-out infinite;
+}
+
+.page-loading-overlay .page-android svg {
+    width: 100%;
+    height: 100%;
+    fill: #3DDC84;
+    filter: drop-shadow(0 0 6px rgba(61, 220, 132, 0.3));
+}
+
+.page-loading-overlay .page-text {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: text-fade 1.5s ease-in-out infinite;
+}
+
 .terminal-container {
     width: 100%;
     height: 100%;
