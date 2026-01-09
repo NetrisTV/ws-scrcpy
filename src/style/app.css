@@ -164,14 +164,33 @@ body.stream {
     align-items: center;
     justify-content: center;
     z-index: 5;
-    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     gap: 1.5rem;
     box-sizing: border-box;
+    /* Start hidden and fade in to prevent flash of mispositioned content */
+    animation: overlay-fade-in 0.15s ease-out forwards;
+}
+
+@keyframes overlay-fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 .video-loading-overlay.hidden {
-    opacity: 0;
+    animation: overlay-fade-out 0.3s ease-out forwards;
     pointer-events: none;
+}
+
+@keyframes overlay-fade-out {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 
 /* Android Material Design Circular Progress */
