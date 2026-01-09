@@ -166,8 +166,14 @@ body.stream {
     z-index: 5;
     gap: 1.5rem;
     box-sizing: border-box;
-    /* Start hidden and fade in to prevent flash of mispositioned content */
-    animation: overlay-fade-in 0.15s ease-out forwards;
+    /* Hide content until properly positioned */
+    visibility: hidden;
+    opacity: 0;
+}
+
+.video-loading-overlay.visible {
+    visibility: visible;
+    animation: overlay-fade-in 0.2s ease-out forwards;
 }
 
 @keyframes overlay-fade-in {
@@ -187,13 +193,15 @@ body.stream {
 @keyframes overlay-fade-out {
     0% {
         opacity: 1;
+        visibility: visible;
     }
     100% {
         opacity: 0;
+        visibility: hidden;
     }
 }
 
-/* Android Material Design Circular Progress */
+/* Android Material Design Circular Progress - Single direction */
 .video-loading-spinner {
     position: relative;
     width: 48px;
@@ -201,7 +209,7 @@ body.stream {
 }
 
 .video-loading-spinner svg {
-    animation: spinner-rotate 2s linear infinite;
+    animation: spinner-rotate 1.4s linear infinite;
     transform-origin: center center;
     width: 100%;
     height: 100%;
@@ -209,10 +217,9 @@ body.stream {
 
 .video-loading-spinner circle {
     stroke: #3DDC84;
-    stroke-dasharray: 126;
-    stroke-dashoffset: 95;
+    stroke-dasharray: 80, 126;
+    stroke-dashoffset: 0;
     stroke-linecap: round;
-    animation: spinner-dash 1.5s ease-in-out infinite;
     filter: drop-shadow(0 0 8px rgba(61, 220, 132, 0.4));
     transform-origin: center center;
 }
@@ -223,18 +230,6 @@ body.stream {
     }
     100% {
         transform: rotate(360deg);
-    }
-}
-
-@keyframes spinner-dash {
-    0% {
-        stroke-dashoffset: 126;
-    }
-    50% {
-        stroke-dashoffset: 32;
-    }
-    100% {
-        stroke-dashoffset: 126;
     }
 }
 

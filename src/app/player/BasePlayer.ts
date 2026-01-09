@@ -688,10 +688,18 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         this.loadingOverlay.appendChild(spinner);
         this.loadingOverlay.appendChild(loadingText);
         parent.appendChild(this.loadingOverlay);
+
+        // Show overlay after a frame to ensure proper positioning
+        requestAnimationFrame(() => {
+            if (this.loadingOverlay) {
+                this.loadingOverlay.classList.add('visible');
+            }
+        });
     }
 
     public hideLoadingOverlay(): void {
         if (this.loadingOverlay) {
+            this.loadingOverlay.classList.remove('visible');
             this.loadingOverlay.classList.add('hidden');
             // Remove from DOM after transition completes
             setTimeout(() => {
