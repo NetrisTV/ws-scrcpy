@@ -144,11 +144,13 @@ export class StreamClientScrcpy
 
         const { udid, player: playerName } = this.params;
 
-        // Show page-level loader immediately
+        // Set body class first so styles apply
+        this.setBodyClass('stream');
+
+        // Show page-level loader immediately (covers entire screen)
         this.showPageLoader();
 
         this.startStream({ udid, player, playerName, fitToScreen, videoSettings });
-        this.setBodyClass('stream');
     }
 
     private showPageLoader(): void {
