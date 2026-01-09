@@ -689,12 +689,21 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         this.loadingOverlay.appendChild(loadingText);
         parent.appendChild(this.loadingOverlay);
 
-        // Show overlay after a frame to ensure proper positioning
-        requestAnimationFrame(() => {
-            if (this.loadingOverlay) {
+        // Show overlay only after parent has proper dimensions
+        const showWhenReady = (): void => {
+            if (!this.loadingOverlay) return;
+
+            // Check if parent has actual dimensions (meaning layout is ready)
+            if (parent.clientWidth > 50 && parent.clientHeight > 50) {
                 this.loadingOverlay.classList.add('visible');
+            } else {
+                // Keep checking until layout is ready
+                setTimeout(showWhenReady, 50);
             }
-        });
+        };
+
+        // Start checking after initial frame
+        setTimeout(showWhenReady, 50);
     }
 
     public hideLoadingOverlay(): void {
