@@ -35,6 +35,7 @@ export class MjpegPlayer extends BasePlayer {
         super(udid, displayInfo, name, storageKeyPrefix, tag);
         this.tag.onload = () => {
             this.checkVideoResize();
+            this.hideLoadingOverlay();
         };
     }
 

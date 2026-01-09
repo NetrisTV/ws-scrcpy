@@ -138,6 +138,7 @@ export class MsePlayer extends BasePlayer {
         this.tag.play();
         this.tag.removeEventListener('canplay', this.onVideoCanPlay);
         this.checkVideoResize();
+        this.hideLoadingOverlay();
     }
 
     protected calculateMomentumStats(): void {

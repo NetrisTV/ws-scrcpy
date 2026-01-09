@@ -64,6 +64,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     protected videoSettings: VideoSettings;
     protected parentElement?: HTMLElement;
     protected touchableCanvas: HTMLCanvasElement;
+    protected loadingOverlay?: HTMLElement;
     protected inputBytes: BitrateStat[] = [];
     protected perSecondQualityStats?: FramesPerSecondStats;
     protected momentumQualityStats?: PlaybackQuality;
@@ -659,6 +660,64 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         this.parentElement = parent;
         parent.appendChild(this.tag);
         parent.appendChild(this.touchableCanvas);
+
+        // Create and add Android-themed loading overlay
+        this.loadingOverlay = document.createElement('div');
+        this.loadingOverlay.className = 'video-loading-overlay';
+
+        // Android robot icon
+        const androidIcon = document.createElement('div');
+        androidIcon.className = 'video-loading-android';
+        androidIcon.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C13.85 1.23 12.95 1 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.97 3.26 6 5.01 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/>
+        </svg>`;
+
+        // Material Design circular spinner
+        const spinner = document.createElement('div');
+        spinner.className = 'video-loading-spinner';
+        spinner.innerHTML = `<svg viewBox="0 0 50 50">
+            <circle cx="25" cy="25" r="20" fill="none" stroke-width="4"/>
+        </svg>`;
+
+        // Loading text
+        const loadingText = document.createElement('div');
+        loadingText.className = 'video-loading-text';
+        loadingText.textContent = 'Connecting';
+
+        this.loadingOverlay.appendChild(androidIcon);
+        this.loadingOverlay.appendChild(spinner);
+        this.loadingOverlay.appendChild(loadingText);
+        parent.appendChild(this.loadingOverlay);
+
+        // Show overlay only after parent has proper dimensions
+        const showWhenReady = (): void => {
+            if (!this.loadingOverlay) return;
+
+            // Check if parent has actual dimensions (meaning layout is ready)
+            if (parent.clientWidth > 50 && parent.clientHeight > 50) {
+                this.loadingOverlay.classList.add('visible');
+            } else {
+                // Keep checking until layout is ready
+                setTimeout(showWhenReady, 50);
+            }
+        };
+
+        // Start checking after initial frame
+        setTimeout(showWhenReady, 50);
+    }
+
+    public hideLoadingOverlay(): void {
+        if (this.loadingOverlay) {
+            this.loadingOverlay.classList.remove('visible');
+            this.loadingOverlay.classList.add('hidden');
+            // Remove from DOM after transition completes
+            setTimeout(() => {
+                if (this.loadingOverlay && this.loadingOverlay.parentElement) {
+                    this.loadingOverlay.parentElement.removeChild(this.loadingOverlay);
+                    this.loadingOverlay = undefined;
+                }
+            }, 300);
+        }
     }
 
     protected needScreenInfoBeforePlay(): boolean {
