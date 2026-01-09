@@ -152,8 +152,11 @@ body.stream {
     position: absolute;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
     height: 100%;
+    min-height: 200px;
     background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
     border-radius: 1.5rem;
     display: flex;
@@ -163,6 +166,7 @@ body.stream {
     z-index: 5;
     transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     gap: 1.5rem;
+    box-sizing: border-box;
 }
 
 .video-loading-overlay.hidden {
@@ -173,12 +177,12 @@ body.stream {
 /* Android Material Design Circular Progress */
 .video-loading-spinner {
     position: relative;
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
 }
 
 .video-loading-spinner svg {
-    animation: spinner-rotate 1.4s linear infinite;
+    animation: spinner-rotate 2s linear infinite;
     transform-origin: center center;
     width: 100%;
     height: 100%;
@@ -186,14 +190,18 @@ body.stream {
 
 .video-loading-spinner circle {
     stroke: #3DDC84;
-    stroke-dasharray: 125;
-    stroke-dashoffset: 125;
+    stroke-dasharray: 126;
+    stroke-dashoffset: 95;
     stroke-linecap: round;
-    animation: spinner-dash 1.4s ease-in-out infinite;
+    animation: spinner-dash 1.5s ease-in-out infinite;
     filter: drop-shadow(0 0 8px rgba(61, 220, 132, 0.4));
+    transform-origin: center center;
 }
 
 @keyframes spinner-rotate {
+    0% {
+        transform: rotate(0deg);
+    }
     100% {
         transform: rotate(360deg);
     }
@@ -201,16 +209,13 @@ body.stream {
 
 @keyframes spinner-dash {
     0% {
-        stroke-dashoffset: 125;
-        transform: rotate(0deg);
+        stroke-dashoffset: 126;
     }
     50% {
-        stroke-dashoffset: 30;
-        transform: rotate(45deg);
+        stroke-dashoffset: 32;
     }
     100% {
-        stroke-dashoffset: 125;
-        transform: rotate(360deg);
+        stroke-dashoffset: 126;
     }
 }
 
@@ -266,6 +271,7 @@ body.stream {
     max-width: 100%;
     background-color: transparent;
     position: relative;
+    min-height: 200px;
 }
 
 .mockup-container {
