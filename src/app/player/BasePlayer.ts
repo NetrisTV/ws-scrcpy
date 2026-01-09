@@ -659,18 +659,18 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         this.parentElement = parent;
         parent.appendChild(this.tag);
         parent.appendChild(this.touchableCanvas);
-        // Note: We use page-level loader instead of video container loader
-        // to avoid positioning issues during initial layout
+        // Note: Loading overlay is added by StreamClientScrcpy before this is called
     }
 
     public hideLoadingOverlay(): void {
-        // Hide the page-level loader when video is ready
-        const pageLoader = document.querySelector('.page-loading-overlay');
-        if (pageLoader) {
-            pageLoader.classList.add('fade-out');
+        // Hide the video loading overlay when video is ready
+        const overlay = document.querySelector('.video-loading-overlay');
+        if (overlay) {
+            overlay.classList.remove('visible');
+            overlay.classList.add('hidden');
             setTimeout(() => {
-                if (pageLoader.parentElement) {
-                    pageLoader.parentElement.removeChild(pageLoader);
+                if (overlay.parentElement) {
+                    overlay.parentElement.removeChild(overlay);
                 }
             }, 300);
         }
