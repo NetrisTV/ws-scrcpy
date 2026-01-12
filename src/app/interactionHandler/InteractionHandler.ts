@@ -206,18 +206,59 @@ export abstract class InteractionHandler {
         return pointerId;
     }
 
-    protected static buildTouchOnClient(event: CommonTouchAndMouse, screenInfo: ScreenInfo): TouchOnClient | null {
+    protected static buildTouchOnClient(
+        event: CommonTouchAndMouse,
+        screenInfo: ScreenInfo,
+        uiRotation: number = 0,
+    ): TouchOnClient | null {
         const action = this.mapTypeToAction(event.type);
         const { width, height } = screenInfo.videoSize;
         const target: HTMLElement = event.target as HTMLElement;
         const rect = target.getBoundingClientRect();
-        let { clientWidth, clientHeight } = target;
+
+        // When UI is rotated 90/270, the visual bounds are swapped
+        // Use rect dimensions which reflect the actual visual size
+        const isUIRotated = uiRotation === 90 || uiRotation === 270;
+        let clientWidth = isUIRotated ? rect.height : target.clientWidth;
+        let clientHeight = isUIRotated ? rect.width : target.clientHeight;
+
         let touchX = event.clientX - rect.left;
         let touchY = event.clientY - rect.top;
         let invalid = false;
-        if (touchX < 0 || touchX > clientWidth || touchY < 0 || touchY > clientHeight) {
+
+        // Check bounds against visual dimensions
+        const visualWidth = rect.width;
+        const visualHeight = rect.height;
+        if (touchX < 0 || touchX > visualWidth || touchY < 0 || touchY > visualHeight) {
             invalid = true;
         }
+
+        // Transform touch coordinates based on UI rotation
+        // CSS rotate(-90deg) = 90° clockwise visual rotation
+        // We need to reverse-map visual coordinates back to device coordinates
+        let transformedX = touchX;
+        let transformedY = touchY;
+
+        if (uiRotation === 90) {
+            // CSS rotate(-90deg): device top is now visual left, device right is now visual top
+            // Visual (0,0) = device (deviceWidth, 0), Visual (vW,vH) = device (0, deviceHeight)
+            // deviceX = visualHeight - visualY, deviceY = visualX
+            transformedX = visualHeight - touchY;
+            transformedY = touchX;
+        } else if (uiRotation === 180) {
+            // CSS rotate(-180deg): everything inverted
+            transformedX = visualWidth - touchX;
+            transformedY = visualHeight - touchY;
+        } else if (uiRotation === 270) {
+            // CSS rotate(-270deg) = rotate(90deg): device top is now visual right
+            // deviceX = visualY, deviceY = visualWidth - visualX
+            transformedX = touchY;
+            transformedY = visualWidth - touchX;
+        }
+
+        touchX = transformedX;
+        touchY = transformedY;
+
         const eps = 1e5;
         const ratio = width / height;
         const shouldBe = Math.round(eps * ratio);
@@ -322,7 +363,8 @@ export abstract class InteractionHandler {
         ctrlKey: boolean,
         shiftKey: boolean,
     ): Touch[] | null {
-        const touchOnClient = InteractionHandler.buildTouchOnClient(e, screenInfo);
+        const uiRotation = this.player.getUIRotation();
+        const touchOnClient = InteractionHandler.buildTouchOnClient(e, screenInfo, uiRotation);
         if (!touchOnClient) {
             return null;
         }
@@ -460,6 +502,7 @@ export abstract class InteractionHandler {
         const logPrefix = `${TAG}[formatTouchEvent]`;
         const messages: TouchControlMessage[] = [];
         const touches = e.changedTouches;
+        const uiRotation = this.player.getUIRotation();
         if (touches && touches.length) {
             for (let i = 0, l = touches.length; i < l; i++) {
                 const touch = touches[i];
@@ -475,7 +518,7 @@ export abstract class InteractionHandler {
                     buttons: MotionEvent.BUTTON_PRIMARY,
                     target: e.target,
                 };
-                const event = InteractionHandler.buildTouchOnClient(item, screenInfo);
+                const event = InteractionHandler.buildTouchOnClient(item, screenInfo, uiRotation);
                 if (event) {
                     const { action, buttons, position, invalid } = event.touch;
                     let pressure = 1;

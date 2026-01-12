@@ -366,13 +366,21 @@ export class StreamClientScrcpy
         const video = document.createElement('div');
         video.className = 'video';
 
+        // Create phone container for zoom/transform support
+        const phoneContainer = document.createElement('div');
+        phoneContainer.className = 'phone-container';
+
         // Add loading overlay inside video container (controls will be visible)
         const loadingOverlay = this.createLoadingOverlay();
-        video.appendChild(loadingOverlay);
+        phoneContainer.appendChild(loadingOverlay);
 
+        video.appendChild(phoneContainer);
         deviceView.appendChild(video);
         deviceView.appendChild(moreBox);
-        player.setParent(video);
+
+        // Set the phone container on player for zoom support
+        player.setPhoneContainer(phoneContainer);
+        player.setParent(phoneContainer);
         player.pause();
 
         document.body.appendChild(deviceView);

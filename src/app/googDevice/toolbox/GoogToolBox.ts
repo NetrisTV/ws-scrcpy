@@ -82,6 +82,32 @@ export class GoogToolBox extends ToolBox {
             elements.push(screenshot);
         }
 
+        // Zoom controls
+        const zoomIn = new ToolBoxButton('Zoom in', SvgImage.Icon.ZOOM_IN);
+        zoomIn.addEventListener('click', () => {
+            player.zoomIn();
+        });
+        elements.push(zoomIn);
+
+        const zoomOut = new ToolBoxButton('Zoom out', SvgImage.Icon.ZOOM_OUT);
+        zoomOut.addEventListener('click', () => {
+            player.zoomOut();
+        });
+        elements.push(zoomOut);
+
+        const zoomReset = new ToolBoxButton('Reset zoom', SvgImage.Icon.ZOOM_RESET);
+        zoomReset.addEventListener('click', () => {
+            player.resetZoom();
+        });
+        elements.push(zoomReset);
+
+        // Screen rotation toggle (client-side UI rotation)
+        const rotateScreen = new ToolBoxButton('Rotate screen', SvgImage.Icon.SCREEN_ROTATION);
+        rotateScreen.addEventListener('click', () => {
+            player.rotateScreen();
+        });
+        elements.push(rotateScreen);
+
         const keyboard = new ToolBoxCheckbox(
             'Capture keyboard',
             SvgImage.Icon.KEYBOARD,

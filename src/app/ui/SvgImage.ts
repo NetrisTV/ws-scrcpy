@@ -15,6 +15,10 @@ import MenuSVG from '../../public/images/buttons/menu.svg';
 import ArrowBackSVG from '../../public/images/buttons/arrow_back.svg';
 import ToggleOnSVG from '../../public/images/buttons/toggle_on.svg';
 import ToggleOffSVG from '../../public/images/buttons/toggle_off.svg';
+import ZoomInSVG from '../../public/images/buttons/zoom_in.svg';
+import ZoomOutSVG from '../../public/images/buttons/zoom_out.svg';
+import ZoomResetSVG from '../../public/images/buttons/zoom_reset.svg';
+import ScreenRotationSVG from '../../public/images/buttons/screen_rotation.svg';
 
 export enum Icon {
     BACK,
@@ -34,6 +38,10 @@ export enum Icon {
     ARROW_BACK,
     TOGGLE_ON,
     TOGGLE_OFF,
+    ZOOM_IN,
+    ZOOM_OUT,
+    ZOOM_RESET,
+    SCREEN_ROTATION,
 }
 
 export default class SvgImage {
@@ -74,6 +82,14 @@ export default class SvgImage {
                 return ToggleOnSVG;
             case Icon.TOGGLE_OFF:
                 return ToggleOffSVG;
+            case Icon.ZOOM_IN:
+                return ZoomInSVG;
+            case Icon.ZOOM_OUT:
+                return ZoomOutSVG;
+            case Icon.ZOOM_RESET:
+                return ZoomResetSVG;
+            case Icon.SCREEN_ROTATION:
+                return ScreenRotationSVG;
             default:
                 return '';
         }

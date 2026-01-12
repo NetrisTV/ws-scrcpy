@@ -5,7 +5,7 @@ import Size from '../Size';
 import Util from '../Util';
 import { TypedEmitter } from '../../common/TypedEmitter';
 import { DisplayInfo } from '../DisplayInfo';
-import genericAndroid from "../../common/generic_android.png";
+import genericAndroid from '../../common/generic_android.png';
 
 interface BitrateStat {
     timestamp: number;
@@ -47,7 +47,7 @@ export interface PlayerClass {
         fitToScreen: boolean,
         displayInfo?: DisplayInfo,
     ): void;
-    new(udid: string, displayInfo?: DisplayInfo): BasePlayer;
+    new (udid: string, displayInfo?: DisplayInfo): BasePlayer;
 }
 
 export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
@@ -87,6 +87,16 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     protected videoHeight = -1;
     protected videoWidth = -1;
 
+    // Zoom state
+    private zoomLevel: number = 1.0;
+    private phoneContainer?: HTMLElement;
+    private readonly MIN_ZOOM = 0.5;
+    private readonly MAX_ZOOM = 2.0;
+    private readonly ZOOM_STEP = 0.1;
+
+    // UI rotation state (0, 90, 180, 270 degrees)
+    private uiRotation: number = 0;
+
     public static storageKeyPrefix = 'BaseDecoder';
     public static playerFullName = 'BasePlayer';
     public static playerCodeName = 'baseplayer';
@@ -114,12 +124,9 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         super();
         this.touchableCanvas = document.createElement('canvas');
         this.touchableCanvas.className = 'touch-layer';
-        this.touchableCanvas.style.width = "calc(100vw - 3rem)";
-        if (window.innerWidth > 380)
-            this.touchableCanvas.style.maxWidth = "510px";
-        else
-            this.touchableCanvas.style.maxWidth = "78vw";
-
+        this.touchableCanvas.style.width = 'calc(100vw - 3rem)';
+        if (window.innerWidth > 380) this.touchableCanvas.style.maxWidth = '510px';
+        else this.touchableCanvas.style.maxWidth = '78vw';
 
         const myInterval = setInterval(() => {
             if (tag.clientHeight || tag.clientWidth) {
@@ -131,27 +138,28 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
                 window.addEventListener('message', (e) => {
                     const allowedOrigins = [
-                        "https://nativebridge.io",
-                        "https://trust-me-bro.nativebridge.io",
-                        "http://localhost:5173",
+                        'https://nativebridge.io',
+                        'https://trust-me-bro.nativebridge.io',
+                        'http://localhost:5173',
                     ];
-                
-                    const isAllowedOrigin = allowedOrigins.includes(e.origin) || e.origin.startsWith("vscode-webview://");
+
+                    const isAllowedOrigin =
+                        allowedOrigins.includes(e.origin) || e.origin.startsWith('vscode-webview://');
 
                     if (!isAllowedOrigin) {
-                        console.warn("Blocked message from untrusted origin:", e.origin);
+                        console.warn('Blocked message from untrusted origin:', e.origin);
                         return; // Reject messages from untrusted origins
                     }
-                    if(e.data.event === "screenshot"){
-                        window.parent?.postMessage({ event: "screenshot", commentId: e.data.id, imageUrl: this.getImageDataURL() }, "*"); // Replace '*' with the specific origin for security
+                    if (e.data.event === 'screenshot') {
+                        window.parent?.postMessage(
+                            { event: 'screenshot', commentId: e.data.id, imageUrl: this.getImageDataURL() },
+                            '*',
+                        ); // Replace '*' with the specific origin for security
                     }
-                    console.log("change theme ", e.data.theme);
-                    if(e.data.event === "change-theme"){
-                        if( e.data.theme === "dark" )
-                            document.body.style.backgroundColor = "#1f2937";
-
-                        else if( e.data.theme === "light" )
-                            document.body.style.backgroundColor = "#f8fafc";
+                    console.log('change theme ', e.data.theme);
+                    if (e.data.event === 'change-theme') {
+                        if (e.data.theme === 'dark') document.body.style.backgroundColor = '#1f2937';
+                        else if (e.data.theme === 'light') document.body.style.backgroundColor = '#f8fafc';
                     }
                 });
 
@@ -168,269 +176,189 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     protected sendDataToParent(rotation: boolean, aspectRatio: string, deviceType: string): void {
         // Send data to the parent window
 
-        window.parent?.postMessage({ event: "device-rotation", rotation: rotation, aspectRatio, deviceType }, "*"); // Replace '*' with the specific origin for security
+        window.parent?.postMessage({ event: 'device-rotation', rotation: rotation, aspectRatio, deviceType }, '*'); // Replace '*' with the specific origin for security
     }
 
-    public reOrientScreen(invert: boolean = false, player: BasePlayer = this): void {
+    public reOrientScreen(_invert: boolean = false, player: BasePlayer = this): void {
+        // Determine if device is in landscape rotation
+        const rotation =
+            this.displayInfo?.rotation && this.displayInfo?.rotation !== 2 && this.displayInfo?.rotation !== 0
+                ? true
+                : false;
 
-        let rotation = this.displayInfo?.rotation && this.displayInfo?.rotation !== 2 && this.displayInfo?.rotation !== 0 ? true : false;
+        player.touchableCanvas.style.zIndex = '20';
 
-        console.log("player info ", this.displayInfo, invert);
-        player.touchableCanvas.style.zIndex = "20";
-        
-        const videoElem = document.getElementsByClassName("video-layer")[0] as HTMLElement;
-        const touchElem = document.getElementsByClassName("touch-layer")[0] as HTMLElement;
-        const aspectRatio = this.displayInfo ? this.displayInfo.size?.width / this.displayInfo.size?.height : "";
+        const videoElem = document.getElementsByClassName('video-layer')[0] as HTMLElement;
+        const touchElem = document.getElementsByClassName('touch-layer')[0] as HTMLElement;
+        const videoWrapper = document.getElementsByClassName('video')[0] as HTMLElement;
+        const deviceView = document.getElementsByClassName('device-view')[0] as HTMLElement;
+
+        if (!videoElem || !touchElem || !videoWrapper || !deviceView) {
+            return;
+        }
 
         const params = new URLSearchParams(window.location.search);
-        const deviceType = params.get('deviceType') || "emulated";
+        const deviceType = params.get('deviceType') || 'emulated';
 
-        if (videoElem) {
-            if (rotation) {
-    
-                if (window.innerWidth > 380){
-                    videoElem.style.maxWidth = "910px";
-                    if( deviceType == "emulated" ){
-                        videoElem.style.width = "calc(100vw - 4.8rem)";
-                        videoElem.style.borderRadius = "1.25rem";
-                        videoElem.style.marginTop = "3.2%";
-                        videoElem.style.marginLeft = "2%";
-                    }
-                }
-                else{
-                    
-                    videoElem.style.width = "calc(100vw - 3rem)";
-                    videoElem.style.maxWidth = "84vw";
-                    if( deviceType == "emulated" ){
-                        
-                        videoElem.style.width = "calc(100vw - 4rem)";
-                        videoElem.style.borderRadius = "1rem";
-                        videoElem.style.marginTop = "3.2%";
-                        videoElem.style.marginLeft = "2%";
-                    }
-                    else{
-                        videoElem.style.width = "calc(100vw - 3rem)";
+        // Get device aspect ratio from displayInfo
+        let deviceWidth = this.displayInfo?.size?.width || 1080;
+        let deviceHeight = this.displayInfo?.size?.height || 1920;
 
-                    }
-                }
-            }
-            else {
-
-                videoElem.style.width = "calc(100vw - 3rem)";
-
-                if (window.innerWidth > 380){
-
-                    videoElem.style.maxWidth = "510px";
-                    if( deviceType == "emulated" ){
-                        
-                        videoElem.style.width = "calc(100vw - 5.5rem)";
-                        videoElem.style.marginTop = "3%";
-                        videoElem.style.marginLeft = "4.5%";
-                    }
-                    else{
-                        
-                        videoElem.style.width = "calc(100vw - 3rem)";
-                    }
-                }
-                else{
-
-                    if( deviceType == "emulated" ){
-                        
-                        videoElem.style.maxWidth = "78vw";
-                        videoElem.style.width = "calc(100vw - 4rem)";
-                        videoElem.style.marginTop = "3%";
-                        videoElem.style.marginLeft = "4.2%";
-                    }
-                    else{
-                        
-                        videoElem.style.maxWidth = "90vw";
-                        videoElem.style.width = "calc(100vw - 3rem)";
-                    }
-                }
-            }
-
-            if( aspectRatio ){
-                console.log("asdf ", videoElem.clientWidth, videoElem.clientHeight, aspectRatio)
-                // videoElem.style.height = (videoElem.clientWidth / aspectRatio) + "px";
-            }
-        }
-        if (touchElem) {
-            if (rotation) {
-                
-                if (window.innerWidth > 380){
-                    touchElem.style.maxWidth = "910px";
-                    if( deviceType == "emulated" ){
-                        
-                        touchElem.style.width = "calc(100vw - 4.8rem)";
-                        touchElem.style.borderRadius = "1.5rem";
-                        touchElem.style.marginTop = "3.2%";
-                        touchElem.style.marginLeft = "2%";
-                    }
-                    else{
-
-                        touchElem.style.width = "calc(100vw - 3rem)";
-                    }
-                }
-                else{
-                    
-                    if( deviceType == "emulated" ){
-                        
-                        touchElem.style.maxWidth = "84vw";
-                        touchElem.style.width = "calc(100vw - 4rem)";
-                        touchElem.style.borderRadius = "1rem";
-                        touchElem.style.marginTop = "3.2%";
-                        touchElem.style.marginLeft = "2%";
-                    }
-                    else{
-                        
-                        touchElem.style.maxWidth = "90vw";
-                        touchElem.style.width = "calc(100vw - 3rem)";
-                    }
-                }  
-            }
-            else {
-
-                if (window.innerWidth > 380){
-                    touchElem.style.maxWidth = "510px";
-                    if( deviceType == "emulated" ){
-                        
-                        touchElem.style.width = "calc(100vw - 5.5rem)";
-                        touchElem.style.marginTop = "3%";
-                        touchElem.style.marginLeft = "4.5%";
-                    }
-                    else{
-
-                        touchElem.style.width = "calc(100vw - 3rem)";
-                    }
-                }
-                else{
-                    
-                    if( deviceType == "emulated" ){
-                        
-                        touchElem.style.width = "calc(100vw - 4rem)";
-                        touchElem.style.maxWidth = "78vw";
-                        touchElem.style.marginTop = "3%";
-                        touchElem.style.marginLeft = "4.2%";
-                    }
-                    else{
-
-                        touchElem.style.width = "calc(100vw - 3rem)";
-                        touchElem.style.maxWidth = "90vw";
-                    }
-                }
-            }
-            // if( aspectRatio )
-            //     touchElem.style.height = (touchElem.clientWidth / aspectRatio) + "px"
+        // Swap dimensions if in landscape rotation (device rotation)
+        if (rotation) {
+            [deviceWidth, deviceHeight] = [deviceHeight, deviceWidth];
         }
 
-        const width = touchElem.clientWidth;
-        let height = touchElem.clientHeight;
-        
-        if( aspectRatio )
-            height = width / aspectRatio;
+        // Check if UI rotation swaps the visible aspect ratio (90 or 270 degrees)
+        const isUIRotated = this.uiRotation === 90 || this.uiRotation === 270;
 
-        const videoElemParent = document.getElementsByClassName("video")[0] as HTMLElement;
-        const videoElemParentParent = document.getElementsByClassName("device-view")[0] as HTMLElement;
-        videoElemParent.style.maxWidth = "none";
-        videoElemParentParent.style.maxWidth = "none";
-        videoElemParentParent.style.float = "none";
-        
-        let androidFrame = document.getElementById("generic-android-mockup") as HTMLImageElement;
+        // Content aspect ratio (what we render)
+        const contentAspectRatio = deviceWidth / deviceHeight;
 
-        console.log("androidFrame ", androidFrame?.clientWidth, androidFrame?.clientHeight, rotation, height, width, touchElem?.clientHeight, touchElem?.clientWidth, touchElem?.clientHeight, videoElem?.clientHeight, videoElem?.clientWidth);
-        
-        if( !androidFrame ){
-            androidFrame = document.createElement("img");
+        // Visible aspect ratio (how it appears after UI rotation)
+        const visibleAspectRatio = isUIRotated ? 1 / contentAspectRatio : contentAspectRatio;
+
+        // Calculate available space (accounting for control panel)
+        const controlPanel = document.getElementsByClassName('control-buttons-list')[0] as HTMLElement;
+        const controlPanelWidth = controlPanel ? controlPanel.offsetWidth + 16 : 50; // 16px for padding
+        const padding = 32; // Total padding around the phone
+
+        const availableWidth = window.innerWidth - controlPanelWidth - padding;
+        const availableHeight = window.innerHeight - padding;
+
+        // Calculate optimal dimensions based on VISIBLE aspect ratio (after rotation)
+        let visibleWidth: number;
+        let visibleHeight: number;
+
+        if (availableWidth / availableHeight > visibleAspectRatio) {
+            // Height constrained
+            visibleHeight = availableHeight;
+            visibleWidth = visibleHeight * visibleAspectRatio;
+        } else {
+            // Width constrained
+            visibleWidth = availableWidth;
+            visibleHeight = visibleWidth / visibleAspectRatio;
+        }
+
+        // Content dimensions (before CSS rotation)
+        // When UI is rotated 90/270, the content width/height are swapped from visible
+        let contentWidth: number;
+        let contentHeight: number;
+        if (isUIRotated) {
+            contentWidth = visibleHeight; // Rotated: visible height becomes content width
+            contentHeight = visibleWidth; // Rotated: visible width becomes content height
+        } else {
+            contentWidth = visibleWidth;
+            contentHeight = visibleHeight;
+        }
+
+        // Apply zoom level
+        const scaledWidth = contentWidth * this.zoomLevel;
+        const scaledHeight = contentHeight * this.zoomLevel;
+
+        // Apply styles to video and touch layers
+        const widthPx = `${scaledWidth}px`;
+        const heightPx = `${scaledHeight}px`;
+
+        // Reset all hardcoded styles
+        videoElem.style.width = widthPx;
+        videoElem.style.height = heightPx;
+        videoElem.style.maxWidth = 'none';
+        videoElem.style.marginTop = '0';
+        videoElem.style.marginLeft = '0';
+        videoElem.style.borderRadius = '1.5rem';
+
+        touchElem.style.width = widthPx;
+        touchElem.style.height = heightPx;
+        touchElem.style.maxWidth = 'none';
+        touchElem.style.marginTop = '0';
+        touchElem.style.marginLeft = '0';
+        touchElem.style.borderRadius = '1.5rem';
+
+        // Handle phone container if it exists
+        if (this.phoneContainer) {
+            this.phoneContainer.style.width = widthPx;
+            this.phoneContainer.style.height = heightPx;
+            this.phoneContainer.style.position = 'relative';
+        }
+
+        // Handle android mockup frame - append to phoneContainer so it positions correctly
+        let androidFrame = document.getElementById('generic-android-mockup') as HTMLImageElement;
+        const phoneContainer =
+            this.phoneContainer || (document.getElementsByClassName('phone-container')[0] as HTMLElement);
+
+        if (!androidFrame && deviceType === 'emulated' && phoneContainer) {
+            androidFrame = document.createElement('img');
             androidFrame.src = genericAndroid;
-            androidFrame.id = "generic-android-mockup";
-            androidFrame.style.height = "";
+            androidFrame.id = 'generic-android-mockup';
+            androidFrame.style.position = 'absolute';
+            androidFrame.style.pointerEvents = 'none';
+            androidFrame.style.zIndex = '0'; // Behind video/touch layers
+            phoneContainer.appendChild(androidFrame);
         }
 
         if (androidFrame) {
+            // Scale the frame to wrap around the video
+            const frameWidthMultiplier = 1.08;
+            const frameHeightMultiplier = 1.04;
+            const frameWidth = scaledWidth * frameWidthMultiplier;
+            const frameHeight = scaledHeight * frameHeightMultiplier;
 
-            androidFrame.style.aspectRatio = "auto";
+            androidFrame.style.width = `${frameWidth}px`;
+            androidFrame.style.height = `${frameHeight}px`;
+            androidFrame.style.maxWidth = 'none';
+
             if (rotation) {
-
-                androidFrame.style.aspectRatio="auto";
-
-                if( width < height ){
-                    if( window.innerWidth > 380 )
-                        androidFrame.style.maxWidth = "910px";
-                    else
-                        androidFrame.style.maxWidth = "84vw";
-
-                    return;
-                }
-                else
-                    androidFrame.style.maxWidth = "none";
-                androidFrame.style.transform = "rotateZ(-90deg)";
-                androidFrame.style.transformOrigin = Math.abs( (height*1.11) / 2) + "px " + Math.abs( (height*1.11) / 2) + "px";
-                androidFrame.style.height = (width*1.04) + "px";
-                androidFrame.style.width = (height*1.11) + "px";
-                if( deviceType == "emulated" ){
-                    
-                    videoElemParentParent.style.width = (width*1.04 + 34) + "px";
-                    videoElemParent.style.width = (width*1.04 + 34) + "px";
-                    androidFrame.style.marginTop = "0px";
-                    androidFrame.style.marginLeft = "0px";
-                }
-                else{
-                    videoElemParent.style.width = (width + 34) + "px"
-                    videoElemParentParent.style.width = (width + 34) + "px";
-                    videoElemParent.style.height = (height + 34) + "px"
-                    videoElemParentParent.style.height = (height + 34) + "px";
-
-                }
-
-            }
-            else {
-                if( width > height ){
-                    if( window.innerWidth > 380 )
-                        androidFrame.style.maxWidth = "510px";
-                    else
-                        androidFrame.style.maxWidth = "78vw";
-
-                    return;
-                }
-                else
-                    androidFrame.style.maxWidth = "none";
-                androidFrame.style.transform = "";
-                androidFrame.style.transformOrigin = Math.abs((width*1.04) / 2) + "px " + Math.abs((width*1.04) / 2) + "px";
-                androidFrame.style.width = (width*1.1) + "px";
-                androidFrame.style.height = (height*1.03) + "px";
-                if( deviceType == "emulated"){
-                    videoElemParent.style.height = (height*1.03) + "px";
-                    videoElemParent.style.width = (width*1.11 + 34) + "px";
-                    androidFrame.style.marginTop = "0px";
-                    androidFrame.style.marginLeft = "0px";
-                    videoElemParentParent.style.width = (width*1.11 + 34) + "px";
-                    videoElemParentParent.style.height = (height*1.03) + "px";
-                }
-                else{
-                    videoElemParentParent.style.width = (width + 34) + "px";
-                    videoElemParentParent.style.height = (height) + "px";
-                    videoElemParent.style.width = (width + 34) + "px";
-                    videoElemParent.style.height = height + "px";
-
-                }
+                // Landscape mode - rotate the frame
+                androidFrame.style.transform = 'rotateZ(-90deg)';
+                androidFrame.style.transformOrigin = `${frameHeight / 2}px ${frameHeight / 2}px`;
+            } else {
+                // Portrait mode
+                androidFrame.style.transform = '';
+                androidFrame.style.transformOrigin = 'center center';
             }
 
-            const androidMockFrame = document.getElementById("generic-android-mockup") as HTMLImageElement;
-            console.log("androidMockFrame ", height, videoElem.clientHeight);
-            if( !androidMockFrame && deviceType == "emulated" ){
-                videoElemParent.appendChild(androidFrame);
+            // Position frame centered around the video
+            const frameOffsetX = (frameWidth - scaledWidth) / 2;
+            const frameOffsetY = (frameHeight - scaledHeight) / 2;
+
+            if (deviceType === 'emulated') {
+                // Center the frame around the video content
+                androidFrame.style.left = `${-frameOffsetX}px`;
+                androidFrame.style.top = `${-frameOffsetY}px`;
+                androidFrame.style.display = 'block';
+
+                // No margin adjustments needed - video stays at origin
+                videoElem.style.marginTop = '0';
+                videoElem.style.marginLeft = '0';
+                touchElem.style.marginTop = '0';
+                touchElem.style.marginLeft = '0';
+            } else {
+                androidFrame.style.display = 'none';
             }
-
-            const aspectRatio = videoElemParentParent.clientWidth + "/" + (rotation ? 
-                deviceType == "emulated" ? androidFrame.clientWidth 
-                    : height
-                : deviceType == "emulated" ? videoElemParent.clientHeight
-                    : height);
-
-            this.sendDataToParent(rotation, aspectRatio, deviceType);
         }
-    }
 
+        // Set wrapper dimensions based on VISIBLE size (after UI rotation)
+        const scaledVisibleWidth = visibleWidth * this.zoomLevel;
+        const scaledVisibleHeight = visibleHeight * this.zoomLevel;
+        const wrapperWidth = deviceType === 'emulated' ? scaledVisibleWidth * 1.15 : scaledVisibleWidth;
+        const wrapperHeight = deviceType === 'emulated' ? scaledVisibleHeight * 1.05 : scaledVisibleHeight;
+
+        videoWrapper.style.width = `${wrapperWidth}px`;
+        videoWrapper.style.height = `${wrapperHeight}px`;
+        videoWrapper.style.maxWidth = 'none';
+        videoWrapper.style.maxHeight = 'none';
+
+        // Center the device view
+        deviceView.style.width = '100%';
+        deviceView.style.height = '100vh';
+        deviceView.style.maxWidth = 'none';
+        deviceView.style.float = 'none';
+
+        // Send data to parent window
+        const aspectRatioStr = `${Math.round(wrapperWidth)}/${Math.round(wrapperHeight)}`;
+        this.sendDataToParent(rotation, aspectRatioStr, deviceType);
+    }
 
     protected calculateScreenInfoForBounds(videoWidth: number, videoHeight: number): void {
         this.videoWidth = videoWidth;
@@ -900,5 +828,71 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         displayInfo?: DisplayInfo,
     ): void {
         this.putVideoSettingsToStorage(this.storageKeyPrefix, udid, videoSettings, fitToScreen, displayInfo);
+    }
+
+    // Zoom methods
+    public setPhoneContainer(container: HTMLElement): void {
+        this.phoneContainer = container;
+        this.applyZoom();
+    }
+
+    public getPhoneContainer(): HTMLElement | undefined {
+        return this.phoneContainer;
+    }
+
+    public zoomIn(): void {
+        this.setZoom(Math.min(this.zoomLevel + this.ZOOM_STEP, this.MAX_ZOOM));
+    }
+
+    public zoomOut(): void {
+        this.setZoom(Math.max(this.zoomLevel - this.ZOOM_STEP, this.MIN_ZOOM));
+    }
+
+    public resetZoom(): void {
+        this.setZoom(1.0);
+    }
+
+    public getZoom(): number {
+        return this.zoomLevel;
+    }
+
+    public setZoom(level: number): void {
+        this.zoomLevel = Math.max(this.MIN_ZOOM, Math.min(level, this.MAX_ZOOM));
+        this.applyZoom();
+    }
+
+    private applyZoom(): void {
+        this.applyTransforms();
+        this.reOrientScreen();
+    }
+
+    // UI Rotation methods - rotates the display anticlockwise by 90 degrees
+    public rotateScreen(): void {
+        this.uiRotation = (this.uiRotation + 90) % 360;
+        this.applyTransforms();
+        this.reOrientScreen();
+    }
+
+    public getUIRotation(): number {
+        return this.uiRotation;
+    }
+
+    public resetRotation(): void {
+        this.uiRotation = 0;
+        this.applyTransforms();
+        this.reOrientScreen();
+    }
+
+    private applyTransforms(): void {
+        if (this.phoneContainer) {
+            const transforms: string[] = [];
+            if (this.zoomLevel !== 1.0) {
+                transforms.push(`scale(${this.zoomLevel})`);
+            }
+            if (this.uiRotation !== 0) {
+                transforms.push(`rotate(${-this.uiRotation}deg)`);
+            }
+            this.phoneContainer.style.transform = transforms.length > 0 ? transforms.join(' ') : '';
+        }
     }
 }

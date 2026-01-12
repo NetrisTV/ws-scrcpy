@@ -37,7 +37,8 @@ export class FeaturedInteractionHandler extends InteractionHandler {
 
     public buildScrollEvent(event: WheelEvent, screenInfo: ScreenInfo): ScrollControlMessage[] {
         const messages: ScrollControlMessage[] = [];
-        const touchOnClient = InteractionHandler.buildTouchOnClient(event, screenInfo);
+        const uiRotation = this.player.getUIRotation();
+        const touchOnClient = InteractionHandler.buildTouchOnClient(event, screenInfo, uiRotation);
         if (touchOnClient) {
             const hScroll = event.deltaX > 0 ? -1 : event.deltaX < -0 ? 1 : 0;
             const vScroll = event.deltaY > 0 ? -1 : event.deltaY < -0 ? 1 : 0;

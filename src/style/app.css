@@ -102,13 +102,13 @@ body.stream {
 
 .device-view {
     z-index: 1;
-    float: right;
     display: flex;
     flex-direction: row;
     width: 100%;
     height: 100vh;
     max-width: none;
-    justify-content: start;
+    justify-content: center;
+    align-items: center;
 }
 
 .test-execution-placeholder {
@@ -138,14 +138,35 @@ body.stream {
 
 .video-layer {
     position: absolute;
-    z-index: 0;
+    top: 0;
+    left: 0;
+    z-index: 1;
     border-radius: 1.5rem;
 }
 
 .touch-layer {
     position: absolute;
+    top: 0;
+    left: 0;
     border-radius: 1.5rem;
-    z-index: 1;
+    z-index: 2;
+}
+
+/* Phone container - wraps video and touch layers for zoom support */
+.phone-container {
+    position: relative;
+    transform-origin: center center;
+    transition: transform 0.15s ease-out, width 0.15s ease-out, height 0.15s ease-out;
+}
+
+/* Video wrapper - centers the phone container */
+.video {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    height: 100%;
 }
 
 /* Video loading overlay - Android Material Design */
@@ -254,16 +275,6 @@ body.stream {
     50% {
         opacity: 0.9;
     }
-}
-
-.video {
-    /* float: right; */
-    max-height: 100%;
-    max-width: 100%;
-    background-color: transparent;
-    position: relative;
-    flex: 1;
-    height: 100%;
 }
 
 .mockup-container {
