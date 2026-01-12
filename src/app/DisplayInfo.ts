@@ -17,13 +17,8 @@ export class DisplayInfo {
         public readonly layerStack: number,
         public readonly flags: number,
     ) {
-        const deviceViewElem = document.getElementsByClassName('device-view')[0] as HTMLElement;
-        if( rotation && deviceViewElem ){
-            deviceViewElem.style.maxWidth = "none";            
-        }
-        else if( deviceViewElem ){
-            deviceViewElem.style.maxWidth = "460px";
-        }
+        // Note: Device view layout is handled by BasePlayer.reOrientScreen()
+        // Do not set maxWidth here as it interferes with the responsive layout
     }
 
     public toBuffer(): Buffer {

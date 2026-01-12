@@ -419,19 +419,24 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         videoWrapper.style.maxWidth = 'none';
         videoWrapper.style.maxHeight = 'none';
         // Reset any positioning that might affect centering
-        videoWrapper.style.margin = '0 auto'; // Center horizontally within device-view
+        videoWrapper.style.margin = '0'; // Let flexbox handle centering
         videoWrapper.style.position = 'relative';
         videoWrapper.style.flex = 'none'; // Override CSS flex: 1 to respect explicit width
         videoWrapper.style.display = 'flex';
         videoWrapper.style.justifyContent = 'center';
         videoWrapper.style.alignItems = 'center';
+        // Clear any leftover transform/position styles
+        videoWrapper.style.transform = '';
+        videoWrapper.style.left = '';
+        videoWrapper.style.top = '';
 
-        // Center the device view
+        // Center the device view using flexbox
         deviceView.style.width = '100%';
         deviceView.style.height = '100vh';
         deviceView.style.maxWidth = 'none';
         deviceView.style.float = 'none';
         deviceView.style.display = 'flex';
+        deviceView.style.flexDirection = 'row';
         deviceView.style.justifyContent = 'center';
         deviceView.style.alignItems = 'center';
 

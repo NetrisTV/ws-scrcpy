@@ -241,9 +241,14 @@ export class StreamClientScrcpy
         this.player.setDisplayInfo(info.displayInfo);
 
         // Reset manual UI rotation when device auto-rotates to prevent double rotation
-        // Note: reOrientScreen will be called by setScreenInfo when video dimensions change
         if (rotationChanged && this.player.getUIRotation() !== 0) {
             this.player.resetRotation();
+        }
+
+        // Always re-orient screen when rotation changes to ensure proper centering
+        // This handles cases where dimensions don't change but orientation does
+        if (rotationChanged) {
+            this.player.reOrientScreen();
         }
 
         if (typeof this.fitToScreen !== 'boolean') {
