@@ -180,12 +180,6 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
     }
 
     public reOrientScreen(_invert: boolean = false, player: BasePlayer = this): void {
-        // Determine if device is in landscape rotation
-        const rotation =
-            this.displayInfo?.rotation && this.displayInfo?.rotation !== 2 && this.displayInfo?.rotation !== 0
-                ? true
-                : false;
-
         player.touchableCanvas.style.zIndex = '20';
 
         const videoElem = document.getElementsByClassName('video-layer')[0] as HTMLElement;
@@ -200,14 +194,24 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const params = new URLSearchParams(window.location.search);
         const deviceType = params.get('deviceType') || 'emulated';
 
-        // Get device aspect ratio from displayInfo
-        let deviceWidth = this.displayInfo?.size?.width || 1080;
-        let deviceHeight = this.displayInfo?.size?.height || 1920;
+        // Get video dimensions from screenInfo (actual video stream size) or displayInfo as fallback
+        let deviceWidth: number;
+        let deviceHeight: number;
 
-        // Swap dimensions if in landscape rotation (device rotation)
-        if (rotation) {
-            [deviceWidth, deviceHeight] = [deviceHeight, deviceWidth];
+        if (this.screenInfo?.videoSize) {
+            // Use actual video stream dimensions - this is the most accurate
+            deviceWidth = this.screenInfo.videoSize.width;
+            deviceHeight = this.screenInfo.videoSize.height;
+        } else if (this.displayInfo?.size) {
+            deviceWidth = this.displayInfo.size.width;
+            deviceHeight = this.displayInfo.size.height;
+        } else {
+            deviceWidth = 1080;
+            deviceHeight = 1920;
         }
+
+        // Determine if device video is in landscape (width > height)
+        const rotation = deviceWidth > deviceHeight;
 
         // Check if UI rotation swaps the visible aspect ratio (90 or 270 degrees)
         const isUIRotated = this.uiRotation === 90 || this.uiRotation === 270;
@@ -299,28 +303,50 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
         if (androidFrame) {
             // Scale the frame to wrap around the video
+            // The frame PNG is designed for portrait, so we need to handle landscape differently
             const frameWidthMultiplier = 1.08;
             const frameHeightMultiplier = 1.04;
-            const frameWidth = scaledWidth * frameWidthMultiplier;
-            const frameHeight = scaledHeight * frameHeightMultiplier;
 
-            androidFrame.style.width = `${frameWidth}px`;
-            androidFrame.style.height = `${frameHeight}px`;
-            androidFrame.style.maxWidth = 'none';
+            let frameWidth: number;
+            let frameHeight: number;
+            let frameOffsetX: number;
+            let frameOffsetY: number;
 
             if (rotation) {
-                // Landscape mode - rotate the frame
+                // Device is in landscape mode - frame needs to be created in portrait then rotated
+                // Swap the multipliers: frame's "width" (which will become height after rotation) wraps video height
+                // frame's "height" (which will become width after rotation) wraps video width
+                frameWidth = scaledHeight * frameHeightMultiplier; // This will become the visual height
+                frameHeight = scaledWidth * frameWidthMultiplier; // This will become the visual width
+
+                androidFrame.style.width = `${frameWidth}px`;
+                androidFrame.style.height = `${frameHeight}px`;
+                androidFrame.style.maxWidth = 'none';
+
+                // Rotate frame 90° to match landscape video
                 androidFrame.style.transform = 'rotateZ(-90deg)';
-                androidFrame.style.transformOrigin = `${frameHeight / 2}px ${frameHeight / 2}px`;
+                // Transform origin needs to account for the rotation pivot
+                androidFrame.style.transformOrigin = `${frameWidth / 2}px ${frameWidth / 2}px`;
+
+                // After rotation: visual width = frameHeight, visual height = frameWidth
+                const visualFrameWidth = frameHeight;
+                const visualFrameHeight = frameWidth;
+                frameOffsetX = (visualFrameWidth - scaledWidth) / 2;
+                frameOffsetY = (visualFrameHeight - scaledHeight) / 2;
             } else {
-                // Portrait mode
+                // Portrait mode - straightforward
+                frameWidth = scaledWidth * frameWidthMultiplier;
+                frameHeight = scaledHeight * frameHeightMultiplier;
+
+                androidFrame.style.width = `${frameWidth}px`;
+                androidFrame.style.height = `${frameHeight}px`;
+                androidFrame.style.maxWidth = 'none';
                 androidFrame.style.transform = '';
                 androidFrame.style.transformOrigin = 'center center';
-            }
 
-            // Position frame centered around the video
-            const frameOffsetX = (frameWidth - scaledWidth) / 2;
-            const frameOffsetY = (frameHeight - scaledHeight) / 2;
+                frameOffsetX = (frameWidth - scaledWidth) / 2;
+                frameOffsetY = (frameHeight - scaledHeight) / 2;
+            }
 
             if (deviceType === 'emulated') {
                 // Center the frame around the video content
@@ -636,16 +662,21 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             this.pause();
         }
         this.receivedFirstFrame = false;
+        const oldScreenInfo = this.screenInfo;
         this.screenInfo = screenInfo;
         const { width, height } = screenInfo.videoSize;
         this.touchableCanvas.width = width;
         this.touchableCanvas.height = height;
-        if (this.parentElement) {
-            this.parentElement.style.height = `${height}px`;
-            this.parentElement.style.width = `${width}px`;
-        }
+        // Don't set parentElement dimensions directly - let reOrientScreen handle it
         const size = new Size(width, height);
         this.emit('video-view-resize', size);
+
+        // Re-orient screen when video dimensions change (e.g., device rotation)
+        const dimensionsChanged =
+            !oldScreenInfo || oldScreenInfo.videoSize.width !== width || oldScreenInfo.videoSize.height !== height;
+        if (dimensionsChanged) {
+            this.reOrientScreen();
+        }
     }
 
     public getName(): string {
