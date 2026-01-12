@@ -221,14 +221,25 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
         // Visible aspect ratio (how it appears after UI rotation)
         const visibleAspectRatio = isUIRotated ? 1 / contentAspectRatio : contentAspectRatio;
+        const isLandscapeVisible = visibleAspectRatio > 1;
 
         // Calculate available space (accounting for control panel)
         const controlPanel = document.getElementsByClassName('control-buttons-list')[0] as HTMLElement;
-        const controlPanelWidth = controlPanel ? controlPanel.offsetWidth + 16 : 50; // 16px for padding
-        const padding = 32; // Total padding around the phone
+        // Ensure minimum control panel width of 50px even if not rendered yet
+        const controlPanelWidth = Math.max(controlPanel?.offsetWidth || 0, 50) + 24;
+        // More padding for landscape to ensure phone doesn't overflow
+        const horizontalPadding = isLandscapeVisible ? 80 : 48;
+        const verticalPadding = isLandscapeVisible ? 48 : 32;
 
-        const availableWidth = window.innerWidth - controlPanelWidth - padding;
-        const availableHeight = window.innerHeight - padding;
+        let availableWidth = window.innerWidth - controlPanelWidth - horizontalPadding;
+        let availableHeight = window.innerHeight - verticalPadding;
+
+        // Maximum size constraints to prevent phone from getting too large
+        const maxWidth = isLandscapeVisible ? Math.min(availableWidth, 900) : Math.min(availableWidth, 500);
+        const maxHeight = isLandscapeVisible ? Math.min(availableHeight, 500) : Math.min(availableHeight, 850);
+
+        availableWidth = Math.min(availableWidth, maxWidth);
+        availableHeight = Math.min(availableHeight, maxHeight);
 
         // Calculate optimal dimensions based on VISIBLE aspect ratio (after rotation)
         let visibleWidth: number;
