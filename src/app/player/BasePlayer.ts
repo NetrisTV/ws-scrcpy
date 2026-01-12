@@ -295,7 +295,16 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             this.phoneContainer.style.width = widthPx;
             this.phoneContainer.style.height = heightPx;
             this.phoneContainer.style.position = 'relative';
+            // Reset any positioning that might affect centering
+            this.phoneContainer.style.margin = '0';
+            this.phoneContainer.style.left = '';
+            this.phoneContainer.style.top = '';
         }
+
+        // Frame multipliers - defined at higher scope for wrapper sizing
+        // The frame PNG is designed for portrait, so we need to handle landscape differently
+        const frameWidthMultiplier = 1.08;
+        const frameHeightMultiplier = 1.04;
 
         // Handle android mockup frame - append to phoneContainer so it positions correctly
         let androidFrame = document.getElementById('generic-android-mockup') as HTMLImageElement;
@@ -314,9 +323,6 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
         if (androidFrame) {
             // Scale the frame to wrap around the video
-            // The frame PNG is designed for portrait, so we need to handle landscape differently
-            const frameWidthMultiplier = 1.08;
-            const frameHeightMultiplier = 1.04;
 
             let frameWidth: number;
             let frameHeight: number;
@@ -325,10 +331,13 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
             if (rotation) {
                 // Device is in landscape mode - frame needs to be created in portrait then rotated
-                // Swap the multipliers: frame's "width" (which will become height after rotation) wraps video height
-                // frame's "height" (which will become width after rotation) wraps video width
-                frameWidth = scaledHeight * frameHeightMultiplier; // This will become the visual height
-                frameHeight = scaledWidth * frameWidthMultiplier; // This will become the visual width
+                // The frame PNG has thicker bezels on top/bottom (designed for portrait)
+                // When rotated 90°, those thick bezels become left/right sides
+                // So we need to swap multipliers:
+                // - frameWidth (becomes visual height) should use width multiplier (thicker bezel = 1.08)
+                // - frameHeight (becomes visual width) should use height multiplier (thinner bezel = 1.04)
+                frameWidth = scaledHeight * frameWidthMultiplier; // This becomes visual height (thick bezels on top/bottom)
+                frameHeight = scaledWidth * frameHeightMultiplier; // This becomes visual width (thin bezels on sides)
 
                 androidFrame.style.width = `${frameWidth}px`;
                 androidFrame.style.height = `${frameHeight}px`;
@@ -378,19 +387,53 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         // Set wrapper dimensions based on VISIBLE size (after UI rotation)
         const scaledVisibleWidth = visibleWidth * this.zoomLevel;
         const scaledVisibleHeight = visibleHeight * this.zoomLevel;
-        const wrapperWidth = deviceType === 'emulated' ? scaledVisibleWidth * 1.15 : scaledVisibleWidth;
-        const wrapperHeight = deviceType === 'emulated' ? scaledVisibleHeight * 1.05 : scaledVisibleHeight;
+
+        // Calculate wrapper size to accommodate frame
+        // For emulated devices, wrapper must fit the frame (which wraps the video)
+        let wrapperWidth: number;
+        let wrapperHeight: number;
+        if (deviceType === 'emulated') {
+            if (rotation) {
+                // In device landscape (auto-rotate): frame is rotated, so its visual dimensions are swapped
+                // frameWidth = scaledHeight * 1.08 becomes visual height
+                // frameHeight = scaledWidth * 1.04 becomes visual width
+                wrapperWidth = scaledVisibleWidth * frameHeightMultiplier;
+                wrapperHeight = scaledVisibleHeight * frameWidthMultiplier;
+            } else if (isUIRotated) {
+                // Manual rotation: phone container is rotated, frame stays portrait
+                // Visual dimensions after container rotation swap
+                wrapperWidth = scaledVisibleWidth * frameHeightMultiplier;
+                wrapperHeight = scaledVisibleHeight * frameWidthMultiplier;
+            } else {
+                // Portrait mode: frame is portrait
+                wrapperWidth = scaledVisibleWidth * frameWidthMultiplier;
+                wrapperHeight = scaledVisibleHeight * frameHeightMultiplier;
+            }
+        } else {
+            wrapperWidth = scaledVisibleWidth;
+            wrapperHeight = scaledVisibleHeight;
+        }
 
         videoWrapper.style.width = `${wrapperWidth}px`;
         videoWrapper.style.height = `${wrapperHeight}px`;
         videoWrapper.style.maxWidth = 'none';
         videoWrapper.style.maxHeight = 'none';
+        // Reset any positioning that might affect centering
+        videoWrapper.style.margin = '0 auto'; // Center horizontally within device-view
+        videoWrapper.style.position = 'relative';
+        videoWrapper.style.flex = 'none'; // Override CSS flex: 1 to respect explicit width
+        videoWrapper.style.display = 'flex';
+        videoWrapper.style.justifyContent = 'center';
+        videoWrapper.style.alignItems = 'center';
 
         // Center the device view
         deviceView.style.width = '100%';
         deviceView.style.height = '100vh';
         deviceView.style.maxWidth = 'none';
         deviceView.style.float = 'none';
+        deviceView.style.display = 'flex';
+        deviceView.style.justifyContent = 'center';
+        deviceView.style.alignItems = 'center';
 
         // Send data to parent window
         const aspectRatioStr = `${Math.round(wrapperWidth)}/${Math.round(wrapperHeight)}`;
