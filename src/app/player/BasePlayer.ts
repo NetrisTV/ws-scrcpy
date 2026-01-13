@@ -240,7 +240,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
         if (isMobile) {
             horizontalPadding = 4; // Minimal horizontal padding on mobile
-            verticalPadding = mobileToolbarHeight + 4; // Space for thin bottom toolbar
+            verticalPadding = mobileToolbarHeight + 28; // Space for bottom toolbar + clearance
         } else if (isTablet) {
             horizontalPadding = isLandscapeVisible ? 40 : 24;
             verticalPadding = isLandscapeVisible ? 32 : 24;
@@ -485,8 +485,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         deviceView.style.paddingRight = '0';
 
         if (isMobile) {
-            // Mobile: add bottom padding for thin toolbar
-            deviceView.style.paddingBottom = `${mobileToolbarHeight + 4}px`;
+            // Mobile: add bottom padding for toolbar + clearance so phone doesn't overlap
+            deviceView.style.paddingBottom = `${mobileToolbarHeight + 20}px`;
         } else {
             deviceView.style.paddingBottom = '0';
         }
