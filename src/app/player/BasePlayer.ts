@@ -228,8 +228,10 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const isTablet = window.innerWidth >= 600 && window.innerWidth < 1024;
 
         // Calculate available space (accounting for control panel)
-        // On mobile, control panel floats over content so don't deduct its width
         const controlPanel = document.getElementsByClassName('control-buttons-list')[0] as HTMLElement;
+        // On mobile, toolbar is at bottom - reserve vertical space for it
+        const mobileToolbarHeight = window.innerWidth < 400 ? 40 : 48;
+        // On desktop/tablet, toolbar is on left side
         const controlPanelWidth = isMobile ? 0 : Math.max(controlPanel?.offsetWidth || 0, 50) + 24;
 
         // Responsive padding - much less on mobile to maximize phone size
@@ -237,8 +239,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         let verticalPadding: number;
 
         if (isMobile) {
-            horizontalPadding = 16;
-            verticalPadding = 16;
+            horizontalPadding = 8; // Small horizontal padding on mobile
+            verticalPadding = mobileToolbarHeight + 8; // Space for bottom toolbar
         } else if (isTablet) {
             horizontalPadding = isLandscapeVisible ? 40 : 24;
             verticalPadding = isLandscapeVisible ? 32 : 24;
@@ -252,8 +254,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         let availableHeight = window.innerHeight - verticalPadding;
 
         // Minimum size constraints to prevent phone from getting too small
-        const minWidth = isLandscapeVisible ? 280 : 160;
-        const minHeight = isLandscapeVisible ? 180 : 240;
+        const minWidth = isLandscapeVisible ? 200 : 100;
+        const minHeight = isLandscapeVisible ? 120 : 150;
 
         // Maximum size constraints - more generous on mobile/tablet
         let maxWidth: number;
@@ -467,16 +469,27 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         videoWrapper.style.left = '';
         videoWrapper.style.top = '';
 
-        // Center the device view using flexbox
+        // Position the device view using flexbox
         deviceView.style.width = '100%';
         deviceView.style.height = '100vh';
         deviceView.style.maxWidth = 'none';
         deviceView.style.float = 'none';
         deviceView.style.display = 'flex';
         deviceView.style.flexDirection = 'row';
-        deviceView.style.justifyContent = 'center';
         deviceView.style.alignItems = 'center';
         deviceView.style.overflow = 'auto'; // Allow scrolling when zoomed phone exceeds viewport
+
+        // Center the phone - toolbar is at bottom on mobile, left on desktop
+        deviceView.style.justifyContent = 'center';
+        deviceView.style.paddingLeft = '0';
+        deviceView.style.paddingRight = '0';
+
+        if (isMobile) {
+            // Mobile: add bottom padding for toolbar
+            deviceView.style.paddingBottom = `${mobileToolbarHeight + 8}px`;
+        } else {
+            deviceView.style.paddingBottom = '0';
+        }
 
         // Send data to parent window
         const aspectRatioStr = `${Math.round(wrapperWidth)}/${Math.round(wrapperHeight)}`;

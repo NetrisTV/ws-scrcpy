@@ -475,18 +475,43 @@ body.stream::before {
 
 /* Mobile devices (width < 600px) */
 @media (max-width: 599px) {
-    /* Control panel - smaller on mobile but still visible */
+    /* Control panel - fixed at bottom, horizontal layout */
     .control-buttons-list {
-        width: 2rem;
-        padding: 0.25rem;
-        left: 8px;
+        width: auto;
+        height: auto;
+        padding: 0.35rem 0.5rem;
+        left: 50%;
+        right: auto;
+        top: auto;
+        bottom: 8px;
+        transform: translateX(-50%);
+        flex-direction: row;
+        cursor: default; /* Not draggable on mobile */
+        border-radius: 1.5rem;
+        gap: 0.15rem;
+    }
+
+    /* Toolbox content horizontal on mobile */
+    .toolbox-content {
+        flex-direction: row;
+        max-height: none;
+        gap: 0.15rem;
+    }
+
+    /* Disable drag indicator on mobile */
+    .control-buttons-list::before {
+        display: none;
+    }
+
+    .control-buttons-list.dragging {
+        cursor: default;
     }
 
     /* Smaller buttons on mobile */
     .control-button {
-        width: 1.5rem;
-        height: 1.5rem;
-        padding: 0.15rem;
+        width: 1.75rem;
+        height: 1.75rem;
+        padding: 0.2rem;
     }
 
     .control-button > svg {
@@ -494,21 +519,23 @@ body.stream::before {
         height: 100%;
     }
 
-    /* Smaller toggle button */
+    /* Toggle button horizontal on mobile */
     .toolbox-toggle {
         width: 1.5rem;
-        height: 1.25rem;
+        height: 1.5rem;
+        margin-bottom: 0;
+        margin-right: 0.25rem;
     }
 
-    /* Drag handle smaller */
-    .control-buttons-list::before {
-        width: 1rem;
-        height: 3px;
-    }
-
-    /* Collapsed state on mobile */
+    /* Collapsed state on mobile - horizontal */
     .control-buttons-list.collapsed {
-        padding: 0.15rem;
+        padding: 0.25rem 0.35rem;
+    }
+
+    .control-buttons-list.collapsed .toolbox-content {
+        max-width: 0;
+        max-height: none;
+        opacity: 0;
     }
 
     /* Phone container - smaller border radius on mobile */
@@ -543,24 +570,18 @@ body.stream::before {
 /* Very small screens (width < 400px) */
 @media (max-width: 399px) {
     .control-buttons-list {
-        width: 1.75rem;
-        padding: 0.15rem;
-        left: 4px;
+        padding: 0.25rem 0.35rem;
+        bottom: 4px;
     }
 
     .control-button {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1.4rem;
+        height: 1.4rem;
         padding: 0.1rem;
     }
 
     .toolbox-toggle {
         width: 1.25rem;
-        height: 1rem;
-    }
-
-    .control-buttons-list::before {
-        width: 0.75rem;
-        height: 2px;
+        height: 1.25rem;
     }
 }
