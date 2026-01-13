@@ -109,6 +109,26 @@ body.stream {
     max-width: none;
     justify-content: center;
     align-items: center;
+    overflow: auto; /* Show scrollbar when phone overflows */
+}
+
+/* Custom scrollbar styling */
+.device-view::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.device-view::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.device-view::-webkit-scrollbar-thumb {
+    background: var(--text-color-light);
+    border-radius: 4px;
+}
+
+.device-view::-webkit-scrollbar-thumb:hover {
+    background: var(--text-color);
 }
 
 .test-execution-placeholder {
@@ -291,26 +311,64 @@ body.stream {
 }
 
 .control-buttons-list {
-    /* float: right; */
-    width: 1.6rem;
+    /* Floating draggable toolbar */
+    position: fixed;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    z-index: 10000; /* Above everything including phone */
+    width: 2.5rem;
     background-color: var(--control-buttons-bg-color);
-    padding-left: 8px;
-    padding-right: 8px;
-    /* margin-left: auto; */
-    padding-top: 1rem;
+    padding: 0.5rem 0.25rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: move;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.control-buttons-list:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.control-buttons-list.dragging {
+    opacity: 0.9;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Drag handle indicator */
+.control-buttons-list::before {
+    content: '';
+    width: 1.5rem;
+    height: 4px;
+    background: var(--text-color-light);
+    border-radius: 2px;
+    opacity: 0.4;
+    margin-bottom: 0.25rem;
 }
 
 .control-button {
-    padding: 0;
-    width: 1.5rem;
-    height: 1.5rem;
+    padding: 0.25rem;
+    width: 2rem;
+    height: 2rem;
     border: none;
+    border-radius: 0.5rem;
     opacity: 0.75;
-    background-color: var(--control-buttons-bg-color);
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
 .control-button:hover {
     opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.control-button:active {
+    background-color: rgba(0, 0, 0, 0.15);
 }
 
 .control-wrapper > input[type=checkbox] {

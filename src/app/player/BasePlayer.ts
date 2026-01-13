@@ -439,6 +439,7 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         deviceView.style.flexDirection = 'row';
         deviceView.style.justifyContent = 'center';
         deviceView.style.alignItems = 'center';
+        deviceView.style.overflow = 'auto'; // Allow scrolling when zoomed phone exceeds viewport
 
         // Send data to parent window
         const aspectRatioStr = `${Math.round(wrapperWidth)}/${Math.round(wrapperHeight)}`;
