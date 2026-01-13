@@ -210,38 +210,41 @@ export abstract class InteractionHandler {
         event: CommonTouchAndMouse,
         screenInfo: ScreenInfo,
         uiRotation: number = 0,
+        zoomLevel: number = 1.0,
     ): TouchOnClient | null {
         const action = this.mapTypeToAction(event.type);
         const { width, height } = screenInfo.videoSize;
         const target: HTMLElement = event.target as HTMLElement;
         const rect = target.getBoundingClientRect();
 
-        // When UI is rotated 90/270, the visual bounds are swapped
-        // Use rect dimensions which reflect the actual visual size
-        const isUIRotated = uiRotation === 90 || uiRotation === 270;
-        let clientWidth = isUIRotated ? rect.height : target.clientWidth;
-        let clientHeight = isUIRotated ? rect.width : target.clientHeight;
-
+        // Calculate touch position relative to the visual bounding rect
         let touchX = event.clientX - rect.left;
         let touchY = event.clientY - rect.top;
-        let invalid = false;
 
-        // Check bounds against visual dimensions
+        // Visual dimensions (from bounding rect, scaled by zoom)
         const visualWidth = rect.width;
         const visualHeight = rect.height;
+
+        // Logical dimensions (unscaled, from target element)
+        const logicalWidth = target.clientWidth;
+        const logicalHeight = target.clientHeight;
+
+        let invalid = false;
+
+        // Check bounds against visual dimensions first
         if (touchX < 0 || touchX > visualWidth || touchY < 0 || touchY > visualHeight) {
             invalid = true;
         }
 
         // Transform touch coordinates based on UI rotation
-        // CSS rotate(-90deg) = 90° clockwise visual rotation
-        // We need to reverse-map visual coordinates back to device coordinates
+        // CSS rotate(-Xdeg) rotates the element, we need to reverse-map
+        // visual coordinates back to logical device coordinates
+        // These transforms work in VISUAL coordinate space
         let transformedX = touchX;
         let transformedY = touchY;
 
         if (uiRotation === 90) {
             // CSS rotate(-90deg): device top is now visual left, device right is now visual top
-            // Visual (0,0) = device (deviceWidth, 0), Visual (vW,vH) = device (0, deviceHeight)
             // deviceX = visualHeight - visualY, deviceY = visualX
             transformedX = visualHeight - touchY;
             transformedY = touchX;
@@ -250,7 +253,7 @@ export abstract class InteractionHandler {
             transformedX = visualWidth - touchX;
             transformedY = visualHeight - touchY;
         } else if (uiRotation === 270) {
-            // CSS rotate(-270deg) = rotate(90deg): device top is now visual right
+            // CSS rotate(-270deg): device top is now visual right
             // deviceX = visualY, deviceY = visualWidth - visualX
             transformedX = touchY;
             transformedY = visualWidth - touchX;
@@ -258,6 +261,18 @@ export abstract class InteractionHandler {
 
         touchX = transformedX;
         touchY = transformedY;
+
+        // Now touchX/Y are in logical orientation but still scaled by zoom
+        // Divide by zoom to get unscaled logical coordinates
+        if (zoomLevel !== 1.0) {
+            touchX = touchX / zoomLevel;
+            touchY = touchY / zoomLevel;
+        }
+
+        // Client dimensions for final coordinate calculation
+        // After rotation transform, we're in logical space so use logical dimensions
+        let clientWidth = logicalWidth;
+        let clientHeight = logicalHeight;
 
         const eps = 1e5;
         const ratio = width / height;
@@ -364,7 +379,8 @@ export abstract class InteractionHandler {
         shiftKey: boolean,
     ): Touch[] | null {
         const uiRotation = this.player.getUIRotation();
-        const touchOnClient = InteractionHandler.buildTouchOnClient(e, screenInfo, uiRotation);
+        const zoomLevel = this.player.getZoom();
+        const touchOnClient = InteractionHandler.buildTouchOnClient(e, screenInfo, uiRotation, zoomLevel);
         if (!touchOnClient) {
             return null;
         }
@@ -503,6 +519,7 @@ export abstract class InteractionHandler {
         const messages: TouchControlMessage[] = [];
         const touches = e.changedTouches;
         const uiRotation = this.player.getUIRotation();
+        const zoomLevel = this.player.getZoom();
         if (touches && touches.length) {
             for (let i = 0, l = touches.length; i < l; i++) {
                 const touch = touches[i];
@@ -518,7 +535,7 @@ export abstract class InteractionHandler {
                     buttons: MotionEvent.BUTTON_PRIMARY,
                     target: e.target,
                 };
-                const event = InteractionHandler.buildTouchOnClient(item, screenInfo, uiRotation);
+                const event = InteractionHandler.buildTouchOnClient(item, screenInfo, uiRotation, zoomLevel);
                 if (event) {
                     const { action, buttons, position, invalid } = event.touch;
                     let pressure = 1;
