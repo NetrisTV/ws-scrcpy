@@ -79,6 +79,23 @@ body.shell {
 
 body.stream {
     background-color: white;
+    position: relative;
+}
+
+body.stream::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('../public/images/creative.webp');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .terminal-container {
@@ -401,4 +418,55 @@ body.stream {
 
 .control-wrapper > input[type=checkbox]:checked + label > svg {
     fill: var(--svg-checkbox-bg-color);
+}
+
+/* Toolbox toggle button */
+.toolbox-toggle {
+    width: 2rem;
+    height: 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    background-color: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+    color: var(--svg-button-fill);
+    margin-bottom: 0.25rem;
+}
+
+.toolbox-toggle:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Toolbox content wrapper */
+.toolbox-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    overflow: hidden;
+    max-height: 500px;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+/* Collapsed state */
+.control-buttons-list.collapsed .toolbox-content {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.control-buttons-list.collapsed {
+    padding: 0.25rem;
+}
+
+/* Show drag handle below toggle button when collapsed */
+.control-buttons-list.collapsed::before {
+    order: 1; /* Move after the toggle button */
+    margin-bottom: 0;
+    margin-top: 0.25rem;
 }
