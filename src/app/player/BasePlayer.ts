@@ -229,8 +229,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
 
         // Calculate available space (accounting for control panel)
         const controlPanel = document.getElementsByClassName('control-buttons-list')[0] as HTMLElement;
-        // On mobile, toolbar is at bottom - reserve vertical space for it
-        const mobileToolbarHeight = window.innerWidth < 400 ? 40 : 48;
+        // On mobile, toolbar is at bottom - reserve vertical space for it (thin bar)
+        const mobileToolbarHeight = window.innerWidth < 400 ? 28 : 32;
         // On desktop/tablet, toolbar is on left side
         const controlPanelWidth = isMobile ? 0 : Math.max(controlPanel?.offsetWidth || 0, 50) + 24;
 
@@ -239,8 +239,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         let verticalPadding: number;
 
         if (isMobile) {
-            horizontalPadding = 8; // Small horizontal padding on mobile
-            verticalPadding = mobileToolbarHeight + 8; // Space for bottom toolbar
+            horizontalPadding = 4; // Minimal horizontal padding on mobile
+            verticalPadding = mobileToolbarHeight + 4; // Space for thin bottom toolbar
         } else if (isTablet) {
             horizontalPadding = isLandscapeVisible ? 40 : 24;
             verticalPadding = isLandscapeVisible ? 32 : 24;
@@ -485,8 +485,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         deviceView.style.paddingRight = '0';
 
         if (isMobile) {
-            // Mobile: add bottom padding for toolbar
-            deviceView.style.paddingBottom = `${mobileToolbarHeight + 8}px`;
+            // Mobile: add bottom padding for thin toolbar
+            deviceView.style.paddingBottom = `${mobileToolbarHeight + 4}px`;
         } else {
             deviceView.style.paddingBottom = '0';
         }
