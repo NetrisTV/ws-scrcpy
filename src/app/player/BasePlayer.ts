@@ -223,23 +223,57 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const visibleAspectRatio = isUIRotated ? 1 / contentAspectRatio : contentAspectRatio;
         const isLandscapeVisible = visibleAspectRatio > 1;
 
+        // Responsive breakpoints
+        const isMobile = window.innerWidth < 600;
+        const isTablet = window.innerWidth >= 600 && window.innerWidth < 1024;
+
         // Calculate available space (accounting for control panel)
+        // On mobile, control panel floats over content so don't deduct its width
         const controlPanel = document.getElementsByClassName('control-buttons-list')[0] as HTMLElement;
-        // Ensure minimum control panel width of 50px even if not rendered yet
-        const controlPanelWidth = Math.max(controlPanel?.offsetWidth || 0, 50) + 24;
-        // More padding for landscape to ensure phone doesn't overflow
-        const horizontalPadding = isLandscapeVisible ? 80 : 48;
-        const verticalPadding = isLandscapeVisible ? 48 : 32;
+        const controlPanelWidth = isMobile ? 0 : Math.max(controlPanel?.offsetWidth || 0, 50) + 24;
+
+        // Responsive padding - much less on mobile to maximize phone size
+        let horizontalPadding: number;
+        let verticalPadding: number;
+
+        if (isMobile) {
+            horizontalPadding = 16;
+            verticalPadding = 16;
+        } else if (isTablet) {
+            horizontalPadding = isLandscapeVisible ? 40 : 24;
+            verticalPadding = isLandscapeVisible ? 32 : 24;
+        } else {
+            // Desktop - more padding for landscape to ensure phone doesn't overflow
+            horizontalPadding = isLandscapeVisible ? 80 : 48;
+            verticalPadding = isLandscapeVisible ? 48 : 32;
+        }
 
         let availableWidth = window.innerWidth - controlPanelWidth - horizontalPadding;
         let availableHeight = window.innerHeight - verticalPadding;
 
-        // Maximum size constraints to prevent phone from getting too large
-        const maxWidth = isLandscapeVisible ? Math.min(availableWidth, 900) : Math.min(availableWidth, 500);
-        const maxHeight = isLandscapeVisible ? Math.min(availableHeight, 500) : Math.min(availableHeight, 850);
+        // Minimum size constraints to prevent phone from getting too small
+        const minWidth = isLandscapeVisible ? 280 : 200;
+        const minHeight = isLandscapeVisible ? 180 : 300;
 
-        availableWidth = Math.min(availableWidth, maxWidth);
-        availableHeight = Math.min(availableHeight, maxHeight);
+        // Maximum size constraints - more generous on mobile/tablet
+        let maxWidth: number;
+        let maxHeight: number;
+
+        if (isMobile) {
+            // On mobile, allow phone to fill most of the screen
+            maxWidth = availableWidth;
+            maxHeight = availableHeight;
+        } else if (isTablet) {
+            maxWidth = isLandscapeVisible ? Math.min(availableWidth, 800) : Math.min(availableWidth, 450);
+            maxHeight = isLandscapeVisible ? Math.min(availableHeight, 450) : Math.min(availableHeight, 750);
+        } else {
+            // Desktop
+            maxWidth = isLandscapeVisible ? Math.min(availableWidth, 900) : Math.min(availableWidth, 500);
+            maxHeight = isLandscapeVisible ? Math.min(availableHeight, 500) : Math.min(availableHeight, 850);
+        }
+
+        availableWidth = Math.max(minWidth, Math.min(availableWidth, maxWidth));
+        availableHeight = Math.max(minHeight, Math.min(availableHeight, maxHeight));
 
         // Calculate optimal dimensions based on VISIBLE aspect ratio (after rotation)
         let visibleWidth: number;
