@@ -311,7 +311,9 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const phoneContainer =
             this.phoneContainer || (document.getElementsByClassName('phone-container')[0] as HTMLElement);
 
-        if (!androidFrame && deviceType === 'emulated' && phoneContainer) {
+        // Show frame for all devices (previously only for emulated)
+        // if (!androidFrame && deviceType === 'emulated' && phoneContainer) {
+        if (!androidFrame && phoneContainer) {
             androidFrame = document.createElement('img');
             androidFrame.src = genericAndroid;
             androidFrame.id = 'generic-android-mockup';
@@ -368,20 +370,21 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
                 frameOffsetY = (frameHeight - scaledHeight) / 2;
             }
 
-            if (deviceType === 'emulated') {
-                // Center the frame around the video content
-                androidFrame.style.left = `${-frameOffsetX}px`;
-                androidFrame.style.top = `${-frameOffsetY}px`;
-                androidFrame.style.display = 'block';
+            // Show frame for all devices (previously only emulated)
+            // if (deviceType === 'emulated') {
+            // Center the frame around the video content
+            androidFrame.style.left = `${-frameOffsetX}px`;
+            androidFrame.style.top = `${-frameOffsetY}px`;
+            androidFrame.style.display = 'block';
 
-                // No margin adjustments needed - video stays at origin
-                videoElem.style.marginTop = '0';
-                videoElem.style.marginLeft = '0';
-                touchElem.style.marginTop = '0';
-                touchElem.style.marginLeft = '0';
-            } else {
-                androidFrame.style.display = 'none';
-            }
+            // No margin adjustments needed - video stays at origin
+            videoElem.style.marginTop = '0';
+            videoElem.style.marginLeft = '0';
+            touchElem.style.marginTop = '0';
+            touchElem.style.marginLeft = '0';
+            // } else {
+            //     androidFrame.style.display = 'none';
+            // }
         }
 
         // Set wrapper dimensions based on VISIBLE size (after UI rotation)
@@ -389,30 +392,30 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const scaledVisibleHeight = visibleHeight * this.zoomLevel;
 
         // Calculate wrapper size to accommodate frame
-        // For emulated devices, wrapper must fit the frame (which wraps the video)
+        // Now showing frame for all devices (previously only emulated)
         let wrapperWidth: number;
         let wrapperHeight: number;
-        if (deviceType === 'emulated') {
-            if (rotation) {
-                // In device landscape (auto-rotate): frame is rotated, so its visual dimensions are swapped
-                // frameWidth = scaledHeight * 1.08 becomes visual height
-                // frameHeight = scaledWidth * 1.04 becomes visual width
-                wrapperWidth = scaledVisibleWidth * frameHeightMultiplier;
-                wrapperHeight = scaledVisibleHeight * frameWidthMultiplier;
-            } else if (isUIRotated) {
-                // Manual rotation: phone container is rotated, frame stays portrait
-                // Visual dimensions after container rotation swap
-                wrapperWidth = scaledVisibleWidth * frameHeightMultiplier;
-                wrapperHeight = scaledVisibleHeight * frameWidthMultiplier;
-            } else {
-                // Portrait mode: frame is portrait
-                wrapperWidth = scaledVisibleWidth * frameWidthMultiplier;
-                wrapperHeight = scaledVisibleHeight * frameHeightMultiplier;
-            }
+        // if (deviceType === 'emulated') {
+        if (rotation) {
+            // In device landscape (auto-rotate): frame is rotated, so its visual dimensions are swapped
+            // frameWidth = scaledHeight * 1.08 becomes visual height
+            // frameHeight = scaledWidth * 1.04 becomes visual width
+            wrapperWidth = scaledVisibleWidth * frameHeightMultiplier;
+            wrapperHeight = scaledVisibleHeight * frameWidthMultiplier;
+        } else if (isUIRotated) {
+            // Manual rotation: phone container is rotated, frame stays portrait
+            // Visual dimensions after container rotation swap
+            wrapperWidth = scaledVisibleWidth * frameHeightMultiplier;
+            wrapperHeight = scaledVisibleHeight * frameWidthMultiplier;
         } else {
-            wrapperWidth = scaledVisibleWidth;
-            wrapperHeight = scaledVisibleHeight;
+            // Portrait mode: frame is portrait
+            wrapperWidth = scaledVisibleWidth * frameWidthMultiplier;
+            wrapperHeight = scaledVisibleHeight * frameHeightMultiplier;
         }
+        // } else {
+        //     wrapperWidth = scaledVisibleWidth;
+        //     wrapperHeight = scaledVisibleHeight;
+        // }
 
         videoWrapper.style.width = `${wrapperWidth}px`;
         videoWrapper.style.height = `${wrapperHeight}px`;
