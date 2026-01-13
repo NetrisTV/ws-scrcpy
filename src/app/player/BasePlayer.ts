@@ -252,8 +252,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         let availableHeight = window.innerHeight - verticalPadding;
 
         // Minimum size constraints to prevent phone from getting too small
-        const minWidth = isLandscapeVisible ? 280 : 200;
-        const minHeight = isLandscapeVisible ? 180 : 300;
+        const minWidth = isLandscapeVisible ? 280 : 160;
+        const minHeight = isLandscapeVisible ? 180 : 240;
 
         // Maximum size constraints - more generous on mobile/tablet
         let maxWidth: number;
