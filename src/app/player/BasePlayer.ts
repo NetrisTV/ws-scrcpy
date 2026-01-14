@@ -227,6 +227,11 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         const isMobile = window.innerWidth < 600;
         const isTablet = window.innerWidth >= 600 && window.innerWidth < 1024;
 
+        // Frame multipliers - defined early so we can account for them in available space
+        // The frame adds extra width/height around the phone content
+        const frameWidthMultiplier = 1.08;
+        const frameHeightMultiplier = 1.04;
+
         // Calculate available space (accounting for control panel)
         const controlPanel = document.getElementsByClassName('control-buttons-list')[0] as HTMLElement;
         // On mobile, toolbar is at bottom - reserve vertical space for it (thin bar)
@@ -250,8 +255,10 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             verticalPadding = isLandscapeVisible ? 48 : 32;
         }
 
-        let availableWidth = window.innerWidth - controlPanelWidth - horizontalPadding;
-        let availableHeight = window.innerHeight - verticalPadding;
+        // Calculate available space, accounting for frame multipliers to prevent overflow
+        // The wrapper size = visibleSize * frameMultiplier, so we divide to ensure wrapper fits viewport
+        let availableWidth = (window.innerWidth - controlPanelWidth - horizontalPadding) / frameWidthMultiplier;
+        let availableHeight = (window.innerHeight - verticalPadding) / frameHeightMultiplier;
 
         // Minimum size constraints to prevent phone from getting too small
         const minWidth = isLandscapeVisible ? 200 : 100;
@@ -337,12 +344,8 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
             this.phoneContainer.style.top = '';
         }
 
-        // Frame multipliers - defined at higher scope for wrapper sizing
-        // The frame PNG is designed for portrait, so we need to handle landscape differently
-        const frameWidthMultiplier = 1.08;
-        const frameHeightMultiplier = 1.04;
-
         // Handle android mockup frame - append to phoneContainer so it positions correctly
+        // Note: frameWidthMultiplier and frameHeightMultiplier are defined earlier for available space calculation
         let androidFrame = document.getElementById('generic-android-mockup') as HTMLImageElement;
         const phoneContainer =
             this.phoneContainer || (document.getElementsByClassName('phone-container')[0] as HTMLElement);
