@@ -388,11 +388,14 @@ body.stream::before {
     background-color: rgba(0, 0, 0, 0.15);
 }
 
-.control-wrapper > input[type=checkbox] {
+/* Hide checkbox inputs - support both direct children and nested in toolbox-content */
+.control-wrapper > input[type=checkbox],
+.control-wrapper input[type=checkbox] {
     display: none;
 }
 
-.control-wrapper > label {
+.control-wrapper > label,
+.control-wrapper label {
     display: inline-block;
 }
 
@@ -400,23 +403,25 @@ body.stream::before {
     fill: var(--svg-button-fill);
 }
 
-.control-wrapper > input[type=checkbox].two-images:checked + label > svg.image-on {
+/* Two-image checkbox states */
+.control-wrapper input[type=checkbox].two-images:checked + label > svg.image-on {
     display: block;
 }
 
-.control-wrapper > input[type=checkbox].two-images:not(:checked) + label > svg.image-on {
+.control-wrapper input[type=checkbox].two-images:not(:checked) + label > svg.image-on {
     display: none;
 }
 
-.control-wrapper > input[type=checkbox].two-images:checked + label > svg.image-off {
+.control-wrapper input[type=checkbox].two-images:checked + label > svg.image-off {
     display: none;
 }
 
-.control-wrapper > input[type=checkbox].two-images:not(:checked) + label > svg.image-off {
+.control-wrapper input[type=checkbox].two-images:not(:checked) + label > svg.image-off {
     display: block;
 }
 
-.control-wrapper > input[type=checkbox]:checked + label > svg {
+/* Active state - teal/cyan color when checked */
+.control-wrapper input[type=checkbox]:checked + label > svg {
     fill: var(--svg-checkbox-bg-color);
 }
 
