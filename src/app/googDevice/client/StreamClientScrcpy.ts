@@ -236,7 +236,21 @@ export class StreamClientScrcpy
             this.player.play();
         }
         const { videoSettings, screenInfo } = info;
+        const oldDisplayInfo = this.player.getDisplayInfo();
+        const rotationChanged = oldDisplayInfo?.rotation !== info.displayInfo.rotation;
         this.player.setDisplayInfo(info.displayInfo);
+
+        // Reset manual UI rotation when device auto-rotates to prevent double rotation
+        if (rotationChanged && this.player.getUIRotation() !== 0) {
+            this.player.resetRotation();
+        }
+
+        // Always re-orient screen when rotation changes to ensure proper centering
+        // This handles cases where dimensions don't change but orientation does
+        if (rotationChanged) {
+            this.player.reOrientScreen();
+        }
+
         if (typeof this.fitToScreen !== 'boolean') {
             this.fitToScreen = this.player.getFitToScreenStatus();
         }
@@ -366,13 +380,21 @@ export class StreamClientScrcpy
         const video = document.createElement('div');
         video.className = 'video';
 
+        // Create phone container for zoom/transform support
+        const phoneContainer = document.createElement('div');
+        phoneContainer.className = 'phone-container';
+
         // Add loading overlay inside video container (controls will be visible)
         const loadingOverlay = this.createLoadingOverlay();
-        video.appendChild(loadingOverlay);
+        phoneContainer.appendChild(loadingOverlay);
 
+        video.appendChild(phoneContainer);
         deviceView.appendChild(video);
         deviceView.appendChild(moreBox);
-        player.setParent(video);
+
+        // Set the phone container on player for zoom support
+        player.setPhoneContainer(phoneContainer);
+        player.setParent(phoneContainer);
         player.pause();
 
         document.body.appendChild(deviceView);
@@ -390,7 +412,7 @@ export class StreamClientScrcpy
 
         const streamReceiver = this.streamReceiver;
         streamReceiver.on('deviceMessage', this.OnDeviceMessage);
-        streamReceiver.on('rotated', ()=>{ this.player?.reOrientScreen(true, this.player) });
+        // Note: 'rotated' event fires before displayInfo is updated, so we handle rotation in onDisplayInfo instead
         streamReceiver.on('video', this.onVideo);
         streamReceiver.on('clientsStats', this.onClientsStats);
         streamReceiver.on('displayInfo', this.onDisplayInfo);

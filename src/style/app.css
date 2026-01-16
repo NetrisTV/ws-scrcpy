@@ -79,6 +79,23 @@ body.shell {
 
 body.stream {
     background-color: white;
+    position: relative;
+}
+
+body.stream::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('../public/images/creative.webp');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .terminal-container {
@@ -102,13 +119,33 @@ body.stream {
 
 .device-view {
     z-index: 1;
-    float: right;
     display: flex;
     flex-direction: row;
     width: 100%;
     height: 100vh;
     max-width: none;
-    justify-content: start;
+    justify-content: center;
+    align-items: center;
+    overflow: auto; /* Show scrollbar when phone overflows */
+}
+
+/* Custom scrollbar styling */
+.device-view::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.device-view::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.device-view::-webkit-scrollbar-thumb {
+    background: var(--text-color-light);
+    border-radius: 4px;
+}
+
+.device-view::-webkit-scrollbar-thumb:hover {
+    background: var(--text-color);
 }
 
 .test-execution-placeholder {
@@ -138,14 +175,35 @@ body.stream {
 
 .video-layer {
     position: absolute;
-    z-index: 0;
+    top: 0;
+    left: 0;
+    z-index: 1;
     border-radius: 1.5rem;
 }
 
 .touch-layer {
     position: absolute;
+    top: 0;
+    left: 0;
     border-radius: 1.5rem;
-    z-index: 1;
+    z-index: 2;
+}
+
+/* Phone container - wraps video and touch layers for zoom support */
+.phone-container {
+    position: relative;
+    transform-origin: center center;
+    transition: transform 0.15s ease-out, width 0.15s ease-out, height 0.15s ease-out;
+}
+
+/* Video wrapper - centers the phone container */
+.video {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    height: 100%;
 }
 
 /* Video loading overlay - Android Material Design */
@@ -256,16 +314,6 @@ body.stream {
     }
 }
 
-.video {
-    /* float: right; */
-    max-height: 100%;
-    max-width: 100%;
-    background-color: transparent;
-    position: relative;
-    flex: 1;
-    height: 100%;
-}
-
 .mockup-container {
     position: relative;
     width: 100%;
@@ -280,33 +328,74 @@ body.stream {
 }
 
 .control-buttons-list {
-    /* float: right; */
-    width: 1.6rem;
+    /* Floating draggable toolbar */
+    position: fixed;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    z-index: 10000; /* Above everything including phone */
+    width: 2.5rem;
     background-color: var(--control-buttons-bg-color);
-    padding-left: 8px;
-    padding-right: 8px;
-    /* margin-left: auto; */
-    padding-top: 1rem;
+    padding: 0.5rem 0.25rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: move;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.control-buttons-list:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.control-buttons-list.dragging {
+    opacity: 0.9;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Drag handle indicator */
+.control-buttons-list::before {
+    content: '';
+    width: 1.5rem;
+    height: 4px;
+    background: var(--text-color-light);
+    border-radius: 2px;
+    opacity: 0.4;
+    margin-bottom: 0.25rem;
 }
 
 .control-button {
-    padding: 0;
-    width: 1.5rem;
-    height: 1.5rem;
+    padding: 0.25rem;
+    width: 2rem;
+    height: 2rem;
     border: none;
+    border-radius: 0.5rem;
     opacity: 0.75;
-    background-color: var(--control-buttons-bg-color);
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
 .control-button:hover {
     opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
-.control-wrapper > input[type=checkbox] {
+.control-button:active {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Hide checkbox inputs - support both direct children and nested in toolbox-content */
+.control-wrapper > input[type=checkbox],
+.control-wrapper input[type=checkbox] {
     display: none;
 }
 
-.control-wrapper > label {
+.control-wrapper > label,
+.control-wrapper label {
     display: inline-block;
 }
 
@@ -314,22 +403,190 @@ body.stream {
     fill: var(--svg-button-fill);
 }
 
-.control-wrapper > input[type=checkbox].two-images:checked + label > svg.image-on {
+/* Two-image checkbox states */
+.control-wrapper input[type=checkbox].two-images:checked + label > svg.image-on {
     display: block;
 }
 
-.control-wrapper > input[type=checkbox].two-images:not(:checked) + label > svg.image-on {
+.control-wrapper input[type=checkbox].two-images:not(:checked) + label > svg.image-on {
     display: none;
 }
 
-.control-wrapper > input[type=checkbox].two-images:checked + label > svg.image-off {
+.control-wrapper input[type=checkbox].two-images:checked + label > svg.image-off {
     display: none;
 }
 
-.control-wrapper > input[type=checkbox].two-images:not(:checked) + label > svg.image-off {
+.control-wrapper input[type=checkbox].two-images:not(:checked) + label > svg.image-off {
     display: block;
 }
 
-.control-wrapper > input[type=checkbox]:checked + label > svg {
+/* Active state - teal/cyan color when checked */
+.control-wrapper input[type=checkbox]:checked + label > svg {
     fill: var(--svg-checkbox-bg-color);
+}
+
+/* Toolbox toggle button */
+.toolbox-toggle {
+    width: 2rem;
+    height: 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    background-color: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+    color: var(--svg-button-fill);
+    margin-bottom: 0.25rem;
+}
+
+.toolbox-toggle:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Toolbox content wrapper */
+.toolbox-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    overflow: hidden;
+    max-height: 500px;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+/* Collapsed state */
+.control-buttons-list.collapsed .toolbox-content {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.control-buttons-list.collapsed {
+    padding: 0.25rem;
+}
+
+/* Show drag handle below toggle button when collapsed */
+.control-buttons-list.collapsed::before {
+    order: 1; /* Move after the toggle button */
+    margin-bottom: 0;
+    margin-top: 0.25rem;
+}
+
+/* ==================== RESPONSIVE MOBILE STYLES ==================== */
+
+/* Mobile devices (width < 600px) */
+@media (max-width: 599px) {
+    /* Control panel - thin bar at bottom, horizontal layout */
+    .control-buttons-list {
+        width: auto;
+        height: auto;
+        padding: 0.2rem 0.4rem;
+        left: 50%;
+        right: auto;
+        top: auto;
+        bottom: 0;
+        transform: translateX(-50%);
+        flex-direction: row;
+        cursor: default; /* Not draggable on mobile */
+        border-radius: 1rem 1rem 0 0;
+        gap: 0.1rem;
+    }
+
+    /* Toolbox content horizontal on mobile */
+    .toolbox-content {
+        flex-direction: row;
+        max-height: none;
+        gap: 0.1rem;
+    }
+
+    /* Disable drag indicator on mobile */
+    .control-buttons-list::before {
+        display: none;
+    }
+
+    .control-buttons-list.dragging {
+        cursor: default;
+    }
+
+    /* Thin small buttons on mobile */
+    .control-button {
+        width: 1.35rem;
+        height: 1.35rem;
+        padding: 0.12rem;
+    }
+
+    .control-button > svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Toggle button thin on mobile */
+    .toolbox-toggle {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-bottom: 0;
+        margin-right: 0.15rem;
+    }
+
+    /* Collapsed state on mobile - horizontal */
+    .control-buttons-list.collapsed {
+        padding: 0.15rem 0.25rem;
+    }
+
+    .control-buttons-list.collapsed .toolbox-content {
+        max-width: 0;
+        max-height: none;
+        opacity: 0;
+    }
+
+    /* Phone container - smaller border radius on mobile */
+    .phone-container {
+        border-radius: 1rem;
+    }
+
+    .video-layer,
+    .touch-layer {
+        border-radius: 1rem;
+    }
+
+    /* Loading overlay smaller radius */
+    .video-loading-overlay {
+        border-radius: 1rem;
+    }
+}
+
+/* Tablet devices (600px - 1023px) */
+@media (min-width: 600px) and (max-width: 1023px) {
+    .control-buttons-list {
+        width: 2.25rem;
+        left: 12px;
+    }
+
+    .control-button {
+        width: 1.75rem;
+        height: 1.75rem;
+    }
+}
+
+/* Very small screens (width < 400px) */
+@media (max-width: 399px) {
+    .control-buttons-list {
+        padding: 0.15rem 0.3rem;
+        bottom: 0;
+    }
+
+    .control-button {
+        width: 1.15rem;
+        height: 1.15rem;
+        padding: 0.08rem;
+    }
+
+    .toolbox-toggle {
+        width: 1rem;
+        height: 1rem;
+    }
 }
