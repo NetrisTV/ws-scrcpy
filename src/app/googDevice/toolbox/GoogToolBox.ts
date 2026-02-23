@@ -117,6 +117,8 @@ export class GoogToolBox extends ToolBox {
             const element = el.getElement();
             client.setHandleKeyboardEvents(element.checked);
         });
+        keyboard.getElement().checked = true;
+        client.setHandleKeyboardEvents(true);
         elements.push(keyboard);
 
         if (moreBox) {
