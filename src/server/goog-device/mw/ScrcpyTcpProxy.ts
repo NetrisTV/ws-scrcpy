@@ -77,11 +77,25 @@ export class ScrcpyTcpProxy extends Mw {
         this.forwardedPort = await AdbUtils.forward(this.udid, `localabstract:${SCRCPY_SOCKET_NAME}`);
         const port = this.forwardedPort;
 
-        // Open sequential TCP connections as required by scrcpy 3.x:
-        // With control=false: video → audio (2 connections)
-        // With control=true:  video → audio → control (3 connections)
+        // Open 3 sequential TCP connections as required by scrcpy 3.x with control=true:
+        //   1. video  2. audio  3. control
         this.videoSocket = await this.connectTcp(port);
         this.audioSocket = await this.connectTcp(port);
+        this.controlSocket = await this.connectTcp(port);
+
+        // Control socket errors must NOT tear down the video/audio pipeline.
+        // On some devices (e.g. Xiaomi), the first injected event throws a
+        // SecurityException that kills scrcpy's Controller thread (and ultimately
+        // the whole server process).  We log and clean up the control socket only;
+        // the video/audio sockets will close naturally when the server exits.
+        this.controlSocket.once('error', (e) => {
+            console.warn(TAG, 'control socket error (controls disabled):', e.message);
+            this.controlSocket?.destroy();
+            this.controlSocket = undefined;
+        });
+        this.controlSocket.once('close', () => {
+            this.controlSocket = undefined;
+        });
 
         // Start audio piping in the background
         this.pipeAudio(this.audioSocket);

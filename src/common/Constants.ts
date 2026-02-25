@@ -11,7 +11,7 @@ const ARGUMENTS = [
     'audio_bit_rate=128000',
     'tunnel_forward=true',
     'max_size=1920',
-    'control=false',
+    'control=true',
 ];
 
 export const SERVER_PROCESS_NAME = 'app_process';

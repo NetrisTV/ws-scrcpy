@@ -11,7 +11,7 @@ export interface TouchControlMessageInterface extends ControlMessageInterface {
 }
 
 export class TouchControlMessage extends ControlMessage {
-    public static PAYLOAD_LENGTH = 32;
+    public static PAYLOAD_LENGTH = 31;
     /**
      * - For a touch screen or touch pad, reports the approximate pressure
      * applied to the surface by a finger or other tool.  The value is
