@@ -52,28 +52,28 @@ Under the hood, it uses:
 ┌─────────────────────┐           ┌──────────────────────────┐           ┌──────────────────────────┐
 │   ANDROID DEVICE    │           │      NODE.JS SERVER      │           │        BROWSER           │
 │                     │    ADB    │                          │    WS     │                          │
-│  scrcpy-server 3.1  │◄────────►│  ControlCenter           │◄────────►│  DeviceTracker           │
-│  (Java process)     │  (USB/   │  (device discovery)      │  (device  │  (device list UI)        │
-│                     │   WiFi)  │                          │   list)   │                          │
-│  ┌───────────────┐  │    TCP   │  ┌────────────────────┐  │    WS     │  ┌────────────────────┐  │
-│  │ Video Encoder │──┼─────────►│  │  ScrcpyTcpProxy    │──┼─────────►│  │ StreamReceiver     │  │
-│  │ (H.264/H.265) │  │  frames  │  │  (TCP↔WS bridge)   │  │  binary  │  │ (packet dispatch)  │  │
-│  └───────────────┘  │         │  └────────────────────┘  │  msgs    │  └─────┬──────────────┘  │
-│                     │         │                          │         │        │                   │
-│  ┌───────────────┐  │    TCP   │  Same ScrcpyTcpProxy    │    WS     │  ┌─────▼──────────────┐  │
-│  │ Audio Capture │──┼─────────►│  instance handles all   │──┼─────────►│  │ AudioPlayer        │  │
-│  │ (Opus)        │  │  frames  │  three sockets           │  │  tagged  │  │ (WebCodecs+WebAudio│  │
-│  └───────────────┘  │         │                          │  │  pkts   │  └────────────────────┘  │
-│                     │         │                          │         │                           │
-│  ┌───────────────┐  │    TCP   │                          │    WS     │  ┌────────────────────┐  │
-│  │ Input Injector│◄─┼─────────│                          │◄─┼─────────│  │ TouchHandler       │  │
-│  │ (Controller)  │  │  binary  │                          │  │  binary │  │ + KeyInputHandler  │  │
-│  └───────────────┘  │  cmds   │                          │  │  msgs   │  └────────────────────┘  │
-│                     │         │                          │         │                           │
-│                     │         │  ┌────────────────────┐  │         │  ┌────────────────────┐  │
-│                     │         │  │ Express (static)   │──┼─────────►│  │ HTML/JS/CSS bundle │  │
-│                     │         │  └────────────────────┘  │  HTTP    │  └────────────────────┘  │
-└─────────────────────┘         └──────────────────────────┘         └──────────────────────────┘
+│  scrcpy-server 3.1  │◄────────► │ ControlCenter            │◄────────► │  DeviceTracker           │
+│  (Java process)     │  (USB/    │  (device discovery)      │  (device  │  (device list UI)        │
+│                     │   WiFi)   │                          │   list)   │                          │
+│  ┌───────────────┐  │    TCP    │  ┌────────────────────┐  │    WS     │  ┌────────────────────┐  │
+│  │ Video Encoder │──┼─────────► │  │  ScrcpyTcpProxy    │──┼─────────► │  │ StreamReceiver     │  │
+│  │ (H.264/H.265) │  │  frames   │  │  (TCP↔WS bridge)   │  │  binary   │  │ (packet dispatch)  │  │
+│  └───────────────┘  │           │  └────────────────────┘  │  msgs     │  └─────┬──────────────┘  │
+│                     │           │                          │           │        │                 │
+│  ┌───────────────┐  │    TCP    │  Same ScrcpyTcpProxy     │    WS     │  ┌─────▼──────────────┐  │
+│  │ Audio Capture │──┼─────────► │   instance handles all   │──┼───────►│  │ AudioPlayer        │  │
+│  │ (Opus)        │  │  frames   │  three sockets           │  │tagged  │  │ (WebCodecs+WebAudio│  │
+│  └───────────────┘  │           │                          │    pkts   │  └────────────────────┘  │
+│                     │           │                          │           │                          │
+│  ┌───────────────┐  │    TCP    │                          │    WS     │  ┌────────────────────┐  │
+│  │ Input Injector│◄─┼─────────. │                          │◄─┼────────│  │ TouchHandler       │  │
+│  │ (Controller)  │  │  binary   │                          │  │ binary │  │ + KeyInputHandler  │  │
+│  └───────────────┘  │  cmds     │                          │  │ msgs   │  └────────────────────┘  │
+│                     │           │                          │           │                          │
+│                     │           │  ┌────────────────────┐  │           │  ┌────────────────────┐  │
+│                     │           │  │ Express (static)   │──┼─────────► │  │ HTML/JS/CSS bundle │  │
+│                     │           │  └────────────────────┘  │  HTTP     │  └────────────────────┘  │
+└─────────────────────┘           └──────────────────────────┘           └──────────────────────────┘
 ```
 
 **Key insight**: The Node.js server is the central translator. The Android device speaks raw TCP (scrcpy protocol). The browser speaks WebSocket. Node.js bridges them, handling protocol translation, packet tagging, and message filtering.
