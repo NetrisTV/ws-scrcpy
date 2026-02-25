@@ -17,21 +17,43 @@ const TAG = '[AudioPlayer]';
 const MAX_LATENCY_S = 0.10;
 
 export class AudioPlayer {
-    private audioCtx: AudioContext | null = null;
+    private audioCtx: AudioContext;
     private decoder: AudioDecoder | null = null;
     private nextPlayTime = 0;
     private stopped = false;
     private sampleCount = 0;  // monotonic sample counter for timestamps
     private playing = false;  // true once AudioContext is actually running
+    private pendingDescription?: Uint8Array;
 
     public static isSupported(): boolean {
         return typeof AudioDecoder !== 'undefined' && typeof AudioContext !== 'undefined';
     }
 
     constructor() {
-        // AudioContext must be created (or resumed) after a user gesture.
-        // We defer creation until the first audio packet to avoid autoplay
-        // policy issues in browsers.
+        // Create AudioContext immediately during a user gesture (the stream
+        // start click). This avoids the 10-15s delay that occurred when
+        // creation was deferred to the first audio config packet.
+        this.audioCtx = new AudioContext({ latencyHint: 'interactive' });
+
+        if (this.audioCtx.state === 'running') {
+            this.playing = true;
+        } else {
+            // Listen for state change so we can start playing as soon as
+            // the browser allows audio (user gesture propagation).
+            this.audioCtx.addEventListener('statechange', () => {
+                if (this.audioCtx.state === 'running' && !this.playing && !this.stopped) {
+                    this.playing = true;
+                    // If we already received a config packet while suspended,
+                    // set up the decoder now.
+                    if (this.pendingDescription !== undefined) {
+                        this.setupDecoder(this.audioCtx, this.pendingDescription);
+                    }
+                }
+            });
+            // Attempt resume immediately — if we're inside a user gesture
+            // call stack, this will succeed synchronously or very quickly.
+            this.audioCtx.resume().catch(() => undefined);
+        }
     }
 
     /**
@@ -51,11 +73,10 @@ export class AudioPlayer {
 
         // Drop audio data until the AudioContext is actually running.
         // This avoids accumulating a huge backlog while the context is
-        // suspended (browser autoplay policy), which causes the 5-6s
-        // delay when audio finally starts.
+        // suspended (browser autoplay policy).
         if (!this.playing) return;
 
-        if (!this.decoder || !this.audioCtx) return;
+        if (!this.decoder) return;
         if (this.decoder.state === 'closed') return;
 
         try {
@@ -85,25 +106,16 @@ export class AudioPlayer {
         }
         this.sampleCount = 0;
 
-        // Lazily create AudioContext on first init (respects autoplay policy)
-        if (!this.audioCtx) {
-            this.audioCtx = new AudioContext({ latencyHint: 'interactive' });
-        }
-
-        // Store the config description for re-init after resume
+        // Store the config description for use when context becomes ready
         this.pendingDescription = description;
 
-        const ctx = this.audioCtx;
-
         // If context is already running, set up the decoder immediately
-        if (ctx.state === 'running') {
-            this.setupDecoder(ctx, description);
+        if (this.audioCtx.state === 'running') {
+            this.setupDecoder(this.audioCtx, description);
             this.playing = true;
         }
-        // If suspended, we'll set up the decoder in resume() once context is running
+        // Otherwise, the statechange listener will call setupDecoder
     }
-
-    private pendingDescription?: Uint8Array;
 
     private setupDecoder(ctx: AudioContext, description?: Uint8Array): void {
         // Close previous decoder if any
@@ -179,15 +191,10 @@ export class AudioPlayer {
 
     /** Resume AudioContext if it was suspended (browser autoplay policy). */
     public async resume(): Promise<void> {
-        if (!this.audioCtx) return;
         if (this.audioCtx.state === 'suspended') {
             await this.audioCtx.resume();
         }
-        // Once AudioContext is running, set up the decoder and start accepting frames
-        if (this.audioCtx.state === 'running' && !this.playing) {
-            this.playing = true;
-            this.setupDecoder(this.audioCtx, this.pendingDescription);
-        }
+        // The statechange listener handles transitioning to playing state
     }
 
     public stop(): void {
@@ -197,9 +204,6 @@ export class AudioPlayer {
             this.decoder.close();
         }
         this.decoder = null;
-        if (this.audioCtx) {
-            this.audioCtx.close().catch(() => undefined);
-            this.audioCtx = null;
-        }
+        this.audioCtx.close().catch(() => undefined);
     }
 }
