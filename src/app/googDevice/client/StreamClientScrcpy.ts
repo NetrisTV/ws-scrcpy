@@ -451,6 +451,15 @@ export class StreamClientScrcpy
         return this.deviceName;
     }
 
+    public setMuted(muted: boolean): void {
+        if (!this.audioPlayer) return;
+        if (muted) {
+            this.audioPlayer.mute();
+        } else {
+            this.audioPlayer.unmute();
+        }
+    }
+
     public setHandleKeyboardEvents(enabled: boolean): void {
         if (enabled) {
             KeyInputHandler.addEventListener(this);

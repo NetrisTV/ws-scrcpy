@@ -187,6 +187,7 @@ body.stream::before {
     left: 0;
     border-radius: 1.5rem;
     z-index: 2;
+    cursor: pointer;
 }
 
 /* Phone container - wraps video and touch layers for zoom support */

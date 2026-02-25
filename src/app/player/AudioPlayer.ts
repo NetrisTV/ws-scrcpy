@@ -23,6 +23,7 @@ export class AudioPlayer {
     private stopped = false;
     private sampleCount = 0;  // monotonic sample counter for timestamps
     private playing = false;  // true once AudioContext is actually running
+    private muted = false;
     private pendingDescription?: Uint8Array;
 
     public static isSupported(): boolean {
@@ -151,7 +152,7 @@ export class AudioPlayer {
     }
 
     private onDecodedFrame(audioData: AudioData, ctx: AudioContext): void {
-        if (this.stopped) {
+        if (this.stopped || this.muted) {
             audioData.close();
             return;
         }
@@ -187,6 +188,22 @@ export class AudioPlayer {
         source.start(this.nextPlayTime);
 
         this.nextPlayTime += buffer.duration;
+    }
+
+    /** Mute audio output (keeps decoding but discards frames). */
+    public mute(): void {
+        this.muted = true;
+    }
+
+    /** Unmute audio output. */
+    public unmute(): void {
+        this.muted = false;
+        // Reset play time to avoid scheduling stale audio
+        this.nextPlayTime = this.audioCtx.currentTime;
+    }
+
+    public isMuted(): boolean {
+        return this.muted;
     }
 
     /** Resume AudioContext if it was suspended (browser autoplay policy). */

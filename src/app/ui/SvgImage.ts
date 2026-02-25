@@ -19,6 +19,8 @@ import ZoomInSVG from '../../public/images/buttons/zoom_in.svg';
 import ZoomOutSVG from '../../public/images/buttons/zoom_out.svg';
 import ZoomResetSVG from '../../public/images/buttons/zoom_reset.svg';
 import ScreenRotationSVG from '../../public/images/buttons/screen_rotation.svg';
+import VolumeOnSVG from '../../public/images/buttons/volume_on.svg';
+import VolumeOffSVG from '../../public/images/buttons/volume_off.svg';
 
 export enum Icon {
     BACK,
@@ -42,6 +44,8 @@ export enum Icon {
     ZOOM_OUT,
     ZOOM_RESET,
     SCREEN_ROTATION,
+    VOLUME_ON,
+    VOLUME_OFF,
 }
 
 export default class SvgImage {
@@ -90,6 +94,10 @@ export default class SvgImage {
                 return ZoomResetSVG;
             case Icon.SCREEN_ROTATION:
                 return ScreenRotationSVG;
+            case Icon.VOLUME_ON:
+                return VolumeOnSVG;
+            case Icon.VOLUME_OFF:
+                return VolumeOffSVG;
             default:
                 return '';
         }

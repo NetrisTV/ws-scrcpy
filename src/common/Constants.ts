@@ -5,7 +5,7 @@ export const SCRCPY_SOCKET_NAME = 'scrcpy_00000000';
 const ARGUMENTS = [
     SERVER_VERSION,
     'scid=0',
-    'log_level=verbose',
+    'log_level=error',
     'audio=true',
     'audio_codec=opus',
     'audio_bit_rate=128000',

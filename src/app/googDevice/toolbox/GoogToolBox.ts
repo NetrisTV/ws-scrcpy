@@ -108,6 +108,19 @@ export class GoogToolBox extends ToolBox {
         });
         elements.push(rotateScreen);
 
+        // Audio mute/unmute toggle
+        const muteToggle = new ToolBoxCheckbox(
+            'Toggle audio',
+            { on: SvgImage.Icon.VOLUME_ON, off: SvgImage.Icon.VOLUME_OFF },
+            `mute_audio_${udid}_${playerName}`,
+        );
+        muteToggle.getElement().checked = true; // checked = audio on (unmuted)
+        muteToggle.addEventListener('click', (_, el) => {
+            const element = el.getElement();
+            client.setMuted(!element.checked);
+        });
+        elements.push(muteToggle);
+
         const keyboard = new ToolBoxCheckbox(
             'Capture keyboard',
             SvgImage.Icon.KEYBOARD,
