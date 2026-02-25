@@ -203,15 +203,23 @@ export class StreamClientScrcpy
         }
     };
 
+    private videoFrameCount = 0;
     public onVideo = (data: ArrayBuffer): void => {
         if (!this.player) {
+            console.warn(TAG, 'onVideo: no player');
             return;
         }
         const STATE = BasePlayer.STATE;
-        if (this.player.getState() === STATE.PAUSED) {
+        const stateBefore = this.player.getState();
+        if (stateBefore === STATE.PAUSED) {
             this.player.play();
         }
-        if (this.player.getState() === STATE.PLAYING) {
+        const stateAfter = this.player.getState();
+        if (this.videoFrameCount < 5) {
+            console.log(TAG, `onVideo #${this.videoFrameCount}: ${data.byteLength} bytes, state: ${stateBefore}->${stateAfter}, screenInfo: ${!!this.player.getScreenInfo()}`);
+        }
+        this.videoFrameCount++;
+        if (stateAfter === STATE.PLAYING) {
             this.player.pushFrame(new Uint8Array(data));
         }
     };
@@ -223,24 +231,31 @@ export class StreamClientScrcpy
     };
 
     public onDisplayInfo = (infoArray: DisplayCombinedInfo[]): void => {
+        console.log(TAG, 'onDisplayInfo:', infoArray.length, 'displays');
         if (!this.player) {
+            console.warn(TAG, 'onDisplayInfo: no player');
             return;
         }
         let currentSettings = this.player.getVideoSettings();
         const displayId = currentSettings.displayId;
+        console.log(TAG, 'onDisplayInfo: looking for displayId', displayId);
         const info = infoArray.find((value) => {
             return value.displayInfo.displayId === displayId;
         });
         if (!info) {
+            console.warn(TAG, 'onDisplayInfo: no matching display found');
             return;
         }
         const { videoSettings, screenInfo } = info;
+        console.log(TAG, `onDisplayInfo: videoSettings=${!!videoSettings}, screenInfo=${!!screenInfo}, playerState=${this.player.getState()}`);
         // Set screenInfo on the player before play() — some players require it
         if (screenInfo && !screenInfo.equals(this.player.getScreenInfo())) {
             this.player.setScreenInfo(screenInfo);
+            console.log(TAG, 'onDisplayInfo: setScreenInfo done, playerState now=', this.player.getState());
         }
         if (this.player.getState() === BasePlayer.STATE.PAUSED) {
             this.player.play();
+            console.log(TAG, 'onDisplayInfo: play() called, playerState now=', this.player.getState());
         }
         const oldDisplayInfo = this.player.getDisplayInfo();
         const rotationChanged = oldDisplayInfo?.rotation !== info.displayInfo.rotation;

@@ -58,54 +58,65 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
     }
 
     private handleInitialInfo(data: ArrayBuffer): void {
-        let offset = MAGIC_BYTES_INITIAL.length;
-        let nameBytes = new Uint8Array(data, offset, DEVICE_NAME_FIELD_LENGTH);
-        offset += DEVICE_NAME_FIELD_LENGTH;
-        let rest: Buffer = Buffer.from(new Uint8Array(data, offset));
-        const displaysCount = rest.readInt32BE(0);
-        this.displayInfoMap.clear();
-        this.connectionCountMap.clear();
-        this.screenInfoMap.clear();
-        this.videoSettingsMap.clear();
-        rest = rest.slice(4);
-        for (let i = 0; i < displaysCount; i++) {
-            const displayInfoBuffer = rest.slice(0, DisplayInfo.BUFFER_LENGTH);
-            const displayInfo = DisplayInfo.fromBuffer(displayInfoBuffer);
-            this.emit("rotated", displayInfo.rotation);
-            const { displayId } = displayInfo;
-            this.displayInfoMap.set(displayId, displayInfo);
-            rest = rest.slice(DisplayInfo.BUFFER_LENGTH);
-            this.connectionCountMap.set(displayId, rest.readInt32BE(0));
+        console.log(`${TAG} handleInitialInfo: ${data.byteLength} bytes`);
+        try {
+            let offset = MAGIC_BYTES_INITIAL.length;
+            let nameBytes = new Uint8Array(data, offset, DEVICE_NAME_FIELD_LENGTH);
+            offset += DEVICE_NAME_FIELD_LENGTH;
+            let rest: Buffer = Buffer.from(new Uint8Array(data, offset));
+            const displaysCount = rest.readInt32BE(0);
+            console.log(`${TAG} handleInitialInfo: displaysCount=${displaysCount}`);
+            this.displayInfoMap.clear();
+            this.connectionCountMap.clear();
+            this.screenInfoMap.clear();
+            this.videoSettingsMap.clear();
             rest = rest.slice(4);
-            const screenInfoBytesCount = rest.readInt32BE(0);
-            rest = rest.slice(4);
-            if (screenInfoBytesCount) {
-                this.screenInfoMap.set(displayId, ScreenInfo.fromBuffer(rest.slice(0, screenInfoBytesCount)));
-                rest = rest.slice(screenInfoBytesCount);
+            for (let i = 0; i < displaysCount; i++) {
+                const displayInfoBuffer = rest.slice(0, DisplayInfo.BUFFER_LENGTH);
+                const displayInfo = DisplayInfo.fromBuffer(displayInfoBuffer);
+                console.log(`${TAG} handleInitialInfo: display[${i}]=${displayInfo.toString()}`);
+                this.emit("rotated", displayInfo.rotation);
+                const { displayId } = displayInfo;
+                this.displayInfoMap.set(displayId, displayInfo);
+                rest = rest.slice(DisplayInfo.BUFFER_LENGTH);
+                this.connectionCountMap.set(displayId, rest.readInt32BE(0));
+                rest = rest.slice(4);
+                const screenInfoBytesCount = rest.readInt32BE(0);
+                console.log(`${TAG} handleInitialInfo: screenInfoBytesCount=${screenInfoBytesCount}`);
+                rest = rest.slice(4);
+                if (screenInfoBytesCount) {
+                    const si = ScreenInfo.fromBuffer(rest.slice(0, screenInfoBytesCount));
+                    console.log(`${TAG} handleInitialInfo: screenInfo=${si.toString()}`);
+                    this.screenInfoMap.set(displayId, si);
+                    rest = rest.slice(screenInfoBytesCount);
+                }
+                const videoSettingsBytesCount = rest.readInt32BE(0);
+                rest = rest.slice(4);
+                if (videoSettingsBytesCount) {
+                    this.videoSettingsMap.set(displayId, VideoSettings.fromBuffer(rest.slice(0, videoSettingsBytesCount)));
+                    rest = rest.slice(videoSettingsBytesCount);
+                }
             }
-            const videoSettingsBytesCount = rest.readInt32BE(0);
+            this.encodersSet.clear();
+            const encodersCount = rest.readInt32BE(0);
             rest = rest.slice(4);
-            if (videoSettingsBytesCount) {
-                this.videoSettingsMap.set(displayId, VideoSettings.fromBuffer(rest.slice(0, videoSettingsBytesCount)));
-                rest = rest.slice(videoSettingsBytesCount);
+            for (let i = 0; i < encodersCount; i++) {
+                const nameLength = rest.readInt32BE(0);
+                rest = rest.slice(4);
+                const nameBytes = rest.slice(0, nameLength);
+                rest = rest.slice(nameLength);
+                const name = Util.utf8ByteArrayToString(nameBytes);
+                this.encodersSet.add(name);
             }
+            this.clientId = rest.readInt32BE(0);
+            nameBytes = Util.filterTrailingZeroes(nameBytes);
+            this.deviceName = Util.utf8ByteArrayToString(nameBytes);
+            console.log(`${TAG} handleInitialInfo: deviceName='${this.deviceName}', clientId=${this.clientId}`);
+            this.hasInitialInfo = true;
+            this.triggerInitialInfoEvents();
+        } catch (e: any) {
+            console.error(`${TAG} handleInitialInfo ERROR:`, e.message, e.stack);
         }
-        this.encodersSet.clear();
-        const encodersCount = rest.readInt32BE(0);
-        rest = rest.slice(4);
-        for (let i = 0; i < encodersCount; i++) {
-            const nameLength = rest.readInt32BE(0);
-            rest = rest.slice(4);
-            const nameBytes = rest.slice(0, nameLength);
-            rest = rest.slice(nameLength);
-            const name = Util.utf8ByteArrayToString(nameBytes);
-            this.encodersSet.add(name);
-        }
-        this.clientId = rest.readInt32BE(0);
-        nameBytes = Util.filterTrailingZeroes(nameBytes);
-        this.deviceName = Util.utf8ByteArrayToString(nameBytes);
-        this.hasInitialInfo = true;
-        this.triggerInitialInfoEvents();
     }
 
     private static EqualArrays(a: ArrayLike<number>, b: ArrayLike<number>): boolean {
@@ -137,11 +148,13 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
     protected onSocketMessage(event: MessageEvent): void {
         if (event.data instanceof ArrayBuffer) {
             const byteLength = event.data.byteLength;
+            console.log(`${TAG} onSocketMessage: ${byteLength} bytes`);
 
             // Check MAGIC_BYTES_INITIAL / MAGIC_BYTES_MESSAGE (14 bytes each)
             if (byteLength > MAGIC_BYTES_INITIAL.length) {
                 const magicBytes = new Uint8Array(event.data, 0, MAGIC_BYTES_INITIAL.length);
                 if (StreamReceiver.EqualArrays(magicBytes, MAGIC_BYTES_INITIAL)) {
+                    console.log(`${TAG} detected scrcpy_initial`);
                     this.handleInitialInfo(event.data);
                     return;
                 }
@@ -162,10 +175,13 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
             }
 
             this.emit('video', new Uint8Array(event.data));
+        } else {
+            console.warn(`${TAG} onSocketMessage: non-ArrayBuffer data`, typeof event.data);
         }
     }
 
     protected onSocketOpen(): void {
+        console.log(`${TAG} WebSocket opened`);
         this.emit('connected', void 0);
         let e = this.events.shift();
         while (e) {
