@@ -78,7 +78,8 @@ export class ScrcpyTcpProxy extends Mw {
         const port = this.forwardedPort;
 
         // Open sequential TCP connections as required by scrcpy 3.x:
-        // With control=false, scrcpy only accepts 2 connections: video → audio
+        // With control=false: video → audio (2 connections)
+        // With control=true:  video → audio → control (3 connections)
         this.videoSocket = await this.connectTcp(port);
         this.audioSocket = await this.connectTcp(port);
 
@@ -112,33 +113,38 @@ export class ScrcpyTcpProxy extends Mw {
         });
     }
 
-    /** Read exactly `n` bytes from a socket, buffering partial reads. */
+    /** Read exactly `n` bytes from a socket, using the 'readable' event to avoid data loss. */
     private readExact(socket: net.Socket, n: number): Promise<Buffer> {
         return new Promise((resolve, reject) => {
             const chunks: Buffer[] = [];
             let received = 0;
 
-            const onData = (chunk: Buffer) => {
-                chunks.push(chunk);
-                received += chunk.length;
-                if (received >= n) {
-                    socket.removeListener('data', onData);
-                    socket.removeListener('error', onError);
-                    const full = Buffer.concat(chunks);
-                    // Put back any excess into the socket read buffer
-                    if (full.length > n) {
-                        socket.unshift(full.slice(n));
+            const tryRead = () => {
+                while (received < n) {
+                    const remaining = n - received;
+                    const chunk = socket.read(remaining) as Buffer | null;
+                    if (chunk === null) {
+                        // Not enough data yet, wait for 'readable'
+                        return;
                     }
-                    resolve(full.slice(0, n));
+                    chunks.push(chunk);
+                    received += chunk.length;
                 }
+                // Got all n bytes
+                socket.removeListener('readable', tryRead);
+                socket.removeListener('error', onError);
+                resolve(Buffer.concat(chunks, n));
             };
+
             const onError = (err: Error) => {
-                socket.removeListener('data', onData);
+                socket.removeListener('readable', tryRead);
                 reject(err);
             };
 
-            socket.on('data', onData);
+            socket.on('readable', tryRead);
             socket.once('error', onError);
+            // Try immediately in case data is already buffered
+            tryRead();
         });
     }
 
@@ -159,15 +165,14 @@ export class ScrcpyTcpProxy extends Mw {
      *
      *   [1  byte ] dummy byte (always 0x00, discard)
      *   [64 bytes] device name (null-padded UTF-8)
-     *   [4  bytes] codec_id (uint32 BE: 0x68323634=h264, 0x68323635=h265, 0x00617631=av1)
+     *   [4  bytes] codec_id (uint32 BE)
+     *   [4  bytes] initial video width (uint32 BE)
+     *   [4  bytes] initial video height (uint32 BE)
      *   ...then a stream of frames, each with a 12-byte header
-     *
-     * NOTE: scrcpy 3.x does NOT send width/height in the handshake.
-     * Dimensions are queried from ADB and passed in via screenSize.
      */
     private async initVideo(
         socket: net.Socket,
-        screenSize: { width: number; height: number },
+        adbScreenSize: { width: number; height: number },
     ): Promise<void> {
         // 1. Discard 1-byte dummy (only sent on the video / first socket)
         await this.readExact(socket, 1);
@@ -176,32 +181,33 @@ export class ScrcpyTcpProxy extends Mw {
         const nameBuf = await this.readExact(socket, DEVICE_NAME_FIELD_LENGTH);
         const nullIdx = nameBuf.indexOf(0);
         const deviceName = nameBuf.slice(0, nullIdx === -1 ? DEVICE_NAME_FIELD_LENGTH : nullIdx).toString('utf8');
-        console.log(TAG, 'device name:', deviceName);
-
-        // 3. Read codec ID (4 bytes BE) — frames start immediately after
-        const codecIdBuf = await this.readExact(socket, 4);
-        const codecId = codecIdBuf.readUInt32BE(0);
+        // 3. Read video codec metadata: codec_id(4) + width(4) + height(4) = 12 bytes
+        const videoMeta = await this.readExact(socket, 12);
+        const codecId = videoMeta.readUInt32BE(0);
+        const videoWidth = videoMeta.readUInt32BE(4);
+        const videoHeight = videoMeta.readUInt32BE(8);
         if (codecId !== CODEC_H264 && codecId !== CODEC_H265 && codecId !== CODEC_AV1) {
             throw new Error(`Unsupported video codec: 0x${codecId.toString(16)}`);
         }
-        console.log(TAG, 'video codec:', codecId === CODEC_H264 ? 'H264' : codecId === CODEC_H265 ? 'H265' : 'AV1');
-        console.log(TAG, `screen size (from ADB): ${screenSize.width}x${screenSize.height}`);
+        const codecName = codecId === CODEC_H264 ? 'H264' : codecId === CODEC_H265 ? 'H265' : 'AV1';
+
+        // Use server-reported dimensions, fall back to ADB query
+        const screenSize = (videoWidth > 0 && videoHeight > 0)
+            ? { width: videoWidth, height: videoHeight }
+            : adbScreenSize;
+        console.log(TAG, `${deviceName}: ${codecName} ${screenSize.width}x${screenSize.height}`);
 
         // 4. Read the codec config packet (SPS+PPS for H.264) — first frame in stream
-        console.log(TAG, 'waiting for first video frame (config)...');
         const configFrame = await this.readFrame(socket);
-        console.log(TAG, `first video frame: isConfig=${configFrame.isConfig}, size=${configFrame.data.length} bytes`);
 
         // 5. Build and send the scrcpy_initial message expected by StreamReceiver
         const initial = this.buildInitialMessage(deviceName, screenSize);
-        console.log(TAG, `sending scrcpy_initial (${initial.length} bytes)`);
         this.sendToClient(initial);
 
         // 6. Send the config frame as the first video payload
         this.sendToClient(configFrame.data);
 
         // 7. Pipe remaining video frames (strip 12-byte headers, send raw NALUs)
-        console.log(TAG, 'starting video frame stream...');
         this.streamFrames(socket, false);
     }
 
@@ -343,9 +349,30 @@ export class ScrcpyTcpProxy extends Mw {
 
     // ─── Message from browser ─────────────────────────────────────────────────
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected onSocketMessage(_event: WS.MessageEvent): void {
-        // control=false: browser messages are not forwarded to scrcpy
+    protected onSocketMessage(event: WS.MessageEvent): void {
+        if (!this.controlSocket || this.controlSocket.destroyed) return;
+
+        let buf: Buffer;
+        const { data } = event;
+        if (data instanceof Buffer) {
+            buf = data;
+        } else if (data instanceof ArrayBuffer) {
+            buf = Buffer.from(data);
+        } else if (typeof data === 'string') {
+            buf = Buffer.from(data);
+        } else {
+            return;
+        }
+
+        if (buf.length === 0) return;
+
+        // Filter out ws-scrcpy custom message types that scrcpy v3.1 doesn't understand.
+        // Valid scrcpy v3.1 types are 0–17. Custom types (101=video settings, 102=file push)
+        // would cause a ControlProtocolException and kill the server.
+        const msgType = buf[0];
+        if (msgType > 17) return;
+
+        this.controlSocket.write(buf);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

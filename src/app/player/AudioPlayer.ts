@@ -13,18 +13,16 @@
 
 const TAG = '[AudioPlayer]';
 
-// How many seconds of decoded audio to buffer before we start playing.
-// Lower = less latency, higher = fewer glitches on slow connections.
-const BUFFER_TARGET_S = 0.1;
-
 // Maximum allowed drift before we drop buffered audio to re-sync.
-const MAX_LATENCY_S = 0.8;
+const MAX_LATENCY_S = 0.10;
 
 export class AudioPlayer {
     private audioCtx: AudioContext | null = null;
     private decoder: AudioDecoder | null = null;
     private nextPlayTime = 0;
     private stopped = false;
+    private sampleCount = 0;  // monotonic sample counter for timestamps
+    private playing = false;  // true once AudioContext is actually running
 
     public static isSupported(): boolean {
         return typeof AudioDecoder !== 'undefined' && typeof AudioContext !== 'undefined';
@@ -51,13 +49,22 @@ export class AudioPlayer {
             return;
         }
 
+        // Drop audio data until the AudioContext is actually running.
+        // This avoids accumulating a huge backlog while the context is
+        // suspended (browser autoplay policy), which causes the 5-6s
+        // delay when audio finally starts.
+        if (!this.playing) return;
+
         if (!this.decoder || !this.audioCtx) return;
         if (this.decoder.state === 'closed') return;
 
         try {
+            // Opus frames are typically 20ms at 48kHz = 960 samples
+            const timestamp = this.sampleCount * (1_000_000 / 48000); // microseconds
+            this.sampleCount += 960;
             const chunk = new EncodedAudioChunk({
                 type: 'key',
-                timestamp: 0,
+                timestamp,
                 data: payload,
             });
             this.decoder.decode(chunk);
@@ -76,14 +83,35 @@ export class AudioPlayer {
         if (this.decoder && this.decoder.state !== 'closed') {
             this.decoder.close();
         }
+        this.sampleCount = 0;
 
         // Lazily create AudioContext on first init (respects autoplay policy)
         if (!this.audioCtx) {
-            this.audioCtx = new AudioContext();
-            this.nextPlayTime = this.audioCtx.currentTime + BUFFER_TARGET_S;
+            this.audioCtx = new AudioContext({ latencyHint: 'interactive' });
         }
 
+        // Store the config description for re-init after resume
+        this.pendingDescription = description;
+
         const ctx = this.audioCtx;
+
+        // If context is already running, set up the decoder immediately
+        if (ctx.state === 'running') {
+            this.setupDecoder(ctx, description);
+            this.playing = true;
+        }
+        // If suspended, we'll set up the decoder in resume() once context is running
+    }
+
+    private pendingDescription?: Uint8Array;
+
+    private setupDecoder(ctx: AudioContext, description?: Uint8Array): void {
+        // Close previous decoder if any
+        if (this.decoder && this.decoder.state !== 'closed') {
+            this.decoder.close();
+        }
+        this.sampleCount = 0;
+        this.nextPlayTime = ctx.currentTime;
 
         this.decoder = new AudioDecoder({
             output: (audioData: AudioData) => {
@@ -131,15 +159,14 @@ export class AudioPlayer {
 
         const now = ctx.currentTime;
 
-        // Drop audio if we've drifted too far behind
+        // Drop audio if we've drifted too far behind — play from now
         if (this.nextPlayTime < now - MAX_LATENCY_S) {
-            console.warn(TAG, 'audio drift too large, resetting buffer');
-            this.nextPlayTime = now + BUFFER_TARGET_S;
+            this.nextPlayTime = now;
         }
 
-        // Schedule slightly in the future if we're behind current time
+        // If behind current time, catch up immediately
         if (this.nextPlayTime < now) {
-            this.nextPlayTime = now + BUFFER_TARGET_S;
+            this.nextPlayTime = now;
         }
 
         const source = ctx.createBufferSource();
@@ -152,13 +179,20 @@ export class AudioPlayer {
 
     /** Resume AudioContext if it was suspended (browser autoplay policy). */
     public async resume(): Promise<void> {
-        if (this.audioCtx && this.audioCtx.state === 'suspended') {
+        if (!this.audioCtx) return;
+        if (this.audioCtx.state === 'suspended') {
             await this.audioCtx.resume();
+        }
+        // Once AudioContext is running, set up the decoder and start accepting frames
+        if (this.audioCtx.state === 'running' && !this.playing) {
+            this.playing = true;
+            this.setupDecoder(this.audioCtx, this.pendingDescription);
         }
     }
 
     public stop(): void {
         this.stopped = true;
+        this.playing = false;
         if (this.decoder && this.decoder.state !== 'closed') {
             this.decoder.close();
         }
