@@ -8,6 +8,7 @@ export enum ACTION {
     PROXY_ADB = 'proxy-adb',
     DEVTOOLS = 'devtools',
     STREAM_SCRCPY = 'stream',
+    STREAM_SCRCPY_TCP = 'stream-scrcpy-tcp',
     STREAM_WS_QVH = 'stream-qvh',
     STREAM_MJPEG = 'stream-mjpeg',
     PROXY_WDA = 'proxy-wda',

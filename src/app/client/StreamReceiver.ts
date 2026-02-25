@@ -9,6 +9,8 @@ import { ParamsStream } from '../../types/ParamsStream';
 
 const DEVICE_NAME_FIELD_LENGTH = 64;
 const MAGIC_BYTES_INITIAL = Util.stringToUtf8ByteArray('scrcpy_initial');
+// Audio packets are prefixed with this magic by ScrcpyTcpProxy (15 bytes, unique length)
+const MAGIC_BYTES_AUDIO   = Util.stringToUtf8ByteArray('scrcpy_audio\0\0\0');
 
 export type ClientsStats = {
     deviceName: string;
@@ -24,6 +26,7 @@ export type DisplayCombinedInfo = {
 
 interface StreamReceiverEvents {
     video: ArrayBuffer;
+    audio: Uint8Array;
     deviceMessage: DeviceMessage;
     rotated: any;
     displayInfo: DisplayCombinedInfo[];
@@ -133,8 +136,10 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
 
     protected onSocketMessage(event: MessageEvent): void {
         if (event.data instanceof ArrayBuffer) {
-            // works only because MAGIC_BYTES_INITIAL and MAGIC_BYTES_MESSAGE have same length
-            if (event.data.byteLength > MAGIC_BYTES_INITIAL.length) {
+            const byteLength = event.data.byteLength;
+
+            // Check MAGIC_BYTES_INITIAL / MAGIC_BYTES_MESSAGE (14 bytes each)
+            if (byteLength > MAGIC_BYTES_INITIAL.length) {
                 const magicBytes = new Uint8Array(event.data, 0, MAGIC_BYTES_INITIAL.length);
                 if (StreamReceiver.EqualArrays(magicBytes, MAGIC_BYTES_INITIAL)) {
                     this.handleInitialInfo(event.data);
@@ -143,6 +148,15 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<Params
                 if (StreamReceiver.EqualArrays(magicBytes, DeviceMessage.MAGIC_BYTES_MESSAGE)) {
                     const message = DeviceMessage.fromBuffer(event.data);
                     this.emit('deviceMessage', message);
+                    return;
+                }
+            }
+
+            // Check MAGIC_BYTES_AUDIO (15 bytes): payload starts after the magic
+            if (byteLength > MAGIC_BYTES_AUDIO.length) {
+                const audioMagic = new Uint8Array(event.data, 0, MAGIC_BYTES_AUDIO.length);
+                if (StreamReceiver.EqualArrays(audioMagic, MAGIC_BYTES_AUDIO)) {
+                    this.emit('audio', new Uint8Array(event.data, MAGIC_BYTES_AUDIO.length));
                     return;
                 }
             }

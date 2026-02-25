@@ -30,6 +30,7 @@ import { ACTION } from '../../../common/Action';
 import { StreamReceiverScrcpy } from './StreamReceiverScrcpy';
 import { ParamsDeviceTracker } from '../../../types/ParamsDeviceTracker';
 import { ScrcpyFilePushStream } from '../filePush/ScrcpyFilePushStream';
+import { AudioPlayer } from '../../player/AudioPlayer';
 
 type StartParams = {
     udid: string;
@@ -57,6 +58,7 @@ export class StreamClientScrcpy
     private touchHandler?: FeaturedInteractionHandler;
     private moreBox?: GoogMoreBox;
     private player?: BasePlayer;
+    private audioPlayer?: AudioPlayer;
     private filePushHandler?: FilePushHandler;
     private fitToScreen?: boolean;
     private readonly streamReceiver: StreamReceiverScrcpy;
@@ -232,10 +234,14 @@ export class StreamClientScrcpy
         if (!info) {
             return;
         }
+        const { videoSettings, screenInfo } = info;
+        // Set screenInfo on the player before play() — some players require it
+        if (screenInfo && !screenInfo.equals(this.player.getScreenInfo())) {
+            this.player.setScreenInfo(screenInfo);
+        }
         if (this.player.getState() === BasePlayer.STATE.PAUSED) {
             this.player.play();
         }
-        const { videoSettings, screenInfo } = info;
         const oldDisplayInfo = this.player.getDisplayInfo();
         const rotationChanged = oldDisplayInfo?.rotation !== info.displayInfo.rotation;
         this.player.setDisplayInfo(info.displayInfo);
@@ -296,13 +302,23 @@ export class StreamClientScrcpy
         }
     };
 
+    public onAudio = (data: Uint8Array): void => {
+        if (!this.audioPlayer) return;
+        // Resume AudioContext on first audio packet (satisfies browser autoplay policy)
+        this.audioPlayer.resume().catch(() => undefined);
+        this.audioPlayer.pushAudioData(data);
+    };
+
     public onDisconnected = (): void => {
         this.streamReceiver.off('deviceMessage', this.OnDeviceMessage);
         this.streamReceiver.off('video', this.onVideo);
+        this.streamReceiver.off('audio', this.onAudio);
         this.streamReceiver.off('clientsStats', this.onClientsStats);
         this.streamReceiver.off('displayInfo', this.onDisplayInfo);
         this.streamReceiver.off('disconnected', this.onDisconnected);
 
+        this.audioPlayer?.stop();
+        this.audioPlayer = undefined;
         this.filePushHandler?.release();
         this.filePushHandler = undefined;
         this.touchHandler?.release();
@@ -410,10 +426,16 @@ export class StreamClientScrcpy
         this.filePushHandler = new FilePushHandler(element, new ScrcpyFilePushStream(this.streamReceiver));
         this.filePushHandler.addEventListener(logger);
 
+        // Initialise audio player if the browser supports WebCodecs AudioDecoder
+        if (AudioPlayer.isSupported()) {
+            this.audioPlayer = new AudioPlayer();
+        }
+
         const streamReceiver = this.streamReceiver;
         streamReceiver.on('deviceMessage', this.OnDeviceMessage);
         // Note: 'rotated' event fires before displayInfo is updated, so we handle rotation in onDisplayInfo instead
         streamReceiver.on('video', this.onVideo);
+        streamReceiver.on('audio', this.onAudio);
         streamReceiver.on('clientsStats', this.onClientsStats);
         streamReceiver.on('displayInfo', this.onDisplayInfo);
         streamReceiver.on('disconnected', this.onDisconnected);

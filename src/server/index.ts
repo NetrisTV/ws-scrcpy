@@ -27,6 +27,7 @@ async function loadGoogModules() {
     const { ControlCenter } = await import('./goog-device/services/ControlCenter');
     const { DeviceTracker } = await import('./goog-device/mw/DeviceTracker');
     const { WebsocketProxyOverAdb } = await import('./goog-device/mw/WebsocketProxyOverAdb');
+    const { ScrcpyTcpProxy } = await import('./goog-device/mw/ScrcpyTcpProxy');
 
     if (config.runLocalGoogTracker) {
         mw2List.push(DeviceTracker);
@@ -53,6 +54,9 @@ async function loadGoogModules() {
     mw2List.push(FileListing);
     /// #endif
 
+    // ScrcpyTcpProxy handles scrcpy v2 streams over TCP (with audio support)
+    mwList.push(ScrcpyTcpProxy);
+    // Keep WebsocketProxyOverAdb for other ADB proxy use-cases (devtools, etc.)
     mwList.push(WebsocketProxyOverAdb);
 }
 loadPlatformModulesPromises.push(loadGoogModules());

@@ -1,6 +1,5 @@
 import '../../../style/devicelist.css';
 import { BaseDeviceTracker } from '../../client/BaseDeviceTracker';
-import { SERVER_PORT } from '../../../common/Constants';
 import { ACTION } from '../../../common/Action';
 import GoogDeviceDescriptor from '../../../types/GoogDeviceDescriptor';
 import { ControlCenterCommand } from '../../../common/ControlCenterCommand';
@@ -151,8 +150,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
         const pathname = params.pathname || location.pathname;
         const urlObject = this.buildUrl({ ...params, secure, hostname, port, pathname });
         if (udid) {
-            urlObject.searchParams.set('action', ACTION.PROXY_ADB);
-            urlObject.searchParams.set('remote', `tcp:${SERVER_PORT.toString(10)}`);
+            urlObject.searchParams.set('action', ACTION.STREAM_SCRCPY_TCP);
             urlObject.searchParams.set('udid', udid);
         }
         return urlObject;
@@ -271,33 +269,9 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                     'name',
                     encodeURIComponent(`${DeviceTracker.AttributePrefixInterfaceSelectFor}${fullName}`),
                 );
-                /// #if SCRCPY_LISTENS_ON_ALL_INTERFACES
-                device.interfaces.forEach((value) => {
-                    const params = {
-                        ...this.params,
-                        secure: false,
-                        hostname: value.ipv4,
-                        port: SERVER_PORT,
-                    };
-                    const url = DeviceTracker.createUrl(params).toString();
-                    const optionElement = DeviceTracker.createInterfaceOption(value.name, url);
-                    optionElement.innerText = `${value.name}: ${value.ipv4}`;
-                    selectElement.appendChild(optionElement);
-                    if (lastSelected) {
-                        if (lastSelected === value.name || !selectedInterfaceName) {
-                            optionElement.selected = true;
-                            selectedInterfaceUrl = url;
-                            selectedInterfaceName = value.name;
-                        }
-                    } else if (device['wifi.interface'] === value.name) {
-                        optionElement.selected = true;
-                    }
-                });
-                /// #else
                 selectedInterfaceUrl = proxyInterfaceUrl;
                 selectedInterfaceName = proxyInterfaceName;
                 td.classList.add('hidden');
-                /// #endif
                 if (isActive) {
                     const adbProxyOption = DeviceTracker.createInterfaceOption(proxyInterfaceName, proxyInterfaceUrl);
                     if (lastSelected === proxyInterfaceName || !selectedInterfaceName) {
