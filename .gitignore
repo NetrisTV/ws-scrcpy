@@ -2,3 +2,7 @@
 /dist
 /build
 /.idea
+
+# Ignore editor/merge backups
+*.orig
+src/server/services/device-lock.pt
