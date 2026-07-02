@@ -5,4 +5,5 @@ export interface ParamsBase {
     hostname?: string;
     port?: number;
     pathname?: string;
+    title?: string;
 }

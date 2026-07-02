@@ -23,15 +23,20 @@ export class BaseClient<P extends ParamsBase, TE extends EventMap> extends Typed
             hostname: Util.parseStringEnv(query.get('hostname')),
             port: Util.parseIntEnv(query.get('port')),
             pathname: Util.parseStringEnv(query.get('pathname')),
+            title: Util.parseStringEnv(query.get('title')),
         };
     }
 
     public setTitle(text = this.title): void {
+        // A `title` URL param overrides the automatic per-client title, so an
+        // embedded or popped-out client can show a meaningful document title
+        // (e.g. in a browser tab or detached window).
         let titleTag: HTMLTitleElement | null = document.querySelector('head > title');
         if (!titleTag) {
             titleTag = document.createElement('title');
+            document.head.appendChild(titleTag);
         }
-        titleTag.innerText = text;
+        titleTag.innerText = this.params?.title || text;
     }
 
     public setBodyClass(text: string): void {
