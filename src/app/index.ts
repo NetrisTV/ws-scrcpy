@@ -2,31 +2,14 @@ import '../style/app.css';
 import { StreamClientScrcpy } from './googDevice/client/StreamClientScrcpy';
 import { HostTracker } from './client/HostTracker';
 import { Tool } from './client/Tool';
+import { registerAvailablePlayers } from './registerPlayers';
 
 window.onload = async function (): Promise<void> {
     const hash = location.hash.replace(/^#!/, '');
     const parsedQuery = new URLSearchParams(hash);
     const action = parsedQuery.get('action');
 
-    /// #if USE_BROADWAY
-    const { BroadwayPlayer } = await import('./player/BroadwayPlayer');
-    StreamClientScrcpy.registerPlayer(BroadwayPlayer);
-    /// #endif
-
-    /// #if USE_H264_CONVERTER
-    const { MsePlayer } = await import('./player/MsePlayer');
-    StreamClientScrcpy.registerPlayer(MsePlayer);
-    /// #endif
-
-    /// #if USE_TINY_H264
-    const { TinyH264Player } = await import('./player/TinyH264Player');
-    StreamClientScrcpy.registerPlayer(TinyH264Player);
-    /// #endif
-
-    /// #if USE_WEBCODECS
-    const { WebCodecsPlayer } = await import('./player/WebCodecsPlayer');
-    StreamClientScrcpy.registerPlayer(WebCodecsPlayer);
-    /// #endif
+    await registerAvailablePlayers(StreamClientScrcpy);
 
     if (action === StreamClientScrcpy.ACTION && typeof parsedQuery.get('udid') === 'string') {
         StreamClientScrcpy.start(parsedQuery);

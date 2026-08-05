@@ -95,11 +95,21 @@ export const common = () => {
 };
 
 const front: webpack.Configuration = {
-    entry: path.join(PROJECT_ROOT, './src/app/index.ts'),
+    entry: {
+        bundle: path.join(PROJECT_ROOT, './src/app/index.ts'),
+        minimal: path.join(PROJECT_ROOT, './src/app/minimal.ts'),
+    },
     externals: ['fs'],
     plugins: [
         new HtmlWebpackPlugin({
             template: path.join(PROJECT_ROOT, '/src/public/index.html'),
+            chunks: ['bundle'],
+            inject: 'head',
+        }),
+        new HtmlWebpackPlugin({
+            template: path.join(PROJECT_ROOT, '/src/public/minimal.html'),
+            filename: 'minimal.html',
+            chunks: ['minimal'],
             inject: 'head',
         }),
         new MiniCssExtractPlugin(),
@@ -114,7 +124,7 @@ const front: webpack.Configuration = {
         extensions: ['.tsx', '.ts', '.js'],
     },
     output: {
-        filename: 'bundle.js',
+        filename: '[name].js',
         path: CLIENT_DIST_PATH,
     },
 };

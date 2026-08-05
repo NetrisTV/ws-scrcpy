@@ -37,7 +37,12 @@ type StartParams = {
     player?: BasePlayer;
     fitToScreen?: boolean;
     videoSettings?: VideoSettings;
+    includeDeviceControls: boolean;
 };
+
+export interface StreamClientScrcpyStartOptions {
+    includeDeviceControls?: boolean;
+}
 
 const TAG = '[StreamClientScrcpy]';
 
@@ -59,6 +64,7 @@ export class StreamClientScrcpy
     private player?: BasePlayer;
     private filePushHandler?: FilePushHandler;
     private fitToScreen?: boolean;
+    private minimalClipboardHandler?: (event: KeyboardEvent) => void;
     private readonly streamReceiver: StreamReceiverScrcpy;
 
     public static registerPlayer(playerClass: PlayerClass): void {
@@ -103,12 +109,13 @@ export class StreamClientScrcpy
         player?: BasePlayer,
         fitToScreen?: boolean,
         videoSettings?: VideoSettings,
+        options: StreamClientScrcpyStartOptions = {},
     ): StreamClientScrcpy {
         if (query instanceof URLSearchParams) {
             const params = StreamClientScrcpy.parseParameters(query);
-            return new StreamClientScrcpy(params, streamReceiver, player, fitToScreen, videoSettings);
+            return new StreamClientScrcpy(params, streamReceiver, player, fitToScreen, videoSettings, options);
         } else {
-            return new StreamClientScrcpy(query, streamReceiver, player, fitToScreen, videoSettings);
+            return new StreamClientScrcpy(query, streamReceiver, player, fitToScreen, videoSettings, options);
         }
     }
 
@@ -133,6 +140,7 @@ export class StreamClientScrcpy
         player?: BasePlayer,
         fitToScreen?: boolean,
         videoSettings?: VideoSettings,
+        options: StreamClientScrcpyStartOptions = {},
     ) {
         super(params);
         if (streamReceiver) {
@@ -141,9 +149,11 @@ export class StreamClientScrcpy
             this.streamReceiver = new StreamReceiverScrcpy(this.params);
         }
 
+        const includeDeviceControls = options.includeDeviceControls !== false;
+
         const { udid, player: playerName } = this.params;
-        this.startStream({ udid, player, playerName, fitToScreen, videoSettings });
-        this.setBodyClass('stream');
+        this.startStream({ udid, player, playerName, fitToScreen, videoSettings, includeDeviceControls });
+        this.setBodyClass(includeDeviceControls ? 'stream' : 'stream minimal-stream');
     }
 
     public static parseParameters(params: URLSearchParams): ParamsStreamScrcpy {
@@ -165,6 +175,10 @@ export class StreamClientScrcpy
     public OnDeviceMessage = (message: DeviceMessage): void => {
         if (this.moreBox) {
             this.moreBox.OnDeviceMessage(message);
+            return;
+        }
+        if (message.type === DeviceMessage.TYPE_CLIPBOARD) {
+            void this.writeTextToClipboard(message.getText());
         }
     };
 
@@ -260,9 +274,10 @@ export class StreamClientScrcpy
         this.filePushHandler = undefined;
         this.touchHandler?.release();
         this.touchHandler = undefined;
+        this.detachMinimalClipboardShortcuts();
     };
 
-    public startStream({ udid, player, playerName, videoSettings, fitToScreen }: StartParams): void {
+    public startStream({ udid, player, playerName, videoSettings, fitToScreen, includeDeviceControls }: StartParams): void {
         if (!udid) {
             throw Error(`Invalid udid value: "${udid}"`);
         }
@@ -294,6 +309,7 @@ export class StreamClientScrcpy
 
         const deviceView = document.createElement('div');
         deviceView.className = 'device-view';
+        let moreBox: HTMLElement | undefined;
         const stop = (ev?: string | Event) => {
             if (ev && ev instanceof Event && ev.type === 'error') {
                 console.error(TAG, ev);
@@ -303,9 +319,11 @@ export class StreamClientScrcpy
             if (parent) {
                 parent.removeChild(deviceView);
             }
-            parent = moreBox.parentElement;
-            if (parent) {
-                parent.removeChild(moreBox);
+            if (moreBox) {
+                parent = moreBox.parentElement;
+                if (parent) {
+                    parent.removeChild(moreBox);
+                }
             }
             this.streamReceiver.stop();
             if (this.player) {
@@ -313,18 +331,25 @@ export class StreamClientScrcpy
             }
         };
 
-        const googMoreBox = (this.moreBox = new GoogMoreBox(udid, player, this));
-        const moreBox = googMoreBox.getHolderElement();
-        googMoreBox.setOnStop(stop);
-        const googToolBox = GoogToolBox.createToolBox(udid, player, this, moreBox, {
-            captureKeyboard: this.params.captureKeyboard,
-        });
-        this.controlButtons = googToolBox.getHolderElement();
-        deviceView.appendChild(this.controlButtons);
+        if (includeDeviceControls) {
+            const googMoreBox = (this.moreBox = new GoogMoreBox(udid, player, this));
+            moreBox = googMoreBox.getHolderElement();
+            googMoreBox.setOnStop(stop);
+            const googToolBox = GoogToolBox.createToolBox(udid, player, this, moreBox, {
+                captureKeyboard: this.params.captureKeyboard,
+            });
+            this.controlButtons = googToolBox.getHolderElement();
+            deviceView.appendChild(this.controlButtons);
+        } else {
+            this.setHandleKeyboardEvents(Boolean(this.params.captureKeyboard));
+            this.attachMinimalClipboardShortcuts();
+        }
         const video = document.createElement('div');
         video.className = 'video';
         deviceView.appendChild(video);
-        deviceView.appendChild(moreBox);
+        if (moreBox) {
+            deviceView.appendChild(moreBox);
+        }
         player.setParent(video);
         player.pause();
 
@@ -384,12 +409,13 @@ export class StreamClientScrcpy
     }
 
     public getMaxSize(): Size | undefined {
-        if (!this.controlButtons) {
+        const body = document.body;
+        const controlsWidth = this.controlButtons ? this.controlButtons.clientWidth : 0;
+        const width = (body.clientWidth - controlsWidth) & ~15;
+        const height = body.clientHeight & ~15;
+        if (width <= 0 || height <= 0) {
             return;
         }
-        const body = document.body;
-        const width = (body.clientWidth - this.controlButtons.clientWidth) & ~15;
-        const height = body.clientHeight & ~15;
         return new Size(width, height);
     }
 
@@ -409,6 +435,61 @@ export class StreamClientScrcpy
         }
         if (this.player) {
             this.player.setVideoSettings(videoSettings, fitToScreen, saveToStorage);
+        }
+    }
+
+    private attachMinimalClipboardShortcuts(): void {
+        if (this.minimalClipboardHandler) {
+            return;
+        }
+        this.minimalClipboardHandler = (event: KeyboardEvent) => {
+            const hasPrimaryModifier = event.ctrlKey || event.metaKey;
+            if (!hasPrimaryModifier || !event.shiftKey) {
+                return;
+            }
+            if (event.code === 'KeyV') {
+                event.preventDefault();
+                this.sendHostClipboardToDevice();
+                return;
+            }
+            if (event.code === 'KeyC') {
+                event.preventDefault();
+                this.sendMessage(new CommandControlMessage(ControlMessage.TYPE_GET_CLIPBOARD));
+            }
+        };
+        document.body.addEventListener('keydown', this.minimalClipboardHandler);
+    }
+
+    private detachMinimalClipboardShortcuts(): void {
+        if (!this.minimalClipboardHandler) {
+            return;
+        }
+        document.body.removeEventListener('keydown', this.minimalClipboardHandler);
+        this.minimalClipboardHandler = undefined;
+    }
+
+    private async sendHostClipboardToDevice(): Promise<void> {
+        if (!navigator.clipboard || !navigator.clipboard.readText) {
+            return;
+        }
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+                this.sendMessage(CommandControlMessage.createSetClipboardCommand(text, true));
+            }
+        } catch (error) {
+            console.warn(TAG, 'Unable to read clipboard', error);
+        }
+    }
+
+    private async writeTextToClipboard(text: string): Promise<void> {
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (error) {
+            console.warn(TAG, 'Unable to write clipboard', error);
         }
     }
 

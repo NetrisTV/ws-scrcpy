@@ -82,6 +82,13 @@ body.stream {
     background-color: var(--stream-bg-color);
 }
 
+body.stream.minimal-stream {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000000;
+}
+
 .terminal-container {
     width: 100%;
     height: 100%;
@@ -107,6 +114,12 @@ body.stream {
     display: inline-block;
 }
 
+body.stream.minimal-stream .device-view {
+    float: none;
+    max-width: 100%;
+    max-height: 100%;
+}
+
 .video-layer {
     position: absolute;
     z-index: 0;
@@ -122,6 +135,10 @@ body.stream {
     max-height: 100%;
     max-width: 100%;
     background-color: #000000;
+}
+
+body.stream.minimal-stream .video {
+    float: none;
 }
 
 
