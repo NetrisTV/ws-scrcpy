@@ -14,11 +14,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy package files first for better layer caching
+# Copy package files first for layer caching
 COPY package*.json ./
 
-# Install all dependencies (including devDependencies for build)
-RUN npm install
+# Install all dependencies without running lifecycle postinstall hooks prematurely
+RUN npm install --ignore-scripts
 
 # Copy source code
 COPY . .
@@ -45,8 +45,8 @@ WORKDIR /app
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./
 
-# Install production dependencies (tslib and other externalized modules)
-RUN npm install --omit=dev
+# Install production dependencies
+RUN npm install --omit=dev --ignore-scripts
 
 EXPOSE 8000
 EXPOSE 5037
