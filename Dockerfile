@@ -52,4 +52,25 @@ EXPOSE 8000
 EXPOSE 5037
 
 # Start ADB server listening on 0.0.0.0 so allocation-backend can share it, then start ws-scrcpy
-CMD ["sh", "-c", "adb -a -P 5037 server nodaemon & sleep 1 && npm start"]
+#CMD ["sh", "-c", "adb -a -P 5037 server nodaemon & sleep 1 && npm start"]
+# Approved ADB Architecture:
+#                     USB
+#                      │
+#              ┌───────▼────────┐
+#              │   Ubuntu host  │
+#              │                │
+#              │ ADB server     │
+#              │ 0.0.0.0:5037   │
+#              │                │
+#              │  ┌──────────┐  │
+#              │  │ phones   │  │
+#              │  └──────────┘  │
+#              └───────┬────────┘
+#                      │ Docker network
+#           ┌──────────┴──────────┐
+#           │                     │
+#    ws-scrcpy                backend
+#    ADB_HOST=host.docker...  ADB_SERVER_SOCKET=
+#    ADB_PORT=5037            tcp:host.docker...:5037
+
+CMD ["npm", "start"]
