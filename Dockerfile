@@ -49,7 +49,25 @@ COPY --from=builder /app/dist ./
 RUN npm install --omit=dev --ignore-scripts
 
 EXPOSE 8000
-EXPOSE 5037
+#EXPOSE 5037 <--- not needed anymore, the architecture we are aiming is: 
+#                              Debian/Ubuntu HOST
+#                     ┌─────────────────────────┐
+#                     │                         │
+#  USB ──────────────►│ ADB server :5037       │
+#                     │                         │
+#                     │  10HC6K05U20001G       │
+#                     │  2c39d81f               │
+#                     └────────────┬────────────┘
+#                                  │
+#                          172.20.0.1:5037
+#                                  │
+#                   ┌──────────────┴──────────────┐
+#                   │                             │
+#            ws-scrcpy                       allocation-backend
+#            adbkit                          adbkit
+#            :8000                           :4000
+#                   │                             │
+#                   └─────────── same ADB ────────┘
 
 # Start ADB server listening on 0.0.0.0 so allocation-backend can share it, then start ws-scrcpy
 #CMD ["sh", "-c", "adb -a -P 5037 server nodaemon & sleep 1 && npm start"]

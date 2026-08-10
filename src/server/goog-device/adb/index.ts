@@ -12,7 +12,8 @@ export class AdbExtended extends Adb {
     static createClient(options: Options = {}): ExtendedClient {
         const opts: ClientOptions = {
             bin: options.bin,
-            host: options.host || process.env.ADB_HOST || '127.0.0.1',
+            // host: options.host || process.env.ADB_HOST || '127.0.0.1',
+            host: options.host || process.env.ADB_HOST || '172.20.0.1', // Changed to match the host in the docker-compose.yaml file
             port: options.port || 0,
         };
         if (!opts.port) {
