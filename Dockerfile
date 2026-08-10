@@ -52,4 +52,4 @@ EXPOSE 8000
 EXPOSE 5037
 
 # Start ADB server listening on 0.0.0.0 so allocation-backend can share it, then start ws-scrcpy
-CMD ["sh", "-c", "adb -a -P 5037 nodaemon & sleep 1 && npm start"]
+CMD ["sh", "-c", "adb -a -P 5037 server nodaemon & sleep 1 && npm start"]
