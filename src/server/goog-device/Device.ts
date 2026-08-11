@@ -100,7 +100,14 @@ export class Device extends TypedEmitter<DeviceEvents> {
     public async runShellCommandAdb(command: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             const cmd = 'adb';
-            const args = ['-s', `${this.udid}`, 'shell', command];
+            const adbHost = process.env.ADB_HOST || '172.20.0.1';
+            const adbPort = process.env.ADB_PORT || '5037';
+            const parsedPort = Number(adbPort);
+            if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
+                reject(new Error(`Invalid ADB_PORT value: "${adbPort}"`));
+                return;
+            }
+            const args = ['-H', adbHost, '-P', adbPort, '-s', this.udid, 'shell', command];
             const adb = spawn(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'] });
             let output = '';
 
