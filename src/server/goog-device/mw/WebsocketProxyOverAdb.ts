@@ -46,11 +46,25 @@ export class WebsocketProxyOverAdb extends WebsocketProxy {
         return this.createProxyOverAdb(ws, udid, remote, path);
     }
 
-    public static createProxyOverAdb(ws: WS, udid: string, remote: string, path?: string | null): WebsocketProxy {
+    /*public static createProxyOverAdb(ws: WS, udid: string, remote: string, path?: string | null): WebsocketProxy {
         const service = new WebsocketProxy(ws);
         AdbUtils.forward(udid, remote)
             .then((port) => {
                 return service.init(`ws://127.0.0.1:${port}${path ? path : ''}`);
+            })
+            .catch((e) => {
+                const msg = `[${this.TAG}] Failed to start service: ${e.message}`;
+                console.error(msg);
+                ws.close(4005, msg);
+            });
+        return service;
+    }*/
+    public static createProxyOverAdb(ws: WS, udid: string, remote: string, path?: string | null): WebsocketProxy {
+        const service = new WebsocketProxy(ws);
+        AdbUtils.forward(udid, remote)
+            .then((port) => {
+                const adbHost = process.env.ADB_HOST || '127.0.0.1';
+                return service.init(`ws://${adbHost}:${port}${path ? path : ''}`);
             })
             .catch((e) => {
                 const msg = `[${this.TAG}] Failed to start service: ${e.message}`;
