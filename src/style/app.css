@@ -21,6 +21,7 @@
     --progress-background-color: hsla(225, 100%, 50%, 0.2);
     --progress-background-error-color: hsla(0, 100%, 50%, 0.2);
     --font-size: 14px;
+    --panel-width: 3.715rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -136,7 +137,7 @@ body.stream {
 
 
 .control-buttons-list {
-    width: 3.715rem;
+    width: var(--panel-width);
     background-color: var(--control-buttons-bg-color);
     flex-shrink: 0;
     display: flex;

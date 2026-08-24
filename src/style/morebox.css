@@ -6,6 +6,7 @@
 .more-box {
     display: none;
     position: absolute;
+    right: var(--panel-width);
     background-color: var(--controls-bg-color);
     z-index: 2;
     padding: 0 .714rem .714rem .714rem;
