@@ -39,6 +39,17 @@ npm install
 npm start
 ```
 
+To build docker image:
+
+```shell
+docker build -t wsscrcpy:latest .
+```
+To run docker image:
+
+```shell
+docker run --rm -i -t --privileged -v /dev/bus/usb:/dev/bus/usb -p 127.0.0.1:8000:8000/tcp  wsscrcpy:latest
+```
+
 ## Supported features
 
 ### Android
