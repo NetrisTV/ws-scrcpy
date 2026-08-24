@@ -343,6 +343,10 @@ export abstract class BasePlayer extends TypedEmitter<PlayerEvents> {
         return this.touchableCanvas;
     }
 
+    public getParent(): HTMLElement | undefined{
+        return this.parentElement;
+    }
+
     public setParent(parent: HTMLElement): void {
         this.parentElement = parent;
         parent.appendChild(this.tag);
