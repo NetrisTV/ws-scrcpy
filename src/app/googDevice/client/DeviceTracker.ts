@@ -112,6 +112,7 @@ export class DeviceTracker extends BaseDeviceTracker<GoogDeviceDescriptor, never
                     udid,
                     player: decodeURIComponent(playerCodeName),
                     ws: url,
+                    fitToScreen: true,
                 },
                 decodeURIComponent(playerFullName),
                 this.params,
