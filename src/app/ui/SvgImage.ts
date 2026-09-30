@@ -15,6 +15,7 @@ import MenuSVG from '../../public/images/buttons/menu.svg';
 import ArrowBackSVG from '../../public/images/buttons/arrow_back.svg';
 import ToggleOnSVG from '../../public/images/buttons/toggle_on.svg';
 import ToggleOffSVG from '../../public/images/buttons/toggle_off.svg';
+import FullScreenSVG from '../../public/images/buttons/full_screen.svg';
 
 export enum Icon {
     BACK,
@@ -25,6 +26,7 @@ export enum Icon {
     VOLUME_DOWN,
     MORE,
     CAMERA,
+    FULL_SCREEN,
     KEYBOARD,
     CANCEL,
     OFFLINE,
@@ -40,6 +42,8 @@ export default class SvgImage {
     static Icon = Icon;
     private static getSvgString(type: Icon): string {
         switch (type) {
+            case Icon.FULL_SCREEN:
+                return FullScreenSVG;
             case Icon.KEYBOARD:
                 return KeyboardSVG;
             case Icon.MORE:
