@@ -137,22 +137,56 @@ export class AdbUtils {
         });
     }
 
-    public static async forward(serial: string, remote: string): Promise<number> {
-        const client = AdbExtended.createClient();
-        const forwards = await client.listForwards(serial);
-        const forward = forwards.find((item: Forward) => {
-            return item.remote === remote && item.local.startsWith('tcp:') && item.serial === serial;
-        });
-        if (forward) {
-            const { local } = forward;
-            return parseInt(local.split('tcp:')[1], 10);
-        }
+public static async forward(serial: string, remote: string): Promise<number> {
+    const client = AdbExtended.createClient();
+
+    const forwards = await client.listForwards(serial);
+    const forward = forwards.find((f: Forward) =>
+        f.remote === remote && f.local.startsWith("tcp:") && f.serial === serial
+    );
+    if (forward) {
+        const port = parseInt(forward.local.split("tcp:")[1], 10);
+        console.log("[AdbUtils.forward] Using existing forward:", port);
+        return port;
+    }
+
+    // Check if running in Docker by looking at ANDROID_ADB_SERVER_ADDRESS
+    const isDocker = process.env.ANDROID_ADB_SERVER_ADDRESS?.toLowerCase().includes('docker');
+    
+    if (!isDocker) {
+        // running natively, we can use portfinder:
         const port = await portfinder.getPortPromise();
         const local = `tcp:${port}`;
         await client.forward(serial, local, remote);
         return port;
     }
+    // running in Docker, try multiple ports:
+    const maxRetries = 20;
+    let port =1337;
+    port = Number(process.env.ADB_FORWARD_PORT_START ?? 8000);
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+	    port++;
+            const local = `tcp:${port}`;
+            await client.forward(serial, local, remote);
+            console.log("[AdbUtils.forward] Successfully forwarded to port", port);
+            return port;
+        } catch (err: any) {
+            if (err.message?.includes("cannot bind listener")) {
+                console.warn(`[AdbUtils.forward] Port ${port} bind failed, retrying...`);
+                continue;
+            } else {
+                console.error("[AdbUtils.forward] Unexpected error:", err);
+                throw err;
+            }
+        }
+    }
 
+    throw new Error("Failed to bind any available port after multiple attempts");
+}
+
+
+    
     public static async getDevtoolsRemoteList(serial: string): Promise<string[]> {
         const client = AdbExtended.createClient();
         const stream = await client.shell(serial, 'cat /proc/net/unix');
